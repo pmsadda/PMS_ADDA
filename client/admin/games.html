@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>
+            Game Management | PMS ADDA
+        </title>
+
+        <script src="../js/app-config.js"></script>
+
+        <script src="../js/auth-guard.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+        <link
+            rel="stylesheet"
+            href="../css/admin-games.css">
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
+
+    </head>
+
+    <body>
+
+        <!-- Sidebar Overlay -->
+        <div
+            id="sidebarOverlay"
+            class="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <aside
+            id="sidebar"
+            class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+
+                <div>
+                    <h2>PMS ADDA</h2>
+                    <p>Admin Panel</p>
+                </div>
+
+                <button
+                    id="sidebarCloseBtn"
+                    class="sidebar-close-btn"
+                    type="button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <a
+                    href="dashboard.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a
+                    href="users.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Users</span>
+                </a>
+
+                <a
+                    href="deposits.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                    <span>Deposits</span>
+
+                    <span
+                        id="pendingDepositMenuCount"
+                        class="menu-count">
+                        0
+                    </span>
+                </a>
+
+                <a
+                    href="withdrawals.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Withdrawals</span>
+
+                    <span
+                        id="pendingWithdrawMenuCount"
+                        class="menu-count">
+                        0
+                    </span>
+                </a>
+
+                <a
+                    href="transactions.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>Transactions</span>
+                </a>
+
+                <a
+                    href="games.html"
+                    class="menu-item active">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>Game Management</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <button
+                    id="logoutBtn"
+                    class="logout-btn"
+                    type="button">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Topbar -->
+            <header class="topbar">
+
+                <div class="topbar-left">
+                    <button
+                        id="sidebarOpenBtn"
+                        class="menu-toggle-btn"
+                        type="button">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <div>
+                        <h1>Game Management</h1>
+                        <p>
+                            Create and manage Teen Patti,
+                            Poker and Ludo rooms
+                        </p>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="admin-profile">
+                        <div class="admin-avatar">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+
+                        <div class="admin-info">
+                            <strong id="adminName">
+                                Admin
+                            </strong>
+
+                            <span>
+                                Administrator
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </header>
+
+            <!-- Page Content -->
+            <section class="page-content">
+
+                <!-- Summary Cards -->
+                <div class="summary-grid">
+
+                    <article class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Rooms</p>
+
+                            <h3 id="totalRooms">
+                                0
+                            </h3>
+                        </div>
+                    </article>
+
+                    <article class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+
+                        <div>
+                            <p>Waiting Rooms</p>
+
+                            <h3 id="waitingRooms">
+                                0
+                            </h3>
+                        </div>
+                    </article>
+
+                    <article class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-play"></i>
+                        </div>
+
+                        <div>
+                            <p>Running Rooms</p>
+
+                            <h3 id="runningRooms">
+                                0
+                            </h3>
+                        </div>
+                    </article>
+
+                    <article class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-user-group"></i>
+                        </div>
+
+                        <div>
+                            <p>Active Players</p>
+
+                            <h3 id="activePlayers">
+                                0
+                            </h3>
+                        </div>
+                    </article>
+
+                </div>
+
+                <!-- Room Management Card -->
+                <section class="content-card">
+
+                    <div class="content-card-header">
+
+                        <div>
+                            <h2>Game Rooms</h2>
+
+                            <p>
+                                Search, filter, create and manage rooms
+                            </p>
+                        </div>
+
+                        <button
+                            id="openCreateRoomBtn"
+                            class="primary-btn"
+                            type="button">
+                            <i class="fa-solid fa-plus"></i>
+                            Create Room
+                        </button>
+
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filters-wrapper">
+
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                            <input
+                                id="roomSearchInput"
+                                type="text"
+                                placeholder="Search room code or room name">
+                        </div>
+
+                        <select
+                            id="gameTypeFilter"
+                            class="filter-select">
+                            <option value="all">
+                                All Games
+                            </option>
+
+                            <option value="teen_patti">
+                                Teen Patti
+                            </option>
+
+                            <option value="poker">
+                                Poker
+                            </option>
+
+                            <option value="ludo">
+                                Ludo
+                            </option>
+                        </select>
+
+                        <select
+                            id="roomStatusFilter"
+                            class="filter-select">
+                            <option value="all">
+                                All Status
+                            </option>
+
+                            <option value="waiting">
+                                Waiting
+                            </option>
+
+                            <option value="running">
+                                Running
+                            </option>
+
+                            <option value="finished">
+                                Finished
+                            </option>
+
+                            <option value="disabled">
+                                Disabled
+                            </option>
+                        </select>
+
+                        <button
+                            id="refreshRoomsBtn"
+                            class="secondary-btn"
+                            type="button">
+                            <i class="fa-solid fa-rotate"></i>
+                            Refresh
+                        </button>
+
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-wrapper">
+
+                        <table class="rooms-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Room Code</th>
+                                    <th>Room Name</th>
+                                    <th>Game</th>
+                                    <th>Boot Amount</th>
+                                    <th>Players</th>
+                                    <th>Service Charge</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="roomsTableBody">
+
+                                <tr>
+                                    <td
+                                        colspan="8"
+                                        class="empty-table-message">
+                                        Loading game rooms...
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-wrapper">
+
+                        <p id="paginationInfo">
+                            Showing 0 of 0 rooms
+                        </p>
+
+                        <div class="pagination-buttons">
+
+                            <button
+                                id="previousPageBtn"
+                                class="pagination-btn"
+                                type="button"
+                                disabled>
+                                <i class="fa-solid fa-chevron-left"></i>
+                                Previous
+                            </button>
+
+                            <span id="currentPageText">
+                                Page 1
+                            </span>
+
+                            <button
+                                id="nextPageBtn"
+                                class="pagination-btn"
+                                type="button"
+                                disabled>
+                                Next
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </section>
+
+        </main>
+
+        <!-- Create/Edit Room Modal -->
+        <div
+            id="roomFormModal"
+            class="modal">
+            <div class="modal-dialog">
+
+                <div class="modal-header">
+
+                    <div>
+                        <h2 id="roomFormModalTitle">
+                            Create Game Room
+                        </h2>
+
+                        <p>
+                            Fill in the room information
+                        </p>
+                    </div>
+
+                    <button
+                        id="closeRoomFormModalBtn"
+                        class="modal-close-btn"
+                        type="button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                </div>
+
+                <form id="roomForm">
+
+                    <input
+                        id="roomIdInput"
+                        type="hidden">
+
+                    <div class="form-group">
+                        <label for="roomNameInput">
+                            Room Name
+                        </label>
+
+                        <input
+                            id="roomNameInput"
+                            type="text"
+                            placeholder="Example: Teen Patti Basic Room"
+                            maxlength="100"
+                            required>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="roomGameTypeInput">
+                                Game Type
+                            </label>
+
+                            <select
+                                id="roomGameTypeInput"
+                                required>
+                                <option value>
+                                    Select Game
+                                </option>
+
+                                <option value="teen_patti">
+                                    Teen Patti
+                                </option>
+
+                                <option value="poker">
+                                    Poker
+                                </option>
+
+                                <option value="ludo">
+                                    Ludo
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="maxPlayersInput">
+                                Maximum Players
+                            </label>
+
+                            <input
+                                id="maxPlayersInput"
+                                type="number"
+                                min="2"
+                                max="10"
+                                placeholder="Example: 5"
+                                required>
+                        </div>
+
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="bootAmountInput">
+                                Boot Amount
+                            </label>
+
+                            <input
+                                id="bootAmountInput"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="Example: 100"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="serviceChargeInput">
+                                Service Charge (%)
+                            </label>
+
+                            <input
+                                id="serviceChargeInput"
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                value="5"
+                                required>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-actions">
+
+                        <button
+                            id="cancelRoomFormBtn"
+                            class="secondary-btn"
+                            type="button">
+                            Cancel
+                        </button>
+
+                        <button
+                            id="submitRoomFormBtn"
+                            class="primary-btn"
+                            type="submit">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Room
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+        <!-- View Room Modal -->
+        <div
+            id="viewRoomModal"
+            class="modal">
+            <div class="modal-dialog">
+
+                <div class="modal-header">
+
+                    <div>
+                        <h2>Room Details</h2>
+                        <p>Complete information about this room</p>
+                    </div>
+
+                    <button
+                        id="closeViewRoomModalBtn"
+                        class="modal-close-btn"
+                        type="button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                </div>
+
+                <div
+                    id="roomDetailsContent"
+                    class="details-grid">
+                    Loading room details...
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div
+            id="deleteRoomModal"
+            class="modal">
+            <div class="modal-dialog small-modal">
+
+                <div class="danger-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+
+                <h2>Delete Room?</h2>
+
+                <p>
+                    This action cannot be undone.
+                    Are you sure you want to delete this room?
+                </p>
+
+                <div class="modal-actions">
+
+                    <button
+                        id="cancelDeleteRoomBtn"
+                        class="secondary-btn"
+                        type="button">
+                        Cancel
+                    </button>
+
+                    <button
+                        id="confirmDeleteRoomBtn"
+                        class="danger-btn"
+                        type="button">
+                        <i class="fa-solid fa-trash"></i>
+                        Delete
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Status Confirmation Modal -->
+        <div
+            id="statusRoomModal"
+            class="modal">
+            <div class="modal-dialog small-modal">
+
+                <div class="status-modal-icon">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+
+                <h2 id="statusModalTitle">
+                    Change Room Status
+                </h2>
+
+                <p id="statusModalMessage">
+                    Are you sure you want to change this room status?
+                </p>
+
+                <div class="modal-actions">
+
+                    <button
+                        id="cancelStatusRoomBtn"
+                        class="secondary-btn"
+                        type="button">
+                        Cancel
+                    </button>
+
+                    <button
+                        id="confirmStatusRoomBtn"
+                        class="primary-btn"
+                        type="button">
+                        Confirm
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div
+            id="pageLoader"
+            class="page-loader hidden">
+            <div class="loader-spinner"></div>
+            <p>Please wait...</p>
+        </div>
+
+        <!-- Toast -->
+        <div
+            id="toastContainer"
+            class="toast-container"></div>
+
+        <script src="../js/admin-games.js"></script>
+
+    </body>
+</html>

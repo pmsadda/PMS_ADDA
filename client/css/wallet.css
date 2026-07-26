@@ -1,0 +1,1097 @@
+/* ==========================================
+   PMS ADDA
+   Wallet CSS
+   Version 1.0
+========================================== */
+
+/* ---------- Page ---------- */
+
+body{
+
+    margin:0;
+
+    padding:0;
+
+    background:#090909;
+
+    color:#ffffff;
+
+    font-family:Poppins,sans-serif;
+
+}
+
+.wallet-page{
+
+    max-width:500px;
+
+    margin:auto;
+
+    min-height:100vh;
+
+    padding:18px 18px 95px;
+
+}
+
+/* ---------- Header ---------- */
+
+.wallet-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+.user-info{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+}
+
+.user-info img{
+
+    width:65px;
+
+    height:65px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:3px solid #FFD700;
+
+}
+
+.user-info h2{
+
+    margin:0;
+
+    font-size:22px;
+
+}
+
+.user-info p{
+
+    margin-top:4px;
+
+    color:#9f9f9f;
+
+    font-size:13px;
+
+}
+
+/* ---------- Refresh ---------- */
+
+.refresh-btn{
+
+    width:48px;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#181818;
+
+    color:#FFD700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.refresh-btn:hover{
+
+    transform:rotate(180deg);
+
+}
+
+/* ---------- Balance ---------- */
+
+.balance-card{
+
+    padding:28px;
+
+    border-radius:20px;
+
+    background:linear-gradient(135deg,#1f1f1f,#111111);
+
+    border:1px solid rgba(255,215,0,.25);
+
+    box-shadow:0 10px 30px rgba(255,215,0,.15);
+
+    text-align:center;
+
+    margin-bottom:22px;
+
+}
+
+.balance-card p{
+
+    margin:0;
+
+    color:#c8c8c8;
+
+}
+
+.balance-card h1{
+
+    margin:14px 0;
+
+    color:#FFD700;
+
+    font-size:38px;
+
+}
+
+.balance-card small{
+
+    color:#8d8d8d;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Wallet CSS
+   Part 2/4
+========================================== */
+
+/* ==========================
+   Quick Actions
+========================== */
+
+.quick-actions{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:12px;
+
+    margin-bottom:25px;
+
+}
+
+.quick-actions button{
+
+    background:#171717;
+
+    border:1px solid rgba(255,215,0,.18);
+
+    border-radius:16px;
+
+    color:#ffffff;
+
+    padding:15px 8px;
+
+    cursor:pointer;
+
+    transition:.30s;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+.quick-actions button i{
+
+    font-size:22px;
+
+    color:#FFD700;
+
+}
+
+.quick-actions button:hover{
+
+    transform:translateY(-4px);
+
+    border-color:#FFD700;
+
+    box-shadow:0 10px 25px rgba(255,215,0,.25);
+
+}
+
+/* ==========================
+   Statistics
+========================== */
+
+.stats{
+
+    margin-top:15px;
+
+}
+
+.stats h3{
+
+    margin-bottom:15px;
+
+    color:#FFD700;
+
+    font-size:22px;
+
+}
+
+/* Grid */
+
+.stats-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:14px;
+
+}
+
+/* Card */
+
+.stat-card{
+
+    background:#171717;
+
+    border:1px solid rgba(255,215,0,.18);
+
+    border-radius:18px;
+
+    padding:18px;
+
+    transition:.30s;
+
+}
+
+.stat-card:hover{
+
+    transform:translateY(-4px);
+
+    border-color:#FFD700;
+
+    box-shadow:0 8px 20px rgba(255,215,0,.20);
+
+}
+
+.stat-card i{
+
+    font-size:24px;
+
+    color:#FFD700;
+
+    margin-bottom:12px;
+
+}
+
+.stat-card h4{
+
+    margin:0;
+
+    color:#bdbdbd;
+
+    font-size:14px;
+
+    font-weight:500;
+
+}
+
+.stat-card h2{
+
+    margin-top:10px;
+
+    color:#ffffff;
+
+    font-size:24px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Wallet CSS
+   Part 3/4
+========================================== */
+
+/* ==========================
+   Transactions
+========================== */
+
+.transactions{
+
+    margin-top:30px;
+
+}
+
+.section-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:16px;
+
+}
+
+.section-header h3{
+
+    margin:0;
+
+    color:#FFD700;
+
+    font-size:22px;
+
+}
+
+.section-header button{
+
+    background:none;
+
+    border:none;
+
+    color:#FFD700;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+}
+
+/* ==========================
+   Transaction List
+========================== */
+
+.transaction-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:14px;
+
+}
+
+/* ==========================
+   Transaction Card
+========================== */
+
+.transaction-item{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    background:#171717;
+
+    border:1px solid rgba(255,215,0,.15);
+
+    border-radius:18px;
+
+    padding:16px;
+
+    transition:.30s;
+
+}
+
+.transaction-item:hover{
+
+    transform:translateY(-3px);
+
+    border-color:#FFD700;
+
+    box-shadow:0 8px 22px rgba(255,215,0,.18);
+
+}
+
+/* ==========================
+   Transaction Icon
+========================== */
+
+.transaction-icon{
+
+    width:52px;
+
+    height:52px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:20px;
+
+    color:#fff;
+
+    margin-right:14px;
+
+}
+
+.deposit{
+
+    background:#0F8A4B;
+
+}
+
+.withdraw{
+
+    background:#FF9800;
+
+}
+
+.win{
+
+    background:#00C853;
+
+}
+
+.lose{
+
+    background:#E53935;
+
+}
+
+/* ==========================
+   Transaction Details
+========================== */
+
+.transaction-details{
+
+    flex:1;
+
+}
+
+.transaction-details h4{
+
+    margin:0;
+
+    color:#fff;
+
+    font-size:16px;
+
+}
+
+.transaction-details p{
+
+    margin-top:6px;
+
+    color:#9a9a9a;
+
+    font-size:13px;
+
+}
+
+/* ==========================
+   Right Side
+========================== */
+
+.transaction-right{
+
+    text-align:right;
+
+}
+
+.amount{
+
+    margin:0;
+
+    font-size:17px;
+
+    font-weight:700;
+
+}
+
+.plus{
+
+    color:#00E676;
+
+}
+
+.minus{
+
+    color:#FF5252;
+
+}
+
+/* ==========================
+   Status Badge
+========================== */
+
+.status{
+
+    display:inline-block;
+
+    margin-top:8px;
+
+    padding:4px 10px;
+
+    border-radius:20px;
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+.status.success{
+
+    background:rgba(0,200,83,.15);
+
+    color:#00E676;
+
+}
+
+.status.pending{
+
+    background:rgba(255,193,7,.15);
+
+    color:#FFD54F;
+
+}
+
+.status.failed{
+
+    background:rgba(244,67,54,.15);
+
+    color:#FF5252;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Wallet CSS
+   Part 4/4
+========================================== */
+
+/* ==========================
+   Bottom Navigation
+========================== */
+
+.bottom-nav{
+
+    position:fixed;
+
+    left:50%;
+
+    bottom:0;
+
+    transform:translateX(-50%);
+
+    width:100%;
+
+    max-width:500px;
+
+    height:72px;
+
+    background:#121212;
+
+    border-top:1px solid rgba(255,215,0,.18);
+
+    display:flex;
+
+    justify-content:space-around;
+
+    align-items:center;
+
+    z-index:1000;
+
+}
+
+.nav-item{
+
+    background:none;
+
+    border:none;
+
+    color:#888;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:5px;
+
+    cursor:pointer;
+
+    transition:.30s;
+
+}
+
+.nav-item i{
+
+    font-size:22px;
+
+}
+
+.nav-item span{
+
+    font-size:12px;
+
+}
+
+.nav-item.active{
+
+    color:#FFD700;
+
+}
+
+.nav-item:hover{
+
+    color:#FFD700;
+
+}
+
+/* ==========================
+   Loader
+========================== */
+
+.loader-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+.loader{
+
+    width:60px;
+
+    height:60px;
+
+    border:5px solid rgba(255,215,0,.20);
+
+    border-top-color:#FFD700;
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+/* ==========================
+   Toast
+========================== */
+
+.toast{
+
+    position:fixed;
+
+    top:20px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:#1B1B1B;
+
+    color:#fff;
+
+    border-left:4px solid #FFD700;
+
+    padding:14px 18px;
+
+    border-radius:12px;
+
+    display:none;
+
+    min-width:280px;
+
+    z-index:99999;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.35);
+
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media(max-width:768px){
+
+    .wallet-page{
+
+        padding:15px 15px 90px;
+
+    }
+
+    .quick-actions{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+    .stats-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .balance-card h1{
+
+        font-size:32px;
+
+    }
+
+    .transaction-item{
+
+        padding:14px;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    .user-info img{
+
+        width:55px;
+
+        height:55px;
+
+    }
+
+    .user-info h2{
+
+        font-size:18px;
+
+    }
+
+    .wallet-header{
+
+        gap:10px;
+
+    }
+
+    .bottom-nav{
+
+        height:68px;
+
+    }
+
+    .nav-item i{
+
+        font-size:20px;
+
+    }
+
+    .nav-item span{
+
+        font-size:11px;
+
+    }
+
+}
+
+/* ==========================
+   Fade Animation
+========================== */
+
+.wallet-page{
+
+    animation:fadeIn .4s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(15px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+   DYNAMIC WALLET
+========================================== */
+
+.refresh-btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+#bonusBtn {
+    opacity: 0.58;
+}
+
+#bonusBtn:hover {
+    transform: none;
+    border-color: rgba(255, 215, 0, 0.18);
+    box-shadow: none;
+}
+
+/* Empty transaction state */
+
+.transaction-empty {
+    display: grid;
+    place-items: center;
+
+    min-height: 180px;
+
+    padding: 30px 18px;
+
+    color: #858585;
+    text-align: center;
+
+    border:
+        1px dashed
+        rgba(255, 215, 0, 0.18);
+
+    border-radius: 18px;
+
+    background: #141414;
+}
+
+.transaction-empty i {
+    margin-bottom: 12px;
+
+    color: #ffd700;
+
+    font-size: 34px;
+    opacity: 0.72;
+}
+
+.transaction-empty p {
+    margin: 0;
+
+    font-size: 14px;
+}
+
+/* Dynamic transaction types */
+
+.transaction-icon.game_win,
+.transaction-icon.game_cash_out {
+    background: #00a85a;
+}
+
+.transaction-icon.game_loss,
+.transaction-icon.game_buy_in {
+    background: #b92638;
+}
+
+.transaction-icon.service_charge,
+.transaction-icon.admin_remove {
+    background: #7551b8;
+}
+
+.transaction-icon.admin_add,
+.transaction-icon.withdraw_refund {
+    background: #168b83;
+}
+
+/* Toast states */
+
+.toast[data-type="success"] {
+    border-left-color: #00e676;
+}
+
+.toast[data-type="error"] {
+    border-left-color: #ff5252;
+}
+
+.toast[data-type="info"] {
+    border-left-color: #ffd700;
+}
+
+/* Better bottom navigation */
+
+.bottom-nav {
+    padding:
+        0
+        max(10px, env(safe-area-inset-right))
+        env(safe-area-inset-bottom)
+        max(10px, env(safe-area-inset-left));
+
+    box-shadow:
+        0 -10px 35px
+        rgba(0, 0, 0, 0.36);
+}
+
+.nav-item {
+    position: relative;
+
+    min-width: 55px;
+    min-height: 50px;
+
+    padding: 6px 8px;
+
+    border-radius: 13px;
+}
+
+.nav-item::after {
+    content: "";
+
+    position: absolute;
+    left: 50%;
+    bottom: 1px;
+
+    width: 0;
+    height: 3px;
+
+    border-radius: 999px;
+
+    background: #ffd700;
+
+    transform: translateX(-50%);
+
+    transition: width 180ms ease;
+}
+
+.nav-item.active {
+    background:
+        rgba(255, 215, 0, 0.07);
+}
+
+.nav-item.active::after {
+    width: 24px;
+}
+
+.nav-item:focus-visible {
+    outline: 2px solid #ffd700;
+    outline-offset: 2px;
+}
+
+/* Desktop */
+
+@media (min-width: 900px) {
+    .wallet-page {
+        max-width: 1200px;
+
+        padding: 30px 30px 100px;
+    }
+
+    .stats-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .bottom-nav {
+        max-width: 1200px;
+
+        border-right:
+            1px solid
+            rgba(255, 215, 0, 0.12);
+
+        border-left:
+            1px solid
+            rgba(255, 215, 0, 0.12);
+
+        border-radius: 18px 18px 0 0;
+    }
+}
+
+/* Small mobile */
+
+@media (max-width: 420px) {
+    .wallet-page {
+        padding:
+            14px
+            13px
+            calc(86px + env(safe-area-inset-bottom));
+    }
+
+    .bottom-nav {
+        height:
+            calc(
+                68px +
+                env(safe-area-inset-bottom)
+            );
+    }
+
+    .nav-item {
+        min-width: 47px;
+
+        padding-right: 3px;
+        padding-left: 3px;
+    }
+
+    .nav-item span {
+        font-size: 10px;
+    }
+
+    .transaction-icon {
+        width: 43px;
+        height: 43px;
+
+        margin-right: 10px;
+
+        font-size: 17px;
+    }
+
+    .transaction-details h4 {
+        font-size: 13px;
+    }
+
+    .transaction-details p {
+        font-size: 10px;
+    }
+
+    .amount {
+        font-size: 13px;
+    }
+
+    .status {
+        padding: 3px 7px;
+
+        font-size: 9px;
+    }
+}

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PMS ADDA | Login</title>
+
+    <script src="../js/app-config.js"></script>
+
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/login.css"
+    >
+</head>
+
+<body>
+
+    <div class="background-overlay"></div>
+
+    <main class="login-container">
+
+        <!-- Left Panel -->
+
+        <section class="left-panel">
+
+            <img
+                src="../assets/logo/logo.png"
+                class="logo"
+                alt="PMS ADDA Logo"
+            >
+
+            <h1>PMS ADDA</h1>
+
+            <p>Premium Card Gaming Platform</p>
+
+        </section>
+
+        <!-- Right Panel -->
+
+        <section class="right-panel">
+
+            <h2>Welcome Back</h2>
+
+            <!-- Error Message -->
+
+            <div
+                id="errorBox"
+                class="error-box"
+                role="alert"
+            ></div>
+
+            <!-- Login Form -->
+
+            <form
+                id="loginForm"
+                novalidate
+            >
+
+                <!-- Identity -->
+
+                <div class="input-group">
+
+                    <label for="identity">
+                        Username, Email or Phone
+                    </label>
+
+                    <input
+                        type="text"
+                        id="identity"
+                        name="identity"
+                        placeholder="Enter username, email or phone"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+                <!-- Password -->
+
+                <div class="input-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <div class="password-box">
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter password"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            aria-label="Show password"
+                        >
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- Remember Me -->
+
+                <div class="row">
+
+                    <label class="remember">
+
+                        <input
+                            type="checkbox"
+                            id="rememberMe"
+                        >
+
+                        Remember Me
+
+                    </label>
+
+                    <a
+                        href="#"
+                        class="forgot-link"
+                    >
+                        Forgot Password?
+                    </a>
+
+                </div>
+
+                <!-- Login Button -->
+
+                <button
+                    type="submit"
+                    id="loginButton"
+                    class="login-btn"
+                >
+                    LOGIN
+                </button>
+
+            </form>
+
+            <!-- Divider -->
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+            <!-- Register Button -->
+
+            <button
+                type="button"
+                class="register-btn"
+                id="registerButton"
+            >
+                CREATE NEW ACCOUNT
+            </button>
+
+            <div class="login-footer">
+                <p>© 2026 PMS ADDA</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Loader -->
+
+    <div
+        id="loaderOverlay"
+        class="loader-overlay"
+    >
+        <div class="loader"></div>
+    </div>
+
+    <!-- Toast -->
+
+    <div
+        id="toast"
+        class="toast"
+        role="status"
+        aria-live="polite"
+    >
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Font Awesome -->
+
+    <script
+        src="https://kit.fontawesome.com/a076d05399.js"
+        crossorigin="anonymous"
+    ></script>
+
+    <!-- Login JavaScript -->
+
+    <script src="../js/login.js"></script>
+
+    <script>
+        document
+            .getElementById("registerButton")
+            .addEventListener("click", () => {
+                window.location.href = "register.html";
+            });
+    </script>
+
+</body>
+
+</html>

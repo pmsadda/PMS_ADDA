@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Register</title>
+
+        <script src="../js/app-config.js"></script>
+
+        <script src="../js/auth-guard.js"></script>
+
+        <!-- Font Awesome -->
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+        <!-- CSS -->
+
+        <link rel="stylesheet"
+            href="../css/common.css">
+
+        <link rel="stylesheet"
+            href="../css/register.css">
+
+    </head>
+
+    <body>
+
+        <div class="background-overlay"></div>
+
+        <div class="register-container">
+
+            <!-- Left Panel -->
+
+            <div class="left-panel">
+
+                <img
+                    src="../assets/logo/logo.png"
+                    class="logo"
+                    alt="Logo">
+
+                <h1>PMS ADDA</h1>
+
+                <p>
+
+                    Premium Card Gaming Platform
+
+                </p>
+
+            </div>
+
+            <!-- Right Panel -->
+
+            <div class="right-panel">
+
+                <h2>
+
+                    Create Account
+
+                </h2>
+
+                <!-- Error -->
+
+                <div
+                    id="errorBox"
+                    class="error-box">
+
+                </div>
+
+                <!-- Register Form -->
+
+                <form
+                    id="registerForm">
+
+                    <!-- Profile -->
+
+                    <div class="profile-upload">
+
+                        <img
+                            src="../assets/images/default-avatar.png"
+                            id="profilePreview"
+                            alt="Profile">
+
+                        <input
+                            type="file"
+                            id="profileImage"
+                            accept="image/*"
+                            hidden>
+
+                        <button
+                            type="button"
+                            id="choosePhoto">
+
+                            <i class="fa-solid fa-camera"></i>
+
+                        </button>
+
+                    </div>
+
+                    <!-- Full Name -->
+
+                    <div class="input-group">
+
+                        <label>
+
+                            Full Name
+
+                        </label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-user"></i>
+
+                            <input
+                                type="text"
+                                id="fullName"
+                                placeholder="Enter Full Name"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Username -->
+
+                    <div class="input-group">
+
+                        <label>
+
+                            Username
+
+                        </label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-id-card"></i>
+
+                            <input
+                                type="text"
+                                id="username"
+                                placeholder="Choose Username"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Phone -->
+
+                    <div class="input-group">
+
+                        <label>
+
+                            Phone Number
+
+                        </label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-phone"></i>
+
+                            <input
+                                type="tel"
+                                id="phone"
+                                placeholder="01XXXXXXXXX"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Email -->
+
+                    <div class="input-group">
+
+                        <label>
+
+                            Email
+
+                        </label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-envelope"></i>
+
+                            <input
+                                type="email"
+                                id="email"
+                                placeholder="Enter Email"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Password -->
+
+                    <div class="input-group">
+
+                        <label>
+
+                            Password
+
+                        </label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Enter Password"
+                                required>
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                id="togglePassword">
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Confirm Password -->
+
+                    <div class="input-group">
+
+                        <label>
+
+                            Confirm Password
+
+                        </label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                placeholder="Confirm Password"
+                                required>
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                id="toggleConfirmPassword">
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Password Strength -->
+
+                    <div class="strength-container">
+
+                        <div
+                            id="strengthBar"
+                            class="strength-bar">
+
+                        </div>
+
+                    </div>
+
+                    <p
+                        id="strengthText"
+                        class="strength-text">
+
+                        Password Strength
+
+                    </p>
+
+                    <!-- Terms -->
+
+                    <div class="terms">
+
+                        <label>
+
+                            <input
+                                type="checkbox"
+                                id="agreeTerms"
+                                required>
+
+                            I agree to the Terms & Conditions
+
+                        </label>
+
+                    </div>
+
+                    <!-- Register -->
+
+                    <button
+                        type="submit"
+                        id="registerBtn"
+                        class="register-btn">
+
+                        CREATE ACCOUNT
+
+                    </button>
+
+                </form>
+
+                <!-- Divider -->
+
+                <div class="divider">
+
+                    <span>OR</span>
+
+                </div>
+
+                <!-- Login -->
+
+                <button
+                    class="login-btn"
+                    onclick="window.location.href='login.html'">
+
+                    LOGIN
+
+                </button>
+
+                <!-- Footer -->
+
+                <div class="login-footer">
+
+                    <p>
+
+                        Already have an account?
+
+                        <a href="login.html">
+
+                            Login Now
+
+                        </a>
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Loader -->
+
+        <div
+            id="loaderOverlay"
+            class="loader-overlay">
+            <div class="loader"></div>
+        </div>
+
+        <!-- Toast -->
+
+        <div
+            id="toast"
+            class="toast"
+            role="status"
+            aria-live="polite">
+            <span id="toastMessage"></span>
+        </div>
+
+        <script src="../js/register.js"></script>
+
+    </body>
+
+</html>

@@ -1,0 +1,756 @@
+/* ===========================================
+   PMS ADDA LOGIN CSS
+   Part 1/3
+   Author : ChatGPT
+   Theme : Casino Gold
+===========================================*/
+
+/* Google Font */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
+
+/* Reset */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+
+  font-family: "Poppins", sans-serif;
+
+  background: #0d0d0d;
+
+  overflow: hidden;
+}
+
+/* Body */
+
+body {
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  position: relative;
+}
+
+/* Background */
+
+.background-overlay {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: radial-gradient(circle at top, #463300 0%, #111 45%);
+
+  z-index: -2;
+}
+
+/* Gold Glow */
+
+.background-overlay::before {
+  content: "";
+
+  position: absolute;
+
+  width: 500px;
+  height: 500px;
+
+  background: gold;
+
+  border-radius: 50%;
+
+  filter: blur(180px);
+
+  opacity: 0.08;
+
+  top: -150px;
+  right: -150px;
+}
+
+/* Card */
+
+.login-container {
+  width: 1050px;
+
+  max-width: 95%;
+
+  min-height: 620px;
+
+  display: flex;
+
+  border-radius: 25px;
+
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  backdrop-filter: blur(25px);
+
+  border: 1px solid rgba(255, 215, 0, 0.15);
+
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.12);
+}
+
+/* Left Panel */
+
+.left-panel {
+  width: 45%;
+
+  background: linear-gradient(180deg, #1a1a1a, #0e0e0e);
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 40px;
+}
+
+/* Logo */
+
+.logo {
+  width: 170px;
+
+  margin-bottom: 30px;
+  
+  border-radius:50%;
+
+  filter: drop-shadow(0 0 10px gold);
+}
+
+/* Game Name */
+
+.left-panel h1 {
+  color: #ffd700;
+
+  font-size: 48px;
+
+  font-weight: 700;
+
+  letter-spacing: 3px;
+}
+
+/* Subtitle */
+
+.left-panel p {
+  color: #bdbdbd;
+
+  margin-top: 15px;
+
+  font-size: 18px;
+
+  letter-spacing: 3px;
+}
+
+/* Right Panel */
+
+.right-panel {
+  width: 55%;
+
+  padding: 60px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+/* Heading */
+
+.right-panel h2 {
+  color: #ffd700;
+
+  font-size: 34px;
+
+  margin-bottom: 35px;
+
+  font-weight: 700;
+}
+
+/* Form */
+
+form {
+  width: 100%;
+}
+
+/* Input Group */
+
+.input-group {
+  margin-bottom: 22px;
+}
+
+/* Label */
+
+.input-group label {
+  display: block;
+
+  color: #ddd;
+
+  margin-bottom: 8px;
+
+  font-size: 14px;
+}
+
+/* ===========================================
+   PMS ADDA LOGIN CSS
+   Part 2/3
+===========================================*/
+
+/* Input */
+
+.input-group input{
+
+    width:100%;
+
+    height:58px;
+
+    padding:0 18px;
+
+    border-radius:14px;
+
+    border:1px solid rgba(255,215,0,.15);
+
+    outline:none;
+
+    background:rgba(255,255,255,.05);
+
+    color:#fff;
+
+    font-size:16px;
+
+    transition:.30s;
+
+}
+
+/* Placeholder */
+
+.input-group input::placeholder{
+
+    color:#999;
+
+}
+
+/* Focus */
+
+.input-group input:focus{
+
+    border-color:#FFD700;
+
+    box-shadow:0 0 12px rgba(255,215,0,.35);
+
+}
+
+/* Password Box */
+
+.password-box{
+
+    position:relative;
+
+    width:100%;
+
+}
+
+/* Password Input */
+
+.password-box input{
+
+    padding-right:65px;
+
+}
+
+/* Eye Button */
+
+.password-box button{
+
+    position:absolute;
+
+    top:50%;
+
+    right:15px;
+
+    transform:translateY(-50%);
+
+    background:none;
+
+    border:none;
+
+    cursor:pointer;
+
+    color:#FFD700;
+
+    font-size:18px;
+
+    transition:.3s;
+
+}
+
+.password-box button:hover{
+
+    transform:translateY(-50%) scale(1.15);
+
+}
+
+/* Remember + Forgot */
+
+.row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-top:10px;
+
+    margin-bottom:30px;
+
+}
+
+.row label{
+
+    color:#ddd;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    cursor:pointer;
+
+    font-size:14px;
+
+}
+
+.row input[type="checkbox"]{
+
+    accent-color:#FFD700;
+
+}
+
+.row a{
+
+    color:#FFD700;
+
+    text-decoration:none;
+
+    transition:.3s;
+
+}
+
+.row a:hover{
+
+    color:#ffffff;
+
+}
+
+/* Login Button */
+
+.login-btn{
+
+    width:100%;
+
+    height:58px;
+
+    border:none;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:#111;
+
+    background:linear-gradient(
+        90deg,
+        #FFD700,
+        #FFC107
+    );
+
+    transition:.30s;
+
+    box-shadow:
+    0 0 20px rgba(255,215,0,.25);
+
+}
+
+.login-btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+    0 8px 25px rgba(255,215,0,.45);
+
+}
+
+/* Active */
+
+.login-btn:active{
+
+    transform:scale(.98);
+
+}
+
+/* Divider */
+
+.divider{
+
+    margin:30px 0;
+
+    text-align:center;
+
+    color:#888;
+
+    position:relative;
+
+}
+
+.divider::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    top:50%;
+
+    width:42%;
+
+    height:1px;
+
+    background:#333;
+
+}
+
+.divider::after{
+
+    content:"";
+
+    position:absolute;
+
+    right:0;
+
+    top:50%;
+
+    width:42%;
+
+    height:1px;
+
+    background:#333;
+
+}
+
+/* Register Button */
+
+.register-btn{
+
+    width:100%;
+
+    height:56px;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    border:2px solid #FFD700;
+
+    background:transparent;
+
+    color:#FFD700;
+
+    font-size:17px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.register-btn:hover{
+
+    background:#FFD700;
+
+    color:#111;
+
+}
+
+/* ===========================================
+   PMS ADDA LOGIN CSS
+   Part 3/3 (Final)
+===========================================*/
+
+/* Hover Animation */
+
+.login-container{
+
+    animation:fadeIn .7s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+        transform:translateY(30px);
+
+    }
+
+    to{
+
+        opacity:1;
+        transform:translateY(0);
+
+    }
+
+}
+
+/* Input Animation */
+
+.input-group input{
+
+    transition:
+    .3s border,
+    .3s box-shadow,
+    .3s transform;
+
+}
+
+.input-group input:hover{
+
+    transform:translateY(-2px);
+
+}
+
+/* Logo Animation */
+
+.logo{
+
+    animation:logoFloat 3s ease-in-out infinite;
+
+}
+
+@keyframes logoFloat{
+
+    0%{
+
+        transform:translateY(0);
+
+    }
+
+    50%{
+
+        transform:translateY(-8px);
+
+    }
+
+    100%{
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#FFD700;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#111;
+
+}
+
+/* Mobile */
+
+@media(max-width:992px){
+
+.login-container{
+
+    width:95%;
+
+    flex-direction:column;
+
+    min-height:auto;
+
+}
+
+.left-panel{
+
+    width:100%;
+
+    padding:35px 20px;
+
+}
+
+.right-panel{
+
+    width:100%;
+
+    padding:35px 20px;
+
+}
+
+.left-panel h1{
+
+    font-size:34px;
+
+}
+
+.logo{
+
+    width:120px;
+
+}
+
+}
+
+/* Small Mobile */
+
+@media(max-width:480px){
+
+body{
+
+    overflow:auto;
+
+}
+
+.left-panel{
+
+    padding:25px;
+
+}
+
+.right-panel{
+
+    padding:25px;
+
+}
+
+.right-panel h2{
+
+    font-size:28px;
+
+}
+
+.input-group input{
+
+    height:52px;
+
+    font-size:15px;
+
+}
+
+.login-btn{
+
+    height:52px;
+
+}
+
+.register-btn{
+
+    height:52px;
+
+}
+
+.left-panel p{
+
+    font-size:14px;
+
+    letter-spacing:2px;
+
+}
+
+}
+
+/* Loading Button */
+
+.login-btn.loading{
+
+    pointer-events:none;
+
+    opacity:.7;
+
+}
+
+/* Disabled */
+
+button:disabled{
+
+    cursor:not-allowed;
+
+}
+
+/* Selection */
+
+::selection{
+
+    background:#FFD700;
+
+    color:#111;
+
+}
+
+/* Error Box */
+
+.error-box{
+
+    display:none;
+
+    margin-bottom:20px;
+
+    padding:14px;
+
+    border-radius:10px;
+
+    background:#ff3b3b22;
+
+    color:#ff7a7a;
+
+    border:1px solid #ff3b3b;
+
+    font-size:14px;
+
+}
+
+/* Loading Button */
+
+.login-btn:disabled{
+
+    opacity:.7;
+
+    cursor:not-allowed;
+
+}

@@ -1,0 +1,829 @@
+/* ==========================================
+   PMS ADDA
+   Deposit CSS
+   Version 1.0
+========================================== */
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+body{
+
+    background:#0d0d0d;
+
+    color:#fff;
+
+    font-family:Poppins,sans-serif;
+
+}
+
+.deposit-page{
+
+    max-width:500px;
+
+    margin:auto;
+
+    min-height:100vh;
+
+    padding:20px 20px 100px;
+
+}
+
+/* ==========================
+   Header
+========================== */
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+.page-header h2{
+
+    font-size:24px;
+
+    color:#FFD700;
+
+}
+
+#backBtn{
+
+    width:48px;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#1b1b1b;
+
+    color:#FFD700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+#backBtn:hover{
+
+    transform:translateX(-4px);
+
+}
+
+/* ==========================
+   Balance Card
+========================== */
+
+.balance-card{
+
+    background:linear-gradient(135deg,#222,#111);
+
+    border:1px solid rgba(255,215,0,.2);
+
+    border-radius:20px;
+
+    padding:22px;
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+    box-shadow:0 10px 25px rgba(255,215,0,.12);
+
+}
+
+.balance-card p{
+
+    color:#bfbfbf;
+
+}
+
+.balance-card h1{
+
+    margin-top:12px;
+
+    color:#FFD700;
+
+    font-size:36px;
+
+}
+
+/* ==========================
+   Deposit Form
+========================== */
+
+.deposit-form{
+
+    background:#181818;
+
+    border-radius:20px;
+
+    padding:22px;
+
+    border:1px solid rgba(255,215,0,.15);
+
+}
+
+.deposit-form h3{
+
+    color:#FFD700;
+
+    margin-bottom:20px;
+
+}
+
+.deposit-form label{
+
+    display:block;
+
+    margin-top:18px;
+
+    margin-bottom:8px;
+
+    font-size:14px;
+
+    color:#d5d5d5;
+
+}
+
+.deposit-form input{
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#252525;
+
+    color:#fff;
+
+    font-size:15px;
+
+    outline:none;
+
+}
+
+.deposit-form input:focus{
+
+    border:1px solid #FFD700;
+
+}
+
+.hint{
+
+    margin-top:8px;
+
+    font-size:13px;
+
+    color:#999;
+
+}
+/* ==========================================
+   PMS ADDA
+   Deposit CSS
+   Part 2
+========================================== */
+
+/* ==========================
+   Payment Methods
+========================== */
+
+.payment-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:15px;
+
+    margin-bottom:20px;
+
+}
+
+.payment-card{
+
+    background:#202020;
+
+    border:2px solid transparent;
+
+    border-radius:16px;
+
+    padding:15px 10px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+}
+
+.payment-card img{
+
+    width:55px;
+
+    height:55px;
+
+    object-fit:contain;
+
+}
+
+.payment-card span{
+
+    color:#fff;
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+.payment-card:hover{
+
+    transform:translateY(-4px);
+
+    border-color:#FFD700;
+
+    box-shadow:0 8px 20px rgba(255,215,0,.20);
+
+}
+
+.payment-card.active{
+
+    border-color:#FFD700;
+
+    background:#2a2412;
+
+}
+
+/* ==========================
+   Official Number Card
+========================== */
+
+.official-number{
+
+    margin-top:25px;
+
+    background:#202020;
+
+    border:1px solid rgba(255,215,0,.20);
+
+    border-radius:18px;
+
+    padding:20px;
+
+    text-align:center;
+
+}
+
+.official-number p{
+
+    color:#bdbdbd;
+
+    font-size:14px;
+
+}
+
+.official-number h2{
+
+    margin:15px 0;
+
+    color:#FFD700;
+
+    font-size:30px;
+
+    letter-spacing:2px;
+
+}
+
+/* ==========================
+   Copy Button
+========================== */
+
+#copyNumberBtn{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#FFD700;
+
+    color:#111;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+#copyNumberBtn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 20px rgba(255,215,0,.25);
+
+}
+
+/* ==========================
+   Submit Button
+========================== */
+
+.submit-btn{
+
+    width:100%;
+
+    margin-top:25px;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:linear-gradient(135deg,#FFD700,#F4B400);
+
+    color:#111;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.submit-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 12px 24px rgba(255,215,0,.30);
+
+}
+
+.submit-btn i{
+
+    margin-right:8px;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Deposit CSS
+   Part 3
+========================================== */
+
+/* ==========================
+   Security Notice
+========================== */
+
+.security-card{
+
+    display:flex;
+
+    align-items:flex-start;
+
+    gap:15px;
+
+    margin-top:25px;
+
+    padding:18px;
+
+    background:#1c1c1c;
+
+    border:1px solid rgba(255,215,0,.18);
+
+    border-radius:18px;
+
+}
+
+.security-icon{
+
+    width:50px;
+
+    height:50px;
+
+    border-radius:50%;
+
+    background:rgba(255,215,0,.15);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-shrink:0;
+
+}
+
+.security-icon i{
+
+    font-size:22px;
+
+    color:#FFD700;
+
+}
+
+.security-text h4{
+
+    color:#FFD700;
+
+    margin-bottom:8px;
+
+}
+
+.security-text p{
+
+    color:#bdbdbd;
+
+    line-height:1.6;
+
+    font-size:14px;
+
+}
+
+/* ==========================
+   Loader
+========================== */
+
+.loader-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+.loader{
+
+    width:60px;
+
+    height:60px;
+
+    border:5px solid rgba(255,215,0,.20);
+
+    border-top:5px solid #FFD700;
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+    100%{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+/* ==========================
+   Toast
+========================== */
+
+.toast{
+
+    position:fixed;
+
+    top:20px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:#1f1f1f;
+
+    color:#fff;
+
+    padding:15px 20px;
+
+    border-left:4px solid #FFD700;
+
+    border-radius:12px;
+
+    display:none;
+
+    min-width:280px;
+
+    z-index:10000;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.35);
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Deposit CSS
+   Part 4 (Final)
+========================================== */
+
+/* ==========================
+   Success Modal
+========================== */
+
+.modal{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:10001;
+
+}
+
+.modal-content{
+
+    width:90%;
+
+    max-width:420px;
+
+    background:#1b1b1b;
+
+    border:1px solid rgba(255,215,0,.20);
+
+    border-radius:20px;
+
+    padding:30px;
+
+    text-align:center;
+
+    animation:popup .30s ease;
+
+}
+
+.success-icon{
+
+    width:80px;
+
+    height:80px;
+
+    margin:0 auto 20px;
+
+    border-radius:50%;
+
+    background:rgba(76,175,80,.15);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.success-icon i{
+
+    font-size:42px;
+
+    color:#4CAF50;
+
+}
+
+.modal-content h2{
+
+    color:#FFD700;
+
+    margin-bottom:12px;
+
+}
+
+.modal-content p{
+
+    color:#cfcfcf;
+
+    line-height:1.6;
+
+    margin-bottom:25px;
+
+}
+
+#successOkBtn{
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#FFD700;
+
+    color:#111;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.30s;
+
+}
+
+#successOkBtn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 20px rgba(255,215,0,.25);
+
+}
+
+/* ==========================
+   Animation
+========================== */
+
+@keyframes popup{
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.9);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
+
+}
+
+.deposit-page{
+
+    animation:fadeIn .4s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(15px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media(max-width:768px){
+
+    .deposit-page{
+
+        padding:15px 15px 90px;
+
+    }
+
+    .payment-grid{
+
+        grid-template-columns:repeat(3,1fr);
+
+        gap:10px;
+
+    }
+
+    .payment-card img{
+
+        width:45px;
+
+        height:45px;
+
+    }
+
+    .official-number h2{
+
+        font-size:24px;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    .payment-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .payment-card{
+
+        flex-direction:row;
+
+        justify-content:flex-start;
+
+        padding:15px;
+
+    }
+
+    .payment-card img{
+
+        width:40px;
+
+        height:40px;
+
+    }
+
+    .balance-card h1{
+
+        font-size:30px;
+
+    }
+
+    .security-card{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+}
+
+/* ==========================
+   Focus
+========================== */
+
+button:focus,
+input:focus{
+
+    outline:2px solid #FFD700;
+
+    outline-offset:2px;
+
+}

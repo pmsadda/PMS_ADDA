@@ -1,0 +1,403 @@
+<!doctype html>
+
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <meta
+            name="theme-color"
+            content="#090909">
+
+        <title>
+            PMS ADDA | Profile
+        </title>
+
+        <script src="../js/app-config.js"></script>
+        <script src="../js/auth-guard.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
+
+        <link
+            rel="stylesheet"
+            href="../css/profile.css">
+
+    </head>
+
+    <body>
+
+        <main class="profile-page">
+
+            <!-- Header -->
+
+            <header class="profile-header">
+
+                <button
+                    id="profileBackButton"
+                    class="profile-icon-button"
+                    type="button"
+                    aria-label="Back to Lobby">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <h1>
+                    My Profile
+                </h1>
+
+                <button
+                    id="profileRefreshButton"
+                    class="profile-icon-button"
+                    type="button"
+                    aria-label="Refresh profile">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+
+            </header>
+
+            <!-- Profile Hero -->
+
+            <section class="profile-hero">
+
+                <div class="profile-avatar-editor">
+
+                    <div
+                        id="profileAvatar"
+                        class="profile-avatar"
+                        aria-label="Player avatar">
+                        P
+                    </div>
+
+                    <button
+                        id="profileAvatarButton"
+                        class="profile-avatar-button"
+                        type="button"
+                        aria-label="Change profile picture"
+                        title="Change profile picture">
+
+                        <i class="fa-solid fa-camera"></i>
+
+                    </button>
+
+                    <input
+                        id="profileAvatarInput"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        hidden>
+
+                    <span
+                        id="profileAvatarProgress"
+                        class="profile-avatar-progress"
+                        aria-hidden="true">
+
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+
+                    </span>
+
+                </div>
+
+                <h2 id="profileName">
+                    PMS ADDA Player
+                </h2>
+
+                <p>
+                    UID:
+                    <strong id="profileUid">
+                        -
+                    </strong>
+                </p>
+
+                <span
+                    id="profileStatus"
+                    class="profile-status active">
+                    Active
+                </span>
+
+            </section>
+
+            <!-- Wallet -->
+
+            <section class="profile-wallet-card">
+
+                <div>
+
+                    <span>
+                        Available Balance
+                    </span>
+
+                    <strong id="profileWalletBalance">
+                        ৳0.00
+                    </strong>
+
+                </div>
+
+                <button
+                    id="profileWalletButton"
+                    type="button">
+                    <i class="fa-solid fa-wallet"></i>
+                    Wallet
+                </button>
+
+            </section>
+
+            <!-- Account Details -->
+
+            <section class="profile-section">
+
+                <h3>
+                    Account Information
+                </h3>
+
+                <div class="profile-details">
+
+                    <article class="profile-detail-row">
+
+                        <span class="profile-detail-icon">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+
+                        <div>
+                            <small>Username</small>
+                            <strong id="profileUsername">-</strong>
+                        </div>
+
+                    </article>
+
+                    <article class="profile-detail-row">
+
+                        <span class="profile-detail-icon">
+                            <i class="fa-solid fa-phone"></i>
+                        </span>
+
+                        <div>
+                            <small>Phone Number</small>
+                            <strong id="profilePhone">-</strong>
+                        </div>
+
+                    </article>
+
+                    <article class="profile-detail-row">
+
+                        <span class="profile-detail-icon">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+
+                        <div>
+                            <small>Email Address</small>
+                            <strong id="profileEmail">-</strong>
+                        </div>
+
+                    </article>
+
+                    <article class="profile-detail-row">
+
+                        <span class="profile-detail-icon">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </span>
+
+                        <div>
+                            <small>Account Role</small>
+                            <strong id="profileRole">User</strong>
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+            <!-- Actions -->
+
+            <section class="profile-section">
+
+                <h3>
+                    Account Actions
+                </h3>
+
+                <div class="profile-actions">
+
+                    <button
+                        id="profileHistoryButton"
+                        type="button">
+
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+
+                        <span>
+                            Transaction History
+                        </span>
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </button>
+
+                    <button
+                        id="profileSupportButton"
+                        type="button">
+
+                        <i class="fa-solid fa-headset"></i>
+
+                        <span>
+                            Help & Support
+                        </span>
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </button>
+
+                    <button
+                        id="profileLogoutButton"
+                        class="profile-logout-action"
+                        type="button">
+
+                        <i class="fa-solid fa-right-from-bracket"></i>
+
+                        <span>
+                            Logout
+                        </span>
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+            <!-- Bottom Navigation -->
+
+            <nav
+                class="bottom-nav"
+                aria-label="Profile navigation">
+
+                <button
+                    id="profileHomeNav"
+                    class="nav-item"
+                    type="button">
+
+                    <i class="fa-solid fa-house"></i>
+                    <span>Home</span>
+
+                </button>
+
+                <button
+                    id="profileWalletNav"
+                    class="nav-item"
+                    type="button">
+
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Wallet</span>
+
+                </button>
+
+                <button
+                    id="profileGamesNav"
+                    class="nav-item"
+                    type="button">
+
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>Games</span>
+
+                </button>
+
+                <button
+                    id="profileSupportNav"
+                    class="nav-item"
+                    type="button">
+
+                    <i class="fa-solid fa-headset"></i>
+                    <span>Support</span>
+
+                </button>
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                    aria-current="page">
+
+                    <i class="fa-solid fa-user"></i>
+                    <span>Profile</span>
+
+                </button>
+
+            </nav>
+
+        </main>
+
+        <!-- Logout Confirmation -->
+
+        <section
+            id="profileLogoutModal"
+            class="profile-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profileLogoutTitle">
+
+            <div class="profile-modal-card">
+
+                <span class="profile-modal-icon">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </span>
+
+                <h2 id="profileLogoutTitle">
+                    Logout?
+                </h2>
+
+                <p>
+                    Are you sure you want to logout from PMS ADDA?
+                </p>
+
+                <div class="profile-modal-actions">
+
+                    <button
+                        id="profileCancelLogout"
+                        type="button">
+                        Cancel
+                    </button>
+
+                    <button
+                        id="profileConfirmLogout"
+                        class="confirm"
+                        type="button">
+                        Logout
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Loader -->
+
+        <div
+            id="profileLoader"
+            class="profile-loader-overlay">
+
+            <div class="profile-loader"></div>
+
+        </div>
+
+        <!-- Toast -->
+
+        <div
+            id="profileToast"
+            class="profile-toast"
+            role="status"
+            aria-live="polite">
+        </div>
+
+        <script src="../js/profile.js"></script>
+
+    </body>
+
+</html>

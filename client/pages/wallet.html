@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Wallet</title>
+
+        <!-- Font Awesome -->
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+        <script src="../js/app-config.js"></script>
+
+        <script src="../js/auth-guard.js"></script>
+
+        <!-- CSS -->
+
+        <link rel="stylesheet"
+            href="../css/common.css">
+
+        <link rel="stylesheet"
+            href="../css/wallet.css">
+
+    </head>
+
+    <body>
+
+        <div class="wallet-page">
+
+            <!-- Header -->
+
+            <header class="wallet-header">
+
+                <div class="user-info">
+
+                    <img
+                        src="../assets/images/default-avatar.png"
+                        id="userAvatar"
+                        alt="Avatar">
+
+                    <div>
+
+                        <h2 id="userName">
+
+                            Player Name
+
+                        </h2>
+
+                        <p>
+
+                            UID :
+                            <span id="userId">
+
+                                PMS100001
+
+                            </span>
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <button
+                    id="refreshBalance"
+                    class="refresh-btn">
+
+                    <i class="fa-solid fa-rotate"></i>
+
+                </button>
+
+            </header>
+
+            <!-- Balance Card -->
+
+            <section class="balance-card">
+
+                <p>
+
+                    Available Balance
+
+                </p>
+
+                <h1>
+
+                    ৳
+
+                    <span id="walletBalance">
+
+                        0.00
+
+                    </span>
+
+                </h1>
+
+                <small>
+
+                    Last Updated :
+                    <span id="lastUpdated">
+
+                        Just Now
+
+                    </span>
+
+                </small>
+
+            </section>
+
+            <!-- Quick Actions -->
+
+            <section class="quick-actions">
+
+                <button id="depositBtn" type="button">
+
+                    <i class="fa-solid fa-circle-plus"></i>
+
+                    Deposit
+
+                </button>
+
+                <button id="withdrawBtn" type="button">
+
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+
+                    Withdraw
+
+                </button>
+
+                <button id="historyBtn" type="button">
+
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+
+                    History
+
+                </button>
+
+                <button
+                    id="bonusBtn"
+                    type="button"
+                    aria-label="Bonus coming soon">
+
+                    <i class="fa-solid fa-gift"></i>
+
+                    Bonus
+
+                </button>
+
+            </section>
+
+            <!-- Statistics -->
+
+            <section class="stats">
+
+                <h3>
+
+                    Statistics
+
+                </h3>
+
+                <div class="stats-grid">
+                    <!-- Total Deposit -->
+
+                    <div class="stat-card">
+
+                        <i class="fa-solid fa-arrow-down"></i>
+
+                        <h4>Total Deposit</h4>
+
+                        <h2 id="totalDeposit">
+
+                            ৳ 0.00
+
+                        </h2>
+
+                    </div>
+
+                    <!-- Total Withdraw -->
+
+                    <div class="stat-card">
+
+                        <i class="fa-solid fa-arrow-up"></i>
+
+                        <h4>Total Withdraw</h4>
+
+                        <h2 id="totalWithdraw">
+
+                            ৳ 0.00
+
+                        </h2>
+
+                    </div>
+
+                    <!-- Total Winning -->
+
+                    <div class="stat-card">
+
+                        <i class="fa-solid fa-trophy"></i>
+
+                        <h4>Total Winning</h4>
+
+                        <h2 id="totalWinning">
+
+                            ৳ 0.00
+
+                        </h2>
+
+                    </div>
+
+                    <!-- Total Lose -->
+
+                    <div class="stat-card">
+
+                        <i class="fa-solid fa-xmark-circle"></i>
+
+                        <h4>Total Lose</h4>
+
+                        <h2 id="totalLose">
+
+                            ৳ 0.00
+
+                        </h2>
+
+                    </div>
+
+                    <!-- Service Charge -->
+
+                    <div class="stat-card">
+
+                        <i class="fa-solid fa-percent"></i>
+
+                        <h4>Service Charge</h4>
+
+                        <h2 id="serviceCharge">
+
+                            ৳ 0.00
+
+                        </h2>
+
+                    </div>
+
+                    <!-- Win Rate -->
+
+                    <div class="stat-card">
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                        <h4>Win Rate</h4>
+
+                        <h2 id="winRate">
+
+                            0%
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Recent Transactions -->
+
+            <section class="transactions">
+
+                <div class="section-header">
+
+                    <h3>
+
+                        Recent Transactions
+
+                    </h3>
+
+                    <button
+                        id="viewAllBtn">
+
+                        View All
+
+                    </button>
+
+                </div>
+
+                <div
+                    id="transactionList"
+                    class="transaction-list">
+
+                    <!-- Deposit -->
+
+                    <div class="transaction-item">
+
+                        <div class="transaction-icon deposit">
+
+                            <i class="fa-solid fa-circle-plus"></i>
+
+                        </div>
+
+                        <div class="transaction-details">
+
+                            <h4>Deposit</h4>
+
+                            <p>Today • 10:30 AM</p>
+
+                        </div>
+
+                        <div class="transaction-right">
+
+                            <h4 class="amount plus">
+
+                                + ৳1000
+
+                            </h4>
+
+                            <span class="status success">
+
+                                Success
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Win -->
+
+                    <div class="transaction-item">
+
+                        <div class="transaction-icon win">
+
+                            <i class="fa-solid fa-trophy"></i>
+
+                        </div>
+
+                        <div class="transaction-details">
+
+                            <h4>Teen Patti Win</h4>
+
+                            <p>Today • 11:45 AM</p>
+
+                        </div>
+
+                        <div class="transaction-right">
+
+                            <h4 class="amount plus">
+
+                                + ৳580
+
+                            </h4>
+
+                            <span class="status success">
+
+                                Won
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Withdraw -->
+
+                    <div class="transaction-item">
+
+                        <div class="transaction-icon withdraw">
+
+                            <i class="fa-solid fa-money-bill-transfer"></i>
+
+                        </div>
+
+                        <div class="transaction-details">
+
+                            <h4>Withdraw</h4>
+
+                            <p>Yesterday • 09:15 PM</p>
+
+                        </div>
+
+                        <div class="transaction-right">
+
+                            <h4 class="amount minus">
+
+                                - ৳500
+
+                            </h4>
+
+                            <span class="status pending">
+
+                                Pending
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Lose -->
+
+                    <div class="transaction-item">
+
+                        <div class="transaction-icon lose">
+
+                            <i class="fa-solid fa-circle-xmark"></i>
+
+                        </div>
+
+                        <div class="transaction-details">
+
+                            <h4>Poker Lose</h4>
+
+                            <p>Yesterday • 08:40 PM</p>
+
+                        </div>
+
+                        <div class="transaction-right">
+
+                            <h4 class="amount minus">
+
+                                - ৳120
+
+                            </h4>
+
+                            <span class="status failed">
+
+                                Lost
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Bottom Navigation -->
+
+            <nav
+                class="bottom-nav"
+                aria-label="Wallet navigation">
+
+                <button
+                    class="nav-item"
+                    id="walletHomeBtn"
+                    type="button">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    <span>Home</span>
+
+                </button>
+
+                <button
+                    class="nav-item active"
+                    id="walletNavBtn"
+                    type="button"
+                    aria-current="page">
+
+                    <i class="fa-solid fa-wallet"></i>
+
+                    <span>Wallet</span>
+
+                </button>
+
+                <button
+                    class="nav-item"
+                    id="walletGamesBtn"
+                    type="button">
+
+                    <i class="fa-solid fa-gamepad"></i>
+
+                    <span>Games</span>
+
+                </button>
+
+                <button
+                    class="nav-item"
+                    id="walletSupportBtn"
+                    type="button">
+
+                    <i class="fa-solid fa-headset"></i>
+
+                    <span>Support</span>
+
+                </button>
+
+                <button
+                    class="nav-item"
+                    id="walletProfileBtn"
+                    type="button">
+
+                    <i class="fa-solid fa-user"></i>
+
+                    <span>Profile</span>
+
+                </button>
+
+            </nav>
+
+        </div>
+
+        <!-- Loading -->
+
+        <div
+            class="loader-overlay"
+            id="loaderOverlay">
+
+            <div class="loader"></div>
+
+        </div>
+
+        <!-- Toast -->
+
+        <div
+            id="toast"
+            class="toast">
+
+        </div>
+
+        <!-- Wallet JS -->
+
+        <script src="../js/wallet.js"></script>
+
+    </body>
+
+</html>

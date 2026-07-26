@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Admin Deposits</title>
+
+        <!-- Font Awesome -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+            <script src="../js/app-config.js"></script>
+
+            <script src="../js/auth-guard.js"></script>
+
+        <!-- Shared CSS -->
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
+
+        <!-- Admin Deposits CSS -->
+        <link
+            rel="stylesheet"
+            href="../css/admin-deposits.css">
+    </head>
+
+    <body>
+
+        <div class="admin-layout">
+
+            <!-- =========================
+         Sidebar
+    ========================== -->
+
+            <aside
+                class="admin-sidebar"
+                id="adminSidebar">
+
+                <div class="admin-brand">
+
+                    <img
+                        src="../assets/logo/logo.png"
+                        alt="PMS ADDA Logo">
+
+                    <div>
+                        <h2>PMS ADDA</h2>
+                        <p>Admin Panel</p>
+                    </div>
+
+                </div>
+
+                <nav class="admin-menu">
+
+                    <a
+                        href="dashboard.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a
+                        href="users.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Users</span>
+                    </a>
+
+                    <a
+                        href="deposits.html"
+                        class="menu-item active">
+                        <i class="fa-solid fa-circle-plus"></i>
+                        <span>Deposits</span>
+
+                        <small
+                            class="menu-count"
+                            id="pendingDepositMenuCount">
+                            0
+                        </small>
+                    </a>
+
+                    <a
+                        href="withdrawals.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                        <span>Withdrawals</span>
+                    </a>
+
+                    <a
+                        href="games.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-gamepad"></i>
+                        <span>Games & Revenue</span>
+                    </a>
+
+                    <a
+                        href="bots.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>Bots</span>
+                    </a>
+
+                    <a
+                        href="transactions.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span>Transactions</span>
+                    </a>
+
+                    <a
+                        href="settings.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-gears"></i>
+                        <span>Settings</span>
+                    </a>
+
+                </nav>
+
+                <button
+                    type="button"
+                    class="logout-btn"
+                    id="adminLogoutBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+
+            </aside>
+
+            <!-- =========================
+         Main Content
+    ========================== -->
+
+            <main class="admin-main">
+
+                <header class="admin-header">
+
+                    <div class="header-left">
+
+                        <button
+                            type="button"
+                            id="sidebarToggle"
+                            class="sidebar-toggle"
+                            aria-label="Toggle sidebar">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+
+                        <div>
+                            <h1>Deposit Requests</h1>
+                            <p>
+                                Review, approve, or reject user deposit requests
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            type="button"
+                            id="refreshDeposits"
+                            class="header-icon-btn"
+                            aria-label="Refresh deposits">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+
+                        <img
+                            src="../assets/images/default-avatar.png"
+                            alt="Admin"
+                            class="admin-avatar">
+
+                    </div>
+
+                </header>
+
+                <!-- =========================
+             Summary Cards
+        ========================== -->
+
+                <section class="summary-grid">
+
+                    <article class="summary-card">
+
+                        <div class="summary-icon pending">
+
+                            <i class="fa-solid fa-hourglass-half"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p>Pending Requests</p>
+
+                            <h2 id="pendingDepositCount">
+                                0
+                            </h2>
+
+                        </div>
+
+                    </article>
+
+                    <article class="summary-card">
+
+                        <div class="summary-icon approved">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p>Approved Today</p>
+
+                            <h2 id="approvedTodayCount">
+                                0
+                            </h2>
+
+                        </div>
+
+                    </article>
+
+                    <article class="summary-card">
+
+                        <div class="summary-icon rejected">
+
+                            <i class="fa-solid fa-circle-xmark"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p>Rejected Today</p>
+
+                            <h2 id="rejectedTodayCount">
+                                0
+                            </h2>
+
+                        </div>
+
+                    </article>
+
+                    <article class="summary-card">
+
+                        <div class="summary-icon amount">
+
+                            <i class="fa-solid fa-coins"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p>Approved Amount Today</p>
+
+                            <h2>
+                                ৳
+                                <span id="approvedAmountToday">
+                                    0.00
+                                </span>
+                            </h2>
+
+                        </div>
+
+                    </article>
+
+                </section>
+
+                <!-- =========================
+             Filters
+        ========================== -->
+
+                <section class="filter-panel">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="text"
+                            id="depositSearch"
+                            placeholder="Search user, phone, or transaction ID">
+
+                    </div>
+
+                    <select id="statusFilter">
+
+                        <option value="all">
+                            All Status
+                        </option>
+
+                        <option value="pending">
+                            Pending
+                        </option>
+
+                        <option value="approved">
+                            Approved
+                        </option>
+
+                        <option value="rejected">
+                            Rejected
+                        </option>
+
+                    </select>
+
+                    <select id="methodFilter">
+
+                        <option value="all">
+                            All Methods
+                        </option>
+
+                        <option value="bkash">
+                            bKash
+                        </option>
+
+                        <option value="nagad">
+                            Nagad
+                        </option>
+
+                        <option value="rocket">
+                            Rocket
+                        </option>
+
+                    </select>
+
+                    <button
+                        type="button"
+                        id="clearFilters"
+                        class="clear-filter-btn">
+                        <i class="fa-solid fa-filter-circle-xmark"></i>
+                        Clear
+                    </button>
+
+                </section>
+
+                <!-- =========================
+             Deposit Table
+        ========================== -->
+
+                <section class="table-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>Deposit Request List</h2>
+
+                            <p>
+                                Verify sender number, amount, method, and
+                                transaction ID
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table class="deposit-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>User</th>
+
+                                    <th>Method</th>
+
+                                    <th>Sender Number</th>
+
+                                    <th>Transaction ID</th>
+
+                                    <th>Amount</th>
+
+                                    <th>Date</th>
+
+                                    <th>Status</th>
+
+                                    <th>Action</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="depositTableBody">
+                                <!-- Pending Request -->
+
+                                <tr
+                                    class="deposit-row"
+                                    data-status="pending"
+                                    data-method="bkash"
+                                    data-search="mehedi hasan 01712345678 dep784512369">
+
+                                    <td>
+
+                                        <div class="user-cell">
+
+                                            <div class="user-avatar">
+                                                MH
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    Mehedi Hasan
+                                                </strong>
+
+                                                <span>
+                                                    UID: PMS100021
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="method-badge bkash">
+                                            bKash
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        01712345678
+                                    </td>
+
+                                    <td>
+
+                                        <button
+                                            type="button"
+                                            class="copy-value-btn"
+                                            data-copy="DEP784512369">
+                                            DEP784512369
+
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong class="amount-value">
+                                            ৳2,000
+                                        </strong>
+
+                                    </td>
+
+                                    <td>
+                                        16 Jul 2026
+                                        <small>10:45 AM</small>
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge pending">
+                                            Pending
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                            <button
+                                                type="button"
+                                                class="view-btn"
+                                                data-action="view"
+                                                data-request-id="DEP784512369">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="approve-btn"
+                                                data-action="approve"
+                                                data-request-id="DEP784512369">
+                                                <i
+                                                    class="fa-solid fa-check"></i>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="reject-btn"
+                                                data-action="reject"
+                                                data-request-id="DEP784512369">
+                                                <i
+                                                    class="fa-solid fa-xmark"></i>
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- Approved Request -->
+
+                                <tr
+                                    class="deposit-row"
+                                    data-status="approved"
+                                    data-method="nagad"
+                                    data-search="rakib khan 01898765432 dep963258741">
+
+                                    <td>
+
+                                        <div class="user-cell">
+
+                                            <div class="user-avatar">
+                                                RK
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    Rakib Khan
+                                                </strong>
+
+                                                <span>
+                                                    UID: PMS100045
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="method-badge nagad">
+                                            Nagad
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        01898765432
+                                    </td>
+
+                                    <td>
+
+                                        <button
+                                            type="button"
+                                            class="copy-value-btn"
+                                            data-copy="DEP963258741">
+                                            DEP963258741
+
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong class="amount-value">
+                                            ৳1,000
+                                        </strong>
+
+                                    </td>
+
+                                    <td>
+                                        16 Jul 2026
+                                        <small>09:30 AM</small>
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge approved">
+                                            Approved
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                            <button
+                                                type="button"
+                                                class="view-btn"
+                                                data-action="view"
+                                                data-request-id="DEP963258741">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- Rejected Request -->
+
+                                <tr
+                                    class="deposit-row"
+                                    data-status="rejected"
+                                    data-method="rocket"
+                                    data-search="sabbir ahmed 01911223344 dep357951468">
+
+                                    <td>
+
+                                        <div class="user-cell">
+
+                                            <div class="user-avatar">
+                                                SA
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    Sabbir Ahmed
+                                                </strong>
+
+                                                <span>
+                                                    UID: PMS100078
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="method-badge rocket">
+                                            Rocket
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        01911223344
+                                    </td>
+
+                                    <td>
+
+                                        <button
+                                            type="button"
+                                            class="copy-value-btn"
+                                            data-copy="DEP357951468">
+                                            DEP357951468
+
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong class="amount-value">
+                                            ৳500
+                                        </strong>
+
+                                    </td>
+
+                                    <td>
+                                        15 Jul 2026
+                                        <small>08:15 PM</small>
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge rejected">
+                                            Rejected
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                            <button
+                                                type="button"
+                                                class="view-btn"
+                                                data-action="view"
+                                                data-request-id="DEP357951468">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <!-- Empty State -->
+
+                    <div
+                        class="empty-state"
+                        id="emptyState">
+
+                        <i class="fa-regular fa-folder-open"></i>
+
+                        <h3>No Deposit Requests Found</h3>
+
+                        <p>
+                            No requests match the selected filters.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <!-- =========================
+             Deposit Details Modal
+        ========================== -->
+
+                <div
+                    class="modal"
+                    id="detailsModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>Deposit Details</h3>
+
+                            <button
+                                type="button"
+                                id="closeDetailsModal"
+                                aria-label="Close details">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="detail-grid">
+
+                                <div class="detail-item">
+                                    <span>User</span>
+                                    <strong id="detailUser">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>User ID</span>
+                                    <strong id="detailUserId">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Method</span>
+                                    <strong id="detailMethod">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Sender Number</span>
+                                    <strong id="detailSender">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Transaction ID</span>
+                                    <strong id="detailTransactionId">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Amount</span>
+                                    <strong id="detailAmount">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Date</span>
+                                    <strong id="detailDate">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Status</span>
+                                    <strong id="detailStatus">-</strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- =========================
+             Approve Modal
+        ========================== -->
+
+                <div
+                    class="modal"
+                    id="approveModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>Approve Deposit</h3>
+
+                            <button
+                                type="button"
+                                id="closeApproveModal"
+                                aria-label="Close approve modal">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="modal-icon success">
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                            </div>
+
+                            <p>
+                                Are you sure you want to approve this deposit?
+                                The amount will be added to the user's wallet.
+                            </p>
+
+                            <div class="confirm-request-card">
+
+                                <span>Transaction ID</span>
+
+                                <strong id="approveRequestId">
+                                    -
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-actions">
+
+                            <button
+                                type="button"
+                                id="cancelApprove"
+                                class="cancel-btn">
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                id="confirmApprove"
+                                class="approve-confirm-btn">
+                                <i class="fa-solid fa-check"></i>
+                                Approve
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- =========================
+             Reject Modal
+        ========================== -->
+
+                <div
+                    class="modal"
+                    id="rejectModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>Reject Deposit</h3>
+
+                            <button
+                                type="button"
+                                id="closeRejectModal"
+                                aria-label="Close reject modal">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="modal-icon danger">
+
+                                <i class="fa-solid fa-circle-xmark"></i>
+
+                            </div>
+
+                            <p>
+                                Select or enter a reason for rejecting this
+                                request.
+                            </p>
+
+                            <div class="confirm-request-card">
+
+                                <span>Transaction ID</span>
+
+                                <strong id="rejectRequestId">
+                                    -
+                                </strong>
+
+                            </div>
+
+                            <label for="rejectReason">
+                                Reject Reason
+                            </label>
+
+                            <select id="rejectReason">
+
+                                <option value>
+                                    Select a reason
+                                </option>
+
+                                <option value="transaction_not_found">
+                                    Transaction not found
+                                </option>
+
+                                <option value="wrong_amount">
+                                    Amount does not match
+                                </option>
+
+                                <option value="duplicate_transaction">
+                                    Duplicate transaction ID
+                                </option>
+
+                                <option value="wrong_sender">
+                                    Sender number does not match
+                                </option>
+
+                                <option value="other">
+                                    Other
+                                </option>
+
+                            </select>
+
+                            <textarea
+                                id="rejectNote"
+                                rows="4"
+                                placeholder="Optional admin note"></textarea>
+
+                        </div>
+
+                        <div class="modal-actions">
+
+                            <button
+                                type="button"
+                                id="cancelReject"
+                                class="cancel-btn">
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                id="confirmReject"
+                                class="reject-confirm-btn">
+                                <i class="fa-solid fa-xmark"></i>
+                                Reject
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- =========================
+             Loader
+        ========================== -->
+
+                <div
+                    class="loader-overlay"
+                    id="loaderOverlay"
+                    aria-hidden="true">
+
+                    <div class="loader"></div>
+
+                </div>
+
+                <!-- =========================
+             Toast
+        ========================== -->
+
+                <div
+                    class="toast"
+                    id="toast"
+                    role="status"
+                    aria-live="polite">
+
+                    <span id="toastMessage"></span>
+
+                </div>
+
+                <!-- =========================
+             Sidebar Overlay
+        ========================== -->
+
+                <div
+                    class="sidebar-overlay"
+                    id="sidebarOverlay"></div>
+
+                <!-- =========================
+             JavaScript
+        ========================== -->
+
+                <script src="../js/admin-deposits.js"></script>
+
+            </main>
+
+        </div>
+
+    </body>
+
+</html>

@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+    <meta
+      name="theme-color"
+      content="#06120f">
+
+    <title>PMS ADDA | Texas Hold'em Poker</title>
+
+    <script src="../js/app-config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="../css/poker-table.css">
+  </head>
+
+  <body>
+    <main class="poker-app">
+
+      <!-- HEADER -->
+
+      <header class="poker-header">
+
+        <button
+          id="backButton"
+          class="icon-button"
+          type="button"
+          aria-label="Leave Poker table">
+          ←
+        </button>
+
+        <section class="poker-brand">
+
+          <img
+            src="../assets/logo/logo.png"
+            alt="PMS ADDA"
+            class="brand-logo">
+
+          <div>
+            <h1>PMS ADDA POKER</h1>
+
+            <div class="table-meta">
+
+              <span id="blindInfo">
+                Blinds: ৳0 / ৳0
+              </span>
+
+              <span>•</span>
+
+              <span id="tableCode">
+                Table: Waiting
+              </span>
+
+              <span>•</span>
+
+              <span id="handNumber">
+                Hand #0
+              </span>
+
+            </div>
+          </div>
+
+        </section>
+
+        <section class="header-actions">
+
+          <div class="wallet-box">
+            <span>Wallet</span>
+
+            <strong id="walletBalance">
+              ৳0.00
+            </strong>
+          </div>
+
+          <button
+            id="soundButton"
+            class="icon-button"
+            type="button"
+            aria-label="Sound">
+            🔊
+          </button>
+
+          <button
+            id="settingsButton"
+            class="icon-button"
+            type="button"
+            aria-label="Settings">
+            ⚙
+          </button>
+
+        </section>
+
+      </header>
+
+      <!-- TABLE AREA -->
+
+      <section class="poker-stage">
+
+        <div class="table-light"></div>
+
+        <section
+          id="pokerTable"
+          class="poker-table">
+
+          <div class="table-rail"></div>
+
+          <div class="table-felt">
+
+            <div class="table-logo">
+
+              <img
+                src="../assets/logo/logo.png"
+                alt="PMS ADDA">
+
+              <span>POKER</span>
+
+            </div>
+
+            <!-- POT -->
+
+            <section class="pot-display">
+
+              <span>TOTAL POT</span>
+
+              <strong id="potAmount">
+                ৳0.00
+              </strong>
+
+              <div
+                id="potChips"
+                class="pot-chips">
+              </div>
+
+            </section>
+
+            <!-- COMMUNITY CARDS -->
+
+            <section
+              id="communityCards"
+              class="community-cards"
+              aria-label="Community cards">
+
+              <div
+                class="community-card"
+                data-card-index="0">
+              </div>
+
+              <div
+                class="community-card"
+                data-card-index="1">
+              </div>
+
+              <div
+                class="community-card"
+                data-card-index="2">
+              </div>
+
+              <div
+                class="community-card"
+                data-card-index="3">
+              </div>
+
+              <div
+                class="community-card"
+                data-card-index="4">
+              </div>
+
+            </section>
+
+            <div
+              id="roundStatus"
+              class="round-status">
+              Waiting for players…
+            </div>
+
+          </div>
+
+          <!-- PLAYER 1: BOTTOM -->
+
+          <article
+            id="playerSeat1"
+            class="player-seat seat-1 is-empty"
+            data-seat="1">
+
+            <div class="player-cards">
+
+              <div class="hole-card"></div>
+              <div class="hole-card"></div>
+
+            </div>
+
+            <div class="player-profile">
+
+              <div class="player-avatar">
+                <img
+                  src="../assets/images/default-avatar.png"
+                  alt="Player 1">
+              </div>
+
+              <div class="player-details">
+
+                <strong class="player-name">
+                  Waiting…
+                </strong>
+
+                <span class="player-stack">
+                  ৳0.00
+                </span>
+
+                <span class="player-action">
+                  EMPTY
+                </span>
+
+              </div>
+
+              <div class="turn-timer">
+                15
+              </div>
+
+            </div>
+
+            <div class="player-badges">
+
+              <span
+                class="dealer-badge"
+                title="Dealer">
+                D
+              </span>
+
+              <span
+                class="blind-badge small-blind-badge">
+                SB
+              </span>
+
+              <span
+                class="blind-badge big-blind-badge">
+                BB
+              </span>
+
+            </div>
+
+            <div class="player-bet">
+              <span>Bet</span>
+
+              <strong>৳0.00</strong>
+            </div>
+
+          </article>
+
+          <!-- PLAYER 2: BOTTOM LEFT -->
+
+          <article
+            id="playerSeat2"
+            class="player-seat seat-2 is-empty"
+            data-seat="2">
+
+            <div class="player-cards">
+              <div class="hole-card"></div>
+              <div class="hole-card"></div>
+            </div>
+
+            <div class="player-profile">
+
+              <div class="player-avatar">
+                <img
+                  src="../assets/images/default-avatar.png"
+                  alt="Player 2">
+              </div>
+
+              <div class="player-details">
+
+                <strong class="player-name">
+                  Waiting…
+                </strong>
+
+                <span class="player-stack">
+                  ৳0.00
+                </span>
+
+                <span class="player-action">
+                  EMPTY
+                </span>
+
+              </div>
+
+              <div class="turn-timer">
+                15
+              </div>
+
+            </div>
+
+            <div class="player-badges">
+              <span class="dealer-badge">D</span>
+              <span class="blind-badge small-blind-badge">SB</span>
+              <span class="blind-badge big-blind-badge">BB</span>
+            </div>
+
+            <div class="player-bet">
+              <span>Bet</span>
+              <strong>৳0.00</strong>
+            </div>
+
+          </article>
+
+          <!-- PLAYER 3: TOP LEFT -->
+
+          <article
+            id="playerSeat3"
+            class="player-seat seat-3 is-empty"
+            data-seat="3">
+
+            <div class="player-cards">
+              <div class="hole-card"></div>
+              <div class="hole-card"></div>
+            </div>
+
+            <div class="player-profile">
+
+              <div class="player-avatar">
+                <img
+                  src="../assets/images/default-avatar.png"
+                  alt="Player 3">
+              </div>
+
+              <div class="player-details">
+
+                <strong class="player-name">
+                  Waiting…
+                </strong>
+
+                <span class="player-stack">
+                  ৳0.00
+                </span>
+
+                <span class="player-action">
+                  EMPTY
+                </span>
+
+              </div>
+
+              <div class="turn-timer">
+                15
+              </div>
+
+            </div>
+
+            <div class="player-badges">
+              <span class="dealer-badge">D</span>
+              <span class="blind-badge small-blind-badge">SB</span>
+              <span class="blind-badge big-blind-badge">BB</span>
+            </div>
+
+            <div class="player-bet">
+              <span>Bet</span>
+              <strong>৳0.00</strong>
+            </div>
+
+          </article>
+
+          <!-- PLAYER 4: TOP RIGHT -->
+
+          <article
+            id="playerSeat4"
+            class="player-seat seat-4 is-empty"
+            data-seat="4">
+
+            <div class="player-cards">
+              <div class="hole-card"></div>
+              <div class="hole-card"></div>
+            </div>
+
+            <div class="player-profile">
+
+              <div class="player-avatar">
+                <img
+                  src="../assets/images/default-avatar.png"
+                  alt="Player 4">
+              </div>
+
+              <div class="player-details">
+
+                <strong class="player-name">
+                  Waiting…
+                </strong>
+
+                <span class="player-stack">
+                  ৳0.00
+                </span>
+
+                <span class="player-action">
+                  EMPTY
+                </span>
+
+              </div>
+
+              <div class="turn-timer">
+                15
+              </div>
+
+            </div>
+
+            <div class="player-badges">
+              <span class="dealer-badge">D</span>
+              <span class="blind-badge small-blind-badge">SB</span>
+              <span class="blind-badge big-blind-badge">BB</span>
+            </div>
+
+            <div class="player-bet">
+              <span>Bet</span>
+              <strong>৳0.00</strong>
+            </div>
+
+          </article>
+
+          <!-- PLAYER 5: BOTTOM RIGHT -->
+
+          <article
+            id="playerSeat5"
+            class="player-seat seat-5 is-empty"
+            data-seat="5">
+
+            <div class="player-cards">
+              <div class="hole-card"></div>
+              <div class="hole-card"></div>
+            </div>
+
+            <div class="player-profile">
+
+              <div class="player-avatar">
+                <img
+                  src="../assets/images/default-avatar.png"
+                  alt="Player 5">
+              </div>
+
+              <div class="player-details">
+
+                <strong class="player-name">
+                  Waiting…
+                </strong>
+
+                <span class="player-stack">
+                  ৳0.00
+                </span>
+
+                <span class="player-action">
+                  EMPTY
+                </span>
+
+              </div>
+
+              <div class="turn-timer">
+                15
+              </div>
+
+            </div>
+
+            <div class="player-badges">
+              <span class="dealer-badge">D</span>
+              <span class="blind-badge small-blind-badge">SB</span>
+              <span class="blind-badge big-blind-badge">BB</span>
+            </div>
+
+            <div class="player-bet">
+              <span>Bet</span>
+              <strong>৳0.00</strong>
+            </div>
+
+          </article>
+
+        </section>
+
+        <!-- MATCHMAKING OVERLAY -->
+
+        <section
+          id="matchmakingOverlay"
+          class="matchmaking-overlay"
+          hidden>
+
+          <div class="matchmaking-card">
+
+            <div class="search-loader">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <h2>Finding Poker Players</h2>
+
+            <p id="matchmakingMessage">
+              Waiting for real players…
+            </p>
+
+            <strong id="matchmakingTimer">
+              10
+            </strong>
+
+            <div class="player-count">
+
+              <span id="joinedPlayerCount">
+                1
+              </span>
+
+              <span>/</span>
+
+              <span>5</span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- WINNER OVERLAY -->
+
+        <section
+          id="winnerOverlay"
+          class="winner-overlay"
+          hidden>
+
+          <div class="winner-card">
+
+            <div class="winner-crown">
+              👑
+            </div>
+
+            <span>HAND WINNER</span>
+
+            <h2 id="winnerName">
+              Player
+            </h2>
+
+            <p id="winnerHand">
+              Royal Flush
+            </p>
+
+            <strong id="winnerAmount">
+              +৳0.00
+            </strong>
+
+            <button
+              id="continueButton"
+              class="primary-button"
+              type="button">
+              Next Hand
+            </button>
+
+          </div>
+
+        </section>
+
+      </section>
+
+      <!-- ACTION AREA -->
+
+      <footer class="poker-footer">
+
+        <section class="footer-status">
+
+          <span
+            id="connectionDot"
+            class="connection-dot">
+          </span>
+
+          <span id="connectionText">
+            Connecting…
+          </span>
+
+        </section>
+
+        <section class="action-controls">
+
+          <button
+            id="foldButton"
+            class="action-button fold-button"
+            type="button"
+            disabled>
+            Fold
+          </button>
+
+          <button
+            id="checkCallButton"
+            class="action-button call-button"
+            type="button"
+            disabled>
+            Check
+          </button>
+
+          <div class="raise-control">
+
+            <div class="raise-values">
+
+              <span>Raise</span>
+
+              <strong id="raiseAmount">
+                ৳0
+              </strong>
+
+            </div>
+
+            <input
+              id="raiseSlider"
+              type="range"
+              min="0"
+              max="100"
+              value="0"
+              disabled>
+
+          </div>
+
+          <button
+            id="raiseButton"
+            class="action-button raise-button"
+            type="button"
+            disabled>
+            Raise
+          </button>
+
+          <button
+            id="allInButton"
+            class="action-button all-in-button"
+            type="button"
+            disabled>
+            All-in
+          </button>
+
+        </section>
+
+        <section class="footer-tools">
+
+          <button
+            id="emojiButton"
+            class="tool-button"
+            type="button">
+            😊
+          </button>
+
+          <button
+            id="messageButton"
+            class="tool-button"
+            type="button">
+            💬
+          </button>
+
+          <button
+            id="rulesButton"
+            class="tool-button"
+            type="button">
+            Rules
+          </button>
+
+          <button
+            id="exitButton"
+            class="tool-button exit-button"
+            type="button">
+            Exit
+          </button>
+
+        </section>
+
+      </footer>
+
+    </main>
+
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script src="../js/poker/poker-game.js"></script>
+  </body>
+</html>

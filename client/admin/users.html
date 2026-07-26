@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PMS ADDA | Users Management</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
+
+    <script src="../js/app-config.js"></script>
+
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/admin-users.css"
+    >
+</head>
+
+<body>
+
+    <div class="admin-layout">
+
+        <!-- Sidebar -->
+        <aside
+            class="admin-sidebar"
+            id="adminSidebar"
+        >
+
+            <div class="admin-brand">
+
+                <div class="brand-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+
+                <div>
+                    <h2>PMS ADDA</h2>
+                    <p>Admin Panel</p>
+                </div>
+
+            </div>
+
+            <nav class="admin-menu">
+
+                <a
+                    href="dashboard.html"
+                    class="menu-item"
+                >
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a
+                    href="users.html"
+                    class="menu-item active"
+                >
+                    <i class="fa-solid fa-users"></i>
+                    <span>Users</span>
+                </a>
+
+                <a
+                    href="deposits.html"
+                    class="menu-item"
+                >
+                    <i class="fa-solid fa-circle-plus"></i>
+                    <span>Deposits</span>
+                </a>
+
+                <a
+                    href="withdrawals.html"
+                    class="menu-item"
+                >
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                    <span>Withdrawals</span>
+                </a>
+
+                <a
+                    href="transactions.html"
+                    class="menu-item"
+                >
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>Transactions</span>
+                </a>
+
+                <a
+                    href="games.html"
+                    class="menu-item"
+                >
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>Games & Revenue</span>
+                </a>
+
+                <a
+                    href="bots.html"
+                    class="menu-item"
+                >
+                    <i class="fa-solid fa-robot"></i>
+                    <span>Bots</span>
+                </a>
+
+                <a
+                    href="settings.html"
+                    class="menu-item"
+                >
+                    <i class="fa-solid fa-gears"></i>
+                    <span>Settings</span>
+                </a>
+
+                <a
+                    href="admin-logs.html"
+                    class="menu-item"
+                >
+                    <i class="fa-solid fa-file-shield"></i>
+                    <span>Admin Logs</span>
+                </a>
+
+            </nav>
+
+            <button
+                type="button"
+                class="logout-btn"
+                id="adminLogoutBtn"
+            >
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </button>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+
+            <!-- Header -->
+            <header class="admin-header">
+
+                <div class="header-left">
+
+                    <button
+                        type="button"
+                        class="sidebar-toggle"
+                        id="sidebarToggle"
+                    >
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <div>
+                        <h1>User Management</h1>
+
+                        <p>
+                            View and manage all registered users
+                        </p>
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="refresh-btn"
+                    id="refreshUsersBtn"
+                >
+                    <i class="fa-solid fa-rotate"></i>
+                    Refresh
+                </button>
+
+            </header>
+
+            <!-- Summary Cards -->
+            <section class="summary-grid">
+
+                <article class="summary-card">
+
+                    <div class="summary-icon total">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+
+                    <div>
+                        <p>Total Users</p>
+                        <h2 id="totalUsers">0</h2>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon active">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+
+                    <div>
+                        <p>Active Users</p>
+                        <h2 id="activeUsers">0</h2>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon banned">
+                        <i class="fa-solid fa-user-slash"></i>
+                    </div>
+
+                    <div>
+                        <p>Banned Users</p>
+                        <h2 id="bannedUsers">0</h2>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon online">
+                        <i class="fa-solid fa-signal"></i>
+                    </div>
+
+                    <div>
+                        <p>Online Users</p>
+                        <h2 id="onlineUsers">0</h2>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon wallet">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+
+                    <div>
+                        <p>Total Wallet Balance</p>
+
+                        <h2>
+                            ৳<span id="totalWalletBalance">
+                                0.00
+                            </span>
+                        </h2>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon deposit">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+
+                    <div>
+                        <p>Total Deposit</p>
+
+                        <h2>
+                            ৳<span id="totalDeposit">
+                                0.00
+                            </span>
+                        </h2>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon withdraw">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </div>
+
+                    <div>
+                        <p>Total Withdraw</p>
+
+                        <h2>
+                            ৳<span id="totalWithdraw">
+                                0.00
+                            </span>
+                        </h2>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon turnover">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+
+                    <div>
+                        <p>Total Turnover</p>
+
+                        <h2>
+                            ৳<span id="totalTurnover">
+                                0.00
+                            </span>
+                        </h2>
+                    </div>
+
+                </article>
+
+            </section>
+
+            <!-- Users Section -->
+            <section class="users-section">
+
+                <!-- Filters -->
+                <div class="filter-bar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="search"
+                            id="userSearch"
+                            placeholder="Search UID, name, username, phone or email"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                    <select id="statusFilter">
+                        <option value="all">
+                            All Status
+                        </option>
+
+                        <option value="active">
+                            Active
+                        </option>
+
+                        <option value="banned">
+                            Banned
+                        </option>
+                    </select>
+
+                    <select id="onlineFilter">
+                        <option value="all">
+                            All Users
+                        </option>
+
+                        <option value="online">
+                            Online
+                        </option>
+
+                        <option value="offline">
+                            Offline
+                        </option>
+                    </select>
+
+                    <select id="pageLimit">
+                        <option value="10">
+                            10 rows
+                        </option>
+
+                        <option value="25">
+                            25 rows
+                        </option>
+
+                        <option value="50">
+                            50 rows
+                        </option>
+
+                        <option value="100">
+                            100 rows
+                        </option>
+                    </select>
+
+                    <button
+                        type="button"
+                        class="reset-btn"
+                        id="resetFiltersBtn"
+                    >
+                        <i class="fa-solid fa-filter-circle-xmark"></i>
+                        Reset
+                    </button>
+
+                </div>
+
+                <!-- Table -->
+                <div class="table-wrapper">
+
+                    <table class="users-table">
+
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Contact</th>
+                                <th>Wallet</th>
+                                <th>Deposit</th>
+                                <th>Withdraw</th>
+                                <th>Turnover</th>
+                                <th>Status</th>
+                                <th>Online</th>
+                                <th>Registered</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="usersTableBody">
+
+                            <tr>
+                                <td
+                                    colspan="10"
+                                    class="empty-cell"
+                                >
+                                    Loading users...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-wrapper">
+
+                    <div class="pagination-details">
+                        <span id="paginationResults">
+                            Showing 0 users
+                        </span>
+                    </div>
+
+                    <div class="pagination">
+
+                        <button
+                            type="button"
+                            id="previousPageBtn"
+                        >
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Previous
+                        </button>
+
+                        <span id="paginationInfo">
+                            Page 1 of 1
+                        </span>
+
+                        <button
+                            type="button"
+                            id="nextPageBtn"
+                        >
+                            Next
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- User Details Modal -->
+    <div
+        class="modal-overlay"
+        id="userDetailsModal"
+    >
+
+        <div class="modal-container user-modal">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>User Details</h2>
+                    <p>Full account information</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeUserModalBtn"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div
+                class="modal-body"
+                id="userDetailsContent"
+            >
+
+                <div class="modal-loading">
+                    Loading user details...
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Status Confirmation Modal -->
+    <div
+        class="modal-overlay"
+        id="statusConfirmModal"
+    >
+
+        <div class="modal-container confirm-modal">
+
+            <div class="confirm-icon" id="confirmStatusIcon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+
+            <h2 id="confirmStatusTitle">
+                Update User Status
+            </h2>
+
+            <p id="confirmStatusMessage">
+                Are you sure you want to update this user?
+            </p>
+
+            <div class="confirm-actions">
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    id="cancelStatusBtn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="confirm-btn"
+                    id="confirmStatusBtn"
+                >
+                    Confirm
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Loader -->
+    <div
+        class="loader-overlay"
+        id="loaderOverlay"
+    >
+        <div class="loader"></div>
+    </div>
+
+    <!-- Toast -->
+    <div
+        class="toast"
+        id="toast"
+    >
+        <i
+            class="fa-solid fa-circle-check"
+            id="toastIcon"
+        ></i>
+
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+    ></div>
+
+    <script src="../js/admin-users.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,1094 @@
+/* ==========================================
+   PMS ADDA
+   Transaction History CSS
+   Part 1/4
+========================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: #0d0d0d;
+    color: #ffffff;
+    font-family: Poppins, Arial, sans-serif;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+/* ==========================
+   Main Page
+========================== */
+
+.history-page {
+    width: 100%;
+    max-width: 520px;
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 20px 20px 80px;
+    animation: pageFadeIn 0.4s ease;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================
+   Header
+========================== */
+
+.page-header {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.page-header h2 {
+    color: #ffd700;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+}
+
+#backBtn {
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(255, 215, 0, 0.16);
+    border-radius: 14px;
+    background: #1b1b1b;
+    color: #ffd700;
+    cursor: pointer;
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        border-color 0.25s ease;
+}
+
+#backBtn:hover {
+    background: #252525;
+    border-color: #ffd700;
+    transform: translateX(-3px);
+}
+
+#backBtn:active {
+    transform: scale(0.96);
+}
+
+/* ==========================
+   Balance Card
+========================== */
+
+.balance-card {
+    margin-bottom: 22px;
+    padding: 24px;
+    border: 1px solid rgba(255, 215, 0, 0.22);
+    border-radius: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 215, 0, 0.09),
+            rgba(255, 255, 255, 0.025)
+        ),
+        #171717;
+    text-align: center;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.balance-card p {
+    color: #b8b8b8;
+    font-size: 14px;
+}
+
+.balance-card h1 {
+    margin-top: 10px;
+    color: #ffd700;
+    font-size: 36px;
+    line-height: 1.2;
+}
+
+/* ==========================
+   Filter Buttons
+========================== */
+
+.filter-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 3px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.filter-section::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-btn {
+    flex-shrink: 0;
+    min-width: 82px;
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 215, 0, 0.14);
+    border-radius: 12px;
+    background: #191919;
+    color: #a8a8a8;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        color 0.25s ease,
+        background 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.filter-btn:hover {
+    color: #ffd700;
+    border-color: #ffd700;
+    transform: translateY(-2px);
+}
+
+.filter-btn.active {
+    border-color: #ffd700;
+    background: linear-gradient(135deg, #ffd700, #f4b400);
+    color: #111111;
+}
+
+/* ==========================
+   Search Box
+========================== */
+
+.search-box {
+    position: relative;
+    margin-bottom: 22px;
+}
+
+.search-box i {
+    position: absolute;
+    top: 50%;
+    left: 17px;
+    color: #ffd700;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.search-box input {
+    width: 100%;
+    height: 54px;
+    padding: 0 18px 0 50px;
+    border: 1px solid rgba(255, 215, 0, 0.14);
+    border-radius: 14px;
+    outline: none;
+    background: #191919;
+    color: #ffffff;
+    font-size: 15px;
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+}
+
+.search-box input::placeholder {
+    color: #777777;
+}
+
+.search-box input:focus {
+    border-color: #ffd700;
+    background: #1e1e1e;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+/* ==========================
+   Transaction List Base
+========================== */
+
+.transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+/* ==========================================
+   PMS ADDA
+   History CSS
+   Part 2/4
+========================================== */
+
+/* ==========================
+   Transaction Card
+========================== */
+
+.transaction-card{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    background:#181818;
+
+    border:1px solid rgba(255,215,0,.12);
+
+    border-radius:18px;
+
+    padding:18px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.transaction-card:hover{
+
+    border-color:#FFD700;
+
+    transform:translateY(-3px);
+
+    box-shadow:0 10px 25px rgba(255,215,0,.12);
+
+}
+
+/* ==========================
+   Left Icon
+========================== */
+
+.transaction-icon{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-shrink:0;
+
+}
+
+.transaction-icon i{
+
+    font-size:24px;
+
+}
+
+/* Deposit */
+
+.transaction-icon.deposit{
+
+    background:rgba(76,175,80,.15);
+
+}
+
+.transaction-icon.deposit i{
+
+    color:#4CAF50;
+
+}
+
+/* Withdraw */
+
+.transaction-icon.withdraw{
+
+    background:rgba(244,67,54,.15);
+
+}
+
+.transaction-icon.withdraw i{
+
+    color:#F44336;
+
+}
+
+/* Win */
+
+.transaction-icon.win{
+
+    background:rgba(255,215,0,.15);
+
+}
+
+.transaction-icon.win i{
+
+    color:#FFD700;
+
+}
+
+/* Loss */
+
+.transaction-icon.loss{
+
+    background:rgba(255,87,34,.15);
+
+}
+
+.transaction-icon.loss i{
+
+    color:#FF5722;
+
+}
+
+/* ==========================
+   Transaction Info
+========================== */
+
+.transaction-info{
+
+    flex:1;
+
+}
+
+.transaction-info h3{
+
+    font-size:17px;
+
+    margin-bottom:6px;
+
+}
+
+.transaction-info p{
+
+    color:#bbbbbb;
+
+    font-size:13px;
+
+    margin-bottom:5px;
+
+}
+
+.transaction-info small{
+
+    color:#7f7f7f;
+
+}
+
+/* ==========================
+   Right Side
+========================== */
+
+.transaction-right{
+
+    text-align:right;
+
+}
+
+.transaction-right h4{
+
+    color:#FFD700;
+
+    margin-bottom:8px;
+
+    font-size:17px;
+
+}
+
+/* ==========================
+   Status Badge
+========================== */
+
+.status{
+
+    display:inline-block;
+
+    padding:6px 12px;
+
+    border-radius:20px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+/* Success */
+
+.status.success{
+
+    background:rgba(76,175,80,.15);
+
+    color:#4CAF50;
+
+}
+
+/* Pending */
+
+.status.pending{
+
+    background:rgba(255,193,7,.15);
+
+    color:#FFC107;
+
+}
+
+/* Failed */
+
+.status.failed{
+
+    background:rgba(244,67,54,.15);
+
+    color:#F44336;
+
+}
+/* ==========================================
+   PMS ADDA
+   History CSS
+   Part 3/4
+========================================== */
+
+/* ==========================
+   Summary Section
+========================== */
+
+.summary-section{
+
+    margin-top:30px;
+
+}
+
+.summary-section h3{
+
+    margin-bottom:15px;
+
+    color:#FFD700;
+
+}
+
+.summary-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:15px;
+
+}
+
+.summary-card{
+
+    background:#181818;
+
+    border:1px solid rgba(255,215,0,.12);
+
+    border-radius:18px;
+
+    padding:20px;
+
+    text-align:center;
+
+    transition:.3s;
+
+}
+
+.summary-card:hover{
+
+    transform:translateY(-3px);
+
+    border-color:#FFD700;
+
+}
+
+.summary-card i{
+
+    font-size:30px;
+
+    margin-bottom:12px;
+
+}
+
+.summary-card h4{
+
+    color:#cfcfcf;
+
+    font-size:14px;
+
+    margin-bottom:8px;
+
+}
+
+.summary-card h2{
+
+    font-size:24px;
+
+    color:#FFD700;
+
+}
+
+.summary-card.deposit i{
+
+    color:#4CAF50;
+
+}
+
+.summary-card.withdraw i{
+
+    color:#F44336;
+
+}
+
+.summary-card.win i{
+
+    color:#FFD700;
+
+}
+
+.summary-card.loss i{
+
+    color:#FF5722;
+
+}
+
+/* ==========================
+   Date Filter
+========================== */
+
+.date-filter{
+
+    margin-top:30px;
+
+}
+
+.date-filter h3{
+
+    margin-bottom:15px;
+
+    color:#FFD700;
+
+}
+
+.date-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:15px;
+
+}
+
+.date-input label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#cfcfcf;
+
+}
+
+.date-input input{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#242424;
+
+    color:#ffffff;
+
+    outline:none;
+
+}
+
+.date-input input:focus{
+
+    border:1px solid #FFD700;
+
+}
+
+.filter-date-btn{
+
+    width:100%;
+
+    margin-top:18px;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#FFD700;
+
+    color:#111;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.filter-date-btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 20px rgba(255,215,0,.25);
+
+}
+
+/* ==========================
+   Refresh Button
+========================== */
+
+.refresh-section{
+
+    margin-top:25px;
+
+}
+
+.refresh-btn{
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#202020;
+
+    color:#FFD700;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    border:1px solid rgba(255,215,0,.18);
+
+    transition:.3s;
+
+}
+
+.refresh-btn:hover{
+
+    background:#2a2a2a;
+
+    border-color:#FFD700;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   History CSS
+   Part 4/4 (Final)
+========================================== */
+
+/* ==========================
+   Transaction Modal
+========================== */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.78);
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 430px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 20px;
+
+    background: #1b1b1b;
+
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+
+    animation: modalOpen 0.28s ease;
+}
+
+@keyframes modalOpen {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-header h2 {
+    color: #ffd700;
+    font-size: 21px;
+}
+
+#closeModal {
+    width: 40px;
+    height: 40px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #262626;
+    color: #ffffff;
+
+    font-size: 18px;
+    cursor: pointer;
+
+    transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease;
+}
+
+#closeModal:hover {
+    background: #ffd700;
+    color: #111111;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row span {
+    color: #999999;
+    font-size: 14px;
+}
+
+.detail-row strong {
+    max-width: 60%;
+
+    color: #ffffff;
+    font-size: 14px;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+/* ==========================
+   Empty State
+========================== */
+
+.empty-state {
+    margin-top: 28px;
+    padding: 35px 22px;
+
+    border: 1px dashed rgba(255, 215, 0, 0.25);
+    border-radius: 18px;
+
+    background: #171717;
+    text-align: center;
+}
+
+.empty-state i {
+    margin-bottom: 15px;
+
+    color: #ffd700;
+    font-size: 45px;
+}
+
+.empty-state h3 {
+    margin-bottom: 8px;
+
+    color: #ffffff;
+    font-size: 20px;
+}
+
+.empty-state p {
+    color: #999999;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ==========================
+   Loader
+========================== */
+
+.loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.76);
+}
+
+.loader {
+    width: 58px;
+    height: 58px;
+
+    border: 5px solid rgba(255, 215, 0, 0.18);
+    border-top-color: #ffd700;
+    border-radius: 50%;
+
+    animation: loaderSpin 0.9s linear infinite;
+}
+
+@keyframes loaderSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================
+   Toast
+========================== */
+
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    z-index: 10002;
+
+    display: none;
+
+    width: calc(100% - 32px);
+    max-width: 380px;
+    padding: 14px 18px;
+
+    border-left: 4px solid #ffd700;
+    border-radius: 12px;
+
+    background: #202020;
+    color: #ffffff;
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+
+    transform: translateX(-50%);
+    animation: toastEnter 0.28s ease;
+}
+
+@keyframes toastEnter {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* ==========================
+   Desktop
+========================== */
+
+@media (min-width: 992px) {
+    .history-page {
+        max-width: 1200px;
+        padding: 35px 35px 80px;
+    }
+
+    .filter-section {
+        justify-content: center;
+    }
+
+    .transaction-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .date-filter {
+        max-width: 700px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .refresh-section {
+        max-width: 700px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+}
+
+/* ==========================
+   Tablet
+========================== */
+
+@media (max-width: 768px) {
+    .history-page {
+        padding: 15px 15px 70px;
+    }
+
+    .transaction-card {
+        align-items: flex-start;
+    }
+
+    .transaction-icon {
+        width: 52px;
+        height: 52px;
+    }
+
+    .transaction-right h4 {
+        font-size: 15px;
+    }
+
+    .summary-grid {
+        gap: 12px;
+    }
+}
+
+/* ==========================
+   Small Mobile
+========================== */
+
+@media (max-width: 480px) {
+    .page-header {
+        grid-template-columns: 44px 1fr 44px;
+    }
+
+    .page-header h2 {
+        font-size: 18px;
+    }
+
+    #backBtn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .balance-card h1 {
+        font-size: 30px;
+    }
+
+    .transaction-card {
+        position: relative;
+        flex-wrap: wrap;
+        padding: 15px;
+    }
+
+    .transaction-info {
+        min-width: calc(100% - 72px);
+    }
+
+    .transaction-right {
+        width: 100%;
+        padding-top: 12px;
+        padding-left: 67px;
+
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        text-align: left;
+    }
+
+    .transaction-right h4 {
+        display: inline-block;
+        margin-right: 10px;
+        margin-bottom: 0;
+    }
+
+    .summary-grid,
+    .date-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .detail-row strong {
+        max-width: 100%;
+        text-align: left;
+    }
+}
+
+/* ==========================
+   Accessibility
+========================== */
+
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid #ffd700;
+    outline-offset: 3px;
+}
+
+/* ==========================
+   Scrollbar
+========================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #101010;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 20px;
+    background: #ffd700;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #e7c400;
+}

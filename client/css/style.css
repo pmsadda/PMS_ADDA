@@ -1,0 +1,125 @@
+/* সব Element এর Default Margin Remove */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+/* পুরো Screen */
+body{
+
+    background:#111;
+
+    font-family:Arial, Helvetica, sans-serif;
+
+    overflow:hidden;
+
+}
+
+/* Splash */
+
+#splash-screen{
+
+    width:100vw;
+
+    height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-direction:column;
+
+}
+
+/* Logo */
+
+.logo{
+
+    width:180px;
+
+    height:180px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.logo img{
+
+    width:80%;
+
+    height:80%;
+     border-radius:50%;
+
+    object-fit:contain;
+    filter:drop-shadow(0 0 10px gold);
+
+}
+
+/* Game Name */
+
+h1{
+
+    color:#FFD700;
+
+    font-size:55px;
+
+    margin-top:20px;
+
+}
+
+/* Subtitle */
+
+p{
+
+    color:#cccccc;
+
+    margin-top:10px;
+
+    letter-spacing:3px;
+
+}
+
+/* Loading */
+
+.loader{
+
+    margin-top:40px;
+
+    width:45px;
+
+    height:45px;
+
+    border:5px solid #444;
+
+    border-top:5px solid gold;
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+}
+
+/* Animation */
+
+@keyframes spin{
+
+    from{
+
+        transform:rotate(0deg);
+
+    }
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}

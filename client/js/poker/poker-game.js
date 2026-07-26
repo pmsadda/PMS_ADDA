@@ -1,0 +1,1361 @@
+"use strict";
+
+/* ==========================================
+   PMS ADDA POKER
+   Live Matchmaking UI
+========================================== */
+
+const POKER_GAME = {
+  socket: null,
+  state: null,
+
+  tableId: null,
+  currentUserId: null,
+  tablePlayerId: null,
+
+  matchmakingTimer: null,
+  turnTimer: null,
+  actionPending: false,
+  exitPending: false,
+
+  soundEnabled: localStorage.getItem("poker_sound_enabled") !== "false",
+
+  sounds: null,
+
+  lastAnimatedHandId: null,
+
+  getElement(id) {
+    return document.getElementById(id);
+  },
+
+  formatMoney(value) {
+    return Number(value || 0).toLocaleString("en-BD", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  },
+
+  decodeUserId(token) {
+    try {
+      const payloadPart = token.split(".")[1];
+
+      const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+
+      const payload = JSON.parse(
+        decodeURIComponent(
+          atob(normalized)
+            .split("")
+            .map(
+              (character) =>
+                `%${character.charCodeAt(0).toString(16).padStart(2, "0")}`,
+            )
+            .join(""),
+        ),
+      );
+
+      return Number(payload.id) || null;
+    } catch (error) {
+      console.error("Unable to decode Poker token:", error);
+
+      return null;
+    }
+  },
+
+  resolveTableId() {
+    const query = new URLSearchParams(window.location.search);
+
+    const queryTableId = Number(query.get("tableId"));
+
+    if (Number.isInteger(queryTableId) && queryTableId > 0) {
+      return queryTableId;
+    }
+
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("current_poker_table") || "null",
+      );
+
+      const storedTableId = Number(stored?.tableId || stored?.table?.id);
+
+      return Number.isInteger(storedTableId) && storedTableId > 0
+        ? storedTableId
+        : null;
+    } catch {
+      return null;
+    }
+  },
+
+  getServerUrl() {
+    return String(
+      window.APP_CONFIG?.SERVER_URL || "http://localhost:5000",
+    ).replace(/\/+$/, "");
+  },
+
+  getMe() {
+    return (
+      this.state?.players?.find(
+        (player) =>
+          !player.isBot && Number(player.userId) === Number(this.currentUserId),
+      ) || null
+    );
+  },
+
+  initializeSounds() {
+    this.sounds = {
+      cardDeal: new Audio("../assets/sounds/card-deal.mp3"),
+
+      chipThrow: new Audio("../assets/sounds/chip-throw.mp3"),
+
+      chipLand: new Audio("../assets/sounds/chip-land.mp3"),
+
+      winner: new Audio("../assets/sounds/winner.mp3"),
+    };
+
+    Object.values(this.sounds).forEach((audio) => {
+      audio.preload = "auto";
+    });
+
+    this.updateSoundButton();
+
+    /*
+     * Browser autoplay restriction unlock।
+     * প্রথম click/touch-এর পরে sound চলবে।
+     */
+    document.addEventListener(
+      "pointerdown",
+      () => {
+        Object.values(this.sounds).forEach((audio) => {
+          const previousVolume = audio.volume;
+
+          audio.volume = 0;
+
+          const promise = audio.play();
+
+          if (promise && typeof promise.catch === "function") {
+            promise.catch(() => {});
+          }
+
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = previousVolume;
+        });
+      },
+      {
+        once: true,
+      },
+    );
+  },
+
+  playSound(soundName, volume = 0.75) {
+    if (!this.soundEnabled || !this.sounds?.[soundName]) {
+      return;
+    }
+
+    try {
+      const sound = this.sounds[soundName].cloneNode();
+
+      sound.volume = Math.min(Math.max(Number(volume), 0), 1);
+
+      const promise = sound.play();
+
+      if (promise && typeof promise.catch === "function") {
+        promise.catch(() => {});
+      }
+    } catch (error) {
+      console.warn("Poker sound failed:", error);
+    }
+  },
+
+  toggleSound() {
+    this.soundEnabled = !this.soundEnabled;
+
+    localStorage.setItem("poker_sound_enabled", String(this.soundEnabled));
+
+    this.updateSoundButton();
+
+    if (this.soundEnabled) {
+      this.playSound("chipLand", 0.55);
+    }
+  },
+
+  updateSoundButton() {
+    const button = this.getElement("soundButton");
+
+    if (!button) {
+      return;
+    }
+
+    button.textContent = this.soundEnabled ? "🔊" : "🔇";
+
+    button.setAttribute(
+      "aria-label",
+      this.soundEnabled ? "Mute Poker sounds" : "Enable Poker sounds",
+    );
+  },
+
+  initialize() {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      window.location.replace("login.html");
+
+      return;
+    }
+
+    this.tableId = this.resolveTableId();
+
+    this.currentUserId = this.decodeUserId(token);
+
+    if (!this.tableId) {
+      this.setConnection("Poker table information missing", false);
+
+      this.setRoundStatus("Please enter through Poker Rooms.");
+
+      return;
+    }
+
+    if (typeof window.io !== "function") {
+      this.setConnection("Socket.IO unavailable", false);
+
+      return;
+    }
+
+    this.initializeSounds();
+
+    this.initializeControls();
+    this.connectSocket(token);
+  },
+
+  initializeControls() {
+    const goToRooms = () => {
+      this.exitPokerTable();
+    };
+
+    this.getElement("soundButton")?.addEventListener("click", () => {
+      this.toggleSound();
+    });
+
+    this.getElement("backButton")?.addEventListener("click", goToRooms);
+
+    this.getElement("exitButton")?.addEventListener("click", goToRooms);
+
+    this.getElement("foldButton")?.addEventListener("click", () => {
+      this.submitAction("fold");
+    });
+
+    this.getElement("checkCallButton")?.addEventListener("click", () => {
+      const actions = this.state?.myAction?.allowedActions || [];
+
+      this.submitAction(actions.includes("check") ? "check" : "call");
+    });
+
+    this.getElement("raiseButton")?.addEventListener("click", () => {
+      const slider = this.getElement("raiseSlider");
+
+      this.submitAction("raise", Number(slider?.value));
+    });
+
+    this.getElement("allInButton")?.addEventListener("click", () => {
+      this.submitAction("all_in");
+    });
+
+    this.getElement("raiseSlider")?.addEventListener("input", (event) => {
+      const amount = this.getElement("raiseAmount");
+
+      if (amount) {
+        amount.textContent = `৳${this.formatMoney(event.target.value)}`;
+      }
+    });
+
+    this.getElement("continueButton")?.addEventListener("click", () => {
+      this.getElement("winnerOverlay")?.setAttribute("hidden", "");
+
+      document.querySelectorAll(".player-seat").forEach((seat) => {
+        seat.classList.remove("is-winner");
+      });
+
+      this.requestLatestState();
+    });
+  },
+
+  connectSocket(token) {
+    this.setConnection("Connecting…", false);
+
+    this.socket = window.io(`${this.getServerUrl()}/poker`, {
+      auth: {
+        token,
+      },
+
+      transports: ["websocket", "polling"],
+
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 700,
+      timeout: 10000,
+    });
+
+    this.registerSocketEvents();
+  },
+
+  registerSocketEvents() {
+    this.socket.on("connect", () => {
+      console.log("✅ Poker socket connected:", this.socket.id);
+
+      this.setConnection("Connected", true);
+
+      this.joinTable();
+    });
+
+    this.socket.on("connect_error", (error) => {
+      console.error("Poker socket error:", error);
+
+      this.setConnection(error.message || "Connection failed", false);
+
+      this.setRoundStatus(error.message || "Unable to connect.");
+    });
+
+    this.socket.on("disconnect", () => {
+      this.setConnection("Reconnecting…", false);
+
+      this.disableActions();
+    });
+
+    this.socket.on("table:state", (state) => {
+      this.applyState(state);
+    });
+
+    this.socket.on("matchmaking:completed", (data) => {
+      console.log("✅ Poker matchmaking completed:", data);
+
+      this.hideMatchmaking();
+    });
+
+    this.socket.on("table:player-joined", () => {
+      this.requestLatestState();
+    });
+
+    this.socket.on("table:player-disconnected", () => {
+      this.setConnection("Player reconnecting…", true);
+    });
+
+    this.socket.on("hand:action", (action) => {
+      console.log("🃏 Poker hand action:", action);
+
+      this.animateChipToPot(action);
+
+      this.animateDealtStreets(action.dealtStreets);
+    });
+
+    this.socket.on("hand:completed", (settlement) => {
+      console.log("🏆 Poker hand completed:", settlement);
+
+      this.handleHandCompleted(settlement);
+    });
+
+    this.socket.on("hand:started", (hand) => {
+      console.log("🃏 New Poker hand started:", hand);
+
+      this.getElement("winnerOverlay")?.setAttribute("hidden", "");
+
+      document.querySelectorAll(".player-seat").forEach((seat) => {
+        seat.classList.remove("is-winner", "is-folded");
+      });
+
+      this.setRoundStatus(`Hand #${hand.handNumber} started`);
+    });
+
+    this.socket.on("table:error", (error) => {
+      console.error("Poker table error:", error);
+
+      this.setRoundStatus(error?.message || "Poker table error.");
+    });
+  },
+
+  joinTable() {
+    this.socket.emit(
+      "table:join",
+      {
+        tableId: this.tableId,
+      },
+      (response) => {
+        if (!response?.success) {
+          console.error("Poker table join failed:", response);
+
+          this.setRoundStatus(
+            response?.message || "Unable to join Poker table.",
+          );
+
+          return;
+        }
+
+        this.tablePlayerId = Number(response.data?.tablePlayerId);
+
+        console.log("✅ Poker table joined:", response.data);
+      },
+    );
+  },
+
+  requestLatestState() {
+    if (!this.socket?.connected) {
+      return;
+    }
+
+    this.socket.emit("table:get-state", {
+      tableId: this.tableId,
+    });
+  },
+
+  applyState(state) {
+    if (!state?.table || !Array.isArray(state.players)) {
+      console.error("Invalid Poker state:", state);
+
+      return;
+    }
+
+    this.state = state;
+
+    const me = this.getMe();
+
+    if (me) {
+      this.tablePlayerId = Number(me.id);
+    }
+
+    this.renderHeader();
+    this.renderPlayers();
+    this.renderPokerHand();
+    this.renderTableStatus();
+    this.renderMatchmaking();
+    this.renderActionControls();
+    this.startTurnTimer();
+    this.animateInitialDeal();
+
+    console.log("🃏 Poker table state:", state);
+  },
+
+  getCardImagePath(cardCode) {
+    const safeCode = String(cardCode || "")
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "");
+
+    return safeCode ? `../assets/cards/${safeCode}.png` : null;
+  },
+
+  getHandPlayerBySeat(seatNo) {
+    return (
+      this.state?.handPlayers?.find(
+        (player) => Number(player.seatNo) === Number(seatNo),
+      ) || null
+    );
+  },
+
+  renderPokerHand() {
+    const hand = this.state?.hand;
+
+    const potAmount = this.getElement("potAmount");
+
+    if (potAmount) {
+      potAmount.textContent = `৳${this.formatMoney(hand?.potAmount || 0)}`;
+    }
+
+    const communityCards = Array.isArray(hand?.communityCards)
+      ? hand.communityCards
+      : [];
+
+    document
+      .querySelectorAll(".community-card")
+      .forEach((cardElement, index) => {
+        const cardCode = communityCards[index];
+
+        cardElement.classList.toggle("has-card", Boolean(cardCode));
+
+        cardElement.style.backgroundImage = cardCode
+          ? `url("${this.getCardImagePath(cardCode)}")`
+          : "";
+      });
+
+    for (let seatNo = 1; seatNo <= 5; seatNo += 1) {
+      const seat = this.getElement(`playerSeat${seatNo}`);
+
+      if (!seat) {
+        continue;
+      }
+
+      const handPlayer = this.getHandPlayerBySeat(seatNo);
+
+      seat.classList.remove(
+        "is-current-turn",
+        "is-folded",
+        "is-dealer",
+        "is-small-blind",
+        "is-big-blind",
+      );
+
+      if (!handPlayer) {
+        seat.querySelectorAll(".hole-card").forEach((card) => {
+          card.classList.remove("has-card");
+
+          card.style.backgroundImage = "";
+        });
+
+        continue;
+      }
+
+      seat.classList.toggle(
+        "is-current-turn",
+        Number(hand?.currentTurnPlayerId) === Number(handPlayer.tablePlayerId),
+      );
+
+      seat.classList.toggle("is-folded", handPlayer.status === "folded");
+
+      seat.classList.toggle("is-dealer", Boolean(handPlayer.isDealer));
+
+      seat.classList.toggle("is-small-blind", Boolean(handPlayer.isSmallBlind));
+
+      seat.classList.toggle("is-big-blind", Boolean(handPlayer.isBigBlind));
+
+      const stack = seat.querySelector(".player-stack");
+
+      if (stack) {
+        stack.textContent = `৳${this.formatMoney(handPlayer.endingStack)}`;
+      }
+
+      const action = seat.querySelector(".player-action");
+
+      if (action) {
+        action.textContent = String(
+          handPlayer.lastAction || handPlayer.status || "active",
+        )
+          .replace("_", " ")
+          .toUpperCase();
+      }
+
+      const betBox = seat.querySelector(".player-bet");
+
+      const betAmount = betBox?.querySelector("strong");
+
+      const roundBet = Number(handPlayer.roundBet || 0);
+
+      betBox?.classList.toggle("has-bet", roundBet > 0);
+
+      if (betAmount) {
+        betAmount.textContent = `৳${this.formatMoney(roundBet)}`;
+      }
+
+      const holeCards = seat.querySelectorAll(".hole-card");
+
+      const visibleCards = Array.isArray(handPlayer.holeCards)
+        ? handPlayer.holeCards
+        : [];
+
+      holeCards.forEach((cardElement, cardIndex) => {
+        const cardCode = visibleCards[cardIndex];
+
+        cardElement.classList.toggle("has-card", Boolean(cardCode));
+
+        cardElement.style.backgroundImage = cardCode
+          ? `url("${this.getCardImagePath(cardCode)}")`
+          : "";
+      });
+    }
+
+    if (hand?.status) {
+      this.setRoundStatus(
+        `${String(hand.status).toUpperCase()} • Pot ৳${this.formatMoney(
+          hand.potAmount,
+        )}`,
+      );
+    }
+  },
+
+  renderActionControls() {
+    const actionState = this.state?.myAction;
+
+    const allowed = Array.isArray(actionState?.allowedActions)
+      ? actionState.allowedActions
+      : [];
+
+    const canAct =
+      Boolean(actionState?.isMyTurn) &&
+      !this.actionPending &&
+      this.socket?.connected;
+
+    const foldButton = this.getElement("foldButton");
+
+    const checkCallButton = this.getElement("checkCallButton");
+
+    const raiseButton = this.getElement("raiseButton");
+
+    const allInButton = this.getElement("allInButton");
+
+    const raiseSlider = this.getElement("raiseSlider");
+
+    if (foldButton) {
+      foldButton.disabled = !canAct || !allowed.includes("fold");
+    }
+
+    if (checkCallButton) {
+      const canCheck = allowed.includes("check");
+
+      const canCall = allowed.includes("call");
+
+      checkCallButton.textContent = canCheck
+        ? "Check"
+        : `Call ৳${this.formatMoney(actionState?.callAmount)}`;
+
+      checkCallButton.disabled = !canAct || (!canCheck && !canCall);
+    }
+
+    const minimumRaise = Number(actionState?.minimumRaiseTo || 0);
+
+    const maximumRaise = Number(actionState?.maximumRaiseTo || 0);
+
+    if (raiseSlider) {
+      raiseSlider.min = String(minimumRaise);
+
+      raiseSlider.max = String(Math.max(maximumRaise, minimumRaise));
+
+      raiseSlider.step = "0.50";
+
+      const oldValue = Number(raiseSlider.value);
+
+      const nextValue =
+        oldValue >= minimumRaise && oldValue <= maximumRaise
+          ? oldValue
+          : minimumRaise;
+
+      raiseSlider.value = String(nextValue);
+
+      raiseSlider.disabled = !canAct || !allowed.includes("raise");
+    }
+
+    const raiseAmount = this.getElement("raiseAmount");
+
+    if (raiseAmount) {
+      raiseAmount.textContent = `৳${this.formatMoney(
+        raiseSlider?.value || minimumRaise,
+      )}`;
+    }
+
+    if (raiseButton) {
+      raiseButton.disabled = !canAct || !allowed.includes("raise");
+    }
+
+    if (allInButton) {
+      allInButton.disabled = !canAct || !allowed.includes("all_in");
+    }
+  },
+
+  exitPokerTable() {
+    if (this.exitPending) {
+      return;
+    }
+
+    if (!this.socket?.connected) {
+      this.setRoundStatus("Please wait for the server connection.");
+
+      return;
+    }
+
+    this.exitPending = true;
+
+    this.disableActions();
+
+    this.setRoundStatus("Cash-out in progress…");
+
+    this.socket.emit(
+      "table:exit",
+      {
+        tableId: this.tableId,
+      },
+      (response) => {
+        if (!response?.success) {
+          this.exitPending = false;
+
+          this.setRoundStatus(
+            response?.message || "Unable to exit Poker table.",
+          );
+
+          this.renderActionControls();
+
+          return;
+        }
+
+        console.log("✅ Poker cash-out:", response.data);
+
+        localStorage.removeItem("current_poker_table");
+
+        window.location.replace("poker-rooms.html");
+      },
+    );
+  },
+
+  submitAction(action, amount = null) {
+    if (this.actionPending || !this.socket?.connected) {
+      return;
+    }
+
+    this.actionPending = true;
+    this.disableActions();
+
+    this.socket.emit(
+      "hand:action",
+      {
+        tableId: this.tableId,
+
+        action,
+
+        amount,
+      },
+      (response) => {
+        this.actionPending = false;
+
+        if (!response?.success) {
+          console.error("Poker action failed:", response);
+
+          this.setRoundStatus(response?.message || "Poker action failed.");
+
+          this.renderActionControls();
+
+          return;
+        }
+
+        console.log("✅ Poker action:", response.data);
+      },
+    );
+  },
+
+  startTurnTimer() {
+    clearInterval(this.turnTimer);
+
+    document.querySelectorAll(".turn-timer").forEach((timer) => {
+      timer.textContent = "15";
+    });
+
+    const hand = this.state?.hand;
+
+    if (!hand?.currentTurnPlayerId || !hand?.actionExpiresAt) {
+      return;
+    }
+
+    const handPlayer = this.state.handPlayers?.find(
+      (player) =>
+        Number(player.tablePlayerId) === Number(hand.currentTurnPlayerId),
+    );
+
+    const seat = handPlayer
+      ? this.getElement(`playerSeat${handPlayer.seatNo}`)
+      : null;
+
+    const timerElement = seat?.querySelector(".turn-timer");
+
+    const normalized = String(hand.actionExpiresAt).includes("T")
+      ? String(hand.actionExpiresAt)
+      : String(hand.actionExpiresAt).replace(" ", "T");
+
+    const expiresAt = new Date(normalized).getTime();
+
+    const update = () => {
+      const seconds = Math.max(Math.ceil((expiresAt - Date.now()) / 1000), 0);
+
+      if (timerElement) {
+        timerElement.textContent = String(seconds);
+      }
+
+      if (seconds <= 0) {
+        clearInterval(this.turnTimer);
+      }
+    };
+
+    update();
+
+    this.turnTimer = setInterval(update, 250);
+  },
+
+  animateChipToPot(action) {
+    if (Number(action?.contribution) <= 0) {
+      return;
+    }
+
+    const handPlayer = this.state?.handPlayers?.find(
+      (player) =>
+        Number(player.tablePlayerId) === Number(action.actorTablePlayerId),
+    );
+
+    const seat = handPlayer
+      ? this.getElement(`playerSeat${handPlayer.seatNo}`)
+      : null;
+
+    const pot = this.getElement("potAmount");
+
+    const table = this.getElement("pokerTable");
+
+    if (!seat || !pot || !table) {
+      return;
+    }
+
+    const tableRect = table.getBoundingClientRect();
+
+    const seatRect = seat.getBoundingClientRect();
+
+    const potRect = pot.getBoundingClientRect();
+
+    const chip = document.createElement("div");
+
+    chip.className = "flying-poker-chip";
+
+    chip.textContent = `৳${this.formatMoney(action.contribution)}`;
+
+    chip.style.left = `${
+      seatRect.left - tableRect.left + seatRect.width / 2
+    }px`;
+
+    chip.style.top = `${seatRect.top - tableRect.top + seatRect.height / 2}px`;
+
+    chip.style.setProperty(
+      "--chip-x",
+      `${
+        potRect.left - seatRect.left + potRect.width / 2 - seatRect.width / 2
+      }px`,
+    );
+
+    chip.style.setProperty(
+      "--chip-y",
+      `${
+        potRect.top - seatRect.top + potRect.height / 2 - seatRect.height / 2
+      }px`,
+    );
+
+    table.appendChild(chip);
+
+    this.playSound("chipThrow", 0.7);
+
+    chip.addEventListener(
+      "animationend",
+      () => {
+        chip.remove();
+
+        this.playSound("chipLand", 0.62);
+      },
+      {
+        once: true,
+      },
+    );
+  },
+
+  animateDealtStreets(streets) {
+    if (!Array.isArray(streets)) {
+      return;
+    }
+
+    streets.forEach((street, streetIndex) => {
+      const cards = Array.isArray(street.cards) ? street.cards : [];
+
+      cards.forEach((cardCode, cardIndex) => {
+        const finalIndex =
+          street.street === "flop"
+            ? cardIndex
+            : street.street === "turn"
+              ? 3
+              : 4;
+
+        const cardElement = document.querySelector(
+          `.community-card[data-card-index="${finalIndex}"]`,
+        );
+
+        window.setTimeout(
+          () => {
+            if (!cardElement) {
+              return;
+            }
+
+            this.playSound("cardDeal", 0.62);
+
+            cardElement.classList.add("has-card", "is-revealing");
+
+            cardElement.style.backgroundImage = `url("${this.getCardImagePath(
+              cardCode,
+            )}")`;
+
+            window.setTimeout(
+              () => cardElement.classList.remove("is-revealing"),
+              650,
+            );
+          },
+          streetIndex * 450 + cardIndex * 150,
+        );
+      });
+    });
+  },
+
+  handleHandCompleted(settlement) {
+    const winners = Array.isArray(settlement?.winners)
+      ? settlement.winners
+      : [];
+
+    if (winners.length === 0) {
+      return;
+    }
+
+    clearInterval(this.turnTimer);
+
+    this.disableActions();
+
+    winners.forEach((winner) => {
+      this.revealWinnerCards(winner);
+
+      this.animatePotToWinner(winner);
+    });
+
+    window.setTimeout(() => {
+      this.showWinnerOverlay(settlement, winners);
+    }, 1100);
+  },
+
+  revealWinnerCards(winner) {
+    const cards = Array.isArray(winner.holeCards) ? winner.holeCards : [];
+
+    if (cards.length !== 2) {
+      return;
+    }
+
+    const seat = this.getElement(`playerSeat${winner.seatNo}`);
+
+    if (!seat) {
+      return;
+    }
+
+    seat.classList.add("is-winner");
+
+    seat.querySelectorAll(".hole-card").forEach((cardElement, index) => {
+      const cardCode = cards[index];
+
+      if (!cardCode) {
+        return;
+      }
+
+      cardElement.classList.add("has-card", "is-revealing");
+
+      cardElement.style.backgroundImage = `url("${this.getCardImagePath(
+        cardCode,
+      )}")`;
+    });
+  },
+
+  animatePotToWinner(winner) {
+    const table = this.getElement("pokerTable");
+
+    const pot = this.getElement("potAmount");
+
+    const seat = this.getElement(`playerSeat${winner.seatNo}`);
+
+    if (!table || !pot || !seat) {
+      return;
+    }
+
+    const tableRect = table.getBoundingClientRect();
+
+    const potRect = pot.getBoundingClientRect();
+
+    const seatRect = seat.getBoundingClientRect();
+
+    for (let index = 0; index < 5; index += 1) {
+      window.setTimeout(() => {
+        const chip = document.createElement("div");
+
+        chip.className = "winner-poker-chip";
+
+        chip.style.left = `${
+          potRect.left - tableRect.left + potRect.width / 2
+        }px`;
+
+        chip.style.top = `${
+          potRect.top - tableRect.top + potRect.height / 2
+        }px`;
+
+        chip.style.setProperty(
+          "--winner-chip-x",
+          `${
+            seatRect.left -
+            potRect.left +
+            seatRect.width / 2 -
+            potRect.width / 2
+          }px`,
+        );
+
+        chip.style.setProperty(
+          "--winner-chip-y",
+          `${
+            seatRect.top -
+            potRect.top +
+            seatRect.height / 2 -
+            potRect.height / 2
+          }px`,
+        );
+
+        table.appendChild(chip);
+
+        chip.addEventListener("animationend", () => chip.remove(), {
+          once: true,
+        });
+      }, index * 100);
+    }
+  },
+
+  showWinnerOverlay(settlement, winners) {
+    const overlay = this.getElement("winnerOverlay");
+
+    const winnerName = this.getElement("winnerName");
+
+    const winnerHand = this.getElement("winnerHand");
+
+    const winnerAmount = this.getElement("winnerAmount");
+
+    const winner = winners[0];
+
+    const player = this.state?.players?.find(
+      (item) => Number(item.id) === Number(winner.tablePlayerId),
+    );
+
+    if (winnerName) {
+      winnerName.textContent =
+        winners.length > 1
+          ? `${winners.length} Split Winners`
+          : player?.name || (winner.isBot ? "Poker Bot" : "Player");
+    }
+
+    if (winnerHand) {
+      winnerHand.textContent = winner.handRankName || "Winner";
+    }
+
+    const totalPrize = winners.reduce(
+      (total, item) => total + Number(item.prizeAmount || 0),
+      0,
+    );
+
+    if (winnerAmount) {
+      winnerAmount.textContent = `+৳${this.formatMoney(totalPrize)}`;
+    }
+
+    overlay?.removeAttribute("hidden");
+
+    this.setRoundStatus(
+      `Hand completed • Service charge ৳${this.formatMoney(
+        settlement.serviceChargeAmount,
+      )}`,
+    );
+  },
+
+  animateInitialDeal() {
+    const handId = Number(this.state?.hand?.id);
+
+    if (!handId || this.lastAnimatedHandId === handId) {
+      return;
+    }
+
+    this.lastAnimatedHandId = handId;
+
+    const occupiedSeats = Array.from(
+      document.querySelectorAll(".player-seat:not(.is-empty)"),
+    );
+
+    let delay = 0;
+
+    for (let round = 0; round < 2; round += 1) {
+      occupiedSeats.forEach((seat) => {
+        const card = seat.querySelectorAll(".hole-card")[round];
+
+        if (!card) {
+          return;
+        }
+
+        card.classList.remove("is-dealing");
+
+        window.setTimeout(() => {
+          this.playSound("cardDeal", 0.58);
+
+          card.classList.add("is-dealing");
+
+          window.setTimeout(() => card.classList.remove("is-dealing"), 550);
+        }, delay);
+
+        delay += 120;
+      });
+    }
+  },
+
+  renderHeader() {
+    const table = this.state.table;
+
+    const blindInfo = this.getElement("blindInfo");
+
+    const tableCode = this.getElement("tableCode");
+
+    const handNumber = this.getElement("handNumber");
+
+    const walletBalance = this.getElement("walletBalance");
+
+    const me = this.getMe();
+
+    if (blindInfo) {
+      blindInfo.textContent = `Blinds: ৳${this.formatMoney(
+        table.smallBlind,
+      )} / ৳${this.formatMoney(table.bigBlind)}`;
+    }
+
+    if (tableCode) {
+      tableCode.textContent = `Table: ${table.tableCode || table.id}`;
+    }
+
+    if (handNumber) {
+      handNumber.textContent = `Hand #${Number(table.currentHandNumber || 0)}`;
+    }
+
+    if (walletBalance) {
+      walletBalance.textContent = `৳${this.formatMoney(me?.walletBalance)}`;
+    }
+  },
+
+  resetSeat(seat) {
+    seat.classList.add("is-empty");
+
+    seat.classList.remove(
+      "is-current-turn",
+      "is-folded",
+      "is-winner",
+      "is-dealer",
+      "is-small-blind",
+      "is-big-blind",
+    );
+
+    const name = seat.querySelector(".player-name");
+
+    const stack = seat.querySelector(".player-stack");
+
+    const action = seat.querySelector(".player-action");
+
+    if (name) {
+      name.textContent = "Waiting…";
+    }
+
+    if (stack) {
+      stack.textContent = "৳0.00";
+    }
+
+    if (action) {
+      action.textContent = "EMPTY";
+    }
+  },
+
+  renderPlayers() {
+    for (let seatNo = 1; seatNo <= 5; seatNo += 1) {
+      const seat = this.getElement(`playerSeat${seatNo}`);
+
+      if (!seat) {
+        continue;
+      }
+
+      const player = this.state.players.find(
+        (item) => Number(item.seatNo) === seatNo,
+      );
+
+      if (!player) {
+        this.resetSeat(seat);
+
+        continue;
+      }
+
+      seat.classList.remove("is-empty");
+
+      const name = seat.querySelector(".player-name");
+
+      const stack = seat.querySelector(".player-stack");
+
+      const action = seat.querySelector(".player-action");
+
+      const avatar = seat.querySelector(".player-avatar img");
+
+      if (name) {
+        name.textContent =
+          player.name || (player.isBot ? "Poker Bot" : `Player ${seatNo}`);
+      }
+
+      if (stack) {
+        stack.textContent = `৳${this.formatMoney(player.stackAmount)}`;
+      }
+
+      if (action) {
+        action.textContent = player.isBot
+          ? "BOT"
+          : Number(player.id) === Number(this.tablePlayerId)
+            ? "YOU"
+            : String(player.status || "PLAYER").toUpperCase();
+      }
+
+      this.renderAvatar(avatar, player);
+    }
+  },
+
+  renderAvatar(avatar, player) {
+    if (!avatar) {
+      return;
+    }
+
+    const fallbackPath = "../assets/images/default-avatar.png";
+
+    if (!player.avatarUrl) {
+      avatar.src = fallbackPath;
+
+      return;
+    }
+
+    const rawUrl = String(player.avatarUrl);
+
+    let avatarUrl = rawUrl;
+
+    if (!/^https?:\/\//i.test(rawUrl) && !rawUrl.startsWith("/")) {
+      avatarUrl = rawUrl.startsWith("assets/")
+        ? `../${rawUrl}`
+        : `../assets/images/avatars/${rawUrl}`;
+    }
+
+    avatar.onerror = () => {
+      avatar.onerror = null;
+      avatar.src = fallbackPath;
+    };
+
+    avatar.src = avatarUrl;
+  },
+
+  renderTableStatus() {
+    const status = this.state.table.status;
+
+    if (status === "waiting") {
+      this.setRoundStatus("Waiting for Poker players…");
+    } else if (status === "starting") {
+      this.setRoundStatus("Players ready • Preparing first hand…");
+
+      this.hideMatchmaking();
+    } else if (status === "playing") {
+      this.setRoundStatus("Poker hand in progress");
+
+      this.hideMatchmaking();
+    } else if (status === "paused") {
+      this.setRoundStatus("Poker table paused");
+    } else {
+      this.setRoundStatus("Poker table closed");
+    }
+
+    this.disableActions();
+  },
+
+  renderMatchmaking() {
+    if (this.state.table.status !== "waiting") {
+      this.hideMatchmaking();
+
+      return;
+    }
+
+    const overlay = this.getElement("matchmakingOverlay");
+
+    const playerCount = this.getElement("joinedPlayerCount");
+
+    const message = this.getElement("matchmakingMessage");
+
+    overlay?.removeAttribute("hidden");
+
+    if (playerCount) {
+      playerCount.textContent = String(
+        this.state.players.filter((player) => !player.isBot).length,
+      );
+    }
+
+    if (message) {
+      message.textContent = "Waiting for real players…";
+    }
+
+    this.startMatchmakingTimer();
+  },
+
+  startMatchmakingTimer() {
+    clearInterval(this.matchmakingTimer);
+
+    const timer = this.getElement("matchmakingTimer");
+
+    const rawExpiresAt = String(this.state.table.matchmakingExpiresAt || "");
+
+    const normalizedExpiresAt = rawExpiresAt.includes("T")
+      ? rawExpiresAt
+      : rawExpiresAt.replace(" ", "T");
+
+    const expiresAt = new Date(normalizedExpiresAt).getTime();
+
+    const update = () => {
+      const seconds = Number.isFinite(expiresAt)
+        ? Math.max(Math.ceil((expiresAt - Date.now()) / 1000), 0)
+        : 10;
+
+      if (timer) {
+        timer.textContent = String(seconds);
+      }
+
+      if (seconds <= 0) {
+        clearInterval(this.matchmakingTimer);
+      }
+    };
+
+    update();
+
+    this.matchmakingTimer = setInterval(update, 250);
+  },
+
+  hideMatchmaking() {
+    clearInterval(this.matchmakingTimer);
+
+    this.getElement("matchmakingOverlay")?.setAttribute("hidden", "");
+  },
+
+  setConnection(message, connected) {
+    const text = this.getElement("connectionText");
+
+    const dot = this.getElement("connectionDot");
+
+    if (text) {
+      text.textContent = message;
+    }
+
+    dot?.classList.toggle("is-connected", Boolean(connected));
+  },
+
+  setRoundStatus(message) {
+    const status = this.getElement("roundStatus");
+
+    if (status) {
+      status.textContent = message;
+    }
+  },
+
+  disableActions() {
+    [
+      "foldButton",
+      "checkCallButton",
+      "raiseButton",
+      "allInButton",
+      "raiseSlider",
+    ].forEach((id) => {
+      const control = this.getElement(id);
+
+      if (control) {
+        control.disabled = true;
+      }
+    });
+  },
+};
+
+window.POKER_GAME = POKER_GAME;
+
+document.addEventListener("DOMContentLoaded", () => {
+  POKER_GAME.initialize();
+
+  console.log("✅ PMS ADDA glossy Poker table loaded");
+});

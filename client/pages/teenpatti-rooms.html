@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+    <meta
+      name="theme-color"
+      content="#07150f">
+
+    <title>PMS ADDA | Teen Patti Rooms</title>
+
+    <script src="../js/app-config.js"></script>
+
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+      rel="stylesheet"
+      href="../css/common.css">
+
+    <link
+      rel="stylesheet"
+      href="../css/teenpatti-rooms.css">
+  </head>
+
+  <body>
+    <div class="tp-rooms-app">
+
+      <header class="tp-rooms-header">
+
+        <button
+          type="button"
+          class="tp-back-button"
+          id="backBtn"
+          aria-label="Back to lobby">
+
+          <i class="fa-solid fa-arrow-left"></i>
+
+        </button>
+
+        <div class="tp-header-title">
+
+          <h1>Teen Patti</h1>
+
+          <p>Select your preferred boot room</p>
+
+        </div>
+
+        <div class="tp-wallet-box">
+
+          <span>Available Balance</span>
+
+          <strong>
+            ৳<span id="walletBalance">0.00</span>
+          </strong>
+
+          <button
+            type="button"
+            id="refreshBalanceBtn"
+            aria-label="Refresh wallet balance">
+
+            <i class="fa-solid fa-rotate"></i>
+
+          </button>
+
+        </div>
+
+      </header>
+
+      <main class="tp-rooms-main">
+
+        <section class="tp-room-heading">
+
+          <div>
+
+            <span class="tp-section-label">
+              PLAY TABLE
+            </span>
+
+            <h2>Choose Boot Amount</h2>
+
+            <p>
+              Boot and blind amounts are equal. Chaal amount is double
+              the blind amount.
+            </p>
+
+          </div>
+
+          <div class="tp-rule-badge">
+
+            <i class="fa-solid fa-circle-info"></i>
+
+            <span>Maximum 5 players per table</span>
+
+          </div>
+
+        </section>
+
+        <section
+          class="tp-room-grid"
+          id="roomGrid"
+          aria-label="Teen Patti boot rooms">
+        </section>
+
+      </main>
+
+      <div
+        class="tp-loader-overlay"
+        id="loaderOverlay"
+        aria-hidden="true">
+
+        <div class="tp-loader-content">
+
+          <div class="tp-loader"></div>
+
+          <p id="loaderMessage">
+            Joining table...
+          </p>
+
+        </div>
+
+      </div>
+
+      <div
+        class="tp-toast"
+        id="toast"
+        role="status"
+        aria-live="polite">
+
+        <i
+          class="fa-solid fa-circle-info"
+          id="toastIcon">
+        </i>
+
+        <span id="toastMessage"></span>
+
+      </div>
+
+    </div>
+
+    <script src="../js/teenpatti-rooms.js"></script>
+  </body>
+</html>

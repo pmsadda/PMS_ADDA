@@ -1,0 +1,1328 @@
+/* ==========================================
+   PMS ADDA
+   Lobby CSS v2
+========================================== */
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+body{
+
+    background:#0d0d0d;
+
+    color:#fff;
+
+    font-family:Poppins,sans-serif;
+
+}
+
+/* ======================
+   Main App
+====================== */
+
+.app{
+
+    max-width:500px;
+
+    margin:auto;
+
+    min-height:100vh;
+
+    padding:20px 20px 90px;
+
+}
+
+/* ======================
+   Header
+====================== */
+
+.top-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+.profile-box{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+.profile-box img{
+
+    width:65px;
+
+    height:65px;
+
+    border-radius:50%;
+
+    border:3px solid #FFD700;
+
+    object-fit:cover;
+
+}
+
+.profile-box h2{
+
+    font-size:21px;
+
+    margin-bottom:4px;
+
+}
+
+.profile-box p{
+
+    color:#999;
+
+    font-size:13px;
+
+}
+
+/* Notification */
+
+.notify-btn{
+
+    width:50px;
+
+    height:50px;
+
+    border:none;
+
+    border-radius:15px;
+
+    background:#191919;
+
+    color:#FFD700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.notify-btn:hover{
+
+    background:#242424;
+
+    transform:scale(1.05);
+
+}
+
+/* ======================
+   Balance Card
+====================== */
+
+.balance-card{
+
+    background:linear-gradient(135deg,#202020,#121212);
+
+    border:1px solid rgba(255,215,0,.25);
+
+    border-radius:20px;
+
+    padding:22px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+    box-shadow:0 8px 25px rgba(255,215,0,.15);
+
+}
+
+.balance-card p{
+
+    color:#bdbdbd;
+
+    font-size:14px;
+
+}
+
+.balance-card h1{
+
+    margin-top:8px;
+
+    color:#FFD700;
+
+    font-size:34px;
+
+}
+
+#refreshBtn{
+
+    width:55px;
+
+    height:55px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#FFD700;
+
+    color:#111;
+
+    cursor:pointer;
+
+    font-size:20px;
+
+    transition:.3s;
+
+}
+
+#refreshBtn:hover{
+
+    transform:rotate(180deg);
+
+}
+
+/* ======================
+   Quick Menu
+====================== */
+
+.quick-menu{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:15px;
+
+    margin-bottom:25px;
+
+}
+
+.quick-menu button{
+
+    border:none;
+
+    border-radius:16px;
+
+    background:#191919;
+
+    color:#fff;
+
+    padding:16px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:10px;
+
+    transition:.3s;
+
+}
+
+.quick-menu button i{
+
+    font-size:24px;
+
+    color:#FFD700;
+
+}
+
+.quick-menu button:hover{
+
+    border:1px solid #FFD700;
+
+    transform:translateY(-4px);
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Lobby CSS v2
+   Part 2
+========================================== */
+
+/* ======================
+   Game Section
+====================== */
+
+.game-section{
+
+    margin-top:10px;
+
+}
+
+.game-section h2{
+
+    font-size:24px;
+
+    color:#FFD700;
+
+    margin-bottom:18px;
+
+}
+
+/* ======================
+   Game List
+====================== */
+
+.game-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+/* ======================
+   Game Card
+====================== */
+
+.game-card{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    background:#181818;
+
+    border:1px solid rgba(255,215,0,.15);
+
+    border-radius:20px;
+
+    padding:18px;
+
+    transition:.3s;
+
+    overflow:hidden;
+
+}
+
+.game-card:hover{
+
+    transform:translateY(-5px);
+
+    border-color:#FFD700;
+
+    box-shadow:0 12px 28px rgba(255,215,0,.18);
+
+}
+
+.game-card img{
+
+    width:100px;
+
+    height:100px;
+
+    object-fit:cover;
+
+    border-radius:16px;
+
+    border:2px solid #FFD700;
+
+    flex-shrink:0;
+
+}
+
+/* ======================
+   Game Info
+====================== */
+
+.game-info{
+
+    flex:1;
+
+}
+
+.game-info h3{
+
+    font-size:24px;
+
+    margin-bottom:8px;
+
+}
+
+.game-info p{
+
+    color:#b5b5b5;
+
+    font-size:14px;
+
+    line-height:1.5;
+
+    margin-bottom:18px;
+
+}
+
+/* ======================
+   Play Button
+====================== */
+
+.play-btn{
+
+    border:none;
+
+    border-radius:12px;
+
+    background:linear-gradient(135deg,#FFD700,#F7B500);
+
+    color:#111;
+
+    padding:12px 24px;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+.play-btn:hover{
+
+    transform:scale(1.05);
+
+    box-shadow:0 8px 20px rgba(255,215,0,.35);
+
+}
+
+.play-btn i{
+
+    font-size:14px;
+
+}
+
+/* ======================
+   Desktop Layout
+====================== */
+
+@media(min-width:900px){
+
+    .app{
+
+        max-width:1200px;
+
+        padding:30px;
+
+    }
+
+    .game-list{
+
+        display:grid;
+
+        grid-template-columns:repeat(3,1fr);
+
+        gap:24px;
+
+    }
+
+    .game-card{
+
+        flex-direction:column;
+
+        text-align:center;
+
+    }
+
+    .game-card img{
+
+        width:140px;
+
+        height:140px;
+
+    }
+
+    .play-btn{
+
+        width:100%;
+
+        justify-content:center;
+
+    }
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Lobby CSS v2
+   Part 3
+========================================== */
+
+/* ======================
+   Bottom Navigation
+====================== */
+
+.bottom-nav{
+
+    position:fixed;
+
+    left:50%;
+
+    bottom:0;
+
+    transform:translateX(-50%);
+
+    width:100%;
+
+    max-width:500px;
+
+    height:75px;
+
+    background:#121212;
+
+    border-top:1px solid rgba(255,215,0,.15);
+
+    display:flex;
+
+    justify-content:space-around;
+
+    align-items:center;
+
+    z-index:999;
+
+}
+
+.nav-item{
+
+    border:none;
+
+    background:none;
+
+    color:#8b8b8b;
+
+    cursor:pointer;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:5px;
+
+    transition:.3s;
+
+}
+
+.nav-item i{
+
+    font-size:22px;
+
+}
+
+.nav-item span{
+
+    font-size:12px;
+
+    font-weight:500;
+
+}
+
+.nav-item:hover,
+
+.nav-item.active{
+
+    color:#FFD700;
+
+}
+
+/* ======================
+   Loader
+====================== */
+
+.loader-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+.loader{
+
+    width:60px;
+
+    height:60px;
+
+    border:5px solid rgba(255,215,0,.20);
+
+    border-top:5px solid #FFD700;
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+    100%{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+/* ======================
+   Toast
+====================== */
+
+.toast{
+
+    position:fixed;
+
+    top:20px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:#1c1c1c;
+
+    color:#fff;
+
+    padding:15px 20px;
+
+    border-left:4px solid #FFD700;
+
+    border-radius:12px;
+
+    min-width:280px;
+
+    display:none;
+
+    z-index:10000;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.35);
+
+}
+
+/* ======================
+   Notification Modal
+====================== */
+
+.modal{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:10001;
+
+}
+
+.modal-content{
+
+    width:90%;
+
+    max-width:420px;
+
+    background:#171717;
+
+    border:1px solid rgba(255,215,0,.20);
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+}
+
+.modal-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:18px 20px;
+
+    border-bottom:1px solid rgba(255,255,255,.08);
+
+}
+
+.modal-header h3{
+
+    color:#FFD700;
+
+    font-size:20px;
+
+}
+
+.modal-header button{
+
+    background:none;
+
+    border:none;
+
+    color:#fff;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+}
+
+.modal-body{
+
+    padding:20px;
+
+    color:#bdbdbd;
+
+    line-height:1.6;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Lobby CSS v2
+   Part 4 (Final)
+========================================== */
+
+/* ======================
+   Smooth Animation
+====================== */
+
+.app{
+
+    animation:fadeIn .4s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(15px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ======================
+   Custom Scrollbar
+====================== */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#101010;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#FFD700;
+
+    border-radius:20px;
+
+}
+
+/* ======================
+   Active Button Effect
+====================== */
+
+button:active{
+
+    transform:scale(.97);
+
+}
+
+/* ======================
+   Desktop Responsive
+====================== */
+
+@media (min-width:1200px){
+
+    body{
+
+        background:#090909;
+
+    }
+
+    .app{
+
+        max-width:1300px;
+
+        padding:35px;
+
+    }
+
+    .top-header{
+
+        margin-bottom:30px;
+
+    }
+
+    .balance-card{
+
+        margin-bottom:30px;
+
+    }
+
+    .quick-menu{
+
+        max-width:700px;
+
+        margin:0 auto 30px;
+
+    }
+
+    .game-list{
+
+        display:grid;
+
+        grid-template-columns:repeat(3,1fr);
+
+        gap:25px;
+
+    }
+
+    .bottom-nav{
+
+        max-width:1300px;
+
+    }
+
+}
+
+/* ======================
+   Tablet Responsive
+====================== */
+
+@media (max-width:768px){
+
+    .app{
+
+        padding:15px 15px 90px;
+
+    }
+
+    .profile-box img{
+
+        width:55px;
+
+        height:55px;
+
+    }
+
+    .profile-box h2{
+
+        font-size:18px;
+
+    }
+
+    .balance-card{
+
+        padding:18px;
+
+    }
+
+    .balance-card h1{
+
+        font-size:30px;
+
+    }
+
+    .game-card{
+
+        flex-direction:column;
+
+        text-align:center;
+
+    }
+
+    .game-card img{
+
+        width:120px;
+
+        height:120px;
+
+    }
+
+    .play-btn{
+
+        width:100%;
+
+        justify-content:center;
+
+    }
+
+}
+
+/* ======================
+   Small Mobile
+====================== */
+
+@media (max-width:480px){
+
+    .quick-menu{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .bottom-nav{
+
+        height:68px;
+
+    }
+
+    .nav-item i{
+
+        font-size:20px;
+
+    }
+
+    .nav-item span{
+
+        font-size:11px;
+
+    }
+
+    .notify-btn{
+
+        width:45px;
+
+        height:45px;
+
+    }
+
+    #refreshBtn{
+
+        width:48px;
+
+        height:48px;
+
+    }
+
+}
+
+/* ======================
+   Focus Accessibility
+====================== */
+
+button:focus{
+
+    outline:2px solid #FFD700;
+
+    outline-offset:2px;
+
+}
+
+/* ======================
+   Logout Modal
+====================== */
+
+.logout-modal-body {
+    text-align: center;
+}
+
+.logout-modal-icon {
+    font-size: 48px;
+    color: #f44336;
+    margin-bottom: 15px;
+}
+
+.logout-modal-body h3 {
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.logout-modal-body p {
+    color: #bdbdbd;
+    margin-bottom: 22px;
+}
+
+.logout-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.logout-actions button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cancel-logout-btn {
+    background: #2b2b2b;
+    color: #ffffff;
+}
+
+.confirm-logout-btn {
+    background: #f44336;
+    color: #ffffff;
+}
+
+.cancel-logout-btn:hover,
+.confirm-logout-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+   DYNAMIC LOBBY — NOTIFICATION BUTTON
+========================================== */
+
+.notify-btn {
+    position: relative;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+
+    display: grid;
+    place-items: center;
+
+    min-width: 21px;
+    height: 21px;
+
+    padding: 0 5px;
+
+    color: #111111;
+    background: #ffcf2f;
+
+    border: 2px solid #0d0d0d;
+    border-radius: 999px;
+
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.notification-badge[hidden] {
+    display: none;
+}
+
+/* ==========================================
+   DYNAMIC NOTIFICATION LIST
+========================================== */
+
+.notification-modal-body {
+    display: grid;
+
+    max-height: min(62vh, 480px);
+
+    padding: 12px;
+    gap: 10px;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.notification-empty {
+    display: grid;
+    place-items: center;
+
+    min-height: 170px;
+
+    padding: 25px;
+
+    color: #858585;
+    text-align: center;
+}
+
+.notification-empty i {
+    margin-bottom: 12px;
+
+    color: #ffd700;
+
+    font-size: 35px;
+    opacity: 0.7;
+}
+
+.notification-empty p {
+    font-size: 14px;
+}
+
+.notification-item {
+    display: grid;
+    grid-template-columns: 43px minmax(0, 1fr);
+
+    align-items: center;
+
+    padding: 12px;
+    gap: 11px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(37, 37, 37, 0.98),
+            rgba(19, 19, 19, 0.98)
+        );
+}
+
+.notification-item-icon {
+    display: grid;
+    place-items: center;
+
+    width: 43px;
+    height: 43px;
+
+    border-radius: 13px;
+
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+
+    font-size: 18px;
+}
+
+.notification-item-copy {
+    min-width: 0;
+}
+
+.notification-item-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 8px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.notification-item-title strong {
+    color: #ffd700;
+
+    white-space: nowrap;
+}
+
+.notification-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 5px;
+    gap: 8px;
+
+    color: #8f8f8f;
+
+    font-size: 10px;
+}
+
+.notification-status {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 3px 7px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.notification-status.pending {
+    color: #ffe27b;
+    background: rgba(255, 193, 7, 0.12);
+}
+
+.notification-status.approved,
+.notification-status.completed,
+.notification-status.success {
+    color: #57e79e;
+    background: rgba(24, 205, 122, 0.12);
+}
+
+.notification-status.rejected,
+.notification-status.failed,
+.notification-status.cancelled {
+    color: #ff8290;
+    background: rgba(255, 62, 85, 0.12);
+}
+
+/* ==========================================
+   DYNAMIC BOTTOM NAVIGATION
+========================================== */
+
+.bottom-nav {
+    padding:
+        0
+        max(10px, env(safe-area-inset-right))
+        env(safe-area-inset-bottom)
+        max(10px, env(safe-area-inset-left));
+
+    box-shadow:
+        0 -10px 35px
+        rgba(0, 0, 0, 0.34);
+}
+
+.nav-item {
+    position: relative;
+
+    min-width: 55px;
+    min-height: 52px;
+
+    padding: 6px 8px;
+
+    border-radius: 13px;
+}
+
+.nav-item::after {
+    content: "";
+
+    position: absolute;
+    left: 50%;
+    bottom: 1px;
+
+    width: 0;
+    height: 3px;
+
+    border-radius: 999px;
+
+    background: #ffd700;
+
+    transform: translateX(-50%);
+
+    transition: width 180ms ease;
+}
+
+.nav-item.active {
+    color: #ffd700;
+
+    background:
+        rgba(255, 215, 0, 0.07);
+}
+
+.nav-item.active::after {
+    width: 24px;
+}
+
+.nav-item:focus-visible {
+    outline: 2px solid #ffd700;
+    outline-offset: 2px;
+}
+
+/* Desktop app width-এর সঙ্গে navigation মিলবে */
+@media (min-width: 900px) {
+    .bottom-nav {
+        max-width: 1200px;
+
+        border-right:
+            1px solid
+            rgba(255, 215, 0, 0.12);
+
+        border-left:
+            1px solid
+            rgba(255, 215, 0, 0.12);
+
+        border-radius: 18px 18px 0 0;
+    }
+}
+
+/* Small mobile */
+@media (max-width: 420px) {
+    .app {
+        padding:
+            14px
+            13px
+            calc(88px + env(safe-area-inset-bottom));
+    }
+
+    .bottom-nav {
+        height:
+            calc(
+                70px +
+                env(safe-area-inset-bottom)
+            );
+    }
+
+    .nav-item {
+        min-width: 48px;
+
+        padding-right: 4px;
+        padding-left: 4px;
+    }
+
+    .nav-item i {
+        font-size: 19px;
+    }
+
+    .nav-item span {
+        font-size: 10px;
+    }
+
+    .notification-modal-body {
+        max-height: 68vh;
+    }
+}

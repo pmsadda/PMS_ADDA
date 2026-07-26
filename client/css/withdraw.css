@@ -1,0 +1,1086 @@
+/* ==========================================
+   PMS ADDA
+   Withdraw CSS
+   Version 1.0
+========================================== */
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+body{
+
+    background:#0d0d0d;
+
+    color:#ffffff;
+
+    font-family:Poppins,sans-serif;
+
+}
+
+.withdraw-page{
+
+    max-width:500px;
+
+    margin:auto;
+
+    min-height:100vh;
+
+    padding:20px 20px 100px;
+
+}
+
+/* ==========================
+   Header
+========================== */
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+.page-header h2{
+
+    color:#FFD700;
+
+    font-size:24px;
+
+}
+
+#backBtn{
+
+    width:48px;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#1b1b1b;
+
+    color:#FFD700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+#backBtn:hover{
+
+    transform:translateX(-5px);
+
+}
+
+/* ==========================
+   Balance Card
+========================== */
+
+.balance-card{
+
+    background:linear-gradient(135deg,#222,#111);
+
+    border:1px solid rgba(255,215,0,.20);
+
+    border-radius:20px;
+
+    padding:22px;
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+    box-shadow:0 10px 25px rgba(255,215,0,.12);
+
+}
+
+.balance-card p{
+
+    color:#bbbbbb;
+
+}
+
+.balance-card h1{
+
+    margin-top:10px;
+
+    color:#FFD700;
+
+    font-size:36px;
+
+}
+
+/* ==========================
+   Withdraw Form
+========================== */
+
+.withdraw-form{
+
+    background:#181818;
+
+    border-radius:20px;
+
+    padding:22px;
+
+    border:1px solid rgba(255,215,0,.15);
+
+}
+
+.withdraw-form h3{
+
+    color:#FFD700;
+
+    margin-bottom:20px;
+
+}
+
+.withdraw-form label{
+
+    display:block;
+
+    margin-top:18px;
+
+    margin-bottom:8px;
+
+    color:#dddddd;
+
+    font-size:14px;
+
+}
+
+.withdraw-form input{
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#252525;
+
+    color:#ffffff;
+
+    font-size:15px;
+
+    outline:none;
+
+    transition:.3s;
+
+}
+
+.withdraw-form input:focus{
+
+    border:1px solid #FFD700;
+
+}
+
+.hint{
+
+    margin-top:8px;
+
+    font-size:13px;
+
+    color:#999999;
+
+}
+/* ==========================================
+   PMS ADDA
+   Withdraw CSS
+   Part 2
+========================================== */
+
+/* ==========================
+   Payment Methods
+========================== */
+
+.payment-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:15px;
+
+    margin-bottom:20px;
+
+}
+
+.payment-card{
+
+    background:#202020;
+
+    border:2px solid transparent;
+
+    border-radius:16px;
+
+    padding:15px 10px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.payment-card img{
+
+    width:55px;
+
+    height:55px;
+
+    object-fit:contain;
+
+}
+
+.payment-card span{
+
+    color:#fff;
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+.payment-card:hover{
+
+    transform:translateY(-4px);
+
+    border-color:#FFD700;
+
+    box-shadow:0 8px 20px rgba(255,215,0,.20);
+
+}
+
+.payment-card.active{
+
+    border-color:#FFD700;
+
+    background:#2b2413;
+
+}
+
+/* ==========================
+   Rules Card
+========================== */
+
+.rules-card{
+
+    margin-top:18px;
+
+    background:#202020;
+
+    border:1px solid rgba(255,215,0,.18);
+
+    border-radius:16px;
+
+    padding:18px;
+
+}
+
+.rules-card ul{
+
+    padding-left:18px;
+
+}
+
+.rules-card li{
+
+    color:#d0d0d0;
+
+    margin-bottom:12px;
+
+    line-height:1.6;
+
+    font-size:14px;
+
+}
+
+.rules-card li:last-child{
+
+    margin-bottom:0;
+
+}
+
+.rules-card strong{
+
+    color:#FFD700;
+
+}
+
+/* ==========================
+   Pending Status
+========================== */
+
+.status-card{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin-top:22px;
+
+    padding:18px;
+
+    background:#202020;
+
+    border-radius:16px;
+
+    border:1px solid rgba(255,215,0,.15);
+
+}
+
+.status-icon{
+
+    width:55px;
+
+    height:55px;
+
+    border-radius:50%;
+
+    background:rgba(255,215,0,.15);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.status-icon i{
+
+    color:#FFD700;
+
+    font-size:24px;
+
+}
+
+.status-info h4{
+
+    color:#FFD700;
+
+    margin-bottom:5px;
+
+}
+
+.status-info p{
+
+    color:#c7c7c7;
+
+    font-size:14px;
+
+}
+
+/* ==========================
+   Submit Button
+========================== */
+
+.submit-btn{
+
+    width:100%;
+
+    margin-top:25px;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:linear-gradient(135deg,#FFD700,#F4B400);
+
+    color:#111;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.submit-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 10px 25px rgba(255,215,0,.30);
+
+}
+
+.submit-btn i{
+
+    margin-right:8px;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Withdraw CSS
+   Part 3
+========================================== */
+
+/* ==========================
+   Confirm Modal
+========================== */
+
+.modal{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+.modal-content{
+
+    width:90%;
+
+    max-width:420px;
+
+    background:#1b1b1b;
+
+    border:1px solid rgba(255,215,0,.20);
+
+    border-radius:20px;
+
+    padding:25px;
+
+    animation:popup .3s ease;
+
+}
+
+.modal-content h2{
+
+    text-align:center;
+
+    color:#FFD700;
+
+    margin-bottom:20px;
+
+}
+
+/* ==========================
+   Confirm Box
+========================== */
+
+.confirm-box{
+
+    background:#242424;
+
+    border-radius:15px;
+
+    padding:15px;
+
+    margin-bottom:20px;
+
+}
+
+.confirm-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:12px 0;
+
+    border-bottom:1px solid rgba(255,255,255,.08);
+
+}
+
+.confirm-row:last-child{
+
+    border-bottom:none;
+
+}
+
+.confirm-row span{
+
+    color:#bdbdbd;
+
+}
+
+.confirm-row strong{
+
+    color:#FFD700;
+
+}
+
+/* ==========================
+   Modal Buttons
+========================== */
+
+.modal-buttons{
+
+    display:flex;
+
+    gap:15px;
+
+}
+
+.modal-buttons button{
+
+    flex:1;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+#cancelWithdraw{
+
+    background:#2c2c2c;
+
+    color:#ffffff;
+
+}
+
+#confirmWithdraw{
+
+    background:#FFD700;
+
+    color:#111111;
+
+}
+
+.modal-buttons button:hover{
+
+    transform:translateY(-2px);
+
+}
+
+/* ==========================
+   Success & Failed Icon
+========================== */
+
+.success-icon,
+.failed-icon{
+
+    width:80px;
+
+    height:80px;
+
+    margin:0 auto 20px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.success-icon{
+
+    background:rgba(76,175,80,.15);
+
+}
+
+.success-icon i{
+
+    color:#4CAF50;
+
+    font-size:42px;
+
+}
+
+.failed-icon{
+
+    background:rgba(244,67,54,.15);
+
+}
+
+.failed-icon i{
+
+    color:#F44336;
+
+    font-size:42px;
+
+}
+
+/* ==========================
+   History
+========================== */
+
+.history-section{
+
+    margin-top:30px;
+
+}
+
+.history-section h3{
+
+    color:#FFD700;
+
+    margin-bottom:15px;
+    text-align: center;
+
+}
+
+.history-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:15px;
+
+}
+
+.history-card{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    background:#1b1b1b;
+
+    border-radius:15px;
+
+    padding:18px;
+
+    border:1px solid rgba(255,215,0,.10);
+
+}
+
+.history-card h4{
+
+    margin-bottom:5px;
+
+}
+
+.history-card p{
+
+    color:#999;
+
+    font-size:13px;
+
+}
+
+.history-amount{
+
+    color:#FFD700;
+
+    font-weight:bold;
+
+}
+
+.history-status{
+
+    padding:6px 12px;
+
+    border-radius:20px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+.history-status.pending{
+
+    background:#ffc10722;
+
+    color:#FFC107;
+
+}
+
+.history-status.success{
+
+    background:#4caf5022;
+
+    color:#4CAF50;
+
+}
+
+.history-status.failed{
+
+    background:#f4433622;
+
+    color:#F44336;
+
+}
+
+/* ==========================
+   Loader
+========================== */
+
+.loader-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:10000;
+
+}
+
+.loader{
+
+    width:60px;
+
+    height:60px;
+
+    border:5px solid rgba(255,215,0,.20);
+
+    border-top:5px solid #FFD700;
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+/* ==========================
+   Toast
+========================== */
+
+.toast{
+
+    position:fixed;
+
+    top:20px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:#1f1f1f;
+
+    color:#fff;
+
+    padding:15px 20px;
+
+    border-left:4px solid #FFD700;
+
+    border-radius:12px;
+
+    display:none;
+
+    z-index:10001;
+
+    min-width:280px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.35);
+
+}
+
+@keyframes popup{
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.9);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
+
+}
+/* ==========================================
+   PMS ADDA
+   Withdraw CSS
+   Part 4 (Final)
+========================================== */
+
+/* ==========================
+   Fade Animation
+========================== */
+
+.withdraw-page{
+
+    animation:fadeIn .35s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(15px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================
+   Desktop Responsive
+========================== */
+
+@media (min-width:992px){
+
+    .withdraw-page{
+
+        max-width:1200px;
+
+        padding:35px;
+
+    }
+
+    .withdraw-form{
+
+        max-width:750px;
+
+        margin:auto;
+
+    }
+
+    .payment-grid{
+
+        grid-template-columns:repeat(3,1fr);
+
+        gap:20px;
+
+    }
+
+    .history-list{
+
+        max-width:750px;
+
+        margin:auto;
+
+    }
+
+}
+
+/* ==========================
+   Tablet
+========================== */
+
+@media (max-width:768px){
+
+    .withdraw-page{
+
+        padding:15px 15px 90px;
+
+    }
+
+    .payment-grid{
+
+        gap:10px;
+
+    }
+
+    .payment-card img{
+
+        width:45px;
+
+        height:45px;
+
+    }
+
+    .history-card{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:10px;
+
+    }
+
+    .modal-buttons{
+
+        flex-direction:column;
+
+    }
+
+}
+
+/* ==========================
+   Small Mobile
+========================== */
+
+@media (max-width:480px){
+
+    .payment-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .payment-card{
+
+        flex-direction:row;
+
+        justify-content:flex-start;
+
+        padding:15px;
+
+    }
+
+    .payment-card img{
+
+        width:40px;
+
+        height:40px;
+
+    }
+
+    .balance-card h1{
+
+        font-size:30px;
+
+    }
+
+    .page-header h2{
+
+        font-size:20px;
+
+    }
+
+    .modal-content{
+
+        padding:20px;
+
+    }
+
+}
+
+/* ==========================
+   Button Effect
+========================== */
+
+button{
+
+    transition:.3s ease;
+
+}
+
+button:active{
+
+    transform:scale(.96);
+
+}
+
+/* ==========================
+   Focus Style
+========================== */
+
+button:focus,
+input:focus{
+
+    outline:2px solid #FFD700;
+
+    outline-offset:2px;
+
+}
+
+/* ==========================
+   Custom Scrollbar
+========================== */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#111;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#FFD700;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#e6c200;
+
+}

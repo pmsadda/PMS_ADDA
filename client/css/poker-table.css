@@ -1,0 +1,3396 @@
+/* ==========================================
+   PMS ADDA TEXAS HOLD'EM POKER
+   Glossy Responsive Multiplayer Table
+========================================== */
+
+:root {
+  --gold: #ffd45b;
+  --gold-light: #fff0a0;
+  --gold-dark: #9b6500;
+
+  --red: #ff4058;
+  --red-dark: #8b1021;
+
+  --green: #24e18a;
+  --blue: #36a9ff;
+
+  --white: #f8fbff;
+  --muted: #9badbd;
+
+  --panel:
+    rgba(4, 18, 25, 0.93);
+
+  --panel-border:
+    rgba(255, 213, 80, 0.24);
+
+  --header-height: 78px;
+  --footer-height: 94px;
+
+  --table-width:
+    min(
+      78vw,
+      1160px,
+      calc(
+        (100vh - 205px) *
+        1.777
+      )
+    );
+
+  font-family:
+    Inter,
+    Poppins,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  overflow: hidden;
+  color: var(--white);
+
+  background:
+    linear-gradient(
+      rgba(0, 9, 6, 0.22),
+      rgba(0, 7, 5, 0.62)
+    ),
+    url(
+      "../assets/poker/poker-background.png"
+    )
+    center / cover no-repeat fixed;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+/* ==========================================
+   APPLICATION
+========================================== */
+
+.poker-app {
+  position: relative;
+  display: grid;
+
+  grid-template-rows:
+    var(--header-height)
+    minmax(0, 1fr)
+    var(--footer-height);
+
+  width: 100vw;
+  height: 100vh;
+
+  padding: 9px 14px;
+  gap: 8px;
+
+  isolation: isolate;
+}
+
+.poker-app::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+
+  content: "";
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(0, 255, 136, 0.09),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 45%,
+      rgba(0, 0, 0, 0.68)
+    );
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.poker-header {
+  position: relative;
+  z-index: 100;
+
+  display: grid;
+
+  grid-template-columns:
+    58px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  height: var(--header-height);
+
+  padding: 8px 15px;
+  gap: 15px;
+
+  border:
+    1px solid
+    var(--panel-border);
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(8, 34, 37, 0.96),
+      rgba(2, 15, 21, 0.97)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.08),
+    0 12px 35px
+      rgba(0, 0, 0, 0.45);
+
+  backdrop-filter:
+    blur(16px);
+}
+
+.poker-header::after {
+  position: absolute;
+  top: 0;
+  left: 20%;
+
+  width: 60%;
+  height: 1px;
+
+  content: "";
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 218, 88, 0.8),
+      transparent
+    );
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+
+  width: 49px;
+  height: 49px;
+
+  color: var(--gold);
+  font-size: 23px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  border:
+    1px solid
+    rgba(255, 215, 77, 0.3);
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(22, 60, 62, 0.96),
+      rgba(3, 18, 24, 0.98)
+    );
+
+  box-shadow:
+    inset 2px 2px 4px
+      rgba(255, 255, 255, 0.08),
+    inset -3px -3px 8px
+      rgba(0, 0, 0, 0.45),
+    0 7px 18px
+      rgba(0, 0, 0, 0.32);
+
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.icon-button:hover {
+  border-color:
+    rgba(255, 220, 91, 0.75);
+
+  box-shadow:
+    0 0 22px
+      rgba(255, 207, 39, 0.18);
+
+  transform:
+    translateY(-2px);
+}
+
+.icon-button:active {
+  transform:
+    translateY(1px)
+    scale(0.96);
+}
+
+.poker-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+  gap: 12px;
+}
+
+.brand-logo {
+  width: 53px;
+  height: 53px;
+
+  object-fit: cover;
+
+  border:
+    2px solid
+    rgba(255, 214, 68, 0.55);
+
+  border-radius: 15px;
+
+  box-shadow:
+    0 0 22px
+      rgba(255, 199, 30, 0.2);
+}
+
+.poker-brand h1 {
+  overflow: hidden;
+
+  color: var(--gold);
+
+  font-size:
+    clamp(
+      18px,
+      2vw,
+      29px
+    );
+
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  line-height: 1.05;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  text-shadow:
+    0 2px 12px
+      rgba(255, 189, 31, 0.25);
+}
+
+.table-meta {
+  display: flex;
+  align-items: center;
+
+  margin-top: 5px;
+  gap: 7px;
+
+  color: #bdcbd5;
+  font-size: 12px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.table-meta > span:nth-child(even) {
+  color: var(--gold);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.wallet-box {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 112px;
+
+  padding: 7px 14px;
+
+  text-align: right;
+
+  border:
+    1px solid
+    rgba(255, 212, 71, 0.18);
+
+  border-radius: 15px;
+
+  background:
+    rgba(0, 0, 0, 0.25);
+}
+
+.wallet-box span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.wallet-box strong {
+  margin-top: 1px;
+
+  color: var(--gold-light);
+  font-size: 16px;
+}
+
+/* ==========================================
+   STAGE
+========================================== */
+
+.poker-stage {
+  position: relative;
+  z-index: 5;
+
+  display: grid;
+  place-items: center;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+.table-light {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: min(72vw, 1080px);
+  height: 65%;
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(255, 38, 75, 0.14),
+      transparent 68%
+    );
+
+  filter: blur(30px);
+
+  transform:
+    translate(-50%, -50%);
+}
+
+/* ==========================================
+   POKER TABLE IMAGE
+========================================== */
+
+.poker-table {
+  position: relative;
+
+  width: var(--table-width);
+  aspect-ratio: 16 / 9;
+
+  background-image:
+    url(
+      "../assets/poker/poker-table.png"
+    );
+
+  background-repeat:
+    no-repeat;
+
+  background-position:
+    center;
+
+  background-size:
+    contain;
+
+  filter:
+    drop-shadow(
+      0 26px 24px
+      rgba(0, 0, 0, 0.62)
+    );
+
+  transform:
+    translateY(-1%);
+}
+
+/*
+ * Wooden rail এবং felt table image-এর
+ * মধ্যেই আছে, তাই generated layer
+ * transparent থাকবে।
+ */
+
+.table-rail {
+  display: none;
+}
+
+.table-felt {
+  position: absolute;
+
+  top: 27%;
+  right: 19%;
+  bottom: 27%;
+  left: 19%;
+
+  z-index: 3;
+
+  border-radius: 45%;
+
+  pointer-events: none;
+}
+
+.table-logo {
+  display: none;
+}
+
+/* ==========================================
+   POT
+========================================== */
+
+.pot-display {
+  position: absolute;
+  top: 7%;
+  left: 50%;
+
+  z-index: 12;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  min-width: 120px;
+
+  color: #fff;
+
+  transform:
+    translateX(-50%);
+}
+
+.pot-display > span {
+  color: var(--gold-light);
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 1.3px;
+}
+
+.pot-display strong {
+  margin-top: 2px;
+
+  color: #fff8c9;
+
+  font-size:
+    clamp(
+      15px,
+      1.6vw,
+      21px
+    );
+
+  text-shadow:
+    0 0 12px
+      rgba(255, 208, 54, 0.5);
+}
+
+.pot-chips {
+  position: relative;
+
+  width: 88px;
+  height: 22px;
+
+  margin-top: 2px;
+}
+
+/* ==========================================
+   COMMUNITY CARDS
+========================================== */
+
+.community-cards {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+
+  z-index: 10;
+
+  display: flex;
+
+  gap:
+    clamp(
+      4px,
+      0.55vw,
+      8px
+    );
+
+  transform:
+    translate(-50%, -50%);
+}
+
+.community-card {
+  position: relative;
+
+  width:
+    clamp(
+      42px,
+      4.3vw,
+      66px
+    );
+
+  aspect-ratio: 0.69;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.42);
+
+  border-radius:
+    clamp(
+      5px,
+      0.5vw,
+      8px
+    );
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.12),
+      rgba(0, 0, 0, 0.22)
+    );
+
+  box-shadow:
+    inset 0 0 10px
+      rgba(255, 255, 255, 0.05),
+    0 7px 13px
+      rgba(0, 0, 0, 0.4);
+
+  transition:
+    transform 280ms ease,
+    opacity 280ms ease;
+}
+
+.community-card.has-card {
+  background:
+    #fff center / cover no-repeat;
+}
+
+.community-card img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.round-status {
+  position: absolute;
+  top: 76%;
+  left: 50%;
+
+  z-index: 12;
+
+  min-width: 160px;
+
+  padding: 5px 13px;
+
+  color: #ffeaa0;
+
+  font-size: 11px;
+  font-weight: 850;
+
+  text-align: center;
+
+  border:
+    1px solid
+    rgba(255, 214, 70, 0.24);
+
+  border-radius: 20px;
+
+  background:
+    rgba(0, 0, 0, 0.42);
+
+  transform:
+    translateX(-50%);
+
+  backdrop-filter:
+    blur(7px);
+}
+
+/* ==========================================
+   PLAYER SEATS
+========================================== */
+
+.player-seat {
+  position: absolute;
+  z-index: 30;
+
+  width:
+    clamp(
+      178px,
+      17vw,
+      236px
+    );
+
+  min-height: 78px;
+
+  transition:
+    opacity 200ms ease,
+    filter 200ms ease,
+    transform 200ms ease;
+}
+
+.seat-1 {
+  bottom: 2%;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+}
+
+.seat-2 {
+  bottom: 16%;
+  left: 4%;
+
+  transform:
+    translateX(-4%);
+}
+
+.seat-3 {
+  top: 9%;
+  left: 12%;
+
+  transform:
+    translateX(-12%);
+}
+
+.seat-4 {
+  top: 9%;
+  right: 12%;
+
+  transform:
+    translateX(12%);
+}
+
+.seat-5 {
+  right: 4%;
+  bottom: 16%;
+
+  transform:
+    translateX(4%);
+}
+
+.player-profile {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    50px
+    minmax(0, 1fr)
+    34px;
+
+  align-items: center;
+
+  min-height: 66px;
+
+  padding: 8px 9px;
+  gap: 8px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.18);
+
+  border-radius: 19px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 38, 42, 0.97),
+      rgba(3, 15, 21, 0.97)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.08),
+    0 10px 22px
+      rgba(0, 0, 0, 0.48);
+
+  backdrop-filter:
+    blur(10px);
+}
+
+.player-profile::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+
+  width: 5px;
+
+  content: "";
+
+  background:
+    var(--red);
+
+  box-shadow:
+    0 0 15px
+      var(--red);
+}
+
+.player-seat.is-empty {
+  opacity: 0.48;
+  filter: grayscale(0.65);
+}
+
+.player-seat.is-current-turn {
+  z-index: 40;
+}
+
+.player-seat.is-current-turn
+.player-profile {
+  border-color:
+    var(--gold);
+
+  box-shadow:
+    0 0 0 2px
+      rgba(255, 210, 63, 0.25),
+    0 0 28px
+      rgba(255, 196, 32, 0.32);
+}
+
+.player-seat.is-folded {
+  opacity: 0.55;
+  filter: grayscale(0.8);
+}
+
+.player-seat.is-winner
+.player-profile {
+  border-color:
+    var(--green);
+
+  box-shadow:
+    0 0 30px
+      rgba(31, 255, 139, 0.45);
+}
+
+.player-avatar {
+  display: grid;
+  place-items: center;
+
+  width: 49px;
+  height: 49px;
+
+  overflow: hidden;
+
+  border:
+    2px solid
+    var(--gold);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      #1a4245,
+      #07161b
+    );
+
+  box-shadow:
+    0 0 13px
+      rgba(255, 206, 45, 0.24);
+}
+
+.player-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.player-details {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  gap: 1px;
+}
+
+.player-name {
+  overflow: hidden;
+
+  color: var(--white);
+  font-size: 13px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-stack {
+  color: var(--gold-light);
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.player-action {
+  color: var(--green);
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.turn-timer {
+  display: grid;
+  place-items: center;
+
+  width: 31px;
+  height: 31px;
+
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  border:
+    3px solid
+    rgba(255, 255, 255, 0.16);
+
+  border-top-color:
+    var(--gold);
+
+  border-radius: 50%;
+
+  background:
+    rgba(0, 0, 0, 0.35);
+}
+
+.player-seat:not(.is-current-turn)
+.turn-timer {
+  opacity: 0.35;
+}
+
+/* ==========================================
+   HOLE CARDS
+========================================== */
+
+.player-cards {
+  position: absolute;
+  bottom: 53px;
+  left: 50%;
+
+  z-index: -1;
+
+  display: flex;
+  gap: 0;
+
+  transform:
+    translateX(-50%);
+}
+
+.hole-card {
+  width:
+    clamp(
+      37px,
+      3.7vw,
+      55px
+    );
+
+  aspect-ratio: 0.69;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.55);
+
+  border-radius: 6px;
+
+  background:
+    #fff
+    url(
+      "../assets/cards/card-back.png"
+    )
+    center / cover no-repeat;
+
+  box-shadow:
+    0 6px 10px
+      rgba(0, 0, 0, 0.48);
+
+  transform:
+    rotate(-7deg);
+}
+
+.hole-card + .hole-card {
+  margin-left: -16%;
+
+  transform:
+    rotate(7deg);
+}
+
+.hole-card.has-card {
+  background:
+    #fff center / cover no-repeat;
+}
+
+/* ==========================================
+   PLAYER BADGES
+========================================== */
+
+.player-badges {
+  position: absolute;
+  top: -9px;
+  right: 8px;
+
+  z-index: 5;
+
+  display: flex;
+  gap: 4px;
+}
+
+.dealer-badge,
+.blind-badge {
+  display: none;
+  place-items: center;
+
+  min-width: 23px;
+  height: 23px;
+
+  padding: 0 5px;
+
+  color: #101923;
+  font-size: 9px;
+  font-weight: 950;
+
+  border:
+    2px solid #fff;
+
+  border-radius: 50%;
+
+  background:
+    var(--gold);
+
+  box-shadow:
+    0 3px 8px
+      rgba(0, 0, 0, 0.45);
+}
+
+.blind-badge {
+  color: #fff;
+
+  border-radius: 8px;
+
+  background: #287de8;
+}
+
+.player-seat.is-dealer
+.dealer-badge {
+  display: grid;
+}
+
+.player-seat.is-small-blind
+.small-blind-badge {
+  display: grid;
+}
+
+.player-seat.is-big-blind
+.big-blind-badge {
+  display: grid;
+
+  background:
+    var(--red);
+}
+
+/* ==========================================
+   PLAYER BET
+========================================== */
+
+.player-bet {
+  position: absolute;
+
+  display: none;
+  align-items: center;
+
+  min-width: 76px;
+
+  padding: 4px 8px;
+  gap: 5px;
+
+  color: #fff5bd;
+
+  font-size: 10px;
+
+  border:
+    1px solid
+    rgba(255, 211, 59, 0.25);
+
+  border-radius: 12px;
+
+  background:
+    rgba(0, 0, 0, 0.58);
+
+  box-shadow:
+    0 5px 12px
+      rgba(0, 0, 0, 0.35);
+}
+
+.player-bet.has-bet {
+  display: flex;
+}
+
+.player-bet span {
+  color: var(--muted);
+}
+
+.seat-1 .player-bet {
+  top: -49px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+}
+
+.seat-2 .player-bet,
+.seat-3 .player-bet {
+  top: 50%;
+  right: -90px;
+
+  transform:
+    translateY(-50%);
+}
+
+.seat-4 .player-bet,
+.seat-5 .player-bet {
+  top: 50%;
+  left: -90px;
+
+  transform:
+    translateY(-50%);
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.poker-footer {
+  position: relative;
+  z-index: 100;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(125px, 0.55fr)
+    minmax(500px, 2fr)
+    minmax(190px, 0.8fr);
+
+  align-items: center;
+
+  min-height: var(--footer-height);
+
+  padding: 9px 14px;
+  gap: 14px;
+
+  border:
+    1px solid
+    var(--panel-border);
+
+  border-radius: 23px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(7, 31, 34, 0.97),
+      rgba(2, 15, 20, 0.97)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.07),
+    0 -10px 30px
+      rgba(0, 0, 0, 0.35);
+
+  backdrop-filter:
+    blur(16px);
+}
+
+.footer-status {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: #c5d1db;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.connection-dot {
+  width: 11px;
+  height: 11px;
+
+  border-radius: 50%;
+
+  background: #71808d;
+}
+
+.connection-dot.is-connected {
+  background: #36f994;
+
+  box-shadow:
+    0 0 11px #29f58b;
+}
+
+.action-controls {
+  display: grid;
+
+  grid-template-columns:
+    minmax(80px, 0.75fr)
+    minmax(90px, 0.9fr)
+    minmax(150px, 1.6fr)
+    minmax(90px, 0.9fr)
+    minmax(80px, 0.75fr);
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.action-button,
+.primary-button,
+.tool-button {
+  min-height: 47px;
+
+  color: #fff;
+  font-weight: 850;
+
+  cursor: pointer;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.17);
+
+  border-radius: 14px;
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.13),
+    0 6px 14px
+      rgba(0, 0, 0, 0.32);
+
+  transition:
+    transform 150ms ease,
+    filter 150ms ease,
+    opacity 150ms ease;
+}
+
+.action-button:hover:not(:disabled),
+.primary-button:hover,
+.tool-button:hover {
+  filter: brightness(1.12);
+
+  transform:
+    translateY(-2px);
+}
+
+.action-button:active:not(:disabled),
+.primary-button:active,
+.tool-button:active {
+  transform:
+    translateY(1px)
+    scale(0.97);
+}
+
+.action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+  filter: grayscale(0.5);
+}
+
+.fold-button {
+  background:
+    linear-gradient(
+      145deg,
+      #9b1b2e,
+      #4f0a16
+    );
+}
+
+.call-button {
+  background:
+    linear-gradient(
+      145deg,
+      #148e63,
+      #07513c
+    );
+}
+
+.raise-button {
+  background:
+    linear-gradient(
+      145deg,
+      #c47b16,
+      #754004
+    );
+}
+
+.all-in-button {
+  background:
+    linear-gradient(
+      145deg,
+      #a827dc,
+      #501273
+    );
+}
+
+.raise-control {
+  display: flex;
+  flex-direction: column;
+
+  padding: 6px 10px;
+  gap: 5px;
+
+  border:
+    1px solid
+    rgba(255, 214, 62, 0.18);
+
+  border-radius: 13px;
+
+  background:
+    rgba(0, 0, 0, 0.24);
+}
+
+.raise-values {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.raise-values strong {
+  color: var(--gold-light);
+  font-size: 12px;
+}
+
+.raise-control input {
+  width: 100%;
+
+  cursor: pointer;
+
+  accent-color:
+    var(--gold);
+}
+
+.raise-control input:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.footer-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.tool-button {
+  min-width: 45px;
+  min-height: 45px;
+
+  padding: 0 11px;
+
+  color: #e8f0f5;
+
+  background:
+    linear-gradient(
+      145deg,
+      #17434a,
+      #071d24
+    );
+}
+
+.exit-button {
+  color: #ffc8ce;
+
+  border-color:
+    rgba(255, 69, 87, 0.34);
+
+  background:
+    linear-gradient(
+      145deg,
+      #611625,
+      #2d0910
+    );
+}
+
+/* ==========================================
+   OVERLAYS
+========================================== */
+
+.matchmaking-overlay,
+.winner-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 500;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  background:
+    rgba(0, 7, 6, 0.76);
+
+  backdrop-filter:
+    blur(10px);
+}
+
+.matchmaking-overlay[hidden],
+.winner-overlay[hidden] {
+  display: none;
+}
+
+.matchmaking-card,
+.winner-card {
+  position: relative;
+
+  width:
+    min(
+      92vw,
+      390px
+    );
+
+  padding: 28px;
+
+  overflow: hidden;
+
+  text-align: center;
+
+  border:
+    1px solid
+    rgba(255, 215, 71, 0.35);
+
+  border-radius: 26px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 53, 51, 0.98),
+      rgba(3, 18, 23, 0.99)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.1),
+    0 25px 65px
+      rgba(0, 0, 0, 0.65),
+    0 0 45px
+      rgba(255, 44, 78, 0.12);
+}
+
+.matchmaking-card h2,
+.winner-card h2 {
+  margin-top: 12px;
+
+  color: var(--gold);
+  font-size: 24px;
+}
+
+.matchmaking-card p,
+.winner-card p {
+  margin-top: 7px;
+
+  color: #bdcbd3;
+  font-size: 13px;
+}
+
+.search-loader {
+  display: flex;
+  justify-content: center;
+
+  height: 38px;
+  gap: 8px;
+}
+
+.search-loader span {
+  width: 11px;
+  height: 11px;
+
+  border-radius: 50%;
+
+  background: var(--red);
+
+  box-shadow:
+    0 0 13px
+      rgba(255, 50, 78, 0.7);
+
+  animation:
+    searchBounce
+    900ms
+    ease-in-out
+    infinite;
+}
+
+.search-loader span:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.search-loader span:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+@keyframes searchBounce {
+  0%,
+  100% {
+    transform:
+      translateY(16px)
+      scale(0.8);
+
+    opacity: 0.5;
+  }
+
+  50% {
+    transform:
+      translateY(0)
+      scale(1.15);
+
+    opacity: 1;
+  }
+}
+
+#matchmakingTimer {
+  display: grid;
+  place-items: center;
+
+  width: 68px;
+  height: 68px;
+
+  margin: 19px auto 11px;
+
+  color: #fff8c0;
+  font-size: 27px;
+
+  border:
+    4px solid
+    rgba(255, 255, 255, 0.13);
+
+  border-top-color:
+    var(--gold);
+
+  border-radius: 50%;
+
+  background:
+    rgba(0, 0, 0, 0.3);
+}
+
+.player-count {
+  display: flex;
+  justify-content: center;
+
+  gap: 5px;
+
+  color: var(--gold-light);
+  font-weight: 850;
+}
+
+.winner-crown {
+  font-size: 48px;
+
+  filter:
+    drop-shadow(
+      0 0 15px
+      rgba(255, 205, 45, 0.55)
+    );
+}
+
+.winner-card > span {
+  display: block;
+
+  margin-top: 6px;
+
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 1.7px;
+}
+
+#winnerAmount {
+  display: block;
+
+  margin: 14px 0 20px;
+
+  color: #5dffa4;
+  font-size: 28px;
+
+  text-shadow:
+    0 0 16px
+      rgba(45, 255, 141, 0.35);
+}
+
+.primary-button {
+  width: 100%;
+
+  border-color:
+    rgba(255, 215, 64, 0.42);
+
+  background:
+    linear-gradient(
+      145deg,
+      #d39114,
+      #815000
+    );
+}
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (
+  max-width: 1100px
+) {
+  :root {
+    --table-width:
+      min(
+        92vw,
+        calc(
+          (100vh - 200px) *
+          1.777
+        )
+      );
+  }
+
+  .player-seat {
+    width:
+      clamp(
+        150px,
+        20vw,
+        195px
+      );
+  }
+
+  .poker-footer {
+    grid-template-columns:
+      100px
+      minmax(430px, 1fr)
+      160px;
+
+    gap: 7px;
+  }
+
+  .footer-tools
+  .tool-button:nth-child(-n + 2) {
+    display: none;
+  }
+}
+
+/* ==========================================
+   MOBILE LANDSCAPE
+========================================== */
+
+@media (
+  max-height: 620px
+) and (
+  orientation: landscape
+) {
+  :root {
+    --header-height: 60px;
+    --footer-height: 72px;
+
+    --table-width:
+      min(
+        80vw,
+        calc(
+          (100vh - 155px) *
+          1.777
+        )
+      );
+  }
+
+  .poker-app {
+    padding: 5px 8px;
+    gap: 5px;
+  }
+
+  .poker-header {
+    padding: 5px 9px;
+    border-radius: 17px;
+  }
+
+  .icon-button {
+    width: 39px;
+    height: 39px;
+  }
+
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .wallet-box {
+    min-width: 90px;
+    padding: 5px 9px;
+  }
+
+  .player-seat {
+    width:
+      clamp(
+        130px,
+        17vw,
+        170px
+      );
+  }
+
+  .player-profile {
+    grid-template-columns:
+      39px
+      minmax(0, 1fr)
+      27px;
+
+    min-height: 51px;
+    padding: 5px 7px;
+  }
+
+  .player-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .turn-timer {
+    width: 26px;
+    height: 26px;
+  }
+
+  .player-cards {
+    bottom: 42px;
+  }
+
+  .poker-footer {
+    grid-template-columns:
+      80px
+      minmax(390px, 1fr)
+      120px;
+
+    min-height: var(--footer-height);
+
+    padding: 5px 8px;
+  }
+
+  .action-button,
+  .tool-button {
+    min-height: 38px;
+  }
+
+  .footer-status {
+    font-size: 10px;
+  }
+
+  .footer-tools
+  .tool-button:not(.exit-button) {
+    display: none;
+  }
+}
+
+/* ==========================================
+   SMALL SCREEN FALLBACK
+========================================== */
+
+@media (
+  max-width: 760px
+) {
+  body {
+    overflow: auto;
+  }
+
+  .poker-app {
+    min-width: 720px;
+  }
+}
+
+/* ==========================================
+   POKER CARD + CHIP ANIMATIONS
+========================================== */
+
+.hole-card.is-dealing {
+  z-index: 80;
+
+  animation:
+    poker-hole-card-deal
+    540ms
+    cubic-bezier(
+      0.2,
+      0.82,
+      0.25,
+      1
+    )
+    both;
+}
+
+.community-card.is-revealing {
+  z-index: 20;
+
+  animation:
+    poker-community-reveal
+    620ms
+    cubic-bezier(
+      0.18,
+      0.85,
+      0.25,
+      1
+    )
+    both;
+}
+
+.flying-poker-chip {
+  position: absolute;
+  z-index: 150;
+
+  display: grid;
+  place-items: center;
+
+  width:
+    clamp(
+      38px,
+      4vw,
+      58px
+    );
+
+  aspect-ratio: 1;
+
+  padding: 5px;
+
+  color: #fff8ca;
+
+  font-size:
+    clamp(
+      7px,
+      0.75vw,
+      10px
+    );
+
+  font-weight: 950;
+
+  text-align: center;
+
+  white-space: nowrap;
+
+  pointer-events: none;
+
+  border-radius: 50%;
+
+  background:
+    url(
+      "../assets/chips/chip10.png"
+    )
+    center / contain
+    no-repeat;
+
+  filter:
+    drop-shadow(
+      0 5px 7px
+      rgba(0, 0, 0, 0.58)
+    )
+    drop-shadow(
+      0 0 7px
+      rgba(255, 207, 54, 0.42)
+    );
+
+  transform:
+    translate(-50%, -50%);
+
+  animation:
+    poker-chip-to-pot
+    760ms
+    cubic-bezier(
+      0.2,
+      0.75,
+      0.25,
+      1
+    )
+    forwards;
+}
+
+.pot-chips.is-collecting {
+  animation:
+    poker-pot-pulse
+    480ms
+    ease-out;
+}
+
+@keyframes poker-hole-card-deal {
+  0% {
+    opacity: 0;
+
+    transform:
+      translate(
+        0,
+        -220px
+      )
+      rotate(180deg)
+      scale(0.45);
+  }
+
+  68% {
+    opacity: 1;
+
+    transform:
+      translate(
+        0,
+        7px
+      )
+      rotate(-4deg)
+      scale(1.06);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translate(
+        0,
+        0
+      )
+      rotate(-7deg)
+      scale(1);
+  }
+}
+
+.hole-card + .hole-card.is-dealing {
+  animation-name:
+    poker-second-hole-card-deal;
+}
+
+@keyframes poker-second-hole-card-deal {
+  0% {
+    opacity: 0;
+
+    transform:
+      translate(
+        0,
+        -220px
+      )
+      rotate(180deg)
+      scale(0.45);
+  }
+
+  68% {
+    opacity: 1;
+
+    transform:
+      translate(
+        0,
+        7px
+      )
+      rotate(11deg)
+      scale(1.06);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translate(
+        0,
+        0
+      )
+      rotate(7deg)
+      scale(1);
+  }
+}
+
+@keyframes poker-community-reveal {
+  0% {
+    opacity: 0;
+
+    transform:
+      translateY(-65px)
+      rotateY(90deg)
+      scale(0.72);
+  }
+
+  60% {
+    opacity: 1;
+
+    transform:
+      translateY(4px)
+      rotateY(-10deg)
+      scale(1.06);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      rotateY(0)
+      scale(1);
+  }
+}
+
+@keyframes poker-chip-to-pot {
+  0% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.55)
+      rotate(0);
+  }
+
+  15% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.08)
+      rotate(45deg);
+  }
+
+  82% {
+    opacity: 1;
+
+    transform:
+      translate(
+        calc(
+          -50% +
+          var(--chip-x)
+        ),
+        calc(
+          -50% +
+          var(--chip-y)
+        )
+      )
+      scale(0.88)
+      rotate(540deg);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(
+        calc(
+          -50% +
+          var(--chip-x)
+        ),
+        calc(
+          -50% +
+          var(--chip-y)
+        )
+      )
+      scale(0.35)
+      rotate(650deg);
+  }
+}
+
+@keyframes poker-pot-pulse {
+  0% {
+    transform:
+      scale(1);
+  }
+
+  45% {
+    transform:
+      scale(1.22);
+  }
+
+  100% {
+    transform:
+      scale(1);
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .hole-card.is-dealing,
+  .community-card.is-revealing,
+  .flying-poker-chip,
+  .pot-chips.is-collecting {
+    animation-duration:
+      1ms !important;
+
+    animation-iteration-count:
+      1 !important;
+  }
+}
+
+
+/* ==========================================
+   POT TO WINNER ANIMATION
+========================================== */
+
+.winner-poker-chip {
+  position: absolute;
+  z-index: 180;
+
+  width:
+    clamp(
+      35px,
+      3.6vw,
+      52px
+    );
+
+  aspect-ratio: 1;
+
+  pointer-events: none;
+
+  border-radius: 50%;
+
+  background:
+    url(
+      "../assets/chips/chip10.png"
+    )
+    center / contain
+    no-repeat;
+
+  filter:
+    drop-shadow(
+      0 5px 7px
+      rgba(0, 0, 0, 0.62)
+    )
+    drop-shadow(
+      0 0 8px
+      rgba(255, 211, 55, 0.55)
+    );
+
+  transform:
+    translate(-50%, -50%);
+
+  animation:
+    poker-pot-to-winner
+    880ms
+    cubic-bezier(
+      0.2,
+      0.78,
+      0.2,
+      1
+    )
+    forwards;
+}
+
+@keyframes poker-pot-to-winner {
+  0% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.45)
+      rotate(0);
+  }
+
+  15% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.12)
+      rotate(70deg);
+  }
+
+  85% {
+    opacity: 1;
+
+    transform:
+      translate(
+        calc(
+          -50% +
+          var(--winner-chip-x)
+        ),
+        calc(
+          -50% +
+          var(--winner-chip-y)
+        )
+      )
+      scale(0.82)
+      rotate(620deg);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(
+        calc(
+          -50% +
+          var(--winner-chip-x)
+        ),
+        calc(
+          -50% +
+          var(--winner-chip-y)
+        )
+      )
+      scale(0.25)
+      rotate(720deg);
+  }
+}
+
+/* =========================================================
+   PMS ADDA POKER — FINAL RESPONSIVE LANDSCAPE FIX
+========================================================= */
+
+.poker-app {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Mobile and tablet landscape */
+@media (orientation: landscape) and (max-width: 1100px),
+       (orientation: landscape) and (max-height: 620px) {
+
+  :root {
+    --header-height: 54px;
+    --footer-height: 64px;
+    --table-width: min(72vw, 680px);
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .poker-app {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    min-width: 0;
+    padding: 5px 7px;
+    gap: 4px;
+  }
+
+  /* Header */
+  .poker-header {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    height: var(--header-height);
+    padding: 4px 9px;
+    gap: 8px;
+    border-radius: 16px;
+  }
+
+  .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand-logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand-title {
+    font-size: clamp(15px, 2.6vw, 22px);
+  }
+
+  .brand-meta {
+    font-size: 10px;
+  }
+
+  .wallet-box {
+    min-width: 92px;
+    padding: 4px 9px;
+  }
+
+  .wallet-box span {
+    font-size: 8px;
+  }
+
+  .wallet-box strong {
+    font-size: 13px;
+  }
+
+  /* Stage */
+  .poker-stage {
+    overflow: visible;
+  }
+
+  .poker-table {
+    width: var(--table-width);
+    min-width: 560px;
+    transform: translateY(-1%);
+  }
+
+  .table-light {
+    width: 72vw;
+    height: 100%;
+  }
+
+  /* Pot and community cards */
+  .pot-display {
+    top: 18%;
+    min-width: 85px;
+  }
+
+  .pot-display > span {
+    font-size: 8px;
+  }
+
+  .pot-display strong {
+    font-size: 14px;
+  }
+
+  .community-cards {
+    top: 49%;
+    gap: 4px;
+  }
+
+  .community-card {
+    width: clamp(31px, 4vw, 42px);
+  }
+
+  .round-status {
+    top: 69%;
+    min-width: 135px;
+    padding: 3px 9px;
+    font-size: 9px;
+  }
+
+  /* Player seat */
+  .player-seat {
+    width: clamp(112px, 15vw, 138px);
+    min-height: 48px;
+  }
+
+  .player-profile {
+    grid-template-columns: 34px minmax(0, 1fr) 23px;
+    min-height: 45px;
+    padding: 4px 5px;
+    gap: 4px;
+    border-radius: 13px;
+  }
+
+  .player-avatar {
+    width: 33px;
+    height: 33px;
+    font-size: 12px;
+  }
+
+  .player-name {
+    font-size: 10px;
+  }
+
+  .player-stack,
+  .player-status {
+    font-size: 9px;
+  }
+
+  .turn-timer {
+    width: 23px;
+    height: 23px;
+    font-size: 9px;
+  }
+
+  .player-cards {
+    bottom: 35px;
+    scale: 0.78;
+  }
+
+  /* Five separate positions */
+  .seat-1 {
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .seat-2 {
+    bottom: 23%;
+    left: -3%;
+    transform: none;
+  }
+
+  .seat-3 {
+    top: 10%;
+    left: 15%;
+    transform: none;
+  }
+
+  .seat-4 {
+    top: 10%;
+    right: 15%;
+    transform: none;
+  }
+
+  .seat-5 {
+    right: -3%;
+    bottom: 23%;
+    transform: none;
+  }
+
+  .player-bet {
+    scale: 0.78;
+  }
+
+  /* Footer */
+  .poker-footer {
+    grid-template-columns: 75px minmax(0, 1fr) 58px;
+    min-height: var(--footer-height);
+    padding: 5px 7px;
+    gap: 6px;
+    border-radius: 16px;
+  }
+
+  .footer-status {
+    font-size: 9px;
+  }
+
+  .connection-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .action-controls {
+    grid-template-columns:
+      minmax(60px, 0.75fr)
+      minmax(68px, 0.9fr)
+      minmax(120px, 1.35fr)
+      minmax(68px, 0.9fr)
+      minmax(60px, 0.75fr);
+
+    gap: 5px;
+  }
+
+  .action-button,
+  .tool-button {
+    min-width: 0;
+    min-height: 37px;
+    font-size: 11px;
+    border-radius: 11px;
+  }
+
+  .raise-control {
+    padding: 4px 7px;
+    gap: 3px;
+  }
+
+  .raise-values {
+    font-size: 8px;
+  }
+
+  .raise-values strong {
+    font-size: 10px;
+  }
+
+  .footer-tools {
+    gap: 4px;
+  }
+
+  .footer-tools .tool-button:not(.exit-button) {
+    display: none;
+  }
+
+  .exit-button {
+    width: 55px;
+    padding: 0 6px;
+  }
+}
+
+/* Extra-small landscape */
+@media (orientation: landscape) and (max-height: 380px) {
+
+  :root {
+    --header-height: 50px;
+    --footer-height: 59px;
+    --table-width: min(70vw, 640px);
+  }
+
+  .poker-table {
+    min-width: 540px;
+  }
+
+  .player-seat {
+    width: 116px;
+    scale: 0.88;
+  }
+
+  .seat-2 {
+    left: -2%;
+  }
+
+  .seat-5 {
+    right: -2%;
+  }
+
+  .poker-footer {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+
+  .action-button,
+  .tool-button {
+    min-height: 34px;
+  }
+}
+
+/* Portrait: game requires landscape */
+@media (orientation: portrait) and (max-width: 950px) {
+
+  html,
+  body {
+    overflow: hidden;
+    background:
+      radial-gradient(circle at center, #113c30, #020c09 72%);
+  }
+
+  body::before {
+    content: "↻\A Poker খেলতে ফোনটি Landscape করুন";
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    color: #ffe27a;
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 1.7;
+    text-align: center;
+    white-space: pre-line;
+
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(15, 58, 46, 0.99),
+        rgba(2, 12, 9, 0.99)
+      );
+  }
+
+  .poker-app {
+    min-width: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+/* Notch-safe spacing */
+@supports (padding: env(safe-area-inset-left)) {
+
+  @media (orientation: landscape) {
+
+    .poker-app {
+      padding-left: max(7px, env(safe-area-inset-left));
+      padding-right: max(7px, env(safe-area-inset-right));
+    }
+  }
+}
+
+/* =========================================================
+   POKER MOBILE LANDSCAPE — SEAT + OVERLAY FINAL FIX
+========================================================= */
+
+@media (orientation: landscape) and (max-width: 1100px),
+       (orientation: landscape) and (max-height: 620px) {
+
+  /* Human player footer-এর উপরে থাকবে */
+  .seat-1 {
+    left: 50%;
+    bottom: 18%;
+    transform: translateX(-50%);
+  }
+
+  /* Left-side player */
+  .seat-2 {
+    left: 1%;
+    bottom: 31%;
+    transform: none;
+  }
+
+  /* Right-side player */
+  .seat-5 {
+    right: 1%;
+    bottom: 31%;
+    transform: none;
+  }
+
+  /* Top players */
+  .seat-3 {
+    top: 8%;
+    left: 15%;
+  }
+
+  .seat-4 {
+    top: 8%;
+    right: 15%;
+  }
+
+  /* Hole cards যেন footer-এর নিচে না যায় */
+  .seat-1 .player-cards {
+    bottom: 40px;
+  }
+
+  .seat-2 .player-cards,
+  .seat-5 .player-cards {
+    bottom: 36px;
+  }
+
+  /* Winner এবং matchmaking overlay সবকিছুর উপরে */
+  .poker-stage:has(.matchmaking-overlay:not([hidden])),
+  .poker-stage:has(.winner-overlay:not([hidden])) {
+    z-index: 1000;
+  }
+
+  .matchmaking-overlay,
+  .winner-overlay {
+    z-index: 1100;
+    padding: 10px;
+  }
+
+  .matchmaking-card,
+  .winner-card {
+    width: min(88vw, 360px);
+    max-height: calc(100dvh - 20px);
+    padding: 16px 20px;
+    overflow-y: auto;
+    border-radius: 18px;
+  }
+
+  .matchmaking-card h2,
+  .winner-card h2 {
+    margin-top: 5px;
+    font-size: 20px;
+  }
+
+  .winner-crown {
+    font-size: 34px;
+  }
+
+  #winnerAmount {
+    margin: 8px 0 10px;
+    font-size: 23px;
+  }
+
+  #matchmakingTimer {
+    width: 55px;
+    height: 55px;
+    margin: 10px auto 7px;
+    font-size: 22px;
+  }
+}
+
+/* Very short landscape screen */
+@media (orientation: landscape) and (max-height: 380px) {
+
+  .seat-1 {
+    bottom: 20%;
+  }
+
+  .seat-2,
+  .seat-5 {
+    bottom: 33%;
+  }
+
+  .matchmaking-card,
+  .winner-card {
+    padding: 12px 18px;
+  }
+}
+
+/* =========================================================
+   POKER 344PX HEIGHT — PLAYER POSITION CORRECTION
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  /* Bottom-center human player */
+  .seat-1 {
+    left: 50%;
+    bottom: 38%;
+    transform: translateX(-50%);
+  }
+
+  /* Bottom-left player */
+  .seat-2 {
+    left: 2%;
+    bottom: 47%;
+    transform: none;
+  }
+
+  /* Top-left player */
+  .seat-3 {
+    top: 7%;
+    left: 16%;
+    transform: none;
+  }
+
+  /* Top-right player */
+  .seat-4 {
+    top: 7%;
+    right: 16%;
+    transform: none;
+  }
+
+  /* Bottom-right player */
+  .seat-5 {
+    right: 2%;
+    bottom: 47%;
+    transform: none;
+  }
+
+  /* Cards profile-এর কাছাকাছি থাকবে */
+  .player-cards {
+    bottom: 33px;
+    scale: 0.7;
+  }
+
+  .player-bet {
+    scale: 0.7;
+  }
+
+  /* Active player অন্য element-এর নিচে যাবে না */
+  .player-seat.is-current-turn {
+    z-index: 80;
+  }
+}
+
+/* =========================================================
+   POKER MOBILE — CENTER CONTENT SEPARATION
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  /* Community cards একটু উপরে */
+  .community-cards {
+    top: 40%;
+  }
+
+  /* Pot উপরে থাকবে */
+  .pot-display {
+    top: 12%;
+  }
+
+  /* Round message cards-এর নিচে */
+  .round-status {
+    top: 61%;
+  }
+
+  /* Human profile একটু নিচে */
+  .seat-1 {
+    left: 50%;
+    bottom: 31%;
+    transform: translateX(-50%);
+  }
+
+  .seat-1 .player-cards {
+    bottom: 35px;
+    scale: 0.66;
+  }
+
+  /* Human-এর bet label profile-এর উপরে */
+  .seat-1 .player-bet {
+    scale: 0.68;
+  }
+}
+
+/* =========================================================
+   POKER 344PX LANDSCAPE — DEFINITIVE CENTER FIX
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  /* Pot একদম উপরের table area-তে */
+  .pot-display {
+    top: 4%;
+  }
+
+  /* Community cards উপরের অর্ধে */
+  .community-cards {
+    top: 33%;
+  }
+
+  .community-card {
+    width: clamp(30px, 3.7vw, 38px);
+  }
+
+  /* Status community cards-এর পরে */
+  .round-status {
+    top: 57%;
+    padding: 2px 8px;
+    font-size: 8px;
+  }
+
+  /* Human profile footer-এর সম্পূর্ণ উপরে */
+  .seat-1 {
+    left: 50%;
+    bottom: 40%;
+    transform: translateX(-50%);
+  }
+
+  /* Human hole cards ছোট—community cards ঢাকবে না */
+  .seat-1 .player-cards {
+    bottom: 27px;
+    scale: 0.52;
+  }
+
+  .seat-1 .player-bet {
+    scale: 0.6;
+  }
+}
+
+/* =========================================================
+   POKER MOBILE LANDSCAPE — CORRECT TABLE/PLAYER LAYOUT
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  :root {
+    --table-width: min(60vw, 580px);
+  }
+
+  /* Table একটু ছোট এবং উপরে */
+  .poker-table {
+    width: var(--table-width);
+    min-width: 0;
+    transform: translateY(-10%);
+  }
+
+  /* Pot এবং community স্বাভাবিক জায়গায় */
+  .pot-display {
+    top: 7%;
+  }
+
+  .community-cards {
+    top: 46%;
+  }
+
+  .community-card {
+    width: clamp(30px, 3.7vw, 39px);
+  }
+
+  .round-status {
+    top: 70%;
+  }
+
+  /* Bottom-center player আবার table-এর নিচে */
+  .seat-1 {
+    left: 50%;
+    bottom: 2%;
+    transform: translateX(-50%);
+  }
+
+  /* Bottom-left */
+  .seat-2 {
+    left: 1%;
+    bottom: 16%;
+    transform: none;
+  }
+
+  /* Top-left */
+  .seat-3 {
+    top: 9%;
+    left: 12%;
+    transform: none;
+  }
+
+  /* Top-right */
+  .seat-4 {
+    top: 9%;
+    right: 12%;
+    transform: none;
+  }
+
+  /* Bottom-right */
+  .seat-5 {
+    right: 1%;
+    bottom: 16%;
+    transform: none;
+  }
+
+  /* Player cards normal size */
+  .player-cards,
+  .seat-1 .player-cards {
+    bottom: 34px;
+    scale: 0.66;
+  }
+
+  .player-bet,
+  .seat-1 .player-bet {
+    scale: 0.68;
+  }
+
+  .player-seat.is-current-turn {
+    z-index: 80;
+  }
+}
+
+/* =========================================================
+   POKER MOBILE LANDSCAPE — CORRECT TABLE/PLAYER LAYOUT
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  :root {
+    --table-width: min(60vw, 580px);
+  }
+
+  /* Table একটু ছোট এবং উপরে */
+  .poker-table {
+    width: var(--table-width);
+    min-width: 0;
+    transform: translateY(-10%);
+  }
+
+  /* Pot এবং community স্বাভাবিক জায়গায় */
+  .pot-display {
+    top: 7%;
+  }
+
+  .community-cards {
+    top: 46%;
+  }
+
+  .community-card {
+    width: clamp(30px, 3.7vw, 39px);
+  }
+
+  .round-status {
+    top: 70%;
+  }
+
+  /* Bottom-center player আবার table-এর নিচে */
+  .seat-1 {
+    left: 50%;
+    bottom: 2%;
+    transform: translateX(-50%);
+  }
+
+  /* Bottom-left */
+  .seat-2 {
+    left: 1%;
+    bottom: 16%;
+    transform: none;
+  }
+
+  /* Top-left */
+  .seat-3 {
+    top: 9%;
+    left: 12%;
+    transform: none;
+  }
+
+  /* Top-right */
+  .seat-4 {
+    top: 9%;
+    right: 12%;
+    transform: none;
+  }
+
+  /* Bottom-right */
+  .seat-5 {
+    right: 1%;
+    bottom: 16%;
+    transform: none;
+  }
+
+  /* Player cards normal size */
+  .player-cards,
+  .seat-1 .player-cards {
+    bottom: 34px;
+    scale: 0.66;
+  }
+
+  .player-bet,
+  .seat-1 .player-bet {
+    scale: 0.68;
+  }
+
+  .player-seat.is-current-turn {
+    z-index: 80;
+  }
+}
+/* FORCE BOTTOM PLAYER POSITION */
+@media (orientation: landscape) and (max-height: 430px) {
+
+  #playerSeat1 {
+    top: auto !important;
+    right: auto !important;
+    bottom: 18% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 90 !important;
+  }
+
+  #playerSeat1 .player-profile {
+    position: relative !important;
+    z-index: 5 !important;
+  }
+
+  #playerSeat1 .player-cards {
+    bottom: 35px !important;
+    scale: 0.62 !important;
+  }
+}
+
+/* =========================================================
+   POKER MOBILE — CLEAR HOLE CARDS
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  /* Human cards profile-এর উপরে */
+  #playerSeat1 .player-cards {
+    bottom: 52px !important;
+    z-index: 15 !important;
+    scale: 0.88 !important;
+    gap: 2px !important;
+  }
+
+  #playerSeat1 .hole-card {
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 48px !important;
+    margin-left: 0 !important;
+
+    overflow: hidden !important;
+
+    border: 2px solid #ffffff !important;
+    border-radius: 5px !important;
+
+    background-color: #ffffff !important;
+
+    box-shadow:
+      0 4px 9px rgba(0, 0, 0, 0.75),
+      0 0 7px rgba(255, 215, 70, 0.45) !important;
+  }
+
+  #playerSeat1 .hole-card:first-child {
+    transform: rotate(-4deg) !important;
+  }
+
+  #playerSeat1 .hole-card:last-child {
+    transform: rotate(4deg) !important;
+  }
+
+  #playerSeat1 .hole-card img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: fill !important;
+  }
+
+  /* Badge cards-এর সামনে আসবে না */
+  #playerSeat1 .player-badges {
+    z-index: 20 !important;
+  }
+
+  /* Other players' cards */
+  .player-seat:not(#playerSeat1) .player-cards {
+    z-index: 8 !important;
+    scale: 0.72 !important;
+  }
+}
+
+/* =========================================================
+   POKER MOBILE — CARD SPACING FINAL
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  /* Community cards human cards থেকে আলাদা থাকবে */
+  .community-cards {
+    top: 34% !important;
+  }
+
+  /* Pot community cards-এর উপরে */
+  .pot-display {
+    top: 2% !important;
+  }
+
+  /* Short screen-এ status text card ঢাকবে না */
+  .round-status {
+    display: none !important;
+  }
+
+  /* Human cards profile-এর ঠিক উপরে */
+  #playerSeat1 .player-cards {
+    bottom: 50px !important;
+    z-index: 15 !important;
+  }
+}
+
+/* =========================================================
+   POKER MOBILE — LARGE HUMAN HOLE CARDS
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  #playerSeat1 .player-cards {
+    bottom: 51px !important;
+    z-index: 25 !important;
+    scale: 1 !important;
+    gap: 3px !important;
+  }
+
+  #playerSeat1 .hole-card {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 58px !important;
+    margin: 0 !important;
+
+    border: 2px solid #ffffff !important;
+    border-radius: 5px !important;
+
+    
+
+    box-shadow:
+      0 5px 12px rgba(0, 0, 0, 0.8),
+      0 0 8px rgba(255, 215, 70, 0.55) !important;
+  }
+
+  #playerSeat1 .hole-card:first-child {
+    transform: rotate(-3deg) !important;
+  }
+
+  #playerSeat1 .hole-card:last-child {
+    transform: rotate(3deg) !important;
+  }
+
+  #playerSeat1 .hole-card img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: fill !important;
+  }
+}
+
+/* =========================================================
+   POKER MOBILE — POT OUTSIDE TABLE
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  .pot-display {
+    top: -12% !important;
+    left: 50% !important;
+    z-index: 50 !important;
+
+    min-width: 108px !important;
+
+    padding: 5px 12px !important;
+    gap: 0 !important;
+
+    border: 1px solid rgba(255, 215, 70, 0.65) !important;
+    border-radius: 14px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(62, 40, 7, 0.96),
+        rgba(17, 15, 9, 0.97)
+      ) !important;
+
+    box-shadow:
+      0 6px 14px rgba(0, 0, 0, 0.55),
+      0 0 12px rgba(255, 205, 45, 0.18) !important;
+
+    transform: translateX(-50%) !important;
+  }
+
+  .pot-display > span {
+    color: #ffe37b !important;
+    font-size: 8px !important;
+    line-height: 1.1 !important;
+    letter-spacing: 1px !important;
+  }
+
+  .pot-display strong {
+    margin-top: 1px !important;
+    color: #ffffff !important;
+    font-size: 14px !important;
+    line-height: 1.1 !important;
+  }
+
+  .pot-chips {
+    width: 65px !important;
+    height: 12px !important;
+    margin-top: 1px !important;
+  }
+
+  /* Pot সরানোর পর community cards মাঝখানে */
+  .community-cards {
+    top: 40% !important;
+  }
+}
+
+
+/* =========================================================
+   POKER MOBILE — REFERENCE STYLE POT
+   Chip + Amount above community cards
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  .pot-display {
+    top: 15% !important;
+    left: 50% !important;
+    z-index: 45 !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: auto !important;
+    min-width: 118px !important;
+    height: 34px !important;
+
+    padding: 3px 13px 3px 7px !important;
+    gap: 5px !important;
+
+    border: 1px solid rgba(255, 216, 70, 0.72) !important;
+    border-radius: 8px !important;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(77, 55, 10, 0.97),
+        rgba(31, 23, 8, 0.98)
+      ) !important;
+
+    box-shadow:
+      0 5px 12px rgba(0, 0, 0, 0.65),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 0 10px rgba(255, 203, 42, 0.2) !important;
+
+    transform: translateX(-50%) !important;
+  }
+
+  /* Mobile-এ TOTAL POT text দরকার নেই */
+  .pot-display > span {
+    display: none !important;
+  }
+
+  /* Chip amount-এর আগে */
+  .pot-chips {
+    order: 1 !important;
+
+    width: 29px !important;
+    height: 29px !important;
+
+    margin: 0 !important;
+    flex: 0 0 29px !important;
+  }
+
+  .pot-display strong {
+    order: 2 !important;
+
+    margin: 0 !important;
+
+    color: #ffffff !important;
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+
+    text-shadow:
+      0 2px 3px rgba(0, 0, 0, 0.8),
+      0 0 8px rgba(255, 215, 70, 0.4) !important;
+  }
+
+  /* Pot-এর নিচে community cards */
+  .community-cards {
+    top: 43% !important;
+  }
+
+  /* নিজের বড় cards নিচে থাকবে */
+  #playerSeat1 .player-cards {
+    bottom: 51px !important;
+    z-index: 25 !important;
+    scale: 1 !important;
+  }
+}
+
+/* =========================================================
+   POKER HOLE CARD IMAGE FIX
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  #playerSeat1 .player-cards {
+    bottom: 51px !important;
+    z-index: 25 !important;
+
+    display: flex !important;
+    align-items: flex-end !important;
+
+    gap: 3px !important;
+    scale: 1 !important;
+  }
+
+  #playerSeat1 .hole-card {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 58px !important;
+
+    margin: 0 !important;
+    overflow: hidden !important;
+
+    border: 2px solid #ffffff !important;
+    border-radius: 5px !important;
+
+    /* background shorthand ব্যবহার করা যাবে না */
+    background-color: #ffffff !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: 100% 100% !important;
+
+    box-shadow:
+      0 5px 12px rgba(0, 0, 0, 0.8),
+      0 0 8px rgba(255, 215, 70, 0.5) !important;
+  }
+
+  #playerSeat1 .hole-card:first-child {
+    transform: rotate(-3deg) !important;
+  }
+
+  #playerSeat1 .hole-card:last-child {
+    transform: rotate(3deg) !important;
+  }
+}
+
+/* =========================================================
+   POKER MOBILE — FINAL CARD LAYERS
+   Pot → Community → Hole Cards → Player
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  /* Pot table-এর উপরের অংশে */
+  .pot-display {
+    top: 0 !important;
+    left: 50% !important;
+    z-index: 50 !important;
+
+    min-width: 120px !important;
+    height: 34px !important;
+
+    padding: 3px 13px 3px 40px !important;
+
+    transform: translateX(-50%) !important;
+  }
+
+  /* Reference ছবির মতো স্থায়ী chip */
+  .pot-display::before {
+    content: "" !important;
+
+    position: absolute !important;
+    top: 50% !important;
+    left: 6px !important;
+
+    width: 29px !important;
+    height: 29px !important;
+
+    background:
+      url("../assets/chips/chip10.png")
+      center / contain
+      no-repeat !important;
+
+    filter:
+      drop-shadow(0 3px 4px rgba(0, 0, 0, 0.65)) !important;
+
+    transform: translateY(-50%) !important;
+  }
+
+  /* Animation container amount-এর layout নষ্ট করবে না */
+  .pot-chips {
+    position: absolute !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    pointer-events: none !important;
+  }
+
+  .pot-display strong {
+    position: relative !important;
+    z-index: 2 !important;
+
+    margin: 0 !important;
+
+    font-size: 17px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Community cards Pot-এর নিচে */
+  .community-cards {
+    top: 31% !important;
+    z-index: 20 !important;
+  }
+
+  /* নিজের cards community cards-এর নিচে */
+  #playerSeat1 .player-cards {
+    bottom: 51px !important;
+    z-index: 30 !important;
+
+    display: flex !important;
+    gap: 4px !important;
+
+    scale: 1 !important;
+  }
+
+  #playerSeat1 .hole-card {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 58px !important;
+  }
+
+  /* Player profile cards-এর নিচে */
+  #playerSeat1 .player-profile {
+    position: relative !important;
+    z-index: 35 !important;
+  }
+
+  #playerSeat1 .player-badges {
+    z-index: 40 !important;
+  }
+}
+
+/* Poker pot final position */
+@media (orientation: landscape) and (max-height: 430px) {
+
+  .pot-display {
+    top: -8% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
+/* Pot completely above the Poker table */
+@media (orientation: landscape) and (max-height: 430px) {
+
+  .pot-display {
+    top: -23% !important;
+    left: 50% !important;
+    z-index: 70 !important;
+
+    transform: translateX(-50%) !important;
+  }
+}
+
+/* Community cards একটু উপরে */
+@media (orientation: landscape) and (max-height: 430px) {
+
+  .community-cards {
+    top: 27% !important;
+  }
+}

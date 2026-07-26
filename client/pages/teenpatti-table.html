@@ -1,0 +1,1044 @@
+<!doctype html>
+
+<html lang="en">
+
+  <head>
+
+    <meta charset="UTF-8">
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
+    <meta
+      name="theme-color"
+      content="#06130f">
+
+    <title>
+      PMS ADDA | Teen Patti
+    </title>
+
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="../css/teenpatti-table.css">
+
+  </head>
+
+  <body>
+
+    <div class="tp-app">
+
+      <!-- =====================================
+         BACKGROUND
+    ====================================== -->
+
+      <div
+        class="tp-background"
+        aria-hidden="true">
+      </div>
+
+      <!-- =====================================
+         HEADER
+    ====================================== -->
+
+      <header class="tp-header">
+
+        <button
+          class="tp-icon-button back-btn"
+          type="button"
+          aria-label="Back to Teen Patti rooms">
+          ←
+        </button>
+
+        <section class="tp-brand">
+
+          <div class="tp-brand-logo">
+            <img
+              src="../assets/logo/logo.png"
+              alt="PMS ADDA">
+          </div>
+
+          <div class="tp-brand-copy">
+
+            <h1>
+              PMS ADDA TEEN PATTI
+            </h1>
+
+            <div class="tp-table-meta">
+
+              <span id="teenPattiRoomName">
+                Teen Patti
+              </span>
+
+              <span class="tp-meta-dot">
+                •
+              </span>
+
+              <span id="teenPattiBoot">
+                Boot: ৳0
+              </span>
+
+              <span class="tp-meta-dot">
+                •
+              </span>
+
+              <span id="teenPattiRound">
+                Round #0
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <section class="tp-header-actions">
+
+          <div class="tp-wallet">
+
+            <span>
+              Wallet
+            </span>
+
+            <strong id="headerWallet">
+              ৳0.00
+            </strong>
+
+          </div>
+
+          <button
+            id="teenPattiSoundButton"
+            class="tp-icon-button"
+            type="button"
+            aria-label="Sound">
+            🔊
+          </button>
+
+          <button
+            id="teenPattiSettingsButton"
+            class="tp-icon-button"
+            type="button"
+            aria-label="Settings">
+            ⚙
+          </button>
+
+        </section>
+
+      </header>
+
+      <!-- =====================================
+         GAME STAGE
+    ====================================== -->
+
+      <main class="tp-stage">
+
+        <div
+          class="tp-table-glow"
+          aria-hidden="true">
+        </div>
+
+        <section
+          class="table-area"
+          aria-label="Teen Patti table">
+
+          <!-- Table asset -->
+
+          <img
+            class="table-image"
+            src="../assets/table/teenpatti-table.png"
+            alt="PMS ADDA Teen Patti table"
+            draggable="false">
+
+          <!-- Deck -->
+
+          <div
+            id="deck"
+            class="tp-deck"
+            aria-label="Card deck">
+
+            <img
+              src="../assets/cards/card-back.png"
+              alt="Card deck"
+              draggable="false">
+
+          </div>
+
+          <!-- Pot -->
+
+          <section
+            id="pot"
+            class="tp-pot"
+            aria-label="Total pot">
+
+            <img
+              src="../assets/chips/chip10.png"
+              alt
+              aria-hidden="true">
+
+            <div class="tp-pot-copy">
+
+              <span>
+                Total Pot
+              </span>
+
+              <strong id="potAmount">
+                ৳0.00
+              </strong>
+
+            </div>
+
+          </section>
+
+          <!-- Chip animation layer -->
+
+          <div
+            id="chipLayer"
+            class="tp-chip-layer"
+            aria-hidden="true">
+          </div>
+
+          <!-- Turn timer -->
+
+          <section
+            class="tp-turn-control"
+            aria-label="Turn timer">
+
+            <span>
+              TURN
+            </span>
+
+            <div
+              class="turn-timer"
+              id="turnTimer">
+              15
+            </div>
+
+            <div class="tp-turn-progress">
+
+              <span
+                id="turnTimerProgress">
+              </span>
+
+            </div>
+
+          </section>
+
+          <!-- =================================
+             PLAYER 1
+        ================================== -->
+
+          <article
+            id="player1"
+            class="
+            player
+            player1
+            tp-player
+            tp-seat-1
+          "
+            data-seat="1">
+
+            <div
+              class="cards tp-player-cards"
+              id="player1Cards">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+            </div>
+
+            <div class="tp-player-profile">
+
+              <div class="avatar">
+                P1
+              </div>
+
+              <div class="name">
+
+                <strong id="player1Name">
+                  Waiting…
+                </strong>
+
+                <span id="player1Balance">
+                  ৳0.00
+                </span>
+
+              </div>
+
+              <div
+                id="player1Status"
+                class="status blind">
+                WAITING
+              </div>
+
+            </div>
+
+            <div
+              class="dealer-chip"
+              aria-label="Dealer">
+              D
+            </div>
+
+          </article>
+
+          <!-- =================================
+             PLAYER 2
+        ================================== -->
+
+          <article
+            id="player2"
+            class="
+            player
+            player2
+            tp-player
+            tp-seat-2
+          "
+            data-seat="2">
+
+            <div
+              class="cards tp-player-cards"
+              id="player2Cards">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+            </div>
+
+            <div class="tp-player-profile">
+
+              <div class="avatar">
+                P2
+              </div>
+
+              <div class="name">
+
+                <strong id="player2Name">
+                  Waiting…
+                </strong>
+
+                <span id="player2Balance">
+                  ৳0.00
+                </span>
+
+              </div>
+
+              <div
+                id="player2Status"
+                class="status blind">
+                WAITING
+              </div>
+
+            </div>
+
+            <div
+              class="dealer-chip"
+              aria-label="Dealer">
+              D
+            </div>
+
+          </article>
+
+          <!-- =================================
+             PLAYER 3
+        ================================== -->
+
+          <article
+            id="player3"
+            class="
+            player
+            player3
+            tp-player
+            tp-seat-3
+          "
+            data-seat="3">
+
+            <div
+              class="cards tp-player-cards"
+              id="player3Cards">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+            </div>
+
+            <div class="tp-player-profile">
+
+              <div class="avatar">
+                P3
+              </div>
+
+              <div class="name">
+
+                <strong id="player3Name">
+                  Waiting…
+                </strong>
+
+                <span id="player3Balance">
+                  ৳0.00
+                </span>
+
+              </div>
+
+              <div
+                id="player3Status"
+                class="status blind">
+                WAITING
+              </div>
+
+            </div>
+
+            <div
+              class="dealer-chip"
+              aria-label="Dealer">
+              D
+            </div>
+
+          </article>
+
+          <!-- =================================
+             PLAYER 4
+        ================================== -->
+
+          <article
+            id="player4"
+            class="
+            player
+            player4
+            tp-player
+            tp-seat-4
+          "
+            data-seat="4">
+
+            <div
+              class="cards tp-player-cards"
+              id="player4Cards">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Hidden card">
+
+            </div>
+
+            <div class="tp-player-profile">
+
+              <div class="avatar">
+                P4
+              </div>
+
+              <div class="name">
+
+                <strong id="player4Name">
+                  Waiting…
+                </strong>
+
+                <span id="player4Balance">
+                  ৳0.00
+                </span>
+
+              </div>
+
+              <div
+                id="player4Status"
+                class="status blind">
+                WAITING
+              </div>
+
+            </div>
+
+            <div
+              class="dealer-chip"
+              aria-label="Dealer">
+              D
+            </div>
+
+          </article>
+
+          <!-- =================================
+             LOCAL PLAYER
+        ================================== -->
+
+          <article
+            id="currentPlayer"
+            class="
+            player
+            you
+            tp-player
+            tp-local-player
+            tp-seat-local
+          "
+            data-seat="5">
+
+            <div
+              class="cards tp-player-cards"
+              id="currentPlayerCards">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Your card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Your card">
+
+              <img
+                src="../assets/cards/card-back.png"
+                alt="Your card">
+
+            </div>
+
+            <div class="tp-player-profile">
+
+              <div class="avatar">
+                ME
+              </div>
+
+              <div class="name">
+
+                <strong id="currentPlayerName">
+                  You
+                </strong>
+
+                <span id="currentPlayerBalance">
+                  ৳0.00
+                </span>
+
+              </div>
+
+              <div
+                id="currentPlayerStatus"
+                class="status blind">
+                WAITING
+              </div>
+
+            </div>
+
+            <div
+              class="dealer-chip"
+              aria-label="Dealer">
+              D
+            </div>
+
+            <div class="you-label">
+              YOU
+            </div>
+
+          </article>
+
+        </section>
+
+      </main>
+
+      <!-- =====================================
+         ACTION FOOTER
+    ====================================== -->
+
+      <footer class="bottom-panel tp-action-footer">
+
+        <section class="tp-connection">
+
+          <span
+            class="tp-connection-dot"
+            id="teenPattiConnectionDot">
+          </span>
+
+          <strong id="teenPattiConnectionText">
+            Connecting…
+          </strong>
+
+        </section>
+
+        <section class="tp-actions">
+
+          <button
+            id="packButton"
+            class="
+            tp-action-button
+            pack-button
+          "
+            type="button">
+            Pack
+          </button>
+
+          <button
+            id="seenButton"
+            class="
+            tp-action-button
+            seen-button
+          "
+            type="button">
+            See Cards
+          </button>
+
+          <button
+            id="betButton"
+            class="
+            tp-action-button
+            blind-button
+          "
+            type="button">
+            Blind
+          </button>
+
+          <button
+            id="raiseButton"
+            class="
+            tp-action-button
+            raise-button
+          "
+            type="button">
+            Raise
+          </button>
+
+          <button
+            id="sideShowButton"
+            class="
+            tp-action-button
+            side-show-button
+          "
+            type="button">
+            Side Show
+          </button>
+
+          <button
+            id="showButton"
+            class="
+            tp-action-button
+            show-button
+          "
+            type="button">
+            Show
+          </button>
+
+        </section>
+
+        <section class="tp-footer-tools">
+
+          <button
+            id="teenPattiRulesButton"
+            class="tp-tool-button"
+            type="button">
+            Rules
+          </button>
+
+          <button
+            id="teenPattiExitButton"
+            class="
+            tp-tool-button
+            tp-exit-button
+          "
+            type="button">
+            Exit
+          </button>
+
+        </section>
+
+      </footer>
+
+    </div>
+
+    <!-- =====================================
+       PORTRAIT ROTATE SCREEN
+  ====================================== -->
+
+    <section
+      class="tp-rotate-screen"
+      aria-hidden="true">
+
+      <div class="tp-rotate-icon">
+        ↻
+      </div>
+
+      <h2>
+        Rotate Your Phone
+      </h2>
+
+      <p>
+        Teen Patti খেলতে ফোনটি Landscape করুন
+      </p>
+
+    </section>
+
+    <!-- =====================================
+       SIDE SHOW MODAL
+  ====================================== -->
+
+    <section
+      id="sideShowModal"
+      class="side-show-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sideShowTitle">
+
+      <div class="side-show-card">
+
+        <span class="tp-modal-icon">
+          🃏
+        </span>
+
+        <h2 id="sideShowTitle">
+          Side Show Request
+        </h2>
+
+        <p id="sideShowMessage">
+          A player requested Side Show.
+        </p>
+
+        <div class="side-show-buttons">
+
+          <button
+            id="rejectSideShowButton"
+            class="reject-side-show"
+            type="button">
+            Reject
+          </button>
+
+          <button
+            id="acceptSideShowButton"
+            class="accept-side-show"
+            type="button">
+            Accept
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================
+   TEEN PATTI MATCHMAKING OVERLAY
+====================================== -->
+
+<section
+  id="matchmakingOverlay"
+  class="tp-matchmaking-overlay"
+  role="status"
+  aria-live="polite"
+  aria-label="Teen Patti matchmaking">
+
+  <div class="tp-matchmaking-card">
+
+    <div
+      class="tp-matchmaking-loader"
+      aria-hidden="true">
+
+      <span></span>
+      <span></span>
+      <span></span>
+
+    </div>
+
+    <span class="tp-matchmaking-kicker">
+      TEEN PATTI TABLE
+    </span>
+
+    <h2>
+      Finding Players
+    </h2>
+
+    <p id="matchmakingMessage">
+      Waiting for real players...
+    </p>
+
+    <div class="tp-matchmaking-timer">
+
+      <strong id="matchmakingCountdown">
+        20
+      </strong>
+
+      <span>
+        seconds
+      </span>
+
+    </div>
+
+    <div class="tp-matchmaking-progress">
+
+      <span id="matchmakingProgressBar"></span>
+
+    </div>
+
+    <div class="tp-matchmaking-counts">
+
+      <div>
+
+        <span>
+          Real Players
+        </span>
+
+        <strong id="matchmakingRealPlayers">
+          1 / 5
+        </strong>
+
+      </div>
+
+      <div>
+
+        <span>
+          Table Players
+        </span>
+
+        <strong id="matchmakingTotalPlayers">
+          1 / 5
+        </strong>
+
+      </div>
+
+    </div>
+
+   <!-- =====================================
+   TEEN PATTI MATCHMAKING OVERLAY
+====================================== -->
+
+<section
+  id="matchmakingOverlay"
+  class="tp-matchmaking-overlay"
+  role="status"
+  aria-live="polite"
+  aria-label="Teen Patti matchmaking">
+
+  <div class="tp-matchmaking-card">
+
+    <div
+      class="tp-matchmaking-loader"
+      aria-hidden="true">
+
+      <span></span>
+      <span></span>
+      <span></span>
+
+    </div>
+
+    <span class="tp-matchmaking-kicker">
+      TEEN PATTI TABLE
+    </span>
+
+    <h2>
+      Finding Players
+    </h2>
+
+    <p id="matchmakingMessage">
+      Waiting for real players...
+    </p>
+
+    <div class="tp-matchmaking-timer">
+
+      <strong id="matchmakingCountdown">
+        20
+      </strong>
+
+      <span>
+        seconds
+      </span>
+
+    </div>
+
+    <div class="tp-matchmaking-progress">
+
+      <span id="matchmakingProgressBar"></span>
+
+    </div>
+
+    <div class="tp-matchmaking-counts">
+
+      <div>
+
+        <span>
+          Real Players
+        </span>
+
+        <strong id="matchmakingRealPlayers">
+          1 / 5
+        </strong>
+
+      </div>
+
+      <div>
+
+        <span>
+          Table Players
+        </span>
+
+        <strong id="matchmakingTotalPlayers">
+          1 / 5
+        </strong>
+
+      </div>
+
+    </div>
+
+    <p class="tp-matchmaking-note">
+      Fair Game PLay , Play Your Own Style.
+    </p>
+
+  </div>
+
+</section>
+
+  </div>
+
+</section>
+
+    <!-- =====================================
+       POKER-STYLE WINNER OVERLAY
+  ====================================== -->
+
+    <section
+      class="winner-overlay"
+      id="winnerOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="winnerPlayerName">
+
+      <div class="winner-card">
+
+        <div
+          class="winner-crown"
+          aria-hidden="true">
+          👑
+        </div>
+
+        <span class="winner-kicker">
+          ROUND WINNER
+        </span>
+
+        <h2
+          class="winner-player-name"
+          id="winnerPlayerName">
+          Player
+        </h2>
+
+        <p
+          class="winner-hand-name"
+          id="winnerHandName">
+          Winning Hand
+        </p>
+
+        <strong
+          class="winner-amount"
+          id="winnerAmount">
+          +৳0.00
+        </strong>
+
+        <div class="winner-finance">
+
+          <div class="winner-finance-row">
+
+            <span>
+              Total Pot
+            </span>
+
+            <strong id="winnerGrossAmount">
+              ৳0.00
+            </strong>
+
+          </div>
+
+          <div class="winner-finance-row">
+
+            <span>
+              Service Charge (5%)
+            </span>
+
+            <strong id="winnerServiceCharge">
+              -৳0.00
+            </strong>
+
+          </div>
+
+          <div
+            class="
+            winner-finance-row
+            winner-net-row
+          ">
+
+            <span>
+              Winner Received
+            </span>
+
+            <strong id="winnerNetAmount">
+              ৳0.00
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div
+          class="next-round-text"
+          id="nextRoundText">
+          Next round starting in 4...
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =====================================
+       TOAST
+  ====================================== -->
+
+    <div
+      id="gameToast"
+      class="tp-toast"
+      role="status"
+      aria-live="polite">
+    </div>
+
+    <div
+      id="winnerBanner"
+      class="tp-winner-banner"
+      aria-live="polite">
+    </div>
+
+    <!-- =====================================
+       SCRIPTS
+  ====================================== -->
+    <script src="../js/app-config.js"></script>
+
+    <script
+      src="https://cdn.socket.io/4.8.1/socket.io.min.js">
+</script>
+
+    <script src="../js/teenpatti-game.js"></script>
+
+  </body>
+
+</html>

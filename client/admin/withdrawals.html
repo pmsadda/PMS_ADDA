@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Withdraw Requests</title>
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+            <script src="../js/app-config.js"></script>
+
+            <script src="../js/auth-guard.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="../css/common.css" />
+
+        <link
+            rel="stylesheet"
+            href="../css/admin-withdrawals.css" />
+
+    </head>
+
+    <body>
+
+        <div class="admin-layout">
+
+            <!-- Sidebar -->
+
+            <aside
+                class="admin-sidebar"
+                id="adminSidebar">
+
+                <div class="admin-brand">
+
+                    <img
+                        src="../assets/logo/logo.png"
+                        alt="Logo">
+
+                    <div>
+
+                        <h2>PMS ADDA</h2>
+
+                        <p>Admin Panel</p>
+
+                    </div>
+
+                </div>
+
+                <nav class="admin-menu">
+
+                    <a
+                        href="dashboard.html"
+                        class="menu-item">
+
+                        <i class="fa-solid fa-chart-pie"></i>
+
+                        <span>Dashboard</span>
+
+                    </a>
+
+                    <a
+                        href="users.html"
+                        class="menu-item">
+
+                        <i class="fa-solid fa-users"></i>
+
+                        <span>Users</span>
+
+                    </a>
+
+                    <a
+                        href="deposits.html"
+                        class="menu-item">
+
+                        <i class="fa-solid fa-circle-plus"></i>
+
+                        <span>Deposits</span>
+
+                    </a>
+
+                    <a
+                        href="withdrawals.html"
+                        class="menu-item active">
+
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+
+                        <span>Withdrawals</span>
+
+                        <small
+                            class="menu-count"
+                            id="pendingWithdrawMenuCount">
+
+                            0
+
+                        </small>
+
+                    </a>
+
+                    <a
+                        href="games.html"
+                        class="menu-item">
+
+                        <i class="fa-solid fa-gamepad"></i>
+
+                        <span>Games</span>
+
+                    </a>
+
+                    <a
+                        href="bots.html"
+                        class="menu-item">
+
+                        <i class="fa-solid fa-robot"></i>
+
+                        <span>Bots</span>
+
+                    </a>
+
+                    <a
+                        href="transactions.html"
+                        class="menu-item">
+
+                        <i class="fa-solid fa-file-invoice"></i>
+
+                        <span>Transactions</span>
+
+                    </a>
+
+                    <a
+                        href="settings.html"
+                        class="menu-item">
+
+                        <i class="fa-solid fa-gear"></i>
+
+                        <span>Settings</span>
+
+                    </a>
+
+                </nav>
+
+                <button
+                    class="logout-btn"
+                    id="adminLogoutBtn">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    Logout
+
+                </button>
+
+            </aside>
+
+            <!-- Main -->
+
+            <main class="admin-main">
+
+                <header class="admin-header">
+
+                    <div class="header-left">
+
+                        <button
+                            id="sidebarToggle"
+                            class="sidebar-toggle">
+
+                            <i class="fa-solid fa-bars"></i>
+
+                        </button>
+
+                        <div>
+
+                            <h1>Withdraw Requests</h1>
+
+                            <p>
+
+                                Approve or Reject user withdrawals
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            id="refreshWithdraws"
+                            class="header-icon-btn">
+
+                            <i class="fa-solid fa-rotate"></i>
+
+                        </button>
+
+                        <img
+                            src="../assets/images/default-avatar.png"
+                            class="admin-avatar"
+                            alt="Admin">
+
+                    </div>
+
+                </header>
+
+                <!-- Summary -->
+
+                <section class="summary-grid">
+
+                    <div class="summary-card">
+
+                        <div class="summary-icon pending">
+
+                            <i class="fa-solid fa-hourglass-half"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p>Pending Withdraw</p>
+
+                            <h2 id="pendingWithdrawCount">
+
+                                0
+
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                    <div class="summary-card">
+
+                        <div class="summary-icon approved">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p>Approved Today</p>
+
+                            <h2 id="approvedWithdrawCount">
+
+                                0
+
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                    <div class="summary-card">
+
+                        <div class="summary-icon rejected">
+
+                            <i class="fa-solid fa-circle-xmark"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p>Rejected Today</p>
+
+                            <h2 id="rejectedWithdrawCount">
+
+                                0
+
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                    <div class="summary-card">
+
+                        <div class="summary-icon amount">
+
+                            <i class="fa-solid fa-wallet"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p>Total Paid Today</p>
+
+                            <h2>
+
+                                ৳
+
+                                <span id="paidToday">
+
+                                    0.00
+
+                                </span>
+
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Filters -->
+
+                <section class="filter-panel">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-search"></i>
+
+                        <input
+                            type="text"
+                            id="withdrawSearch"
+                            placeholder="Search player, number or request id">
+
+                    </div>
+
+                    <select id="statusFilter">
+
+                        <option value="all">
+
+                            All Status
+
+                        </option>
+
+                        <option value="pending">
+
+                            Pending
+
+                        </option>
+
+                        <option value="approved">
+
+                            Approved
+
+                        </option>
+
+                        <option value="rejected">
+
+                            Rejected
+
+                        </option>
+
+                    </select>
+
+                    <select id="methodFilter">
+
+                        <option value="all">
+
+                            All Methods
+
+                        </option>
+
+                        <option value="bkash">
+
+                            bKash
+
+                        </option>
+
+                        <option value="nagad">
+
+                            Nagad
+
+                        </option>
+
+                        <option value="rocket">
+
+                            Rocket
+
+                        </option>
+
+                    </select>
+
+                    <button
+                        id="clearFilters"
+                        class="clear-filter-btn">
+
+                        <i class="fa-solid fa-filter-circle-xmark"></i>
+
+                        Clear
+
+                    </button>
+
+                </section>
+
+                <section class="table-section">
+
+                    <div class="section-heading">
+
+                        <h2>
+
+                            Withdrawal Request List
+
+                        </h2>
+
+                        <p>
+
+                            Verify turnover, wallet balance and payment number.
+
+                        </p>
+
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table class="withdraw-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>User</th>
+
+                                    <th>Method</th>
+
+                                    <th>Account</th>
+
+                                    <th>Amount</th>
+
+                                    <th>Turnover</th>
+
+                                    <th>Status</th>
+
+                                    <th>Action</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="withdrawTableBody">
+
+                                <!-- Pending Withdrawal -->
+
+                                <tr
+                                    class="withdraw-row"
+                                    data-status="pending"
+                                    data-method="bkash"
+                                    data-search="mehedi hasan 01712345678 wdr784512369">
+
+                                    <td>
+
+                                        <div class="user-cell">
+
+                                            <div class="user-avatar">
+                                                MH
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    Mehedi Hasan
+                                                </strong>
+
+                                                <span>
+                                                    UID: PMS100021
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="method-badge bkash">
+                                            bKash
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="account-cell">
+
+                                            <strong>
+                                                01712345678
+                                            </strong>
+
+                                            <small>
+                                                Last 4: 5678
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong class="amount-value">
+                                            ৳1,000
+                                        </strong>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="turnover-cell">
+
+                                            <span
+                                                class="turnover-badge completed">
+                                                Completed
+                                            </span>
+
+                                            <small>
+                                                Deposit: ৳5,000
+                                                <br>
+                                                Played: ৳5,600
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge pending">
+                                            Pending
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                            <button
+                                                type="button"
+                                                class="view-btn"
+                                                data-action="view"
+                                                data-request-id="WDR784512369">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="approve-btn"
+                                                data-action="approve"
+                                                data-request-id="WDR784512369">
+                                                <i
+                                                    class="fa-solid fa-check"></i>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="reject-btn"
+                                                data-action="reject"
+                                                data-request-id="WDR784512369">
+                                                <i
+                                                    class="fa-solid fa-xmark"></i>
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- Pending Withdrawal: Turnover Incomplete -->
+
+                                <tr
+                                    class="withdraw-row"
+                                    data-status="pending"
+                                    data-method="nagad"
+                                    data-search="rakib khan 01898765432 wdr963258741">
+
+                                    <td>
+
+                                        <div class="user-cell">
+
+                                            <div class="user-avatar">
+                                                RK
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    Rakib Khan
+                                                </strong>
+
+                                                <span>
+                                                    UID: PMS100045
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="method-badge nagad">
+                                            Nagad
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="account-cell">
+
+                                            <strong>
+                                                01898765432
+                                            </strong>
+
+                                            <small>
+                                                Last 4: 5432
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong class="amount-value">
+                                            ৳800
+                                        </strong>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="turnover-cell">
+
+                                            <span
+                                                class="turnover-badge incomplete">
+                                                Incomplete
+                                            </span>
+
+                                            <small>
+                                                Deposit: ৳3,000
+                                                <br>
+                                                Played: ৳2,200
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge pending">
+                                            Pending
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                            <button
+                                                type="button"
+                                                class="view-btn"
+                                                data-action="view"
+                                                data-request-id="WDR963258741">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="approve-btn"
+                                                data-action="approve"
+                                                data-request-id="WDR963258741"
+                                                disabled
+                                                title="Turnover incomplete">
+                                                <i
+                                                    class="fa-solid fa-check"></i>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="reject-btn"
+                                                data-action="reject"
+                                                data-request-id="WDR963258741">
+                                                <i
+                                                    class="fa-solid fa-xmark"></i>
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- Approved Withdrawal -->
+
+                                <tr
+                                    class="withdraw-row"
+                                    data-status="approved"
+                                    data-method="rocket"
+                                    data-search="sabbir ahmed 01911223344 wdr357951468">
+
+                                    <td>
+
+                                        <div class="user-cell">
+
+                                            <div class="user-avatar">
+                                                SA
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    Sabbir Ahmed
+                                                </strong>
+
+                                                <span>
+                                                    UID: PMS100078
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="method-badge rocket">
+                                            Rocket
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="account-cell">
+
+                                            <strong>
+                                                01911223344
+                                            </strong>
+
+                                            <small>
+                                                Last 4: 3344
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong class="amount-value">
+                                            ৳1,500
+                                        </strong>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="turnover-cell">
+
+                                            <span
+                                                class="turnover-badge completed">
+                                                Completed
+                                            </span>
+
+                                            <small>
+                                                Deposit: ৳7,000
+                                                <br>
+                                                Played: ৳8,100
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge approved">
+                                            Approved
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                            <button
+                                                type="button"
+                                                class="view-btn"
+                                                data-action="view"
+                                                data-request-id="WDR357951468">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- Rejected Withdrawal -->
+
+                                <tr
+                                    class="withdraw-row"
+                                    data-status="rejected"
+                                    data-method="bkash"
+                                    data-search="rifat noor 01655667788 wdr159753486">
+
+                                    <td>
+
+                                        <div class="user-cell">
+
+                                            <div class="user-avatar">
+                                                RN
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    Rifat Noor
+                                                </strong>
+
+                                                <span>
+                                                    UID: PMS100103
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="method-badge bkash">
+                                            bKash
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="account-cell">
+
+                                            <strong>
+                                                01655667788
+                                            </strong>
+
+                                            <small>
+                                                Last 4: 7788
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong class="amount-value">
+                                            ৳500
+                                        </strong>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="turnover-cell">
+
+                                            <span
+                                                class="turnover-badge incomplete">
+                                                Incomplete
+                                            </span>
+
+                                            <small>
+                                                Deposit: ৳2,000
+                                                <br>
+                                                Played: ৳1,100
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge rejected">
+                                            Rejected
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                            <button
+                                                type="button"
+                                                class="view-btn"
+                                                data-action="view"
+                                                data-request-id="WDR159753486">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <!-- Empty State -->
+
+                    <div
+                        class="empty-state"
+                        id="emptyState">
+
+                        <i class="fa-regular fa-folder-open"></i>
+
+                        <h3>No Withdrawal Requests Found</h3>
+
+                        <p>
+                            No requests match the selected filters.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <!-- =========================
+     Withdrawal Details Modal
+========================== -->
+
+                <div
+                    class="modal"
+                    id="detailsModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>Withdrawal Details</h3>
+
+                            <button
+                                type="button"
+                                id="closeDetailsModal"
+                                aria-label="Close details">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="detail-grid">
+
+                                <div class="detail-item">
+                                    <span>User</span>
+                                    <strong id="detailUser">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>User ID</span>
+                                    <strong id="detailUserId">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Method</span>
+                                    <strong id="detailMethod">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Account Number</span>
+                                    <strong id="detailAccount">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Last 4 Digits</span>
+                                    <strong id="detailLastFour">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Request ID</span>
+                                    <strong id="detailRequestId">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Amount</span>
+                                    <strong id="detailAmount">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Total Deposit</span>
+                                    <strong id="detailDeposit">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Total Played</span>
+                                    <strong id="detailPlayed">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Turnover Status</span>
+                                    <strong id="detailTurnoverStatus">-</strong>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span>Status</span>
+                                    <strong id="detailStatus">-</strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- =========================
+     Approve Withdrawal Modal
+========================== -->
+
+                <div
+                    class="modal"
+                    id="approveModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>Approve Withdrawal</h3>
+
+                            <button
+                                type="button"
+                                id="closeApproveModal"
+                                aria-label="Close approve modal">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="modal-icon success">
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                            </div>
+
+                            <p>
+                                Approve this withdrawal only after confirming
+                                the payment
+                                was sent to the user's selected account.
+                            </p>
+
+                            <div class="confirm-request-card">
+
+                                <div>
+                                    <span>Request ID</span>
+                                    <strong id="approveRequestId">-</strong>
+                                </div>
+
+                                <div>
+                                    <span>Amount</span>
+                                    <strong id="approveAmount">৳0</strong>
+                                </div>
+
+                                <div>
+                                    <span>Account</span>
+                                    <strong id="approveAccount">-</strong>
+                                </div>
+
+                            </div>
+
+                            <label for="adminPaymentReference">
+                                Admin Payment Reference
+                            </label>
+
+                            <input
+                                type="text"
+                                id="adminPaymentReference"
+                                placeholder="Enter payment transaction/reference ID">
+
+                        </div>
+
+                        <div class="modal-actions">
+
+                            <button
+                                type="button"
+                                id="cancelApprove"
+                                class="cancel-btn">
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                id="confirmApprove"
+                                class="approve-confirm-btn">
+                                <i class="fa-solid fa-check"></i>
+                                Mark Paid
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- =========================
+     Reject Withdrawal Modal
+========================== -->
+
+                <div
+                    class="modal"
+                    id="rejectModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>Reject Withdrawal</h3>
+
+                            <button
+                                type="button"
+                                id="closeRejectModal"
+                                aria-label="Close reject modal">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="modal-icon danger">
+
+                                <i class="fa-solid fa-circle-xmark"></i>
+
+                            </div>
+
+                            <p>
+                                Select a clear reason. The rejected amount
+                                should be returned
+                                to the user's available wallet balance by the
+                                backend.
+                            </p>
+
+                            <div class="confirm-request-card">
+
+                                <div>
+                                    <span>Request ID</span>
+                                    <strong id="rejectRequestId">-</strong>
+                                </div>
+
+                                <div>
+                                    <span>Amount</span>
+                                    <strong id="rejectAmount">৳0</strong>
+                                </div>
+
+                            </div>
+
+                            <label for="rejectReason">
+                                Reject Reason
+                            </label>
+
+                            <select id="rejectReason">
+
+                                <option value>
+                                    Select a reason
+                                </option>
+
+                                <option value="turnover_incomplete">
+                                    Turnover incomplete
+                                </option>
+
+                                <option value="invalid_account">
+                                    Invalid account number
+                                </option>
+
+                                <option value="last_four_mismatch">
+                                    Last 4 digits mismatch
+                                </option>
+
+                                <option value="insufficient_balance">
+                                    Insufficient wallet balance
+                                </option>
+
+                                <option value="duplicate_request">
+                                    Duplicate withdrawal request
+                                </option>
+
+                                <option value="other">
+                                    Other
+                                </option>
+
+                            </select>
+
+                            <textarea
+                                id="rejectNote"
+                                rows="4"
+                                placeholder="Optional admin note"></textarea>
+
+                        </div>
+
+                        <div class="modal-actions">
+
+                            <button
+                                type="button"
+                                id="cancelReject"
+                                class="cancel-btn">
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                id="confirmReject"
+                                class="reject-confirm-btn">
+                                <i class="fa-solid fa-xmark"></i>
+                                Reject
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- =========================
+     Loader
+========================== -->
+
+                <div
+                    class="loader-overlay"
+                    id="loaderOverlay"
+                    aria-hidden="true">
+
+                    <div class="loader"></div>
+
+                </div>
+
+                <!-- =========================
+     Toast
+========================== -->
+
+                <div
+                    class="toast"
+                    id="toast"
+                    role="status"
+                    aria-live="polite">
+
+                    <span id="toastMessage"></span>
+
+                </div>
+
+                <!-- =========================
+     Mobile Sidebar Overlay
+========================== -->
+
+                <div
+                    class="sidebar-overlay"
+                    id="sidebarOverlay"> </div>
+
+                <!-- =========================
+             JavaScript
+        ========================== -->
+
+                <script src="../js/admin-withdraws.js"></script>
+
+            </main>
+
+        </div>
+
+    </body>
+
+</html>

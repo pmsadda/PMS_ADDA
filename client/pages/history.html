@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Transaction History</title>
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+            <script src="../js/app-config.js"></script>
+
+            <script src="../js/auth-guard.js"></script>
+
+        <link rel="stylesheet"
+            href="../css/common.css">
+
+        <link rel="stylesheet"
+            href="../css/history.css">
+
+    </head>
+
+    <body>
+
+        <div class="history-page">
+
+            <header class="page-header">
+
+                <button id="backBtn">
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </button>
+
+                <h2>
+
+                    Transaction History
+
+                </h2>
+
+                <div></div>
+
+            </header>
+
+            <!-- Balance Card -->
+
+            <section class="balance-card">
+
+                <p>
+
+                    Current Wallet Balance
+
+                </p>
+
+                <h1>
+
+                    ৳ <span id="walletBalance">
+
+                        0.00
+
+                    </span>
+
+                </h1>
+
+            </section>
+
+            <!-- Filter -->
+
+            <section class="filter-section">
+
+                <button
+                    class="filter-btn active"
+                    data-filter="all">
+
+                    All
+
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="deposit">
+
+                    Deposit
+
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="withdraw">
+
+                    Withdraw
+
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="game">
+
+                    Game
+
+                </button>
+
+            </section>
+
+            <!-- Search -->
+
+            <section class="search-box">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search Transaction ID">
+
+            </section>
+
+            <!-- Transaction List -->
+
+            <section
+                class="transaction-list"
+                id="transactionList">
+                <!-- ==========================
+     Transaction Cards
+========================== -->
+
+                <!-- Deposit -->
+
+                <div
+                    class="transaction-card"
+                    data-type="deposit">
+
+                    <div class="transaction-icon deposit">
+
+                        <i class="fa-solid fa-arrow-down"></i>
+
+                    </div>
+
+                    <div class="transaction-info">
+
+                        <h3>
+
+                            Deposit
+
+                        </h3>
+
+                        <p>
+
+                            TRX : DEP784512369
+
+                        </p>
+
+                        <small>
+
+                            Today • 10:45 AM
+
+                        </small>
+
+                    </div>
+
+                    <div class="transaction-right">
+
+                        <h4>
+
+                            + ৳2,000
+
+                        </h4>
+
+                        <span class="status success">
+
+                            Success
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- Withdraw -->
+
+                <div
+                    class="transaction-card"
+                    data-type="withdraw">
+
+                    <div class="transaction-icon withdraw">
+
+                        <i class="fa-solid fa-arrow-up"></i>
+
+                    </div>
+
+                    <div class="transaction-info">
+
+                        <h3>
+
+                            Withdraw
+
+                        </h3>
+
+                        <p>
+
+                            TRX : WDR963258741
+
+                        </p>
+
+                        <small>
+
+                            Today • 01:20 PM
+
+                        </small>
+
+                    </div>
+
+                    <div class="transaction-right">
+
+                        <h4>
+
+                            - ৳1,000
+
+                        </h4>
+
+                        <span class="status pending">
+
+                            Pending
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- Teen Patti Win -->
+
+                <div
+                    class="transaction-card"
+                    data-type="game">
+
+                    <div class="transaction-icon win">
+
+                        <i class="fa-solid fa-trophy"></i>
+
+                    </div>
+
+                    <div class="transaction-info">
+
+                        <h3>
+
+                            Teen Patti Win
+
+                        </h3>
+
+                        <p>
+
+                            Game ID : TP458796
+
+                        </p>
+
+                        <small>
+
+                            Yesterday • 09:15 PM
+
+                        </small>
+
+                    </div>
+
+                    <div class="transaction-right">
+
+                        <h4>
+
+                            + ৳650
+
+                        </h4>
+
+                        <span class="status success">
+
+                            Won
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- Teen Patti Loss -->
+
+                <div
+                    class="transaction-card"
+                    data-type="game">
+
+                    <div class="transaction-icon loss">
+
+                        <i class="fa-solid fa-gamepad"></i>
+
+                    </div>
+
+                    <div class="transaction-info">
+
+                        <h3>
+
+                            Teen Patti Loss
+
+                        </h3>
+
+                        <p>
+
+                            Game ID : TP458802
+
+                        </p>
+
+                        <small>
+
+                            Yesterday • 09:28 PM
+
+                        </small>
+
+                    </div>
+
+                    <div class="transaction-right">
+
+                        <h4>
+
+                            - ৳300
+
+                        </h4>
+
+                        <span class="status failed">
+
+                            Lost
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- Deposit Pending -->
+
+                <div
+                    class="transaction-card"
+                    data-type="deposit">
+
+                    <div class="transaction-icon deposit">
+
+                        <i class="fa-solid fa-wallet"></i>
+
+                    </div>
+
+                    <div class="transaction-info">
+
+                        <h3>
+
+                            Deposit
+
+                        </h3>
+
+                        <p>
+
+                            TRX : DEP778899445
+
+                        </p>
+
+                        <small>
+
+                            20 Jun • 06:12 PM
+
+                        </small>
+
+                    </div>
+
+                    <div class="transaction-right">
+
+                        <h4>
+
+                            + ৳5,000
+
+                        </h4>
+
+                        <span class="status pending">
+
+                            Pending
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- ==========================
+     Transaction Details Modal
+========================== -->
+
+            <div
+                class="modal"
+                id="transactionModal">
+
+                <div class="modal-content">
+
+                    <div class="modal-header">
+
+                        <h2>
+
+                            Transaction Details
+
+                        </h2>
+
+                        <button id="closeModal">
+
+                            <i class="fa-solid fa-xmark"></i>
+
+                        </button>
+
+                    </div>
+
+                    <div class="modal-body">
+
+                        <div class="detail-row">
+
+                            <span>
+
+                                Type
+
+                            </span>
+
+                            <strong id="detailType">
+
+                                Deposit
+
+                            </strong>
+
+                        </div>
+
+                        <div class="detail-row">
+
+                            <span>
+
+                                Transaction ID
+
+                            </span>
+
+                            <strong id="detailId">
+
+                                DEP784512369
+
+                            </strong>
+
+                        </div>
+
+                        <div class="detail-row">
+
+                            <span>
+
+                                Amount
+
+                            </span>
+
+                            <strong id="detailAmount">
+
+                                ৳2000
+
+                            </strong>
+
+                        </div>
+
+                        <div class="detail-row">
+
+                            <span>
+
+                                Status
+
+                            </span>
+
+                            <strong id="detailStatus">
+
+                                Success
+
+                            </strong>
+
+                        </div>
+
+                        <div class="detail-row">
+
+                            <span>
+
+                                Date
+
+                            </span>
+
+                            <strong id="detailDate">
+
+                                Today • 10:45 AM
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ==========================
+     Loader
+========================== -->
+
+            <div
+                class="loader-overlay"
+                id="loaderOverlay">
+
+                <div class="loader"></div>
+
+            </div>
+
+            <!-- ==========================
+     Empty State
+========================== -->
+
+            <div
+                class="empty-state"
+                id="emptyState"
+                style="display:none;">
+
+                <i class="fa-regular fa-folder-open"></i>
+
+                <h3>
+
+                    No Transactions Found
+
+                </h3>
+
+                <p>
+
+                    There are no transactions matching your search or selected
+                    filter.
+
+                </p>
+
+            </div>
+
+            <!-- ==========================
+     Toast
+========================== -->
+
+            <div
+                class="toast"
+                id="toast">
+
+                <span id="toastMessage">
+
+                </span>
+
+            </div>
+            <!-- ==========================
+     Transaction Summary
+========================== -->
+
+            <section class="summary-section">
+
+                <h3>
+
+                    Account Summary
+
+                </h3>
+
+                <div class="summary-grid">
+
+                    <div class="summary-card deposit">
+
+                        <i class="fa-solid fa-wallet"></i>
+
+                        <h4>
+
+                            Total Deposit
+
+                        </h4>
+
+                        <h2 id="totalDeposit">
+
+                            ৳25,000
+
+                        </h2>
+
+                    </div>
+
+                    <div class="summary-card withdraw">
+
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+
+                        <h4>
+
+                            Total Withdraw
+
+                        </h4>
+
+                        <h2 id="totalWithdraw">
+
+                            ৳8,500
+
+                        </h2>
+
+                    </div>
+
+                    <div class="summary-card win">
+
+                        <i class="fa-solid fa-trophy"></i>
+
+                        <h4>
+
+                            Game Win
+
+                        </h4>
+
+                        <h2 id="totalWin">
+
+                            ৳13,450
+
+                        </h2>
+
+                    </div>
+
+                    <div class="summary-card loss">
+
+                        <i class="fa-solid fa-circle-minus"></i>
+
+                        <h4>
+
+                            Game Loss
+
+                        </h4>
+
+                        <h2 id="totalLoss">
+
+                            ৳7,300
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- ==========================
+     Date Filter
+========================== -->
+
+            <section class="date-filter">
+
+                <h3>
+
+                    Filter by Date
+
+                </h3>
+
+                <div class="date-grid">
+
+                    <div class="date-input">
+
+                        <label>
+
+                            From
+
+                        </label>
+
+                        <input
+                            type="date"
+                            id="fromDate">
+
+                    </div>
+
+                    <div class="date-input">
+
+                        <label>
+
+                            To
+
+                        </label>
+
+                        <input
+                            type="date"
+                            id="toDate">
+
+                    </div>
+
+                </div>
+
+                <button
+                    id="applyDateFilter"
+                    class="filter-date-btn">
+
+                    <i class="fa-solid fa-filter"></i>
+
+                    Apply Filter
+
+                </button>
+
+            </section>
+
+            <!-- ==========================
+     Refresh History
+========================== -->
+
+            <section class="refresh-section">
+
+                <button
+                    id="refreshHistory"
+                    class="refresh-btn">
+
+                    <i class="fa-solid fa-rotate"></i>
+
+                    Refresh Transactions
+
+                </button>
+
+            </section>
+            <!-- ==========================
+     History JavaScript
+========================== -->
+
+            <script src="../js/history.js"></script>
+
+        </div>
+
+    </body>
+
+</html>

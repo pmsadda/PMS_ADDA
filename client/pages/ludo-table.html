@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+
+    <title>PMS ADDA Ludo</title>
+
+    <script src="../js/app-config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="../css/ludo-table.css" />
+  </head>
+
+  <body>
+    <main class="ludo-app">
+
+      <!-- ================================
+         TOP HEADER
+    ================================= -->
+
+      <header class="game-header">
+
+        <button
+          id="backButton"
+          class="icon-button back-button"
+          type="button"
+          aria-label="Go back">
+          ←
+        </button>
+
+        <section class="brand">
+          <img
+            class="brand-logo"
+            src="../assets/logo/logo.png"
+            alt="PMS ADDA" />
+
+          <div class="brand-copy">
+            <h1>PMS ADDA LUDO</h1>
+
+            <div class="match-meta">
+              <span id="entryAmount">
+                Entry: ৳0
+              </span>
+
+              <span class="meta-dot">•</span>
+
+              <span id="playerMode">
+                Players: 2
+              </span>
+
+              <span class="meta-dot">•</span>
+
+              <span id="matchCode">
+                Match: Waiting
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <section class="header-actions">
+
+          <div class="wallet-box">
+            <span class="wallet-label">
+              Balance
+            </span>
+
+            <strong id="walletBalance">
+              ৳0
+            </strong>
+          </div>
+
+          <button
+            id="soundButton"
+            class="icon-button"
+            type="button"
+            aria-label="Sound">
+            🔊
+          </button>
+
+          <button
+            id="settingsButton"
+            class="icon-button"
+            type="button"
+            aria-label="Settings">
+            ⚙
+          </button>
+
+        </section>
+      </header>
+
+      <!-- ================================
+         GAME AREA
+    ================================= -->
+
+      <section class="game-stage">
+
+        <!-- RED PLAYER -->
+
+        <article
+          id="playerPanelRed"
+          class="player-panel player-red"
+          data-color="red"
+          data-seat="1">
+          <div class="player-avatar">
+            <img
+              id="playerAvatarRed"
+              src="../assets/images/default-avatar.png"
+              alt="Red player" />
+
+            <span class="connection-dot"></span>
+          </div>
+
+          <div class="player-info">
+            <span class="color-name">
+              RED
+            </span>
+
+            <strong id="playerNameRed">
+              Waiting…
+            </strong>
+
+            <span id="playerBalanceRed">
+              ৳0
+            </span>
+          </div>
+
+          <div
+            id="turnTimerRed"
+            class="turn-timer">
+            10
+          </div>
+        </article>
+
+        <!-- GREEN PLAYER -->
+
+        <article
+          id="playerPanelGreen"
+          class="player-panel player-green"
+          data-color="green"
+          data-seat="2">
+          <div class="player-avatar">
+            <img
+              id="playerAvatarGreen"
+              src="../assets/images/default-avatar.png"
+              alt="Green player" />
+
+            <span class="connection-dot"></span>
+          </div>
+
+          <div class="player-info">
+            <span class="color-name">
+              GREEN
+            </span>
+
+            <strong id="playerNameGreen">
+              Waiting…
+            </strong>
+
+            <span id="playerBalanceGreen">
+              ৳0
+            </span>
+          </div>
+
+          <div
+            id="turnTimerGreen"
+            class="turn-timer">
+            10
+          </div>
+        </article>
+
+        <!-- YELLOW PLAYER -->
+
+        <article
+          id="playerPanelYellow"
+          class="player-panel player-yellow"
+          data-color="yellow"
+          data-seat="3">
+          <div class="player-avatar">
+            <img
+              id="playerAvatarYellow"
+              src="../assets/images/default-avatar.png"
+              alt="Yellow player" />
+
+            <span class="connection-dot"></span>
+          </div>
+
+          <div class="player-info">
+            <span class="color-name">
+              YELLOW
+            </span>
+
+            <strong id="playerNameYellow">
+              Waiting…
+            </strong>
+
+            <span id="playerBalanceYellow">
+              ৳0
+            </span>
+          </div>
+
+          <div
+            id="turnTimerYellow"
+            class="turn-timer">
+            10
+          </div>
+        </article>
+
+        <!-- BLUE PLAYER -->
+
+        <article
+          id="playerPanelBlue"
+          class="player-panel player-blue"
+          data-color="blue"
+          data-seat="4">
+          <div class="player-avatar">
+            <img
+              id="playerAvatarBlue"
+              src="../assets/images/default-avatar.png"
+              alt="Blue player" />
+
+            <span class="connection-dot"></span>
+          </div>
+
+          <div class="player-info">
+            <span class="color-name">
+              BLUE
+            </span>
+
+            <strong id="playerNameBlue">
+              Waiting…
+            </strong>
+
+            <span id="playerBalanceBlue">
+              ৳0
+            </span>
+          </div>
+
+          <div
+            id="turnTimerBlue"
+            class="turn-timer">
+            10
+          </div>
+        </article>
+
+        <!-- ================================
+           BOARD
+      ================================= -->
+
+        <section class="board-zone">
+
+          <div class="board-glow"></div>
+
+          <div
+            id="ludoBoard"
+            class="ludo-board"
+            aria-label="Ludo board">
+
+            <!-- JS এখানে 15 × 15 board cell তৈরি করবে -->
+
+            <div
+              id="boardGrid"
+              class="board-grid"></div>
+
+            <!-- PAWN LAYER -->
+
+            <div
+              id="pawnLayer"
+              class="pawn-layer"></div>
+
+            <!-- CENTER LOGO -->
+
+            <div class="board-center-logo">
+              <img
+                src="../assets/logo/logo.png"
+                alt="PMS ADDA" />
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ================================
+           DICE CONTROL
+      ================================= -->
+
+        <aside class="dice-control">
+
+          <div
+            id="turnStatus"
+            class="turn-status">
+            Waiting for players…
+          </div>
+
+          <button
+            id="diceButton"
+            class="dice-button"
+            type="button"
+            disabled>
+            <span
+              id="diceFace"
+              class="dice-face">
+              <i></i>
+            </span>
+          </button>
+
+          <span
+            id="diceHint"
+            class="dice-hint">
+            WAIT
+          </span>
+
+        </aside>
+
+        <!-- ================================
+           MATCHMAKING OVERLAY
+      ================================= -->
+
+        <section
+          id="matchmakingOverlay"
+          class="matchmaking-overlay"
+          hidden>
+          <div class="matchmaking-card">
+
+            <div class="search-animation">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <h2>Finding Players</h2>
+
+            <p id="matchmakingMessage">
+              Waiting for real players…
+            </p>
+
+            <strong id="matchmakingTimer">
+              10
+            </strong>
+
+            <div class="joined-player-count">
+              <span id="joinedPlayers">
+                1
+              </span>
+
+              <span>/</span>
+
+              <span id="maximumPlayers">
+                2
+              </span>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ================================
+           WINNER OVERLAY
+      ================================= -->
+
+        <section
+          id="winnerOverlay"
+          class="winner-overlay"
+          hidden>
+          <div class="winner-card">
+
+            <div class="winner-crown">
+              👑
+            </div>
+
+            <span class="winner-label">
+              WINNER
+            </span>
+
+            <h2 id="winnerName">
+              Player
+            </h2>
+
+            <p id="winnerMessage">
+              Congratulations!
+            </p>
+
+            <strong id="winnerPrize">
+              ৳0
+            </strong>
+
+            <button
+              id="returnLobbyButton"
+              class="primary-button"
+              type="button">
+              Return to Lobby
+            </button>
+
+          </div>
+        </section>
+
+      </section>
+
+      <!-- ================================
+         BOTTOM BAR
+    ================================= -->
+
+      <footer class="game-footer">
+
+        <section class="footer-left">
+
+          <button
+            id="emojiButton"
+            class="footer-button"
+            type="button">
+            😊 Emoji
+          </button>
+
+          <button
+            id="messageButton"
+            class="footer-button"
+            type="button">
+            💬 Message
+          </button>
+
+        </section>
+
+        <section class="live-status">
+
+          <span
+            id="liveStatusDot"
+            class="live-dot"></span>
+
+          <span id="liveStatusText">
+            Connecting…
+          </span>
+
+        </section>
+
+        <section class="footer-right">
+
+          <button
+            id="rulesButton"
+            class="footer-button"
+            type="button">
+            📖 Rules
+          </button>
+
+          <button
+            id="exitButton"
+            class="footer-button exit-button"
+            type="button">
+            🚪 Exit
+          </button>
+
+        </section>
+
+      </footer>
+
+    </main>
+
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+   
+    <script src="../js/ludo/ludo-game.js"></script>
+
+  </body>
+</html>

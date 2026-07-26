@@ -1,0 +1,616 @@
+/* ==========================================
+   PMS ADDA
+   Common CSS
+   Version : 1.0
+========================================== */
+
+/* Google Font */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* Reset */
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+/* Theme */
+
+:root{
+
+    --primary:#FFD700;
+
+    --secondary:#FFC107;
+
+    --background:#0B0B0B;
+
+    --card:#161616;
+
+    --card2:#202020;
+
+    --white:#FFFFFF;
+
+    --text:#D8D8D8;
+
+    --gray:#888888;
+
+    --success:#00C853;
+
+    --danger:#F44336;
+
+    --warning:#FF9800;
+
+    --border:rgba(255,215,0,.15);
+
+    --radius:16px;
+
+    --transition:.30s;
+
+}
+
+/* HTML */
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+/* Body */
+
+body{
+
+    font-family:'Poppins',sans-serif;
+
+    background:var(--background);
+
+    color:var(--white);
+
+}
+
+/* Link */
+
+a{
+
+    text-decoration:none;
+
+    color:inherit;
+
+}
+
+/* Image */
+
+img{
+
+    display:block;
+
+    max-width:100%;
+
+}
+
+/* List */
+
+ul{
+
+    list-style:none;
+
+}
+
+/* Button */
+
+button{
+
+    border:none;
+
+    outline:none;
+
+    cursor:pointer;
+
+    font-family:'Poppins',sans-serif;
+
+}
+
+/* Input */
+
+input{
+
+    outline:none;
+
+    border:none;
+
+    font-family:'Poppins',sans-serif;
+
+}
+
+/* Container */
+
+.container{
+
+    width:95%;
+
+    max-width:1400px;
+
+    margin:auto;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Common CSS
+   Part 2/3
+========================================== */
+
+/* ---------- Glass Card ---------- */
+
+.glass{
+
+    background:rgba(255,255,255,.05);
+
+    backdrop-filter:blur(20px);
+
+    border:1px solid var(--border);
+
+    border-radius:var(--radius);
+
+    box-shadow:0 10px 35px rgba(0,0,0,.35);
+
+}
+
+/* ---------- Card ---------- */
+
+.card{
+
+    background:var(--card);
+
+    border-radius:var(--radius);
+
+    padding:20px;
+
+}
+
+/* ---------- Buttons ---------- */
+
+.btn{
+
+    height:54px;
+
+    padding:0 28px;
+
+    border-radius:14px;
+
+    transition:var(--transition);
+
+    font-size:16px;
+
+    font-weight:600;
+
+}
+
+/* Gold Button */
+
+.btn-primary{
+
+    background:linear-gradient(
+        90deg,
+        var(--primary),
+        var(--secondary)
+    );
+
+    color:#111;
+
+}
+
+.btn-primary:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 20px rgba(255,215,0,.30);
+
+}
+
+/* Outline Button */
+
+.btn-outline{
+
+    background:transparent;
+
+    border:2px solid var(--primary);
+
+    color:var(--primary);
+
+}
+
+.btn-outline:hover{
+
+    background:var(--primary);
+
+    color:#111;
+
+}
+
+/* Danger */
+
+.btn-danger{
+
+    background:var(--danger);
+
+    color:#fff;
+
+}
+
+/* Success */
+
+.btn-success{
+
+    background:var(--success);
+
+    color:#fff;
+
+}
+
+/* ---------- Input ---------- */
+
+.input{
+
+    width:100%;
+
+    height:56px;
+
+    background:#1d1d1d;
+
+    border:1px solid #303030;
+
+    border-radius:14px;
+
+    color:#fff;
+
+    padding:0 18px;
+
+    transition:var(--transition);
+
+}
+
+.input:focus{
+
+    border-color:var(--primary);
+
+    box-shadow:0 0 12px rgba(255,215,0,.25);
+
+}
+
+/* ---------- Label ---------- */
+
+.label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#ccc;
+
+    font-size:14px;
+
+}
+
+/* ---------- Title ---------- */
+
+.title{
+
+    font-size:32px;
+
+    font-weight:700;
+
+    color:var(--primary);
+
+}
+
+/* ---------- Subtitle ---------- */
+
+.subtitle{
+
+    color:#999;
+
+    margin-top:8px;
+
+}
+
+/* ---------- Divider ---------- */
+
+.divider{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin:25px 0;
+
+}
+
+.divider::before,
+
+.divider::after{
+
+    content:"";
+
+    flex:1;
+
+    height:1px;
+
+    background:#333;
+
+}
+
+.divider span{
+
+    color:#888;
+
+    font-size:14px;
+
+}
+
+/* ==========================================
+   PMS ADDA
+   Common CSS
+   Part 3/3 (Final)
+========================================== */
+
+/* ========= Flex ========= */
+
+.flex{
+    display:flex;
+}
+
+.flex-center{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.flex-between{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.flex-column{
+    display:flex;
+    flex-direction:column;
+}
+
+/* ========= Grid ========= */
+
+.grid{
+    display:grid;
+    gap:20px;
+}
+
+.grid-2{
+    grid-template-columns:repeat(2,1fr);
+}
+
+.grid-3{
+    grid-template-columns:repeat(3,1fr);
+}
+
+.grid-4{
+    grid-template-columns:repeat(4,1fr);
+}
+
+/* ========= Margin ========= */
+
+.mt-10{margin-top:10px;}
+.mt-20{margin-top:20px;}
+.mt-30{margin-top:30px;}
+.mt-40{margin-top:40px;}
+
+.mb-10{margin-bottom:10px;}
+.mb-20{margin-bottom:20px;}
+.mb-30{margin-bottom:30px;}
+.mb-40{margin-bottom:40px;}
+
+/* ========= Padding ========= */
+
+.p-10{padding:10px;}
+.p-20{padding:20px;}
+.p-30{padding:30px;}
+
+/* ========= Text ========= */
+
+.text-center{
+    text-align:center;
+}
+
+.text-gold{
+    color:var(--primary);
+}
+
+.text-white{
+    color:#fff;
+}
+
+.text-gray{
+    color:#999;
+}
+
+.bold{
+    font-weight:700;
+}
+
+/* ========= Shadow ========= */
+
+.shadow{
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+/* ========= Animation ========= */
+
+.fade-in{
+
+    animation:fadeIn .6s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+        transform:translateY(25px);
+
+    }
+
+    to{
+
+        opacity:1;
+        transform:translateY(0);
+
+    }
+
+}
+
+.scale{
+
+    animation:scaleUp .4s ease;
+
+}
+
+@keyframes scaleUp{
+
+    from{
+
+        transform:scale(.90);
+
+    }
+
+    to{
+
+        transform:scale(1);
+
+    }
+
+}
+
+/* ========= Loader ========= */
+
+.loader{
+
+    width:42px;
+    height:42px;
+
+    border:4px solid rgba(255,255,255,.20);
+
+    border-top:4px solid var(--primary);
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+    from{
+
+        transform:rotate(0deg);
+
+    }
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+/* ========= Toast ========= */
+
+.toast{
+
+    position:fixed;
+
+    right:20px;
+
+    top:20px;
+
+    background:#202020;
+
+    color:#fff;
+
+    padding:15px 20px;
+
+    border-left:5px solid var(--primary);
+
+    border-radius:10px;
+
+    z-index:9999;
+
+    display:none;
+
+}
+
+/* ========= Scrollbar ========= */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#111;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:var(--primary);
+
+    border-radius:20px;
+
+}
+
+/* ========= Responsive ========= */
+
+@media(max-width:992px){
+
+    .grid-2,
+    .grid-3,
+    .grid-4{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .title{
+
+        font-size:26px;
+
+    }
+
+    .btn{
+
+        height:50px;
+
+    }
+
+    .input{
+
+        height:50px;
+
+    }
+
+}

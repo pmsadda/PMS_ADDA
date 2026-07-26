@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Lobby</title>
+        <script src="../js/app-config.js"></script>
+        <script src="../js/auth-guard.js"></script>
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+        <link rel="stylesheet"
+            href="../css/common.css">
+
+        <link rel="stylesheet"
+            href="../css/lobby.css">
+
+    </head>
+
+    <body>
+
+        <div class="app">
+
+            <header class="top-header">
+
+                <div class="profile-box">
+
+                    <img
+                        src="../assets/images/default-avatar.png"
+                        alt="Profile"
+                        id="profileImage">
+
+                    <div>
+
+                        <h2 id="playerName">
+
+                            Player Name
+
+                        </h2>
+
+                        <p>
+
+                            UID :
+                            <span id="playerId">
+
+                                PMS100001
+
+                            </span>
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="header-right">
+
+                    <button
+                        class="notify-btn"
+                        id="notifyBtn"
+                        type="button"
+                        aria-label="Open notifications">
+
+                        <i class="fa-solid fa-bell"></i>
+
+                        <span
+                            id="notificationBadge"
+                            class="notification-badge"
+                            hidden>
+                            0
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </header>
+
+            <section class="balance-card">
+
+                <div>
+
+                    <p>
+
+                        Available Balance
+
+                    </p>
+
+                    <h1>
+
+                        ৳
+
+                        <span id="balance">
+
+                            0.00
+
+                        </span>
+
+                    </h1>
+
+                </div>
+
+                <button
+                    id="refreshBtn">
+
+                    <i class="fa-solid fa-rotate"></i>
+
+                </button>
+
+            </section>
+
+            <section class="quick-menu">
+
+                <button id="depositBtn">
+
+                    <i class="fa-solid fa-circle-plus"></i>
+
+                    <span>
+
+                        Deposit
+
+                    </span>
+
+                </button>
+
+                <button id="withdrawBtn">
+
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+
+                    <span>
+
+                        Withdraw
+
+                    </span>
+
+                </button>
+
+                <button id="historyBtn">
+
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+
+                    <span>
+
+                        History
+
+                    </span>
+
+                </button>
+
+            </section>
+
+            <section class="game-section">
+
+                <h2>
+
+                    Choose Game
+
+                </h2>
+
+                <div class="game-list">
+
+                    <!-- Teen Patti -->
+
+                    <div class="game-card">
+
+                        <img
+                            src="../assets/games/teenpatti.png"
+                            alt="Teen Patti">
+
+                        <div class="game-info">
+
+                            <h3>Teen Patti</h3>
+
+                            <p>
+                                Classic multiplayer card game.
+                                Create or join a room and play with real
+                                players.
+                            </p>
+
+                            <button
+                                class="play-btn"
+                                id="teenPattiBtn">
+
+                                <i class="fa-solid fa-play"></i>
+
+                                Play Now
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Poker -->
+
+                    <div class="game-card">
+
+                        <img
+                            src="../assets/games/poker.png"
+                            alt="Poker">
+
+                        <div class="game-info">
+
+                            <h3>Poker</h3>
+
+                            <p>
+                                Texas Hold'em style multiplayer poker table.
+                            </p>
+
+                            <button
+                                class="play-btn"
+                                id="pokerBtn">
+
+                                <i class="fa-solid fa-play"></i>
+
+                                Play Now
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Ludo -->
+
+                    <div class="game-card">
+
+                        <img
+                            src="../assets/games/ludo.png"
+                            alt="Ludo">
+
+                        <div class="game-info">
+
+                            <h3>Ludo</h3>
+
+                            <p>
+                                Play online with friends or join a public room.
+                            </p>
+
+                            <button
+                                class="play-btn"
+                                id="ludoBtn">
+
+                                <i class="fa-solid fa-play"></i>
+
+                                Play Now
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Bottom Navigation -->
+
+            <nav class="bottom-nav">
+
+                <button
+                    class="nav-item active"
+                    id="homeBtn"
+                    type="button"
+                    aria-current="page">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    <span>Home</span>
+
+                </button>
+
+                <button
+                    class="nav-item"
+                    id="walletBtn" type="button">
+
+                    <i class="fa-solid fa-wallet"></i>
+
+                    <span>Wallet</span>
+
+                </button>
+
+                <button
+                    class="nav-item"
+                    id="supportBtn" type="button">
+
+                    <i class="fa-solid fa-headset"></i>
+
+                    <span>Support</span>
+
+                </button>
+
+                <button
+                    class="nav-item"
+                    id="profileBtn" type="button">
+
+                    <i class="fa-solid fa-user"></i>
+
+                    <span>Profile</span>
+
+                </button>
+
+                <button
+                    class="nav-item"
+                    id="logoutBtn" type="button">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+
+            </nav>
+
+            <!-- Loader -->
+
+            <div
+                class="loader-overlay"
+                id="loaderOverlay">
+
+                <div class="loader"></div>
+
+            </div>
+
+            <!-- Toast Notification -->
+
+            <div
+                id="toast"
+                class="toast">
+
+                <span id="toastMessage">
+
+                    Welcome to PMS ADDA
+
+                </span>
+
+            </div>
+
+            <!-- Notification Modal -->
+
+            <div
+                class="modal"
+                id="notificationModal">
+
+                <div class="modal-content">
+
+                    <div class="modal-header">
+
+                        <h3>
+
+                            Notifications
+
+                        </h3>
+
+                        <button
+                            id="closeNotification">
+
+                            <i class="fa-solid fa-xmark"></i>
+
+                        </button>
+
+                    </div>
+
+                    <div
+                        class="modal-body notification-modal-body"
+                        id="notificationList">
+
+                        <div class="notification-empty">
+
+                            <i class="fa-regular fa-bell-slash"></i>
+
+                            <p>No notifications yet.</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                class="modal"
+                id="logoutModal">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h3>Logout</h3>
+
+                        <button id="closeLogoutModal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="modal-body logout-modal-body">
+
+                        <i
+                            class="fa-solid fa-right-from-bracket logout-modal-icon"></i>
+
+                        <h3>Are you sure?</h3>
+
+                        <p>
+                            Do you want to logout from your account?
+                        </p>
+
+                        <div class="logout-actions">
+
+                            <button
+                                type="button"
+                                id="cancelLogoutBtn"
+                                class="cancel-logout-btn">
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                id="confirmLogoutBtn"
+                                class="confirm-logout-btn">
+                                Logout
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ===========================
+     JavaScript
+=========================== -->
+
+            <script src="../js/lobby.js"></script>
+
+        </div>
+
+    </body>
+
+</html>

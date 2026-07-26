@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Admin Dashboard</title>
+
+        <!-- Icons -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+            <script src="../js/app-config.js"></script>
+
+        <script src="../js/auth-guard.js"></script>
+
+        <!-- Shared Design -->
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
+
+        <!-- Admin Dashboard Design -->
+        <link
+            rel="stylesheet"
+            href="../css/admin-dashboard.css">
+    </head>
+
+    <body>
+
+        <div class="admin-layout">
+
+            <!-- =========================
+         Sidebar
+    ========================== -->
+
+            <aside
+                class="admin-sidebar"
+                id="adminSidebar">
+
+                <div class="admin-brand">
+
+                    <img
+                        src="../assets/logo/logo.png"
+                        alt="PMS ADDA Logo">
+
+                    <div>
+                        <h2>PMS ADDA</h2>
+                        <p>Admin Panel</p>
+                    </div>
+
+                </div>
+
+                <nav class="admin-menu">
+
+                    <a
+                        href="dashboard.html"
+                        class="menu-item active">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a href="users.html" class="menu-item">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Users</span>
+                    </a>
+
+                    <a
+                        href="deposits.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-circle-plus"></i>
+                        <span>Deposits</span>
+
+                        <small
+                            class="menu-count"
+                            id="pendingDepositMenuCount">
+                            0
+                        </small>
+                    </a>
+
+                    <a
+                        href="withdrawals.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                        <span>Withdrawals</span>
+
+                        <small
+                            class="menu-count"
+                            id="pendingWithdrawMenuCount">
+                            0
+                        </small>
+                    </a>
+
+                    <li>
+                        <a href="games.html">
+                            <i class="fa-solid fa-gamepad"></i>
+                            <span>Game Management</span>
+                        </a>
+                    </li>
+
+                    <a
+                        href="bots.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>Bots</span>
+                    </a>
+
+                    <a
+                        href="transactions.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span>Transactions</span>
+                    </a>
+
+                    <a
+                        href="settings.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-gears"></i>
+                        <span>Settings</span>
+                    </a>
+
+                    <a
+                        href="admin-logs.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-file-shield"></i>
+                        <span>Admin Logs</span>
+                    </a>
+
+                </nav>
+
+                <button
+                    type="button"
+                    class="logout-btn"
+                    id="adminLogoutBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+
+            </aside>
+
+            <!-- =========================
+         Main Content
+    ========================== -->
+
+            <main class="admin-main">
+
+                <header class="admin-header">
+
+                    <div class="header-left">
+
+                        <button
+                            type="button"
+                            id="sidebarToggle"
+                            class="sidebar-toggle"
+                            aria-label="Toggle sidebar">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+
+                        <div>
+                            <h1>Dashboard</h1>
+                            <p>Platform overview and financial summary</p>
+                        </div>
+
+                    </div>
+
+                    <div class="admin-profile">
+
+                        <button
+                            type="button"
+                            id="refreshDashboard"
+                            class="header-icon-btn"
+                            aria-label="Refresh dashboard">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+
+                        <img
+                            src="../assets/images/default-avatar.png"
+                            alt="Admin"
+                            id="adminAvatar">
+
+                        <div>
+                            <strong id="adminName">Administrator</strong>
+                            <span>Super Admin</span>
+                        </div>
+
+                    </div>
+
+                </header>
+
+                <!-- =========================
+             Summary Cards
+        ========================== -->
+
+                <section class="dashboard-cards">
+
+                    <article class="dashboard-card deposit-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </div>
+
+                        <div>
+                            <p>Today's Deposit</p>
+
+                            <h2>
+                                ৳
+                                <span id="todayDeposit">
+                                    0.00
+                                </span>
+                            </h2>
+                        </div>
+
+                    </article>
+
+                    <article class="dashboard-card withdraw-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </div>
+
+                        <div>
+                            <p>Today's Withdraw</p>
+
+                            <h2>
+                                ৳
+                                <span id="todayWithdraw">
+                                    0.00
+                                </span>
+                            </h2>
+                        </div>
+
+                    </article>
+
+                    <article class="dashboard-card pending-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+
+                        <div>
+                            <p>Pending Deposit</p>
+
+                            <h2 id="pendingDeposits">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+                    <article class="dashboard-card pending-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+
+                        <div>
+                            <p>Pending Withdraw</p>
+
+                            <h2 id="pendingWithdrawals">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+                </section>
+                <!-- =========================
+             More Summary Cards
+        ========================== -->
+
+                <section class="dashboard-cards secondary-cards">
+
+                    <article class="dashboard-card online-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-signal"></i>
+                        </div>
+
+                        <div>
+                            <p>Online Users</p>
+
+                            <h2 id="onlineUsers">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+                    <article class="dashboard-card user-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Users</p>
+
+                            <h2 id="totalUsers">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+                    <article class="dashboard-card revenue-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Revenue</p>
+
+                            <h2>
+                                ৳
+                                <span id="totalRevenue">
+                                    0.00
+                                </span>
+                            </h2>
+                        </div>
+
+                    </article>
+
+                    <article class="dashboard-card room-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-door-open"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Active Rooms</p>
+
+                            <h2 id="totalActiveRooms">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+                    <article class="dashboard-card revenue-card">
+
+                        <div class="card-icon">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+
+                        <div>
+                            <p>Today's Revenue</p>
+
+                            <h2>
+                                ৳
+                                <span id="todayRevenue">
+                                    0.00
+                                </span>
+                            </h2>
+                        </div>
+
+                    </article>
+
+                </section>
+
+                <!-- =========================
+             Game-wise Revenue
+        ========================== -->
+
+                <section class="dashboard-section">
+
+                    <div class="section-heading">
+
+                        <div>
+                            <h2>Game-wise Revenue</h2>
+                            <p>Revenue generated from service charges</p>
+                        </div>
+
+                        <a
+                            href="games.html"
+                            class="section-link">
+                            View Details
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                    <div class="game-revenue-grid">
+
+                        <article class="game-revenue-card">
+
+                            <div class="game-revenue-icon">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+
+                            <div>
+                                <p>Teen Patti Revenue</p>
+
+                                <h3>
+                                    ৳
+                                    <span id="teenPattiRevenue">
+                                        0.00
+                                    </span>
+                                </h3>
+
+                                <small>
+                                    Charge:
+                                    <span id="teenPattiChargeLabel">
+                                        5
+                                    </span>%
+                                </small>
+                            </div>
+
+                        </article>
+
+                        <article class="game-revenue-card">
+
+                            <div class="game-revenue-icon">
+                                <i class="fa-solid fa-diamond"></i>
+                            </div>
+
+                            <div>
+                                <p>Poker Revenue</p>
+
+                                <h3>
+                                    ৳
+                                    <span id="pokerRevenue">
+                                        0.00
+                                    </span>
+                                </h3>
+
+                                <small>
+                                    Charge:
+                                    <span id="pokerChargeLabel">
+                                        5
+                                    </span>%
+                                </small>
+                            </div>
+
+                        </article>
+
+                        <article class="game-revenue-card">
+
+                            <div class="game-revenue-icon">
+                                <i class="fa-solid fa-dice"></i>
+                            </div>
+
+                            <div>
+                                <p>Ludo Revenue</p>
+
+                                <h3>
+                                    ৳
+                                    <span id="ludoRevenue">
+                                        0.00
+                                    </span>
+                                </h3>
+
+                                <small>
+                                    Charge:
+                                    <span id="ludoChargeLabel">
+                                        5
+                                    </span>%
+                                </small>
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                </section>
+
+                <!-- =========================
+             Service Charge Control
+        ========================== -->
+
+                <section class="dashboard-section">
+
+                    <div class="section-heading">
+
+                        <div>
+                            <h2>Service Charge Control</h2>
+                            <p>Set the percentage for new game rounds</p>
+                        </div>
+
+                    </div>
+
+                    <form
+                        id="serviceChargeForm"
+                        class="service-charge-form"
+                        novalidate>
+
+                        <div class="charge-field">
+
+                            <label for="teenPattiCharge">
+                                Teen Patti
+                            </label>
+
+                            <div class="percentage-input">
+
+                                <input
+                                    type="number"
+                                    id="teenPattiCharge"
+                                    min="0"
+                                    max="20"
+                                    step="0.1"
+                                    value="5"
+                                    required>
+
+                                <span>%</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="charge-field">
+
+                            <label for="pokerCharge">
+                                Poker
+                            </label>
+
+                            <div class="percentage-input">
+
+                                <input
+                                    type="number"
+                                    id="pokerCharge"
+                                    min="0"
+                                    max="20"
+                                    step="0.1"
+                                    value="5"
+                                    required>
+
+                                <span>%</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="charge-field">
+
+                            <label for="ludoCharge">
+                                Ludo
+                            </label>
+
+                            <div class="percentage-input">
+
+                                <input
+                                    type="number"
+                                    id="ludoCharge"
+                                    min="0"
+                                    max="20"
+                                    step="0.1"
+                                    value="5"
+                                    required>
+
+                                <span>%</span>
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="saveServiceCharge"
+                            class="save-charge-btn">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Charges
+                        </button>
+
+                    </form>
+
+                    <div class="charge-notice">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <p>
+                            New charge rates will apply only to new game rounds.
+                            Existing running games will continue using the
+                            previous rate.
+                        </p>
+
+                    </div>
+
+                </section>
+                <!-- =========================
+             Bot Statistics
+        ========================== -->
+
+                <section class="dashboard-section">
+
+                    <div class="section-heading">
+
+                        <div>
+                            <h2>Bot Statistics</h2>
+                            <p>Track fair bot activity and financial result</p>
+                        </div>
+
+                        <a
+                            href="bots.html"
+                            class="section-link">
+                            Manage Bots
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                    <div class="bot-stats-grid">
+
+                        <article class="bot-stat-card">
+
+                            <div class="bot-stat-icon">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+
+                            <div>
+                                <p>Active Bots</p>
+                                <h3 id="activeBots">0</h3>
+                            </div>
+
+                        </article>
+
+                        <article class="bot-stat-card">
+
+                            <div class="bot-stat-icon">
+                                <i class="fa-solid fa-gamepad"></i>
+                            </div>
+
+                            <div>
+                                <p>Bot Games Played</p>
+                                <h3 id="botGamesPlayed">0</h3>
+                            </div>
+
+                        </article>
+
+                        <article class="bot-stat-card">
+
+                            <div class="bot-stat-icon">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                            </div>
+
+                            <div>
+                                <p>Bot Revenue</p>
+
+                                <h3>
+                                    ৳
+                                    <span id="botRevenue">
+                                        0.00
+                                    </span>
+                                </h3>
+                            </div>
+
+                        </article>
+
+                        <article class="bot-stat-card">
+
+                            <div class="bot-stat-icon">
+                                <i class="fa-solid fa-arrow-trend-down"></i>
+                            </div>
+
+                            <div>
+                                <p>Bot Loss</p>
+
+                                <h3>
+                                    ৳
+                                    <span id="botLoss">
+                                        0.00
+                                    </span>
+                                </h3>
+                            </div>
+
+                        </article>
+
+                        <article class="bot-stat-card bot-net-card">
+
+                            <div class="bot-stat-icon">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </div>
+
+                            <div>
+                                <p>Bot Net Result</p>
+
+                                <h3>
+                                    ৳
+                                    <span id="botNetResult">
+                                        0.00
+                                    </span>
+                                </h3>
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                    <div class="bot-notice">
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                        <p>
+                            Bots must use the same card dealing, shuffle, timer,
+                            and winner rules as real players. Admin controls
+                            must
+                            not change cards or force a user to win or lose.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <!-- =========================
+             Recent Requests
+        ========================== -->
+
+                <section class="dashboard-section">
+
+                    <div class="section-heading">
+
+                        <div>
+                            <h2>Recent Requests</h2>
+                            <p>Latest deposit and withdrawal requests</p>
+                        </div>
+
+                    </div>
+
+                    <div class="request-columns">
+
+                        <!-- Recent Deposits -->
+
+                        <div class="request-panel">
+
+                            <div class="request-panel-header">
+
+                                <h3>
+                                    <i class="fa-solid fa-circle-plus"></i>
+                                    Recent Deposits
+                                </h3>
+
+                                <a href="deposits.html">
+                                    View All
+                                </a>
+
+                            </div>
+
+                            <div
+                                class="request-list"
+                                id="recentDepositList">
+
+                                <article class="request-item">
+
+                                    <div class="request-user">
+
+                                        <div class="request-avatar">
+                                            MH
+                                        </div>
+
+                                        <div>
+                                            <strong>Mehedi Hasan</strong>
+                                            <span>DEP784512369</span>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="request-details">
+
+                                        <strong>৳2,000</strong>
+
+                                        <span class="request-status pending">
+                                            Pending
+                                        </span>
+
+                                    </div>
+
+                                </article>
+
+                                <article class="request-item">
+
+                                    <div class="request-user">
+
+                                        <div class="request-avatar">
+                                            RK
+                                        </div>
+
+                                        <div>
+                                            <strong>Rakib Khan</strong>
+                                            <span>DEP963258741</span>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="request-details">
+
+                                        <strong>৳1,000</strong>
+
+                                        <span class="request-status success">
+                                            Approved
+                                        </span>
+
+                                    </div>
+
+                                </article>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Recent Withdrawals -->
+
+                        <div class="request-panel">
+
+                            <div class="request-panel-header">
+
+                                <h3>
+                                    <i
+                                        class="fa-solid fa-money-bill-transfer"></i>
+                                    Recent Withdrawals
+                                </h3>
+
+                                <a href="withdrawals.html">
+                                    View All
+                                </a>
+
+                            </div>
+
+                            <div
+                                class="request-list"
+                                id="recentWithdrawList">
+
+                                <article class="request-item">
+
+                                    <div class="request-user">
+
+                                        <div class="request-avatar">
+                                            SA
+                                        </div>
+
+                                        <div>
+                                            <strong>Sabbir Ahmed</strong>
+                                            <span>WDR159753486</span>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="request-details">
+
+                                        <strong>৳1,500</strong>
+
+                                        <span class="request-status pending">
+                                            Pending
+                                        </span>
+
+                                    </div>
+
+                                </article>
+
+                                <article class="request-item">
+
+                                    <div class="request-user">
+
+                                        <div class="request-avatar">
+                                            RN
+                                        </div>
+
+                                        <div>
+                                            <strong>Rifat Noor</strong>
+                                            <span>WDR357951468</span>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="request-details">
+
+                                        <strong>৳800</strong>
+
+                                        <span class="request-status failed">
+                                            Rejected
+                                        </span>
+
+                                    </div>
+
+                                </article>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- =========================
+             Revenue Calculation Note
+        ========================== -->
+
+                <section class="dashboard-section revenue-formula-card">
+
+                    <div class="revenue-formula-icon">
+
+                        <i class="fa-solid fa-calculator"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h3>Revenue Calculation</h3>
+
+                        <p>
+                            Platform revenue is calculated from the service
+                            charge
+                            collected after each completed game.
+                        </p>
+
+                        <code>
+                            Revenue = Chargeable Winning × Service Charge %
+                        </code>
+
+                    </div>
+
+                </section>
+
+                <!-- =========================
+             Loader
+        ========================== -->
+
+                <div
+                    class="loader-overlay"
+                    id="loaderOverlay"
+                    aria-hidden="true">
+                    <div class="loader"></div>
+                </div>
+
+                <!-- =========================
+             Toast
+        ========================== -->
+
+                <div
+                    class="toast"
+                    id="toast"
+                    role="status"
+                    aria-live="polite">
+                    <span id="toastMessage"></span>
+                </div>
+
+                <!-- =========================
+             Save Confirmation Modal
+        ========================== -->
+
+                <div
+                    class="modal"
+                    id="chargeConfirmModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>Confirm Service Charges</h3>
+
+                            <button
+                                type="button"
+                                id="closeChargeModal"
+                                aria-label="Close">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <p>
+                                Confirm the new service-charge percentages.
+                                These rates will apply only to newly started
+                                games.
+                            </p>
+
+                            <div class="confirm-charge-list">
+
+                                <div class="confirm-charge-row">
+                                    <span>Teen Patti</span>
+
+                                    <strong>
+                                        <span
+                                            id="confirmTeenPattiCharge">5</span>%
+                                    </strong>
+                                </div>
+
+                                <div class="confirm-charge-row">
+                                    <span>Poker</span>
+
+                                    <strong>
+                                        <span id="confirmPokerCharge">5</span>%
+                                    </strong>
+                                </div>
+
+                                <div class="confirm-charge-row">
+                                    <span>Ludo</span>
+
+                                    <strong>
+                                        <span id="confirmLudoCharge">5</span>%
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-actions">
+
+                            <button
+                                type="button"
+                                id="cancelChargeSave"
+                                class="cancel-btn">
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                id="confirmChargeSave"
+                                class="confirm-btn">
+                                <i class="fa-solid fa-check"></i>
+                                Confirm
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- =========================
+             Mobile Sidebar Overlay
+        ========================== -->
+
+                <div
+                    class="sidebar-overlay"
+                    id="sidebarOverlay"></div>
+
+            </main>
+
+        </div>
+
+        <!-- Admin Dashboard JavaScript -->
+
+        <script src="../js/admin-dashboard.js"></script>
+
+    </body>
+
+</html>

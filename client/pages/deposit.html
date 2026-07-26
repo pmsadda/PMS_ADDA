@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Deposit</title>
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+            <script src="../js/app-config.js"></script>
+
+            <script src="../js/auth-guard.js"></script>
+
+        <link rel="stylesheet" href="../css/common.css">
+
+        <link rel="stylesheet" href="../css/deposit.css">
+
+    </head>
+
+    <body>
+
+        <div class="deposit-page">
+
+            <header class="page-header">
+
+                <button id="backBtn">
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </button>
+
+                <h2>Deposit</h2>
+
+                <div></div>
+
+            </header>
+
+            <section class="balance-card">
+
+                <p>Current Balance</p>
+
+                <h1>৳ <span id="balance">0.00</span></h1>
+
+            </section>
+
+            <section class="deposit-form">
+
+                <h3>Deposit Money</h3>
+
+                <label>Select Payment Method</label>
+
+                <div class="payment-grid">
+
+                    <button class="payment-card active"
+                        data-method="bkash">
+
+                        <img src="../assets/payment/bkash.png"
+                            alt="bKash">
+
+                        <span>bKash</span>
+
+                    </button>
+
+                    <button class="payment-card"
+                        data-method="nagad">
+
+                        <img src="../assets/payment/nagad.png"
+                            alt="Nagad">
+
+                        <span>Nagad</span>
+
+                    </button>
+
+                    <button class="payment-card"
+                        data-method="rocket">
+
+                        <img src="../assets/payment/rocket.png"
+                            alt="Rocket">
+
+                        <span>Rocket</span>
+
+                    </button>
+
+                </div>
+
+                <label>Deposit Amount</label>
+
+                <input
+                    type="number"
+                    id="amount"
+                    placeholder="Enter Amount">
+
+                <p class="hint">
+
+                    Minimum Deposit: ৳100
+
+                </p>
+
+                <label>Sender Number</label>
+
+                <input
+                    type="tel"
+                    id="senderNumber"
+                    placeholder="01XXXXXXXXX"
+                    maxlength="11">
+
+                <label>Transaction ID</label>
+
+                <input
+                    type="text"
+                    id="transactionId"
+                    placeholder="Enter Transaction ID">
+
+                <div class="deposit-info">
+
+                    <h4>
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        Deposit Instructions
+
+                    </h4>
+
+                    <ul>
+
+                        <li>Send money to the official payment number.</li>
+
+                        <li>Minimum deposit amount is
+                            <strong>৳100</strong>.</li>
+
+                        <li>Enter the exact Transaction ID.</li>
+
+                        <li>Your balance will be updated after
+                            verification.</li>
+
+                    </ul>
+
+                </div>
+
+                <div class="official-number">
+
+                    <p>Official bKash Number</p>
+
+                    <h2 id="merchantNumber">
+
+                        01XXXXXXXXX
+
+                    </h2>
+
+                    <button id="copyNumberBtn">
+
+                        <i class="fa-regular fa-copy"></i>
+
+                        Copy Number
+
+                    </button>
+
+                </div>
+
+                <button
+                    id="submitDeposit"
+                    class="submit-btn">
+
+                    <i class="fa-solid fa-paper-plane"></i>
+
+                    Submit Deposit
+
+                </button>
+
+                <!-- ==========================
+     Security Notice
+========================== -->
+
+                <div class="security-card">
+
+                    <div class="security-icon">
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                    </div>
+
+                    <div class="security-text">
+
+                        <h4>Security Notice</h4>
+
+                        <p>
+
+                            Never send money to any personal number.
+                            Deposit only to the official payment number shown
+                            above.
+                            PMS ADDA will never ask for your PIN or OTP.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- ==========================
+     Loader
+========================== -->
+
+                <div
+                    class="loader-overlay"
+                    id="loaderOverlay">
+
+                    <div class="loader"></div>
+
+                </div>
+
+                <!-- ==========================
+     Success Modal
+========================== -->
+
+                <div
+                    class="modal"
+                    id="successModal">
+
+                    <div class="modal-content">
+
+                        <div class="success-icon">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                        </div>
+
+                        <h2>
+
+                            Deposit Submitted
+
+                        </h2>
+
+                        <p>
+
+                            Your deposit request has been submitted
+                            successfully.
+                            Please wait while our team verifies your payment.
+
+                        </p>
+
+                        <button
+                            id="successOkBtn">
+
+                            OK
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- ==========================
+     Toast
+========================== -->
+
+                <div
+                    id="toast"
+                    class="toast">
+
+                    <span id="toastMessage">
+
+                    </span>
+
+                </div>
+                <!-- ==========================
+     Deposit JavaScript
+========================== -->
+
+                <script src="../js/deposit.js"></script>
+
+            </div>
+
+        </body>
+
+    </html>

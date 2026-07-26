@@ -1,0 +1,142 @@
+/* ==========================================
+   PMS ADDA LUDO ROOM SELECTION
+========================================== */
+
+.ludo-rooms-app {
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(22, 136, 232, 0.18),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(255, 201, 40, 0.14),
+            transparent 30%
+        ),
+        linear-gradient(
+            145deg,
+            #050c16,
+            #0b1f35 52%,
+            #050c16
+        );
+}
+
+.ludo-rooms-app .tp-rooms-header {
+    background:
+        rgba(5, 12, 22, 0.94);
+}
+
+.ludo-rooms-app .tp-header-title h1 {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+.ludo-rooms-app .tp-header-title h1 i {
+    color: #ffc928;
+}
+
+.ludo-rooms-app .tp-room-card {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.07),
+            transparent 45%
+        ),
+        rgba(10, 31, 51, 0.96);
+}
+
+.ludo-rooms-app .tp-room-card::before {
+    background:
+        rgba(22, 136, 232, 0.13);
+}
+
+.ludo-room-colors {
+    display: flex;
+
+    gap: 5px;
+
+    margin-top: 10px;
+}
+
+.ludo-room-colors span {
+    width: 13px;
+    height: 13px;
+
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ludo-color-red {
+    background: #e53935;
+}
+
+.ludo-color-green {
+    background: #20a957;
+}
+
+.ludo-color-yellow {
+    background: #ffc928;
+}
+
+.ludo-color-blue {
+    background: #1688e8;
+}
+
+.ludo-room-icon {
+    color: #ffffff !important;
+
+    background:
+        conic-gradient(
+            #e53935 0deg 90deg,
+            #20a957 90deg 180deg,
+            #ffc928 180deg 270deg,
+            #1688e8 270deg 360deg
+        ) !important;
+
+    border-color:
+        rgba(255, 255, 255, 0.32) !important;
+
+    box-shadow:
+        0 5px 14px rgba(0, 0, 0, 0.3);
+}
+
+.ludo-rooms-app .tp-join-button {
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #1688e8,
+            #075da8
+        );
+
+    box-shadow:
+        0 7px 16px rgba(22, 136, 232, 0.24);
+}
+
+.ludo-rooms-app
+.tp-join-button:hover:not(:disabled) {
+    filter: brightness(1.12);
+}
+
+.ludo-rooms-app .tp-join-button:disabled {
+    color: rgba(255, 255, 255, 0.58);
+
+    background:
+        rgba(255, 255, 255, 0.1);
+
+    box-shadow: none;
+}
+
+.ludo-rooms-app .tp-room-status-dot {
+    background: #20c978;
+
+    box-shadow:
+        0 0 0 4px rgba(32, 201, 120, 0.14);
+}

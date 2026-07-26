@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Withdraw</title>
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+            <script src="../js/app-config.js"></script>
+
+            <script src="../js/auth-guard.js"></script>
+
+        <link rel="stylesheet"
+            href="../css/common.css">
+
+        <link rel="stylesheet"
+            href="../css/withdraw.css">
+
+    </head>
+
+    <body>
+
+        <div class="withdraw-page">
+
+            <header class="page-header">
+
+                <button id="backBtn">
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </button>
+
+                <h2>
+
+                    Withdraw
+
+                </h2>
+
+                <div></div>
+
+            </header>
+
+            <section class="balance-card">
+
+                <p>
+
+                    Available Balance
+
+                </p>
+
+                <h1>
+
+                    ৳ <span id="balance">
+
+                        0.00
+
+                    </span>
+
+                </h1>
+
+            </section>
+
+            <section class="withdraw-form">
+
+                <h3>
+
+                    Withdraw Money
+
+                </h3>
+
+                <label>
+
+                    Select Method
+
+                </label>
+
+                <div class="payment-grid">
+
+                    <button
+                        class="payment-card active"
+                        data-method="bkash">
+
+                        <img
+                            src="../assets/payment/bkash.png"
+                            alt="bKash">
+
+                        <span>
+
+                            bKash
+
+                        </span>
+
+                    </button>
+
+                    <button
+                        class="payment-card"
+                        data-method="nagad">
+
+                        <img
+                            src="../assets/payment/nagad.png"
+                            alt="Nagad">
+
+                        <span>
+
+                            Nagad
+
+                        </span>
+
+                    </button>
+
+                    <button
+                        class="payment-card"
+                        data-method="rocket">
+
+                        <img
+                            src="../assets/payment/rocket.png"
+                            alt="Rocket">
+
+                        <span>
+
+                            Rocket
+
+                        </span>
+
+                    </button>
+
+                </div>
+
+                <label>
+
+                    Account Number
+
+                </label>
+
+                <input
+                    type="tel"
+                    id="accountNumber"
+                    placeholder="01XXXXXXXXX"
+                    maxlength="11">
+
+                <label>
+
+                    Withdraw Amount
+
+                </label>
+
+                <input
+                    type="number"
+                    id="withdrawAmount"
+                    placeholder="Enter Amount">
+
+                <p class="hint">
+
+                    Minimum Withdraw : ৳500
+
+                </p>
+
+                <label>
+
+                    Last 4 Digits
+
+                </label>
+
+                <input
+                    type="password"
+                    id="lastFourDigit"
+                    maxlength="4"
+                    placeholder="XXXX">
+
+                <p class="hint">
+
+                    Enter the last 4 digits of your registered wallet number.
+
+                </p>
+
+                <label>
+
+                    Withdrawal Rules
+
+                </label>
+
+                <div class="rules-card">
+
+                    <ul>
+
+                        <li>
+
+                            Minimum Withdraw Amount : <strong>৳500</strong>
+
+                        </li>
+
+                        <li>
+
+                            Your turnover must be equal to or greater than your
+                            total deposit.
+
+                        </li>
+
+                        <li>
+
+                            Withdraw requests are manually verified.
+
+                        </li>
+
+                        <li>
+
+                            Wrong account number or last 4 digits may delay
+                            payment.
+
+                        </li>
+
+                        <li>
+
+                            Withdraw processing time: 5 to 30 minutes.
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+                <div class="status-card">
+
+                    <div class="status-icon">
+
+                        <i class="fa-solid fa-hourglass-half"></i>
+
+                    </div>
+
+                    <div class="status-info">
+
+                        <h4>
+
+                            Current Status
+
+                        </h4>
+
+                        <p>
+
+                            No pending withdrawal request.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <button
+                    id="submitWithdraw"
+                    class="submit-btn">
+
+                    <i class="fa-solid fa-paper-plane"></i>
+
+                    Submit Withdraw
+
+                </button>
+
+            </section>
+
+            <!-- ==========================
+     Confirm Withdraw Modal
+========================== -->
+
+            <div
+                class="modal"
+                id="confirmModal">
+
+                <div class="modal-content">
+
+                    <h2>
+
+                        Confirm Withdrawal
+
+                    </h2>
+
+                    <div class="confirm-box">
+
+                        <div class="confirm-row">
+
+                            <span>Method</span>
+
+                            <strong id="confirmMethod">
+
+                                bKash
+
+                            </strong>
+
+                        </div>
+
+                        <div class="confirm-row">
+
+                            <span>Account</span>
+
+                            <strong id="confirmAccount">
+
+                                017XXXXXXXX
+
+                            </strong>
+
+                        </div>
+
+                        <div class="confirm-row">
+
+                            <span>Amount</span>
+
+                            <strong>
+
+                                ৳ <span id="confirmAmount">
+
+                                    0
+
+                                </span>
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-buttons">
+
+                        <button
+                            id="cancelWithdraw">
+
+                            Cancel
+
+                        </button>
+
+                        <button
+                            id="confirmWithdraw">
+
+                            Confirm
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+            <!-- ==========================
+     Loader
+========================== -->
+
+            <div
+                class="loader-overlay"
+                id="loaderOverlay">
+
+                <div class="loader"></div>
+
+            </div>
+
+            <!-- ==========================
+     Success Modal
+========================== -->
+
+            <div
+                class="modal"
+                id="successModal">
+
+                <div class="modal-content">
+
+                    <div class="success-icon">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                    </div>
+
+                    <h2>
+
+                        Withdraw Request Submitted
+
+                    </h2>
+
+                    <p>
+
+                        Your withdrawal request has been submitted successfully.
+                        Please wait while we verify your request.
+
+                    </p>
+
+                    <button id="successOkBtn">
+
+                        OK
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- ==========================
+     Failed Modal
+========================== -->
+
+            <div
+                class="modal"
+                id="failedModal">
+
+                <div class="modal-content">
+
+                    <div class="failed-icon">
+
+                        <i class="fa-solid fa-circle-xmark"></i>
+
+                    </div>
+
+                    <h2>
+
+                        Withdraw Failed
+
+                    </h2>
+
+                    <p id="failedMessage">
+
+                        Your turnover is not completed.
+
+                    </p>
+
+                    <button id="failedOkBtn">
+
+                        OK
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- ==========================
+     Withdrawal History
+========================== -->
+
+            <section class="history-section">
+
+                <h3>
+
+                    Recent Withdrawal History
+
+                </h3>
+
+                <div class="history-list">
+
+                    <div class="history-card">
+
+                        <div>
+
+                            <h4>
+
+                                Withdraw
+
+                            </h4>
+
+                            <p>
+
+                                Today • 03:15 PM
+
+                            </p>
+
+                        </div>
+
+                        <div class="history-status pending">
+
+                            Pending
+
+                        </div>
+
+                        <div class="history-amount">
+
+                            - ৳1000
+
+                        </div>
+
+                    </div>
+
+                    <div class="history-card">
+
+                        <div>
+
+                            <h4>
+
+                                Withdraw
+
+                            </h4>
+
+                            <p>
+
+                                Yesterday • 08:45 PM
+
+                            </p>
+
+                        </div>
+
+                        <div class="history-status success">
+
+                            Completed
+
+                        </div>
+
+                        <div class="history-amount">
+
+                            - ৳500
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- ==========================
+     Toast
+========================== -->
+
+            <div
+                class="toast"
+                id="toast">
+
+                <span id="toastMessage">
+
+                </span>
+
+            </div>
+            <!-- ==========================
+     Withdraw JavaScript
+========================== -->
+
+            <script src="../js/withdraw.js"></script>
+
+        </div>
+
+    </body>
+
+</html>

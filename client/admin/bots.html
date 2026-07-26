@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>Bot Management | PMS ADDA</title>
+
+        <script src="../js/app-config.js"></script>
+
+        <script src="/client/js/auth-guard.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+        <link
+            rel="stylesheet"
+            href="/client/css/common.css">
+
+        <link
+            rel="stylesheet"
+            href="/client/css/admin-games.css">
+
+        <link
+            rel="stylesheet"
+            href="/client/css/admin-bots.css">
+    </head>
+
+    <body>
+
+        <!-- Sidebar Overlay -->
+        <div
+            id="sidebarOverlay"
+            class="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <aside
+            id="sidebar"
+            class="sidebar">
+            <div class="sidebar-header">
+
+                <div class="brand-logo">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+
+                <div>
+                    <h2>PMS ADDA</h2>
+                    <p>Admin Panel</p>
+                </div>
+
+                <button
+                    id="sidebarCloseBtn"
+                    class="sidebar-close-btn"
+                    type="button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <a
+                    href="dashboard.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a
+                    href="users.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Users</span>
+                </a>
+
+                <a
+                    href="deposits.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                    <span>Deposits</span>
+                </a>
+
+                <a
+                    href="withdrawals.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Withdrawals</span>
+                </a>
+
+                <a
+                    href="transactions.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>Transactions</span>
+                </a>
+
+                <a
+                    href="games.html"
+                    class="menu-item">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>Game Management</span>
+                </a>
+
+                <a
+                    href="bots.html"
+                    class="menu-item active">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>Bot Management</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <button
+                    id="logoutBtn"
+                    class="logout-btn"
+                    type="button">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Topbar -->
+            <header class="topbar">
+
+                <div class="topbar-left">
+
+                    <button
+                        id="sidebarOpenBtn"
+                        class="menu-toggle-btn"
+                        type="button">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <div>
+                        <h1>Bot Management</h1>
+
+                        <p>
+                            Manage bot balance and status
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="topbar-right">
+
+                    <div class="admin-profile">
+
+                        <div class="admin-avatar">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+
+                        <div class="admin-info">
+
+                            <strong id="adminName">
+                                Admin
+                            </strong>
+
+                            <span>
+                                Administrator
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+            <!-- Page Content -->
+            <section class="page-content">
+
+                <!-- Summary Cards -->
+                <div class="summary-grid">
+
+                    <article class="summary-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Bots</p>
+                            <h3 id="totalBots">0</h3>
+                        </div>
+
+                    </article>
+
+                    <article class="summary-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+
+                        <div>
+                            <p>Active Bots</p>
+                            <h3 id="activeBots">0</h3>
+                        </div>
+
+                    </article>
+
+                    <article class="summary-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </div>
+
+                        <div>
+                            <p>Disabled Bots</p>
+                            <h3 id="disabledBots">0</h3>
+                        </div>
+
+                    </article>
+
+                    <article class="summary-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Bot Balance</p>
+
+                            <h3>
+                                ৳<span id="totalBotBalance">0.00</span>
+                            </h3>
+                        </div>
+
+                    </article>
+
+                </div>
+
+                <!-- Bot Table -->
+                <section class="content-card">
+
+                    <div class="content-card-header">
+
+                        <div>
+                            <h2>Teen Patti Bots</h2>
+
+                            <p>
+                                Add, deduct or set bot balance
+                            </p>
+                        </div>
+
+                        <button
+                            id="refreshBotsBtn"
+                            class="primary-btn"
+                            type="button">
+                            <i class="fa-solid fa-rotate"></i>
+                            Refresh
+                        </button>
+
+                    </div>
+
+                    <div class="filters-wrapper">
+
+                        <div class="search-box">
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                            <input
+                                id="botSearchInput"
+                                type="text"
+                                placeholder="Search bot name or code">
+
+                        </div>
+
+                        <select
+                            id="botStatusFilter"
+                            class="filter-select">
+                            <option value="all">
+                                All Status
+                            </option>
+
+                            <option value="active">
+                                Active
+                            </option>
+
+                            <option value="disabled">
+                                Disabled
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table class="bots-table">
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Bot</th>
+                                    <th>Code</th>
+                                    <th>Balance</th>
+                                    <th>Difficulty</th>
+                                    <th>Playing Style</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="botsTableBody">
+
+                                <tr>
+                                    <td
+                                        colspan="8"
+                                        class="empty-table-message">
+                                        Loading bots...
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+            </section>
+
+        </main>
+
+        <!-- Balance Modal -->
+        <div
+            id="balanceModal"
+            class="modal">
+            <div class="modal-dialog">
+
+                <div class="modal-header">
+
+                    <div>
+                        <h2>Update Bot Balance</h2>
+
+                        <p id="selectedBotName">
+                            Selected Bot
+                        </p>
+                    </div>
+
+                    <button
+                        id="closeBalanceModalBtn"
+                        class="modal-close-btn"
+                        type="button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                </div>
+
+                <form id="balanceForm">
+
+                    <input
+                        id="selectedBotId"
+                        type="hidden">
+
+                    <div class="form-group">
+
+                        <label for="balanceAction">
+                            Action
+                        </label>
+
+                        <select
+                            id="balanceAction"
+                            required>
+                            <option value="add">
+                                Add Balance
+                            </option>
+
+                            <option value="deduct">
+                                Deduct Balance
+                            </option>
+
+                            <option value="set">
+                                Set Balance
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="balanceAmount">
+                            Amount
+                        </label>
+
+                        <input
+                            id="balanceAmount"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="Enter amount"
+                            required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="balanceNote">
+                            Note
+                        </label>
+
+                        <textarea
+                            id="balanceNote"
+                            maxlength="255"
+                            placeholder="Optional note"></textarea>
+
+                    </div>
+
+                    <div class="modal-actions">
+
+                        <button
+                            id="cancelBalanceBtn"
+                            class="secondary-btn"
+                            type="button">
+                            Cancel
+                        </button>
+
+                        <button
+                            id="saveBalanceBtn"
+                            class="primary-btn"
+                            type="submit">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Balance
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+        <!-- History Modal -->
+        <div
+            id="historyModal"
+            class="modal">
+            <div class="modal-dialog large-modal">
+
+                <div class="modal-header">
+
+                    <div>
+                        <h2>Balance History</h2>
+
+                        <p id="historyBotName">
+                            Bot balance changes
+                        </p>
+                    </div>
+
+                    <button
+                        id="closeHistoryModalBtn"
+                        class="modal-close-btn"
+                        type="button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                </div>
+
+                <div class="table-wrapper">
+
+                    <table class="history-table">
+
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Action</th>
+                                <th>Amount</th>
+                                <th>Before</th>
+                                <th>After</th>
+                                <th>Admin</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="historyTableBody">
+
+                            <tr>
+                                <td
+                                    colspan="7"
+                                    class="empty-table-message">
+                                    No history found.
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Status Modal -->
+        <div
+            id="statusModal"
+            class="modal">
+            <div class="modal-dialog small-modal">
+
+                <div class="status-modal-icon">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+
+                <h2 id="statusModalTitle">
+                    Change Bot Status
+                </h2>
+
+                <p id="statusModalMessage">
+                    Are you sure?
+                </p>
+
+                <div class="modal-actions">
+
+                    <button
+                        id="cancelStatusBtn"
+                        class="secondary-btn"
+                        type="button">
+                        Cancel
+                    </button>
+
+                    <button
+                        id="confirmStatusBtn"
+                        class="primary-btn"
+                        type="button">
+                        Confirm
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Bot Settings Modal -->
+        <div
+            id="settingsModal"
+            class="modal">
+            <div class="modal-dialog">
+
+                <div class="modal-header">
+
+                    <div>
+                        <h2>Bot AI Settings</h2>
+
+                        <p id="settingsBotName">
+                            Selected Bot
+                        </p>
+                    </div>
+
+                    <button
+                        id="closeSettingsModalBtn"
+                        class="modal-close-btn"
+                        type="button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                </div>
+
+                <form id="settingsForm">
+
+                    <input
+                        id="settingsBotId"
+                        type="hidden">
+
+                    <div class="form-group">
+
+                        <label for="botDifficulty">
+                            Difficulty
+                        </label>
+
+                        <select
+                            id="botDifficulty"
+                            required>
+                            <option value="easy">
+                                Easy
+                            </option>
+
+                            <option value="normal">
+                                Normal
+                            </option>
+
+                            <option value="hard">
+                                Hard
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="botPlayingStyle">
+                            Playing Style
+                        </label>
+
+                        <select
+                            id="botPlayingStyle"
+                            required>
+                            <option value="aggressive">
+                                Aggressive
+                            </option>
+
+                            <option value="balanced">
+                                Balanced
+                            </option>
+
+                            <option value="defensive">
+                                Defensive
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div class="modal-actions">
+
+                        <button
+                            id="cancelSettingsBtn"
+                            class="secondary-btn"
+                            type="button">
+                            Cancel
+                        </button>
+
+                        <button
+                            id="saveSettingsBtn"
+                            class="primary-btn"
+                            type="submit">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Settings
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div
+            id="pageLoader"
+            class="page-loader hidden">
+            <div class="loader-spinner"></div>
+            <p>Please wait...</p>
+        </div>
+
+        <!-- Toast -->
+        <div
+            id="toastContainer"
+            class="toast-container"></div>
+
+        <script src="../js/admin-bots.js"></script>
+
+    </body>
+</html>
