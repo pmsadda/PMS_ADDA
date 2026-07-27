@@ -1326,3 +1326,215 @@ button:focus{
         max-height: 68vh;
     }
 }
+
+/* ==========================================
+   DYNAMIC LOBBY NOTICE
+========================================== */
+
+.lobby-notice[hidden] {
+    display: none !important;
+}
+
+.lobby-notice {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    min-height: 44px;
+
+    margin: 12px 0 16px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.28);
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(30, 21, 3, 0.96),
+            rgba(7, 27, 30, 0.98)
+        );
+
+    box-shadow:
+        0 8px 22px
+        rgba(0, 0, 0, 0.24);
+}
+
+.lobby-notice-icon {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 44px;
+
+    align-self: stretch;
+
+    color: #ffd700;
+
+    border-right:
+        1px solid
+        rgba(255, 215, 0, 0.22);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 215, 0, 0.15),
+            rgba(255, 153, 0, 0.06)
+        );
+
+    box-shadow:
+        8px 0 18px
+        rgba(0, 0, 0, 0.24);
+}
+
+.lobby-notice-icon i {
+    font-size: 16px;
+
+    filter:
+        drop-shadow(
+            0 0 7px
+            rgba(255, 215, 0, 0.42)
+        );
+}
+
+.lobby-notice-window {
+    position: relative;
+
+    flex: 1;
+    min-width: 0;
+
+    overflow: hidden;
+
+    mask-image:
+        linear-gradient(
+            to right,
+            transparent,
+            #000 5%,
+            #000 95%,
+            transparent
+        );
+
+    -webkit-mask-image:
+        linear-gradient(
+            to right,
+            transparent,
+            #000 5%,
+            #000 95%,
+            transparent
+        );
+}
+
+.lobby-notice-track {
+    display: flex;
+    align-items: center;
+
+    width: max-content;
+    min-width: 100%;
+    min-height: 42px;
+
+    padding-left: 100%;
+
+    will-change: transform;
+
+    animation:
+        lobbyNoticeScroll
+        var(--notice-duration, 18s)
+        linear
+        infinite;
+}
+
+.lobby-notice-track span {
+    display: inline-block;
+
+    padding: 0 28px 0 10px;
+
+    color: #fff3b0;
+
+    font-family:
+        "Noto Sans Bengali",
+        "Hind Siliguri",
+        Arial,
+        sans-serif;
+
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.45;
+
+    white-space: nowrap;
+
+    text-shadow:
+        0 1px 8px
+        rgba(255, 215, 0, 0.14);
+}
+
+.lobby-notice:hover
+.lobby-notice-track {
+    animation-play-state: paused;
+}
+
+@keyframes lobbyNoticeScroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+@media (max-width: 480px) {
+    .lobby-notice {
+        min-height: 40px;
+
+        margin-top: 10px;
+        margin-bottom: 13px;
+
+        border-radius: 12px;
+    }
+
+    .lobby-notice-icon {
+        flex-basis: 39px;
+    }
+
+    .lobby-notice-icon i {
+        font-size: 14px;
+    }
+
+    .lobby-notice-track {
+        min-height: 38px;
+    }
+
+    .lobby-notice-track span {
+        padding-right: 22px;
+
+        font-size: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lobby-notice-track {
+        width: 100%;
+
+        padding-left: 0;
+
+        animation: none;
+    }
+
+    .lobby-notice-track span {
+        width: 100%;
+
+        overflow: hidden;
+
+        text-align: center;
+        text-overflow: ellipsis;
+    }
+}

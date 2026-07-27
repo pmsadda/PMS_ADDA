@@ -16,6 +16,8 @@ const adminWithdrawRoutes = require("./routes/admin-withdraw.routes");
 
 const walletRoutes = require("./routes/wallet.routes");
 
+const lobbyNoticeRoutes = require("./routes/lobby-notice.routes");
+
 const adminDashboardRoutes = require("./routes/admin-dashboard.routes");
 
 const adminTransactionRoutes = require("./routes/admin-transactions.routes");
@@ -90,6 +92,8 @@ app.use("/api/admin/deposits", adminDepositRoutes);
 app.use("/api/withdraws", withdrawRoutes);
 
 app.use("/api/wallet", walletRoutes);
+
+app.use("/api/lobby-notices", lobbyNoticeRoutes);
 
 app.use("/api/admin/withdraws", adminWithdrawRoutes);
 

@@ -15,7 +15,7 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-            <script src="../js/app-config.js"></script>
+        <script src="../js/app-config.js"></script>
 
         <script src="../js/auth-guard.js"></script>
 
@@ -875,6 +875,204 @@
                                     </div>
 
                                 </article>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- =========================
+     Lobby Notice Management
+========================== -->
+
+                <section
+                    class="dashboard-section notice-management-section">
+
+                    <div class="notice-section-header">
+
+                        <div>
+
+                            <h2>
+                                <i class="fa-solid fa-bullhorn"></i>
+                                Lobby Notice
+                            </h2>
+
+                            <p>
+                                Publish a scrolling Bangla notice in the user
+                                Lobby.
+                            </p>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="notice-refresh-btn"
+                            id="refreshLobbyNotices">
+
+                            <i class="fa-solid fa-rotate"></i>
+                            Refresh
+
+                        </button>
+
+                    </div>
+
+                    <div class="notice-management-grid">
+
+                        <!-- Notice Form -->
+
+                        <div class="notice-editor-card">
+
+                            <div class="notice-card-title">
+
+                                <h3 id="noticeFormTitle">
+                                    Create Notice
+                                </h3>
+
+                                <span
+                                    class="notice-edit-badge"
+                                    id="noticeEditBadge"
+                                    hidden>
+                                    Editing
+                                </span>
+
+                            </div>
+
+                            <input
+                                type="hidden"
+                                id="editingNoticeId"
+                                value>
+
+                            <div class="notice-form-group">
+
+                                <label for="lobbyNoticeInput">
+                                    Notice Text
+                                </label>
+
+                                <textarea
+                                    id="lobbyNoticeInput"
+                                    maxlength="500"
+                                    rows="5"
+                                    placeholder="বাংলায় Lobby notice লিখুন..."
+                                    required></textarea>
+
+                                <div class="notice-character-count">
+
+                                    <span id="noticeCharacterCount">
+                                        0
+                                    </span>
+                                    / 500
+
+                                </div>
+
+                            </div>
+
+                            <div class="notice-date-grid">
+
+                                <div class="notice-form-group">
+
+                                    <label for="noticeStartsAt">
+                                        Start Time
+                                    </label>
+
+                                    <input
+                                        type="datetime-local"
+                                        id="noticeStartsAt">
+
+                                    <small>
+                                        Empty থাকলে সঙ্গে সঙ্গে শুরু হবে।
+                                    </small>
+
+                                </div>
+
+                                <div class="notice-form-group">
+
+                                    <label for="noticeEndsAt">
+                                        End Time
+                                    </label>
+
+                                    <input
+                                        type="datetime-local"
+                                        id="noticeEndsAt">
+
+                                    <small>
+                                        Empty থাকলে notice চালু থাকবে।
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                            <div class="notice-form-actions">
+
+                                <button
+                                    type="button"
+                                    class="notice-cancel-btn"
+                                    id="cancelNoticeEdit"
+                                    hidden>
+
+                                    <i class="fa-solid fa-xmark"></i>
+                                    Cancel Edit
+
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="notice-draft-btn"
+                                    id="saveNoticeDraft">
+
+                                    <i class="fa-regular fa-floppy-disk"></i>
+                                    Save Draft
+
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="notice-publish-btn"
+                                    id="publishLobbyNotice">
+
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    Publish Notice
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Notice List -->
+
+                        <div class="notice-list-card">
+
+                            <div class="notice-card-title">
+
+                                <h3>
+                                    Published & Saved Notices
+                                </h3>
+
+                                <span
+                                    class="notice-total-count"
+                                    id="noticeTotalCount">
+                                    0
+                                </span>
+
+                            </div>
+
+                            <div
+                                class="admin-notice-list"
+                                id="adminNoticeList">
+
+                                <div class="admin-notice-empty">
+
+                                    <i class="fa-regular fa-message"></i>
+
+                                    <p>
+                                        No Lobby notices found.
+                                    </p>
+
+                                </div>
 
                             </div>
 

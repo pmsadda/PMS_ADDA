@@ -8,15 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const LOGIN_PAGE = "./login.html";
 
   const token =
-    localStorage.getItem("access_token") ||
-    localStorage.getItem("token") ||
-    "";
+    localStorage.getItem("access_token") || localStorage.getItem("token") || "";
 
   const STATE = {
     user: null,
     deposits: [],
     withdrawals: [],
     notifications: [],
+    lobbyNotices: [],
     loading: false,
     lastLoadedAt: 0,
     toastTimer: null,
@@ -32,6 +31,12 @@ document.addEventListener("DOMContentLoaded", () => {
     playerId: document.getElementById("playerId"),
     profileImage: document.getElementById("profileImage"),
 
+    lobbyNotice: document.getElementById("lobbyNotice"),
+
+    lobbyNoticeTrack: document.getElementById("lobbyNoticeTrack"),
+
+    lobbyNoticeText: document.getElementById("lobbyNoticeText"),
+
     refreshButton: document.getElementById("refreshBtn"),
 
     loader: document.getElementById("loaderOverlay"),
@@ -40,23 +45,16 @@ document.addEventListener("DOMContentLoaded", () => {
     toastMessage: document.getElementById("toastMessage"),
 
     notificationButton: document.getElementById("notifyBtn"),
-    notificationBadge:
-      document.getElementById("notificationBadge"),
-    notificationModal:
-      document.getElementById("notificationModal"),
-    notificationList:
-      document.getElementById("notificationList"),
-    closeNotification:
-      document.getElementById("closeNotification"),
+    notificationBadge: document.getElementById("notificationBadge"),
+    notificationModal: document.getElementById("notificationModal"),
+    notificationList: document.getElementById("notificationList"),
+    closeNotification: document.getElementById("closeNotification"),
 
     logoutButton: document.getElementById("logoutBtn"),
     logoutModal: document.getElementById("logoutModal"),
-    closeLogoutModal:
-      document.getElementById("closeLogoutModal"),
-    cancelLogoutButton:
-      document.getElementById("cancelLogoutBtn"),
-    confirmLogoutButton:
-      document.getElementById("confirmLogoutBtn"),
+    closeLogoutModal: document.getElementById("closeLogoutModal"),
+    cancelLogoutButton: document.getElementById("cancelLogoutBtn"),
+    confirmLogoutButton: document.getElementById("confirmLogoutBtn"),
 
     homeButton: document.getElementById("homeBtn"),
     walletButton: document.getElementById("walletBtn"),
@@ -71,8 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pokerButton: document.getElementById("pokerBtn"),
     ludoButton: document.getElementById("ludoBtn"),
 
-    settingsButton:
-      document.getElementById("settingsBtn"),
+    settingsButton: document.getElementById("settingsBtn"),
   };
 
   /* =========================================================
@@ -88,13 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function formatMoney(value) {
     const amount = Number(value);
 
-    return (Number.isFinite(amount) ? amount : 0).toLocaleString(
-      "en-BD",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      },
-    );
+    return (Number.isFinite(amount) ? amount : 0).toLocaleString("en-BD", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   }
 
   function formatDate(value) {
@@ -187,9 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     modal.style.display = "none";
 
-    const anyOpenModal = Array.from(
-      document.querySelectorAll(".modal"),
-    ).some((item) => item.style.display === "flex");
+    const anyOpenModal = Array.from(document.querySelectorAll(".modal")).some(
+      (item) => item.style.display === "flex",
+    );
 
     if (!anyOpenModal) {
       document.body.style.overflow = "";
@@ -241,22 +235,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function extractUser(result) {
-    return (
-      result?.data?.user ||
-      result?.user ||
-      result?.data ||
-      null
-    );
+    return result?.data?.user || result?.user || result?.data || null;
   }
 
   function extractHistory(result, possibleKeys = []) {
     const candidates = [
       result?.data,
       result,
-      ...possibleKeys.flatMap((key) => [
-        result?.data?.[key],
-        result?.[key],
-      ]),
+      ...possibleKeys.flatMap((key) => [result?.data?.[key], result?.[key]]),
     ];
 
     for (const candidate of candidates) {
@@ -274,10 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getUserDisplayName(user) {
     return (
-      user?.fullName ||
-      user?.full_name ||
-      user?.username ||
-      "PMS ADDA Player"
+      user?.fullName || user?.full_name || user?.username || "PMS ADDA Player"
     );
   }
 
@@ -296,23 +279,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const displayName = getUserDisplayName(user);
 
-    const walletBalance =
-      user.walletBalance ??
-      user.wallet_balance ??
-      0;
+    const walletBalance = user.walletBalance ?? user.wallet_balance ?? 0;
 
     if (DOM.playerName) {
       DOM.playerName.textContent = displayName;
     }
 
     if (DOM.playerId) {
-      DOM.playerId.textContent =
-        user.uid || user.userUid || "-";
+      DOM.playerId.textContent = user.uid || user.userUid || "-";
     }
 
     if (DOM.balance) {
-      DOM.balance.textContent =
-        formatMoney(walletBalance);
+      DOM.balance.textContent = formatMoney(walletBalance);
     }
 
     if (DOM.profileImage) {
@@ -321,15 +299,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       DOM.profileImage.onerror = () => {
         DOM.profileImage.onerror = null;
-        DOM.profileImage.src =
-          "../assets/images/default-avatar.png";
+        DOM.profileImage.src = "../assets/images/default-avatar.png";
       };
     }
 
-    localStorage.setItem(
-      "current_user",
-      JSON.stringify(user),
-    );
+    localStorage.setItem("current_user", JSON.stringify(user));
   }
 
   /* =========================================================
@@ -338,17 +312,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function normalizeHistoryItem(item, type) {
     const status = normalizeString(
-      item.status ||
-      item.requestStatus ||
-      item.request_status ||
-      "pending",
+      item.status || item.requestStatus || item.request_status || "pending",
     );
 
     const amount = Number(
-      item.amount ||
-      item.requestAmount ||
-      item.request_amount ||
-      0,
+      item.amount || item.requestAmount || item.request_amount || 0,
     );
 
     const createdAt =
@@ -374,18 +342,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function buildNotifications() {
-    const depositNotifications = STATE.deposits.map(
-      (item) => normalizeHistoryItem(item, "deposit"),
+    const depositNotifications = STATE.deposits.map((item) =>
+      normalizeHistoryItem(item, "deposit"),
     );
 
-    const withdrawNotifications = STATE.withdrawals.map(
-      (item) => normalizeHistoryItem(item, "withdraw"),
+    const withdrawNotifications = STATE.withdrawals.map((item) =>
+      normalizeHistoryItem(item, "withdraw"),
     );
 
-    STATE.notifications = [
-      ...depositNotifications,
-      ...withdrawNotifications,
-    ]
+    STATE.notifications = [...depositNotifications, ...withdrawNotifications]
       .sort((firstItem, secondItem) => {
         const firstTime = firstItem.createdAt
           ? new Date(firstItem.createdAt).getTime()
@@ -401,10 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getNotificationTitle(notification) {
-    const action =
-      notification.type === "deposit"
-        ? "Deposit"
-        : "Withdraw";
+    const action = notification.type === "deposit" ? "Deposit" : "Withdraw";
 
     const status = notification.status;
 
@@ -463,8 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const amount = document.createElement("strong");
 
-    amount.textContent =
-      `৳${formatMoney(notification.amount)}`;
+    amount.textContent = `৳${formatMoney(notification.amount)}`;
 
     titleRow.append(title, amount);
 
@@ -478,8 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const status = document.createElement("span");
 
-    status.className =
-      `notification-status ${notification.status}`;
+    status.className = `notification-status ${notification.status}`;
 
     status.textContent = notification.status || "pending";
 
@@ -516,28 +476,95 @@ document.addEventListener("DOMContentLoaded", () => {
       const fragment = document.createDocumentFragment();
 
       STATE.notifications.forEach((notification) => {
-        fragment.appendChild(
-          createNotificationElement(notification),
-        );
+        fragment.appendChild(createNotificationElement(notification));
       });
 
       DOM.notificationList.appendChild(fragment);
     }
 
     const pendingCount = STATE.notifications.filter(
-      (notification) =>
-        notification.status === "pending",
+      (notification) => notification.status === "pending",
     ).length;
 
     if (DOM.notificationBadge) {
-      DOM.notificationBadge.hidden =
-        pendingCount === 0;
+      DOM.notificationBadge.hidden = pendingCount === 0;
 
       DOM.notificationBadge.textContent =
-        pendingCount > 99
-          ? "99+"
-          : String(pendingCount);
+        pendingCount > 99 ? "99+" : String(pendingCount);
     }
+  }
+
+  /* =========================================================
+     DYNAMIC LOBBY NOTICE
+  ========================================================= */
+
+  function extractLobbyNotices(result) {
+    const notices = result?.data?.notices ?? result?.notices ?? [];
+
+    if (!Array.isArray(notices)) {
+      return [];
+    }
+
+    return notices.filter((notice) => {
+      return (
+        notice &&
+        typeof notice.noticeText === "string" &&
+        notice.noticeText.trim()
+      );
+    });
+  }
+
+  function hideLobbyNotice() {
+    if (DOM.lobbyNotice) {
+      DOM.lobbyNotice.hidden = true;
+    }
+
+    if (DOM.lobbyNoticeText) {
+      DOM.lobbyNoticeText.textContent = "";
+    }
+  }
+
+  function renderLobbyNotice() {
+    if (!DOM.lobbyNotice || !DOM.lobbyNoticeTrack || !DOM.lobbyNoticeText) {
+      return;
+    }
+
+    const noticeText = STATE.lobbyNotices
+      .map((notice) => String(notice.noticeText || "").trim())
+      .filter(Boolean)
+      .join("   ✦   ");
+
+    if (!noticeText) {
+      hideLobbyNotice();
+      return;
+    }
+
+    DOM.lobbyNoticeText.textContent = `📢 ${noticeText}`;
+
+    /*
+     * Notice বড় হলে animation ধীরে চলবে,
+     * ছোট হলে অপ্রয়োজনীয় ধীর হবে না।
+     */
+    const durationSeconds = Math.min(
+      45,
+      Math.max(14, Math.ceil(noticeText.length * 0.16)),
+    );
+
+    DOM.lobbyNoticeTrack.style.setProperty(
+      "--notice-duration",
+      `${durationSeconds}s`,
+    );
+
+    /*
+     * Updated notice এলে animation শুরু থেকে চালু হবে।
+     */
+    DOM.lobbyNoticeTrack.style.animation = "none";
+
+    void DOM.lobbyNoticeTrack.offsetWidth;
+
+    DOM.lobbyNoticeTrack.style.animation = "";
+
+    DOM.lobbyNotice.hidden = false;
   }
 
   /* =========================================================
@@ -549,8 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const showFullLoader =
-      options.showLoader === true;
+    const showFullLoader = options.showLoader === true;
 
     if (showFullLoader) {
       showLoader();
@@ -560,15 +586,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const [
-        userResult,
-        depositResult,
-        withdrawResult,
-      ] = await Promise.allSettled([
-        requestAPI("/auth/me"),
-        requestAPI("/deposit/my-history"),
-        requestAPI("/withdraw/my-history"),
-      ]);
+      const [userResult, depositResult, withdrawResult, noticeResult] =
+        await Promise.allSettled([
+          requestAPI("/auth/me"),
+          requestAPI("/deposit/my-history"),
+          requestAPI("/withdraw/my-history"),
+          requestAPI("/lobby-notices/public"),
+        ]);
 
       if (userResult.status === "rejected") {
         throw userResult.reason;
@@ -582,29 +606,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
       STATE.deposits =
         depositResult.status === "fulfilled"
-          ? extractHistory(
-              depositResult.value,
-              [
-                "deposits",
-                "requests",
-                "history",
-                "items",
-              ],
-            )
+          ? extractHistory(depositResult.value, [
+              "deposits",
+              "requests",
+              "history",
+              "items",
+            ])
           : [];
 
       STATE.withdrawals =
         withdrawResult.status === "fulfilled"
-          ? extractHistory(
-              withdrawResult.value,
-              [
-                "withdrawals",
-                "requests",
-                "history",
-                "items",
-              ],
+          ? extractHistory(withdrawResult.value, [
+              "withdrawals",
+              "requests",
+              "history",
+              "items",
+            ])
+          : [];
+
+                STATE.lobbyNotices =
+        noticeResult.status === "fulfilled"
+          ? extractLobbyNotices(
+              noticeResult.value,
             )
           : [];
+
+      renderLobbyNotice();
 
       buildNotifications();
       renderUser();
@@ -618,10 +645,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("DYNAMIC LOBBY LOAD ERROR:", error);
 
-      showToast(
-        error.message || "Lobby data load করা যায়নি।",
-        "error",
-      );
+      showToast(error.message || "Lobby data load করা যায়নি।", "error");
     } finally {
       hideLoader();
     }
@@ -631,47 +655,35 @@ document.addEventListener("DOMContentLoaded", () => {
      MODAL EVENTS
   ========================================================= */
 
-  DOM.notificationButton?.addEventListener(
-    "click",
-    async () => {
-      openModal(DOM.notificationModal);
+  DOM.notificationButton?.addEventListener("click", async () => {
+    openModal(DOM.notificationModal);
 
-      /*
-       * পুরোনো data হলে notification খোলার সময় refresh।
-       */
-      if (Date.now() - STATE.lastLoadedAt > 15000) {
-        await loadLobbyData();
-      }
-    },
+    /*
+     * পুরোনো data হলে notification খোলার সময় refresh।
+     */
+    if (Date.now() - STATE.lastLoadedAt > 15000) {
+      await loadLobbyData();
+    }
+  });
+
+  DOM.closeNotification?.addEventListener("click", () =>
+    closeModal(DOM.notificationModal),
   );
 
-  DOM.closeNotification?.addEventListener(
-    "click",
-    () => closeModal(DOM.notificationModal),
+  DOM.logoutButton?.addEventListener("click", () => openModal(DOM.logoutModal));
+
+  DOM.closeLogoutModal?.addEventListener("click", () =>
+    closeModal(DOM.logoutModal),
   );
 
-  DOM.logoutButton?.addEventListener(
-    "click",
-    () => openModal(DOM.logoutModal),
+  DOM.cancelLogoutButton?.addEventListener("click", () =>
+    closeModal(DOM.logoutModal),
   );
 
-  DOM.closeLogoutModal?.addEventListener(
-    "click",
-    () => closeModal(DOM.logoutModal),
-  );
-
-  DOM.cancelLogoutButton?.addEventListener(
-    "click",
-    () => closeModal(DOM.logoutModal),
-  );
-
-  DOM.confirmLogoutButton?.addEventListener(
-    "click",
-    () => {
-      clearAuthentication();
-      window.location.replace(LOGIN_PAGE);
-    },
-  );
+  DOM.confirmLogoutButton?.addEventListener("click", () => {
+    clearAuthentication();
+    window.location.replace(LOGIN_PAGE);
+  });
 
   window.addEventListener("click", (event) => {
     if (event.target === DOM.notificationModal) {
@@ -696,113 +708,93 @@ document.addEventListener("DOMContentLoaded", () => {
      REFRESH BUTTON
   ========================================================= */
 
-  DOM.refreshButton?.addEventListener(
-    "click",
-    async () => {
-      if (STATE.loading) {
-        return;
-      }
+  DOM.refreshButton?.addEventListener("click", async () => {
+    if (STATE.loading) {
+      return;
+    }
 
-      const icon =
-        DOM.refreshButton.querySelector("i");
+    const icon = DOM.refreshButton.querySelector("i");
 
-      icon?.classList.add("fa-spin");
+    icon?.classList.add("fa-spin");
 
-      await loadLobbyData({
-        showSuccess: true,
-      });
+    await loadLobbyData({
+      showSuccess: true,
+    });
 
-      icon?.classList.remove("fa-spin");
-    },
-  );
+    icon?.classList.remove("fa-spin");
+  });
 
   /* =========================================================
      QUICK MENU NAVIGATION
   ========================================================= */
 
-  DOM.depositButton?.addEventListener(
-    "click",
-    () => navigateTo("./deposit.html"),
+  DOM.depositButton?.addEventListener("click", () =>
+    navigateTo("./deposit.html"),
   );
 
-  DOM.withdrawButton?.addEventListener(
-    "click",
-    () => navigateTo("./withdraw.html"),
+  DOM.withdrawButton?.addEventListener("click", () =>
+    navigateTo("./withdraw.html"),
   );
 
-  DOM.historyButton?.addEventListener(
-    "click",
-    () => navigateTo("./history.html"),
+  DOM.historyButton?.addEventListener("click", () =>
+    navigateTo("./history.html"),
   );
 
   /* =========================================================
      GAME NAVIGATION
   ========================================================= */
 
-  DOM.teenPattiButton?.addEventListener(
-    "click",
-    () => navigateTo("./teenpatti-rooms.html"),
+  DOM.teenPattiButton?.addEventListener("click", () =>
+    navigateTo("./teenpatti-rooms.html"),
   );
 
-  DOM.pokerButton?.addEventListener(
-    "click",
-    () => navigateTo("./poker-rooms.html"),
+  DOM.pokerButton?.addEventListener("click", () =>
+    navigateTo("./poker-rooms.html"),
   );
 
-  DOM.ludoButton?.addEventListener(
-    "click",
-    () => navigateTo("./ludo-rooms.html"),
+  DOM.ludoButton?.addEventListener("click", () =>
+    navigateTo("./ludo-rooms.html"),
   );
 
   /* =========================================================
      BOTTOM NAVIGATION
   ========================================================= */
 
-  DOM.homeButton?.addEventListener(
-    "click",
-    () => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    },
+  DOM.homeButton?.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+
+  DOM.walletButton?.addEventListener("click", () =>
+    navigateTo("./wallet.html"),
   );
 
-  DOM.walletButton?.addEventListener(
-    "click",
-    () => navigateTo("./wallet.html"),
+  DOM.supportButton?.addEventListener("click", () =>
+    navigateTo("./support.html"),
   );
 
-  DOM.supportButton?.addEventListener(
-    "click",
-    () => navigateTo("./support.html"),
+  DOM.profileButton?.addEventListener("click", () =>
+    navigateTo("./profile.html"),
   );
 
-  DOM.profileButton?.addEventListener(
-    "click",
-    () => navigateTo("./profile.html"),
-  );
-
-  DOM.settingsButton?.addEventListener(
-    "click",
-    () => navigateTo("./settings.html"),
+  DOM.settingsButton?.addEventListener("click", () =>
+    navigateTo("./settings.html"),
   );
 
   /* =========================================================
      PAGE VISIBILITY REFRESH
   ========================================================= */
 
-  document.addEventListener(
-    "visibilitychange",
-    () => {
-      if (
-        document.visibilityState === "visible" &&
-        Date.now() - STATE.lastLoadedAt > 15000
-      ) {
-        loadLobbyData();
-      }
-    },
-  );
+  document.addEventListener("visibilitychange", () => {
+    if (
+      document.visibilityState === "visible" &&
+      Date.now() - STATE.lastLoadedAt > 15000
+    ) {
+      loadLobbyData();
+    }
+  });
 
   window.addEventListener("focus", () => {
     if (Date.now() - STATE.lastLoadedAt > 15000) {
@@ -827,9 +819,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const cachedUser = (() => {
       try {
-        return JSON.parse(
-          localStorage.getItem("current_user") || "null",
-        );
+        return JSON.parse(localStorage.getItem("current_user") || "null");
       } catch (error) {
         return null;
       }
