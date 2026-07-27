@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8">
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+    <meta
+      name="theme-color"
+      content="#071c19">
+
+    <title>PMS ADDA | Support</title>
+
+    <script src="../js/app-config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+      rel="stylesheet"
+      href="../css/common.css">
+
+    <link
+      rel="stylesheet"
+      href="../css/support.css">
+  </head>
+
+  <body>
+    <div class="support-app">
+      <!-- Header -->
+      <header class="support-header">
+        <button
+          type="button"
+          class="icon-button"
+          id="supportBackButton"
+          aria-label="Back to lobby">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+
+        <div class="support-brand">
+          <div class="brand-icon">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+
+          <div>
+            <h1>Support Center</h1>
+            <p>PMS ADDA Help & Support</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="new-ticket-button"
+          id="openTicketModalButton">
+          <i class="fa-solid fa-plus"></i>
+          <span>New Ticket</span>
+        </button>
+      </header>
+
+      <!-- Main -->
+      <main class="support-main">
+        <!-- Ticket panel -->
+        <aside class="ticket-panel">
+          <div class="ticket-panel-header">
+            <div>
+              <h2>My Tickets</h2>
+
+              <p id="ticketCountText">
+                Loading tickets...
+              </p>
+            </div>
+
+            <button
+              type="button"
+              class="refresh-button"
+              id="refreshTicketsButton"
+              aria-label="Refresh tickets">
+              <i class="fa-solid fa-rotate"></i>
+            </button>
+          </div>
+
+          <div class="ticket-filter">
+            <label
+              for="ticketStatusFilter"
+              class="sr-only">
+              Filter tickets
+            </label>
+
+            <select id="ticketStatusFilter">
+              <option value>
+                All Tickets
+              </option>
+
+              <option value="open">
+                Open
+              </option>
+
+              <option value="in_progress">
+                In Progress
+              </option>
+
+              <option value="waiting_user">
+                Waiting for You
+              </option>
+
+              <option value="resolved">
+                Resolved
+              </option>
+
+              <option value="closed">
+                Closed
+              </option>
+            </select>
+          </div>
+
+          <div
+            class="ticket-list"
+            id="ticketList">
+            <div class="ticket-loading">
+              <span class="loading-spinner"></span>
+              <p>Loading support tickets...</p>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Conversation panel -->
+        <section
+          class="conversation-panel"
+          id="conversationPanel">
+          <!-- Empty state -->
+          <div
+            class="conversation-empty"
+            id="conversationEmpty">
+            <div class="empty-icon">
+              <i class="fa-regular fa-comments"></i>
+            </div>
+
+            <h2>Select a Support Ticket</h2>
+
+            <p>
+              Ticket list থেকে একটি Ticket নির্বাচন
+              করুন অথবা নতুন Ticket তৈরি করুন।
+            </p>
+
+            <button
+              type="button"
+              id="emptyNewTicketButton">
+              <i class="fa-solid fa-plus"></i>
+              Create New Ticket
+            </button>
+          </div>
+
+          <!-- Active conversation -->
+          <div
+            class="conversation-content"
+            id="conversationContent"
+            hidden>
+            <div class="conversation-header">
+              <div class="conversation-heading">
+                <button
+                  type="button"
+                  class="mobile-ticket-back"
+                  id="mobileTicketBackButton"
+                  aria-label="Back to ticket list">
+                  <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <div>
+                  <div class="ticket-code-row">
+                    <span id="activeTicketCode">
+                      SUP-0000
+                    </span>
+
+                    <span
+                      class="status-badge"
+                      id="activeTicketStatus">
+                      Open
+                    </span>
+                  </div>
+
+                  <h2 id="activeTicketSubject">
+                    Support Ticket
+                  </h2>
+
+                  <p id="activeTicketMeta">
+                    Technical · Normal
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="close-ticket-button"
+                id="closeTicketButton">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Close Ticket</span>
+              </button>
+            </div>
+
+            <div
+              class="message-list"
+              id="messageList">
+              <div class="message-loading">
+                <span class="loading-spinner"></span>
+                <p>Loading conversation...</p>
+              </div>
+            </div>
+
+            <form
+              class="reply-form"
+              id="ticketReplyForm"
+              novalidate>
+              <div
+                class="closed-ticket-note"
+                id="closedTicketNote"
+                hidden>
+                <i class="fa-solid fa-lock"></i>
+
+                এই Ticket বন্ধ করা হয়েছে। নতুন
+                message পাঠানো যাবে না।
+              </div>
+
+              <div
+                class="reply-controls"
+                id="replyControls">
+                <label
+                  for="replyMessageInput"
+                  class="sr-only">
+                  Reply message
+                </label>
+                <label
+                  for="replyAttachmentInput"
+                  class="reply-attachment-button"
+                  title="Attach screenshots"
+                  aria-label="Attach screenshots">
+                  <i class="fa-solid fa-paperclip"></i>
+                </label>
+
+                <input
+                  type="file"
+                  id="replyAttachmentInput"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  hidden>
+                <textarea
+                  id="replyMessageInput"
+                  maxlength="3000"
+                  rows="1"
+                  placeholder="আপনার message লিখুন..."
+                  ></textarea>
+
+                <button
+                  type="submit"
+                  id="sendReplyButton"
+                  aria-label="Send reply">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+
+              </div>
+
+              <div
+                class="support-attachment-preview reply-attachment-preview"
+                id="replyAttachmentPreview"
+                hidden></div>
+
+              <div
+                class="reply-character-count"
+                id="replyCharacterCount">
+                0 / 3000
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Create Ticket Modal -->
+    <div
+      class="support-modal"
+      id="ticketModal"
+      hidden>
+      <div
+        class="modal-backdrop"
+        data-close-ticket-modal></div>
+
+      <section
+        class="ticket-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ticketModalTitle">
+        <div class="ticket-modal-header">
+          <div>
+            <h2 id="ticketModalTitle">
+              Create Support Ticket
+            </h2>
+
+            <p>
+              সমস্যার বিস্তারিত তথ্য দিন।
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="modal-close-button"
+            id="closeTicketModalButton"
+            aria-label="Close modal">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form
+          class="ticket-form"
+          id="createTicketForm">
+          <div class="form-group">
+            <label for="ticketCategoryInput">
+              Category
+            </label>
+
+            <select
+              id="ticketCategoryInput"
+              required>
+              <option value>
+                Select category
+              </option>
+
+              <option value="deposit">
+                Deposit
+              </option>
+
+              <option value="withdraw">
+                Withdraw
+              </option>
+
+              <option value="wallet">
+                Wallet
+              </option>
+
+              <option value="teen_patti">
+                Teen Patti
+              </option>
+
+              <option value="poker">
+                Poker
+              </option>
+
+              <option value="ludo">
+                Ludo
+              </option>
+
+              <option value="account">
+                Account
+              </option>
+
+              <option value="technical">
+                Technical
+              </option>
+
+              <option value="other">
+                Other
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="ticketSubjectInput">
+              Subject
+            </label>
+
+            <input
+              type="text"
+              id="ticketSubjectInput"
+              minlength="5"
+              maxlength="150"
+              placeholder="সমস্যার সংক্ষিপ্ত বিষয়"
+              required>
+
+            <span
+              class="field-counter"
+              id="subjectCharacterCount">
+              0 / 150
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="ticketMessageInput">
+              Message
+            </label>
+
+            <textarea
+              id="ticketMessageInput"
+              minlength="10"
+              maxlength="3000"
+              rows="6"
+              placeholder="সমস্যাটি বিস্তারিত লিখুন..."
+              required></textarea>
+
+            <span
+              class="field-counter"
+              id="messageCharacterCount">
+              0 / 3000
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="ticketAttachmentInput">
+              Screenshots
+              <small>(Optional — সর্বোচ্চ ৩টি)</small>
+            </label>
+
+            <label
+              for="ticketAttachmentInput"
+              class="support-attachment-picker">
+              <i class="fa-solid fa-image"></i>
+
+              <span>
+                Screenshot নির্বাচন করুন
+              </span>
+            </label>
+
+            <input
+              type="file"
+              id="ticketAttachmentInput"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              hidden>
+
+            <div
+              class="support-attachment-preview"
+              id="ticketAttachmentPreview"
+              hidden></div>
+
+            <small class="attachment-help-text">
+              JPG, PNG অথবা WEBP — প্রতিটি সর্বোচ্চ ৩ MB
+            </small>
+          </div>
+
+          <div class="ticket-form-actions">
+            <button
+              type="button"
+              class="cancel-button"
+              id="cancelTicketButton">
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="submit-ticket-button"
+              id="submitTicketButton">
+              <i class="fa-solid fa-paper-plane"></i>
+              Submit Ticket
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <!-- Close confirmation modal -->
+    <div
+      class="support-modal"
+      id="closeConfirmationModal"
+      hidden>
+      <div
+        class="modal-backdrop"
+        data-close-confirmation-modal></div>
+
+      <section
+        class="confirmation-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="closeConfirmationTitle">
+        <div class="confirmation-icon">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+
+        <h2 id="closeConfirmationTitle">
+          Close this Ticket?
+        </h2>
+
+        <p>
+          Ticket বন্ধ করার পরে আর নতুন message
+          পাঠানো যাবে না।
+        </p>
+
+        <div class="confirmation-actions">
+          <button
+            type="button"
+            class="cancel-button"
+            id="cancelCloseTicketButton">
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            class="confirm-close-button"
+            id="confirmCloseTicketButton">
+            Close Ticket
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Toast -->
+    <div
+      class="support-toast"
+      id="supportToast"
+      role="status"
+      aria-live="polite"
+      hidden>
+      <i
+        class="fa-solid fa-circle-check"
+        id="supportToastIcon"></i>
+
+      <span id="supportToastMessage">
+        Operation successful.
+      </span>
+    </div>
+
+    <script src="../js/support.js"></script>
+  </body>
+</html>

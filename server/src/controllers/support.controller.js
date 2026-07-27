@@ -8,12 +8,7 @@ const supportService = require("../services/support.service");
 |--------------------------------------------------------------------------
 */
 
-function sendSuccess(
-  response,
-  statusCode,
-  message,
-  data = null,
-) {
+function sendSuccess(response, statusCode, message, data = null) {
   return response.status(statusCode).json({
     success: true,
     message,
@@ -27,9 +22,7 @@ function sendError(response, error, fallbackMessage) {
   const payload = {
     success: false,
     message:
-      statusCode >= 500
-        ? fallbackMessage
-        : error.message || fallbackMessage,
+      statusCode >= 500 ? fallbackMessage : error.message || fallbackMessage,
   };
 
   if (error.code) {
@@ -66,6 +59,7 @@ async function createTicket(request, response) {
     const result = await supportService.createTicket(
       userId,
       request.body || {},
+      request.files || [],
     );
 
     return sendSuccess(
@@ -77,11 +71,7 @@ async function createTicket(request, response) {
   } catch (error) {
     console.error("CREATE SUPPORT TICKET ERROR:", error);
 
-    return sendError(
-      response,
-      error,
-      "Unable to create the support ticket.",
-    );
+    return sendError(response, error, "Unable to create the support ticket.");
   }
 }
 
@@ -109,11 +99,7 @@ async function getMyTickets(request, response) {
   } catch (error) {
     console.error("GET MY SUPPORT TICKETS ERROR:", error);
 
-    return sendError(
-      response,
-      error,
-      "Unable to load your support tickets.",
-    );
+    return sendError(response, error, "Unable to load your support tickets.");
   }
 }
 
@@ -128,10 +114,7 @@ async function getMyTicketDetails(request, response) {
     const userId = getAuthenticatedUserId(request);
     const ticketId = request.params.ticketId;
 
-    const result = await supportService.getUserTicketDetails(
-      userId,
-      ticketId,
-    );
+    const result = await supportService.getUserTicketDetails(userId, ticketId);
 
     return sendSuccess(
       response,
@@ -142,11 +125,7 @@ async function getMyTicketDetails(request, response) {
   } catch (error) {
     console.error("GET SUPPORT TICKET DETAILS ERROR:", error);
 
-    return sendError(
-      response,
-      error,
-      "Unable to load the support ticket.",
-    );
+    return sendError(response, error, "Unable to load the support ticket.");
   }
 }
 
@@ -165,6 +144,7 @@ async function replyToMyTicket(request, response) {
       userId,
       ticketId,
       request.body || {},
+      request.files || [],
     );
 
     return sendSuccess(
@@ -176,11 +156,7 @@ async function replyToMyTicket(request, response) {
   } catch (error) {
     console.error("REPLY TO SUPPORT TICKET ERROR:", error);
 
-    return sendError(
-      response,
-      error,
-      "Unable to send the support message.",
-    );
+    return sendError(response, error, "Unable to send the support message.");
   }
 }
 
@@ -195,10 +171,7 @@ async function closeMyTicket(request, response) {
     const userId = getAuthenticatedUserId(request);
     const ticketId = request.params.ticketId;
 
-    const result = await supportService.closeUserTicket(
-      userId,
-      ticketId,
-    );
+    const result = await supportService.closeUserTicket(userId, ticketId);
 
     return sendSuccess(
       response,
@@ -209,11 +182,7 @@ async function closeMyTicket(request, response) {
   } catch (error) {
     console.error("CLOSE SUPPORT TICKET ERROR:", error);
 
-    return sendError(
-      response,
-      error,
-      "Unable to close the support ticket.",
-    );
+    return sendError(response, error, "Unable to close the support ticket.");
   }
 }
 
@@ -225,14 +194,12 @@ async function closeMyTicket(request, response) {
 
 async function getAdminTickets(request, response) {
   try {
-    const adminId =
-      getAuthenticatedUserId(request);
+    const adminId = getAuthenticatedUserId(request);
 
-    const result =
-      await supportService.getAdminTickets(
-        adminId,
-        request.query || {},
-      );
+    const result = await supportService.getAdminTickets(
+      adminId,
+      request.query || {},
+    );
 
     return sendSuccess(
       response,
@@ -241,16 +208,9 @@ async function getAdminTickets(request, response) {
       result,
     );
   } catch (error) {
-    console.error(
-      "GET ADMIN SUPPORT TICKETS ERROR:",
-      error,
-    );
+    console.error("GET ADMIN SUPPORT TICKETS ERROR:", error);
 
-    return sendError(
-      response,
-      error,
-      "Unable to load support tickets.",
-    );
+    return sendError(response, error, "Unable to load support tickets.");
   }
 }
 
@@ -260,22 +220,16 @@ async function getAdminTickets(request, response) {
 |--------------------------------------------------------------------------
 */
 
-async function getAdminTicketDetails(
-  request,
-  response,
-) {
+async function getAdminTicketDetails(request, response) {
   try {
-    const adminId =
-      getAuthenticatedUserId(request);
+    const adminId = getAuthenticatedUserId(request);
 
-    const ticketId =
-      request.params.ticketId;
+    const ticketId = request.params.ticketId;
 
-    const result =
-      await supportService.getAdminTicketDetails(
-        adminId,
-        ticketId,
-      );
+    const result = await supportService.getAdminTicketDetails(
+      adminId,
+      ticketId,
+    );
 
     return sendSuccess(
       response,
@@ -284,16 +238,9 @@ async function getAdminTicketDetails(
       result,
     );
   } catch (error) {
-    console.error(
-      "GET ADMIN TICKET DETAILS ERROR:",
-      error,
-    );
+    console.error("GET ADMIN TICKET DETAILS ERROR:", error);
 
-    return sendError(
-      response,
-      error,
-      "Unable to load the support ticket.",
-    );
+    return sendError(response, error, "Unable to load the support ticket.");
   }
 }
 
@@ -303,23 +250,18 @@ async function getAdminTicketDetails(
 |--------------------------------------------------------------------------
 */
 
-async function replyToTicketAsAdmin(
-  request,
-  response,
-) {
+async function replyToTicketAsAdmin(request, response) {
   try {
-    const adminId =
-      getAuthenticatedUserId(request);
+    const adminId = getAuthenticatedUserId(request);
 
-    const ticketId =
-      request.params.ticketId;
+    const ticketId = request.params.ticketId;
 
-    const result =
-      await supportService.replyToTicketAsAdmin(
-        adminId,
-        ticketId,
-        request.body || {},
-      );
+    const result = await supportService.replyToTicketAsAdmin(
+      adminId,
+      ticketId,
+      request.body || {},
+      request.files || [],
+    );
 
     return sendSuccess(
       response,
@@ -328,16 +270,9 @@ async function replyToTicketAsAdmin(
       result,
     );
   } catch (error) {
-    console.error(
-      "ADMIN SUPPORT REPLY ERROR:",
-      error,
-    );
+    console.error("ADMIN SUPPORT REPLY ERROR:", error);
 
-    return sendError(
-      response,
-      error,
-      "Unable to send the admin reply.",
-    );
+    return sendError(response, error, "Unable to send the admin reply.");
   }
 }
 
@@ -347,23 +282,17 @@ async function replyToTicketAsAdmin(
 |--------------------------------------------------------------------------
 */
 
-async function updateTicketAsAdmin(
-  request,
-  response,
-) {
+async function updateTicketAsAdmin(request, response) {
   try {
-    const adminId =
-      getAuthenticatedUserId(request);
+    const adminId = getAuthenticatedUserId(request);
 
-    const ticketId =
-      request.params.ticketId;
+    const ticketId = request.params.ticketId;
 
-    const result =
-      await supportService.updateTicketAsAdmin(
-        adminId,
-        ticketId,
-        request.body || {},
-      );
+    const result = await supportService.updateTicketAsAdmin(
+      adminId,
+      ticketId,
+      request.body || {},
+    );
 
     return sendSuccess(
       response,
@@ -372,16 +301,73 @@ async function updateTicketAsAdmin(
       result,
     );
   } catch (error) {
-    console.error(
-      "ADMIN SUPPORT TICKET UPDATE ERROR:",
-      error,
+    console.error("ADMIN SUPPORT TICKET UPDATE ERROR:", error);
+
+    return sendError(response, error, "Unable to update the support ticket.");
+  }
+}
+
+function sendAttachmentFile(response, attachment) {
+  const safeFileName = String(attachment.originalName || "support-screenshot")
+    .replace(/[\r\n"]/g, "_")
+    .slice(0, 255);
+
+  response.set({
+    "Content-Type": attachment.mimeType || "application/octet-stream",
+
+    "Content-Length": String(attachment.fileData.length),
+
+    "Content-Disposition": `inline; filename="${safeFileName}"`,
+
+    "Cache-Control": "private, max-age=300",
+
+    "X-Content-Type-Options": "nosniff",
+  });
+
+  return response.status(200).send(attachment.fileData);
+}
+
+async function getMyAttachment(request, response) {
+  try {
+    const userId = getAuthenticatedUserId(request);
+
+    const attachmentId = request.params.attachmentId;
+
+    const attachment = await supportService.getSupportAttachment(
+      userId,
+      attachmentId,
+      {
+        adminAccess: false,
+      },
     );
 
-    return sendError(
-      response,
-      error,
-      "Unable to update the support ticket.",
+    return sendAttachmentFile(response, attachment);
+  } catch (error) {
+    console.error("GET USER SUPPORT ATTACHMENT ERROR:", error);
+
+    return sendError(response, error, "Unable to load the support screenshot.");
+  }
+}
+
+async function getAdminAttachment(request, response) {
+  try {
+    const adminId = getAuthenticatedUserId(request);
+
+    const attachmentId = request.params.attachmentId;
+
+    const attachment = await supportService.getSupportAttachment(
+      adminId,
+      attachmentId,
+      {
+        adminAccess: true,
+      },
     );
+
+    return sendAttachmentFile(response, attachment);
+  } catch (error) {
+    console.error("GET ADMIN SUPPORT ATTACHMENT ERROR:", error);
+
+    return sendError(response, error, "Unable to load the support screenshot.");
   }
 }
 
@@ -396,4 +382,6 @@ module.exports = {
   getAdminTicketDetails,
   replyToTicketAsAdmin,
   updateTicketAsAdmin,
+  getMyAttachment,
+  getAdminAttachment,
 };

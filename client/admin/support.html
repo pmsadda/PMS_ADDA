@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <title>PMS ADDA | Admin Support</title>
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+        <script src="../js/app-config.js"></script>
+        <script src="../js/auth-guard.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
+
+        <link
+            rel="stylesheet"
+            href="../css/admin-support.css">
+    </head>
+
+    <body>
+
+        <div class="admin-layout">
+
+            <!-- Sidebar -->
+
+            <aside
+                class="admin-sidebar"
+                id="adminSidebar">
+
+                <div class="admin-brand">
+
+                    <img
+                        src="../assets/logo/logo.png"
+                        alt="PMS ADDA Logo">
+
+                    <div>
+                        <h2>PMS ADDA</h2>
+                        <p>Admin Panel</p>
+                    </div>
+
+                </div>
+
+                <nav class="admin-menu">
+
+                    <a
+                        href="dashboard.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a
+                        href="users.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Users</span>
+                    </a>
+
+                    <a
+                        href="deposits.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-circle-plus"></i>
+                        <span>Deposits</span>
+                    </a>
+
+                    <a
+                        href="withdrawals.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                        <span>Withdrawals</span>
+                    </a>
+
+                    <a
+                        href="games.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-gamepad"></i>
+                        <span>Game Management</span>
+                    </a>
+
+                    <a
+                        href="bots.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>Bots</span>
+                    </a>
+
+                    <a
+                        href="transactions.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span>Transactions</span>
+                    </a>
+
+                    <a
+                        href="support.html"
+                        class="menu-item active">
+                        <i class="fa-solid fa-headset"></i>
+                        <span>Support</span>
+
+                        <small
+                            class="menu-count"
+                            id="openSupportMenuCount">
+                            0
+                        </small>
+                    </a>
+
+                    <a
+                        href="settings.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-gears"></i>
+                        <span>Settings</span>
+                    </a>
+
+                    <a
+                        href="admin-logs.html"
+                        class="menu-item">
+                        <i class="fa-solid fa-file-shield"></i>
+                        <span>Admin Logs</span>
+                    </a>
+
+                </nav>
+
+                <button
+                    type="button"
+                    class="logout-btn"
+                    id="adminLogoutBtn">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+
+                </button>
+
+            </aside>
+
+            <!-- Main content -->
+
+            <main class="admin-main">
+
+                <header class="admin-header">
+
+                    <div class="header-left">
+
+                        <button
+                            type="button"
+                            id="sidebarToggle"
+                            class="sidebar-toggle"
+                            aria-label="Toggle sidebar">
+
+                            <i class="fa-solid fa-bars"></i>
+
+                        </button>
+
+                        <div>
+                            <h1>Support Center</h1>
+                            <p>Manage user tickets, conversations and
+                                resolutions</p>
+                        </div>
+
+                    </div>
+
+                    <div class="admin-profile">
+
+                        <button
+                            type="button"
+                            id="refreshSupport"
+                            class="header-icon-btn"
+                            aria-label="Refresh support tickets">
+
+                            <i class="fa-solid fa-rotate"></i>
+
+                        </button>
+
+                        <div
+                            class="admin-avatar-fallback"
+                            id="adminAvatarFallback">
+                            A
+                        </div>
+
+                        <div>
+                            <strong id="adminName">Administrator</strong>
+                            <span>Support Admin</span>
+                        </div>
+
+                    </div>
+
+                </header>
+
+                <!-- Summary cards -->
+
+                <section class="support-summary-grid">
+
+                    <article class="support-summary-card all-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-ticket"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Tickets</p>
+                            <h2 id="totalTicketCount">0</h2>
+                        </div>
+
+                    </article>
+
+                    <article class="support-summary-card open-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-envelope-open-text"></i>
+                        </div>
+
+                        <div>
+                            <p>Open</p>
+                            <h2 id="openTicketCount">0</h2>
+                        </div>
+
+                    </article>
+
+                    <article class="support-summary-card progress-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-spinner"></i>
+                        </div>
+
+                        <div>
+                            <p>In Progress</p>
+                            <h2 id="progressTicketCount">0</h2>
+                        </div>
+
+                    </article>
+
+                    <article class="support-summary-card resolved-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+
+                        <div>
+                            <p>Resolved</p>
+                            <h2 id="resolvedTicketCount">0</h2>
+                        </div>
+
+                    </article>
+
+                    <article class="support-summary-card urgent-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+
+                        <div>
+                            <p>Urgent</p>
+                            <h2 id="urgentTicketCount">0</h2>
+                        </div>
+
+                    </article>
+
+                </section>
+
+                <!-- Filters -->
+
+                <section class="support-toolbar">
+
+                    <div class="support-search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="search"
+                            id="supportSearchInput"
+                            placeholder="Search ticket, user, UID or subject..."
+                            autocomplete="off">
+
+                    </div>
+
+                    <select
+                        id="supportStatusFilter"
+                        aria-label="Filter by status">
+
+                        <option value>All Statuses</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="waiting_user">Waiting User</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+
+                    </select>
+
+                    <select
+                        id="supportPriorityFilter"
+                        aria-label="Filter by priority">
+
+                        <option value>All Priorities</option>
+                        <option value="low">Low</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+
+                    </select>
+
+                    <select
+                        id="supportCategoryFilter"
+                        aria-label="Filter by category">
+
+                        <option value>All Categories</option>
+                        <option value="account">Account</option>
+                        <option value="deposit">Deposit</option>
+                        <option value="withdraw">Withdraw</option>
+                        <option value="game">Game</option>
+                        <option value="technical">Technical</option>
+                        <option value="other">Other</option>
+
+                    </select>
+
+                    <button
+                        type="button"
+                        id="clearSupportFilters"
+                        class="clear-filter-btn">
+
+                        <i class="fa-solid fa-filter-circle-xmark"></i>
+                        Clear
+
+                    </button>
+
+                </section>
+
+                <!-- Tickets table -->
+
+                <section class="support-list-card">
+
+                    <div class="support-list-header">
+
+                        <div>
+                            <h2>Support Tickets</h2>
+                            <p id="supportResultText">Loading support
+                                tickets...</p>
+                        </div>
+
+                        <div
+                            class="support-loading"
+                            id="supportLoading"
+                            hidden>
+
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            Loading...
+
+                        </div>
+
+                    </div>
+
+                    <div class="support-table-wrapper">
+
+                        <table class="support-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>User</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Messages</th>
+                                    <th>Last Update</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="supportTicketTableBody">
+
+                                <tr>
+                                    <td
+                                        colspan="8"
+                                        class="support-empty-cell">
+
+                                        <i
+                                            class="fa-solid fa-spinner fa-spin"></i>
+                                        Loading tickets...
+
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div
+                        class="support-empty-state"
+                        id="supportEmptyState"
+                        hidden>
+
+                        <i class="fa-regular fa-folder-open"></i>
+                        <h3>No support ticket found</h3>
+                        <p>Try changing the search text or filters.</p>
+
+                    </div>
+
+                    <div class="support-pagination">
+
+                        <button
+                            type="button"
+                            id="supportPreviousPage"
+                            class="pagination-btn"
+                            disabled>
+
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Previous
+
+                        </button>
+
+                        <div id="supportPageNumbers" class="page-numbers"></div>
+
+                        <button
+                            type="button"
+                            id="supportNextPage"
+                            class="pagination-btn"
+                            disabled>
+
+                            Next
+                            <i class="fa-solid fa-chevron-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+                <div
+                    class="sidebar-overlay"
+                    id="sidebarOverlay">
+                </div>
+
+            </main>
+
+        </div>
+
+        <!-- Ticket details panel -->
+
+        <div
+            class="ticket-panel-overlay"
+            id="ticketPanelOverlay"
+            hidden>
+        </div>
+
+        <aside
+            class="ticket-details-panel"
+            id="ticketDetailsPanel"
+            aria-hidden="true">
+
+            <header class="ticket-panel-header">
+
+                <div>
+
+                    <span class="ticket-panel-label">
+                        Support Ticket
+                    </span>
+
+                    <h2 id="detailsTicketCode">Ticket Details</h2>
+
+                    <p id="detailsTicketSubject">Loading...</p>
+
+                </div>
+
+                <button
+                    type="button"
+                    id="closeTicketPanel"
+                    class="panel-close-btn"
+                    aria-label="Close ticket details">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </header>
+
+            <div
+                class="ticket-panel-loading"
+                id="ticketDetailsLoading"
+                hidden>
+
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Loading ticket details...
+
+            </div>
+
+            <div
+                class="ticket-panel-body"
+                id="ticketDetailsBody">
+
+                <!-- User information -->
+
+                <section class="ticket-info-section">
+
+                    <div class="ticket-section-heading">
+                        <i class="fa-solid fa-user"></i>
+                        <h3>User Information</h3>
+                    </div>
+
+                    <div class="ticket-user-card">
+
+                        <div
+                            class="ticket-user-avatar"
+                            id="detailsUserAvatar">
+                            U
+                        </div>
+
+                        <div class="ticket-user-main">
+                            <strong id="detailsUserName">Unknown User</strong>
+                            <span id="detailsUserUid">UID: —</span>
+                        </div>
+
+                        <div class="ticket-user-contact">
+                            <span id="detailsUserPhone">—</span>
+                            <span id="detailsUserEmail">—</span>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Ticket controls -->
+
+                <section class="ticket-info-section">
+
+                    <div class="ticket-section-heading">
+                        <i class="fa-solid fa-sliders"></i>
+                        <h3>Ticket Management</h3>
+                    </div>
+
+                    <div class="ticket-control-grid">
+
+                        <label>
+                            <span>Status</span>
+
+                            <select id="detailsStatusSelect">
+                                <option value="open">Open</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="waiting_user">Waiting
+                                    User</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Priority</span>
+
+                            <select id="detailsPrioritySelect">
+                                <option value="low">Low</option>
+                                <option value="normal">Normal</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </label>
+
+                    </div>
+
+                    <div class="ticket-management-actions">
+
+                        <button
+                            type="button"
+                            id="assignTicketToMe"
+                            class="assign-ticket-btn">
+
+                            <i class="fa-solid fa-user-check"></i>
+                            Assign to Me
+
+                        </button>
+
+                        <button
+                            type="button"
+                            id="saveTicketChanges"
+                            class="save-ticket-btn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Changes
+
+                        </button>
+
+                    </div>
+
+                    <div class="ticket-assignee-info">
+
+                        <span>Assigned Admin:</span>
+                        <strong id="detailsAssignedAdmin">Unassigned</strong>
+
+                    </div>
+
+                </section>
+
+                <!-- Ticket metadata -->
+
+                <section class="ticket-meta-grid">
+
+                    <div>
+                        <span>Category</span>
+                        <strong id="detailsCategory">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Created</span>
+                        <strong id="detailsCreatedAt">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Updated</span>
+                        <strong id="detailsUpdatedAt">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Messages</span>
+                        <strong id="detailsMessageCount">0</strong>
+                    </div>
+
+                </section>
+
+                <!-- Conversation -->
+
+                <section class="ticket-conversation-section">
+
+                    <div class="ticket-section-heading">
+
+                        <div>
+                            <i class="fa-solid fa-comments"></i>
+                            <h3>Conversation</h3>
+                        </div>
+
+                        <button
+                            type="button"
+                            id="refreshConversation"
+                            class="conversation-refresh-btn"
+                            aria-label="Refresh conversation">
+
+                            <i class="fa-solid fa-rotate"></i>
+
+                        </button>
+
+                    </div>
+
+                    <div
+                        class="ticket-conversation"
+                        id="ticketConversation">
+
+                        <div class="conversation-placeholder">
+                            Select a ticket to view its conversation.
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+            <!-- Reply form -->
+
+            <footer class="ticket-reply-footer">
+
+                <form id="adminSupportReplyForm">
+
+                    <label for="adminReplyMessage">
+                        Reply to user
+                    </label>
+
+                    <textarea
+                        id="adminReplyMessage"
+                        rows="4"
+                        maxlength="2000"
+                        placeholder="Write your support reply..."
+                        required>
+                </textarea>
+
+                    <div class="reply-footer-row">
+
+                        <span id="adminReplyCharacterCount">
+                            0 / 2000
+                        </span>
+
+                        <button
+                            type="submit"
+                            id="sendAdminReply"
+                            class="send-reply-btn">
+
+                            <i class="fa-solid fa-paper-plane"></i>
+                            Send Reply
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </footer>
+
+        </aside>
+
+        <!-- Support Attachment Preview -->
+
+        <div
+            class="attachment-preview-modal"
+            id="attachmentPreviewModal"
+            hidden>
+
+            <div
+                class="attachment-preview-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="attachmentPreviewTitle">
+
+                <header class="attachment-preview-header">
+
+                    <div>
+
+                        <span class="attachment-preview-label">
+                            Support Screenshot
+                        </span>
+
+                        <h3 id="attachmentPreviewTitle">
+                            Attachment Preview
+                        </h3>
+
+                        <p id="attachmentPreviewMeta">
+                            Loading attachment...
+                        </p>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="attachment-preview-close"
+                        id="closeAttachmentPreview"
+                        aria-label="Close attachment preview">
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+                </header>
+
+                <div
+                    class="attachment-preview-content"
+                    id="attachmentPreviewContent">
+
+                    <div class="attachment-preview-loading">
+
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+
+                        <span>
+                            Loading secure attachment...
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <footer class="attachment-preview-footer">
+
+                    <button
+                        type="button"
+                        class="attachment-preview-cancel"
+                        id="cancelAttachmentPreview">
+
+                        Close
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="attachment-download-btn"
+                        id="downloadPreviewAttachment"
+                        disabled>
+
+                        <i class="fa-solid fa-download"></i>
+
+                        Download
+
+                    </button>
+
+                </footer>
+
+            </div>
+
+        </div>
+
+        <!-- Toast -->
+
+        <div
+            class="admin-toast-container"
+            id="adminToastContainer"
+            aria-live="polite">
+        </div>
+
+        <!-- Confirmation modal -->
+
+        <div
+            class="support-confirm-modal"
+            id="supportConfirmModal"
+            hidden>
+
+            <div class="support-confirm-dialog">
+
+                <div
+                    class="confirm-dialog-icon"
+                    id="confirmDialogIcon">
+
+                    <i class="fa-solid fa-circle-question"></i>
+
+                </div>
+
+                <h3 id="confirmDialogTitle">Confirm Action</h3>
+
+                <p id="confirmDialogMessage">
+                    Are you sure you want to continue?
+                </p>
+
+                <div class="confirm-dialog-actions">
+
+                    <button
+                        type="button"
+                        id="cancelConfirmAction"
+                        class="confirm-cancel-btn">
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        id="acceptConfirmAction"
+                        class="confirm-accept-btn">
+                        Confirm
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <script src="../js/admin-support.js"></script>
+
+    </body>
+
+</html>

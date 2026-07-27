@@ -139,6 +139,236 @@ function mapMessageRow(row) {
   };
 }
 
+/*
+|--------------------------------------------------------------------------
+| Support attachment helpers
+|--------------------------------------------------------------------------
+*/
+
+const MAX_SUPPORT_ATTACHMENTS = 3;
+
+const MAX_SUPPORT_ATTACHMENT_SIZE = 3 * 1024 * 1024;
+
+const ALLOWED_SUPPORT_ATTACHMENT_TYPES = new Map([
+  ["image/jpeg", "jpg"],
+  ["image/png", "png"],
+  ["image/webp", "webp"],
+]);
+
+function normalizeSupportAttachments(files = []) {
+  if (!Array.isArray(files) || files.length === 0) {
+    return [];
+  }
+
+  if (files.length > MAX_SUPPORT_ATTACHMENTS) {
+    throw createServiceError(
+      `Maximum ${MAX_SUPPORT_ATTACHMENTS} screenshots are allowed.`,
+      400,
+      "TOO_MANY_SUPPORT_ATTACHMENTS",
+    );
+  }
+
+  return files.map((file) => {
+    const mimeType = String(file?.mimetype || "")
+      .trim()
+      .toLowerCase();
+
+    const extension = ALLOWED_SUPPORT_ATTACHMENT_TYPES.get(mimeType);
+
+    if (!extension) {
+      throw createServiceError(
+        "Only JPG, PNG and WEBP screenshots are allowed.",
+        400,
+        "INVALID_SUPPORT_ATTACHMENT_TYPE",
+      );
+    }
+
+    const fileSize = Number(file?.size || 0);
+
+    if (
+      !Number.isInteger(fileSize) ||
+      fileSize < 1 ||
+      fileSize > MAX_SUPPORT_ATTACHMENT_SIZE
+    ) {
+      throw createServiceError(
+        "Each screenshot must be smaller than 3 MB.",
+        400,
+        "INVALID_SUPPORT_ATTACHMENT_SIZE",
+      );
+    }
+
+    if (!Buffer.isBuffer(file.buffer) || file.buffer.length < 1) {
+      throw createServiceError(
+        "The uploaded screenshot is empty or invalid.",
+        400,
+        "INVALID_SUPPORT_ATTACHMENT_DATA",
+      );
+    }
+
+    const originalName = String(file.originalname || `screenshot.${extension}`)
+      .replace(/[^\w.\- ()]/g, "_")
+      .slice(0, 255);
+
+    const storedName = `${Date.now()}-${crypto.randomUUID()}.${extension}`;
+
+    return {
+      originalName,
+      storedName,
+      mimeType,
+      extension,
+      fileSize,
+      fileData: file.buffer,
+    };
+  });
+}
+
+async function insertSupportAttachments(
+  connection,
+  { ticketId, messageId, uploadedByType, uploadedByUserId, files = [] },
+) {
+  const attachments = normalizeSupportAttachments(files);
+
+  if (!attachments.length) {
+    return [];
+  }
+
+  const insertedAttachments = [];
+
+  for (const attachment of attachments) {
+    const [result] = await connection.query(
+      `
+        INSERT INTO support_attachments (
+          ticket_id,
+          message_id,
+          original_name,
+          stored_name,
+          mime_type,
+          file_extension,
+          file_size,
+          file_data,
+          uploaded_by_type,
+          uploaded_by_user_id
+        )
+        VALUES (
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?
+        )
+      `,
+      [
+        ticketId,
+        messageId,
+        attachment.originalName,
+        attachment.storedName,
+        attachment.mimeType,
+        attachment.extension,
+        attachment.fileSize,
+        attachment.fileData,
+        uploadedByType,
+        uploadedByUserId,
+      ],
+    );
+
+    insertedAttachments.push({
+      id: Number(result.insertId),
+      attachmentId: Number(result.insertId),
+
+      ticketId: Number(ticketId),
+      messageId: Number(messageId),
+
+      originalName: attachment.originalName,
+      mimeType: attachment.mimeType,
+      fileExtension: attachment.extension,
+      fileSize: attachment.fileSize,
+
+      uploadedByType,
+    });
+  }
+
+  return insertedAttachments;
+}
+
+function mapAttachmentRow(row) {
+  return {
+    id: Number(row.id),
+    attachmentId: Number(row.id),
+
+    ticketId: Number(row.ticket_id),
+    messageId: Number(row.message_id),
+
+    originalName: row.original_name,
+    mimeType: row.mime_type,
+    fileExtension: row.file_extension,
+    fileSize: Number(row.file_size),
+
+    uploadedByType: row.uploaded_by_type,
+
+    createdAt: row.created_at,
+  };
+}
+
+async function getTicketAttachments(ticketIdValue) {
+  const ticketId = parsePositiveInteger(ticketIdValue);
+
+  if (!ticketId) {
+    return [];
+  }
+
+  const [rows] = await pool.query(
+    `
+      SELECT
+        id,
+        ticket_id,
+        message_id,
+        original_name,
+        mime_type,
+        file_extension,
+        file_size,
+        uploaded_by_type,
+        created_at
+
+      FROM support_attachments
+
+      WHERE ticket_id = ?
+
+      ORDER BY
+        created_at ASC,
+        id ASC
+    `,
+    [ticketId],
+  );
+
+  return rows.map(mapAttachmentRow);
+}
+
+function attachFilesToMessages(messages = [], attachments = []) {
+  const attachmentsByMessage = new Map();
+
+  for (const attachment of attachments) {
+    const messageId = Number(attachment.messageId);
+
+    if (!attachmentsByMessage.has(messageId)) {
+      attachmentsByMessage.set(messageId, []);
+    }
+
+    attachmentsByMessage.get(messageId).push(attachment);
+  }
+
+  return messages.map((message) => ({
+    ...message,
+
+    attachments:
+      attachmentsByMessage.get(Number(message.messageId || message.id)) || [],
+  }));
+}
+
 async function withTransaction(callback) {
   const connection = await pool.getConnection();
 
@@ -218,7 +448,11 @@ async function getLockedUserTicket(connection, ticketId, userId) {
   return rows[0] || null;
 }
 
-async function createTicket(requestingUserId, payload = {}) {
+async function createTicket(
+  requestingUserId,
+  payload = {},
+  uploadedFiles = [],
+) {
   const userId = parsePositiveInteger(requestingUserId);
 
   if (!userId) {
@@ -323,7 +557,7 @@ async function createTicket(requestingUserId, payload = {}) {
 
     const ticketId = Number(ticketResult.insertId);
 
-    await connection.query(
+    const [messageResult] = await connection.query(
       `
             INSERT INTO support_messages (
               ticket_id,
@@ -345,9 +579,21 @@ async function createTicket(requestingUserId, payload = {}) {
       [ticketId, userId, messageText],
     );
 
+    const messageId = Number(messageResult.insertId);
+
+    const attachments = await insertSupportAttachments(connection, {
+      ticketId,
+      messageId,
+      uploadedByType: "user",
+      uploadedByUserId: userId,
+      files: uploadedFiles,
+    });
+
     return {
       ticketId,
       ticketCode,
+      messageId,
+      attachments,
     };
   });
 
@@ -574,10 +820,16 @@ async function getUserTicketDetails(requestingUserId, ticketIdValue) {
     [ticketId],
   );
 
+  const attachments = await getTicketAttachments(ticketId);
+
+  const messages = attachFilesToMessages(
+    messageRows.map(mapMessageRow),
+    attachments,
+  );
+
   return {
     ticket: mapTicketRow(ticketRows[0]),
-
-    messages: messageRows.map(mapMessageRow),
+    messages,
   };
 }
 
@@ -585,6 +837,7 @@ async function replyToUserTicket(
   requestingUserId,
   ticketIdValue,
   payload = {},
+  uploadedFiles = [],
 ) {
   const userId = parsePositiveInteger(requestingUserId);
 
@@ -635,7 +888,7 @@ async function replyToUserTicket(
       );
     }
 
-    await connection.query(
+    const [messageResult] = await connection.query(
       `
           INSERT INTO support_messages (
             ticket_id,
@@ -656,6 +909,16 @@ async function replyToUserTicket(
         `,
       [ticketId, userId, messageText],
     );
+
+    const messageId = Number(messageResult.insertId);
+
+    await insertSupportAttachments(connection, {
+      ticketId,
+      messageId,
+      uploadedByType: "user",
+      uploadedByUserId: userId,
+      files: uploadedFiles,
+    });
 
     const nextStatus =
       ticket.ticket_status === TICKET_STATUS.RESOLVED
@@ -1152,10 +1415,16 @@ async function getAdminTicketDetails(requestingAdminId, ticketIdValue) {
     [ticketId],
   );
 
+  const attachments = await getTicketAttachments(ticketId);
+
+  const messages = attachFilesToMessages(
+    messageRows.map(mapMessageRow),
+    attachments,
+  );
+
   return {
     ticket: mapTicketRow(ticketRows[0]),
-
-    messages: messageRows.map(mapMessageRow),
+    messages,
   };
 }
 
@@ -1236,6 +1505,7 @@ async function replyToTicketAsAdmin(
   requestingAdminId,
   ticketIdValue,
   payload = {},
+  uploadedFiles = [],
 ) {
   const adminId = parsePositiveInteger(requestingAdminId);
 
@@ -1282,7 +1552,7 @@ async function replyToTicketAsAdmin(
       );
     }
 
-    await connection.query(
+    const [messageResult] = await connection.query(
       `
           INSERT INTO support_messages (
             ticket_id,
@@ -1303,6 +1573,16 @@ async function replyToTicketAsAdmin(
         `,
       [ticketId, adminId, messageText],
     );
+
+    const messageId = Number(messageResult.insertId);
+
+    await insertSupportAttachments(connection, {
+      ticketId,
+      messageId,
+      uploadedByType: "admin",
+      uploadedByUserId: adminId,
+      files: uploadedFiles,
+    });
 
     await connection.query(
       `
@@ -1470,6 +1750,100 @@ async function updateTicketAsAdmin(
   return getAdminTicketDetails(adminId, ticketId);
 }
 
+async function getSupportAttachment(
+  requestingUserId,
+  attachmentIdValue,
+  options = {},
+) {
+  const userId = parsePositiveInteger(requestingUserId);
+
+  const attachmentId = parsePositiveInteger(attachmentIdValue);
+
+  const adminAccess = options.adminAccess === true;
+
+  if (!userId || !attachmentId) {
+    throw createServiceError(
+      "Valid user and attachment IDs are required.",
+      400,
+      "INVALID_SUPPORT_ATTACHMENT_REQUEST",
+    );
+  }
+
+  const [rows] = await pool.query(
+    `
+      SELECT
+        sa.id,
+        sa.ticket_id,
+        sa.message_id,
+        sa.original_name,
+        sa.stored_name,
+        sa.mime_type,
+        sa.file_extension,
+        sa.file_size,
+        sa.file_data,
+        sa.created_at,
+
+        st.user_id AS ticket_user_id,
+
+        viewer.role AS viewer_role,
+        viewer.account_status AS viewer_status
+
+      FROM support_attachments sa
+
+      INNER JOIN support_tickets st
+        ON st.id = sa.ticket_id
+
+      INNER JOIN users viewer
+        ON viewer.id = ?
+
+      WHERE sa.id = ?
+
+        AND (
+          (
+            ? = 1
+            AND viewer.role = 'admin'
+            AND viewer.account_status = 'active'
+          )
+
+          OR
+
+          (
+            ? = 0
+            AND st.user_id = viewer.id
+            AND viewer.account_status = 'active'
+          )
+        )
+
+      LIMIT 1
+    `,
+    [userId, attachmentId, adminAccess ? 1 : 0, adminAccess ? 1 : 0],
+  );
+
+  if (!rows.length) {
+    throw createServiceError(
+      "Support attachment was not found or access was denied.",
+      404,
+      "SUPPORT_ATTACHMENT_NOT_FOUND",
+    );
+  }
+
+  const attachment = rows[0];
+
+  return {
+    id: Number(attachment.id),
+    ticketId: Number(attachment.ticket_id),
+    messageId: Number(attachment.message_id),
+
+    originalName: attachment.original_name,
+    mimeType: attachment.mime_type,
+    fileExtension: attachment.file_extension,
+    fileSize: Number(attachment.file_size),
+
+    fileData: attachment.file_data,
+    createdAt: attachment.created_at,
+  };
+}
+
 module.exports = {
   createTicket,
   getUserTickets,
@@ -1480,6 +1854,7 @@ module.exports = {
   getAdminTicketDetails,
   replyToTicketAsAdmin,
   updateTicketAsAdmin,
+  getSupportAttachment,
 
   TICKET_STATUS,
   TICKET_PRIORITY,
@@ -1499,6 +1874,15 @@ module.exports = {
     getLockedAdmin,
     getLockedAdminTicket,
     validateAdminAccount,
+    normalizeSupportAttachments,
+    insertSupportAttachments,
+    mapAttachmentRow,
+    getTicketAttachments,
+    attachFilesToMessages,
+
+    MAX_SUPPORT_ATTACHMENTS,
+    MAX_SUPPORT_ATTACHMENT_SIZE,
+    ALLOWED_SUPPORT_ATTACHMENT_TYPES,
     ALLOWED_CATEGORIES,
     ALLOWED_STATUSES,
     ALLOWED_PRIORITIES,
