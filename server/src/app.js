@@ -16,6 +16,8 @@ const adminWithdrawRoutes = require("./routes/admin-withdraw.routes");
 
 const walletRoutes = require("./routes/wallet.routes");
 
+const supportRoutes = require("./routes/support.routes");
+
 const lobbyNoticeRoutes = require("./routes/lobby-notice.routes");
 
 const adminDashboardRoutes = require("./routes/admin-dashboard.routes");
@@ -112,6 +114,7 @@ app.use("/api/teenpatti", teenPattiRoutes);
 app.use("/api/poker", pokerRoutes);
 
 app.use("/api/ludo", ludoRoutes);
+app.use("/api/support", supportRoutes);
 
 /* ==========================
 
