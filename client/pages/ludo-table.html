@@ -457,9 +457,30 @@
 
     </main>
 
-    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
-   
-    <script src="../js/ludo/ludo-game.js"></script>
+    <script>
+  (() => {
+    const loadLudoGame = () => {
+      const gameScript = document.createElement("script");
+      gameScript.src = "../js/ludo/ludo-game.js";
+      document.body.appendChild(gameScript);
+    };
+
+    const socketScript = document.createElement("script");
+
+    socketScript.src = window.APP_CONFIG.server(
+      "/socket.io/socket.io.js",
+    );
+
+    socketScript.onload = loadLudoGame;
+
+    socketScript.onerror = () => {
+      console.error("Failed to load the Socket.IO client.");
+      loadLudoGame();
+    };
+
+    document.body.appendChild(socketScript);
+  })();
+</script>
 
   </body>
 </html>
