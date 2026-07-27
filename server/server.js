@@ -17,6 +17,8 @@ const { initializePokerSocket } = require("./src/socket/poker.socket");
 
 const PORT = Number(process.env.PORT) || 5000;
 
+const HOST = process.env.HOST || "0.0.0.0";
+
 /*
  * Express app-এর জন্য HTTP server।
  *
@@ -50,11 +52,10 @@ async function startServer() {
   try {
     await testDatabaseConnection();
 
-    httpServer.listen(PORT, () => {
-      console.log(`🚀 PMS ADDA Server Running on Port ${PORT}`);
-
-      console.log(`🔌 Socket.IO Running on Port ${PORT}`);
-    });
+   httpServer.listen(PORT, HOST, () => {
+  console.log(`🚀 PMS ADDA Server Running at http://${HOST}:${PORT}`);
+  console.log(`🔌 Socket.IO Running on Port ${PORT}`);
+});
   } catch (error) {
     console.error("❌ SERVER START ERROR:", error);
 
