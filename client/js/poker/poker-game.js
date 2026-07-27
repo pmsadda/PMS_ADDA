@@ -1354,8 +1354,22 @@ const POKER_GAME = {
 
 window.POKER_GAME = POKER_GAME;
 
-document.addEventListener("DOMContentLoaded", () => {
+const initializePokerGame = () => {
   POKER_GAME.initialize();
 
-  console.log("✅ PMS ADDA glossy Poker table loaded");
-});
+  console.log(
+    "✅ PMS ADDA glossy Poker table loaded",
+  );
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializePokerGame,
+    {
+      once: true,
+    },
+  );
+} else {
+  initializePokerGame();
+}

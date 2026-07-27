@@ -1376,9 +1376,25 @@ window.LUDO_DESIGN = LUDO_DESIGN;
 
 window.LUDO_LIVE = LUDO_LIVE;
 
-document.addEventListener("DOMContentLoaded", () => {
+const initializeLudoGame = () => {
   LUDO_DESIGN.createBoard();
   LUDO_DESIGN.initializeAvatarFallbacks();
 
   LUDO_LIVE.initialize();
-});
+
+  console.log(
+    "✅ PMS ADDA glossy Ludo table loaded",
+  );
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeLudoGame,
+    {
+      once: true,
+    },
+  );
+} else {
+  initializeLudoGame();
+}
