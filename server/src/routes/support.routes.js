@@ -4,6 +4,7 @@ const express = require("express");
 
 const {
   requireAuth,
+  requireAdmin,
 } = require("../middleware/auth.middleware");
 
 const supportController = require(
@@ -19,6 +20,40 @@ const router = express.Router();
 */
 
 router.use(requireAuth);
+
+/*
+|--------------------------------------------------------------------------
+| Admin Support Ticket routes
+|--------------------------------------------------------------------------
+*/
+
+// সব Ticket list, search ও filter
+router.get(
+  "/admin/tickets",
+  requireAdmin,
+  supportController.getAdminTickets,
+);
+
+// নির্দিষ্ট Ticket ও messages
+router.get(
+  "/admin/tickets/:ticketId",
+  requireAdmin,
+  supportController.getAdminTicketDetails,
+);
+
+// Admin reply
+router.post(
+  "/admin/tickets/:ticketId/messages",
+  requireAdmin,
+  supportController.replyToTicketAsAdmin,
+);
+
+// Status, priority এবং assignment update
+router.patch(
+  "/admin/tickets/:ticketId",
+  requireAdmin,
+  supportController.updateTicketAsAdmin,
+);
 
 /*
 |--------------------------------------------------------------------------

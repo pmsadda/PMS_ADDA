@@ -217,10 +217,183 @@ async function closeMyTicket(request, response) {
   }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Admin: Get all support tickets
+|--------------------------------------------------------------------------
+*/
+
+async function getAdminTickets(request, response) {
+  try {
+    const adminId =
+      getAuthenticatedUserId(request);
+
+    const result =
+      await supportService.getAdminTickets(
+        adminId,
+        request.query || {},
+      );
+
+    return sendSuccess(
+      response,
+      200,
+      "Admin support tickets loaded successfully.",
+      result,
+    );
+  } catch (error) {
+    console.error(
+      "GET ADMIN SUPPORT TICKETS ERROR:",
+      error,
+    );
+
+    return sendError(
+      response,
+      error,
+      "Unable to load support tickets.",
+    );
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Get ticket details and messages
+|--------------------------------------------------------------------------
+*/
+
+async function getAdminTicketDetails(
+  request,
+  response,
+) {
+  try {
+    const adminId =
+      getAuthenticatedUserId(request);
+
+    const ticketId =
+      request.params.ticketId;
+
+    const result =
+      await supportService.getAdminTicketDetails(
+        adminId,
+        ticketId,
+      );
+
+    return sendSuccess(
+      response,
+      200,
+      "Admin support ticket loaded successfully.",
+      result,
+    );
+  } catch (error) {
+    console.error(
+      "GET ADMIN TICKET DETAILS ERROR:",
+      error,
+    );
+
+    return sendError(
+      response,
+      error,
+      "Unable to load the support ticket.",
+    );
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Reply to ticket
+|--------------------------------------------------------------------------
+*/
+
+async function replyToTicketAsAdmin(
+  request,
+  response,
+) {
+  try {
+    const adminId =
+      getAuthenticatedUserId(request);
+
+    const ticketId =
+      request.params.ticketId;
+
+    const result =
+      await supportService.replyToTicketAsAdmin(
+        adminId,
+        ticketId,
+        request.body || {},
+      );
+
+    return sendSuccess(
+      response,
+      201,
+      "Admin support reply sent successfully.",
+      result,
+    );
+  } catch (error) {
+    console.error(
+      "ADMIN SUPPORT REPLY ERROR:",
+      error,
+    );
+
+    return sendError(
+      response,
+      error,
+      "Unable to send the admin reply.",
+    );
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Update status, priority or assignment
+|--------------------------------------------------------------------------
+*/
+
+async function updateTicketAsAdmin(
+  request,
+  response,
+) {
+  try {
+    const adminId =
+      getAuthenticatedUserId(request);
+
+    const ticketId =
+      request.params.ticketId;
+
+    const result =
+      await supportService.updateTicketAsAdmin(
+        adminId,
+        ticketId,
+        request.body || {},
+      );
+
+    return sendSuccess(
+      response,
+      200,
+      "Support ticket updated successfully.",
+      result,
+    );
+  } catch (error) {
+    console.error(
+      "ADMIN SUPPORT TICKET UPDATE ERROR:",
+      error,
+    );
+
+    return sendError(
+      response,
+      error,
+      "Unable to update the support ticket.",
+    );
+  }
+}
+
 module.exports = {
   createTicket,
   getMyTickets,
   getMyTicketDetails,
   replyToMyTicket,
   closeMyTicket,
+
+  getAdminTickets,
+  getAdminTicketDetails,
+  replyToTicketAsAdmin,
+  updateTicketAsAdmin,
 };
