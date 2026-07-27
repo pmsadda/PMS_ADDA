@@ -2230,28 +2230,87 @@
      SAFE TABLE EXIT
   ========================================================= */
 
+  async function leaveTeenPattiTableThroughHttp() {
+    const response = await fetch(
+      window.APP_CONFIG.api(`/teenpatti/table/${STATE.tableId}/leave`),
+      {
+        method: "POST",
+
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || result?.success !== true) {
+      const error = new Error(
+        result?.message || "HTTP দিয়ে Teen Patti table clear করা যায়নি।",
+      );
+
+      error.statusCode = response.status;
+      error.code = result?.code || "TABLE_HTTP_LEAVE_FAILED";
+
+      throw error;
+    }
+
+    return result;
+  }
+
   async function leaveTeenPattiTable() {
     if (STATE.leavingTable) {
       return;
     }
 
     STATE.leavingTable = true;
-    disableAllActions();
 
+    disableAllActions();
     setButtonDisabled(DOM.exitButton, true);
+    setButtonDisabled(DOM.backButton, true);
 
     try {
+      let serverLeaveCompleted = false;
+
+      /*
+       * প্রথমে দ্রুত Socket.IO exit চেষ্টা করবে।
+       */
       if (STATE.socket && STATE.socket.connected && STATE.socketJoined) {
-        await emitWithAcknowledgement(
-          "table:leave",
-          {
-            tableId: STATE.tableId,
-          },
-          10000,
-        );
+        try {
+          await emitWithAcknowledgement(
+            "table:leave",
+            {
+              tableId: STATE.tableId,
+            },
+            8000,
+          );
+
+          serverLeaveCompleted = true;
+        } catch (socketError) {
+          console.warn(
+            "Socket table exit failed; using HTTP fallback:",
+            socketError,
+          );
+        }
+      }
+
+      /*
+       * Socket disconnected অথবা acknowledgement fail হলে
+       * authenticated HTTP route table clear করবে।
+       */
+      if (!serverLeaveCompleted) {
+        await leaveTeenPattiTableThroughHttp();
       }
 
       STATE.socketJoined = false;
+
+      clearTurnTimer();
+      clearWinnerTimer();
+      clearMatchmakingTimer();
+
+      localStorage.removeItem("current_table");
+      localStorage.removeItem("selected_teenpatti_room");
 
       if (STATE.socket) {
         STATE.socket.disconnect();
@@ -2264,6 +2323,7 @@
       STATE.leavingTable = false;
 
       setButtonDisabled(DOM.exitButton, false);
+      setButtonDisabled(DOM.backButton, false);
 
       renderActionButtons();
 
