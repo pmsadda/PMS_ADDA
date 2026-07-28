@@ -26,78 +26,29 @@
 
       <!-- HEADER -->
 
-      <header class="poker-header">
+      <!-- FLOATING WALLET AND SOUND -->
+
+      <section
+        class="poker-quick-controls"
+        aria-label="Poker controls">
+
+        <div class="wallet-box">
+          <span>Wallet</span>
+
+          <strong id="walletBalance">
+            ৳0.00
+          </strong>
+        </div>
 
         <button
-          id="backButton"
+          id="soundButton"
           class="icon-button"
           type="button"
-          aria-label="Leave Poker table">
-          ←
+          aria-label="Sound">
+          🔊
         </button>
 
-        <section class="poker-brand">
-
-          <img
-            src="../assets/logo/logo.png"
-            alt="PMS ADDA"
-            class="brand-logo">
-
-          <div>
-            <h1>PMS ADDA POKER</h1>
-
-            <div class="table-meta">
-
-              <span id="blindInfo">
-                Blinds: ৳0 / ৳0
-              </span>
-
-              <span>•</span>
-
-              <span id="tableCode">
-                Table: Waiting
-              </span>
-
-              <span>•</span>
-
-              <span id="handNumber">
-                Hand #0
-              </span>
-
-            </div>
-          </div>
-
-        </section>
-
-        <section class="header-actions">
-
-          <div class="wallet-box">
-            <span>Wallet</span>
-
-            <strong id="walletBalance">
-              ৳0.00
-            </strong>
-          </div>
-
-          <button
-            id="soundButton"
-            class="icon-button"
-            type="button"
-            aria-label="Sound">
-            🔊
-          </button>
-
-          <button
-            id="settingsButton"
-            class="icon-button"
-            type="button"
-            aria-label="Settings">
-            ⚙
-          </button>
-
-        </section>
-
-      </header>
+      </section>
 
       <!-- TABLE AREA -->
 
@@ -668,7 +619,7 @@
 
     </main>
 
-   <script>
+    <script>
   (() => {
     const loadPokerGame = () => {
       const gameScript = document.createElement("script");
