@@ -3281,3 +3281,104 @@ strong {
     font-size: 46px;
   }
 }
+
+/* =========================================================
+   MOBILE FLOATING WALLET AND SOUND
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 520px) {
+  /*
+   * Header-এর জন্য আলাদা row থাকবে না।
+   */
+  .tp-app {
+    grid-template-rows:
+      minmax(0, 1fr)
+      var(--footer-height) !important;
+  }
+
+  /*
+   * Header background/bar সরিয়ে শুধু actions floating থাকবে।
+   */
+  .tp-header {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    left: auto;
+    z-index: 500;
+
+    display: block !important;
+
+    width: auto;
+    height: auto;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 0;
+
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .tp-header::after {
+    display: none;
+  }
+
+  /*
+   * Back, logo, title এবং settings mobile-এ লাগবে না।
+   */
+  .tp-header .back-btn,
+  .tp-header .tp-brand,
+  .tp-header #teenPattiSettingsButton {
+    display: none !important;
+  }
+
+  /*
+   * শুধু Wallet এবং Sound পাশাপাশি থাকবে।
+   */
+  .tp-header-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+  }
+
+  .tp-wallet {
+    min-width: 74px;
+
+    padding: 4px 8px;
+
+    border: 1px solid rgba(255, 213, 66, 0.38);
+    border-radius: 12px;
+
+    background: rgba(2, 20, 19, 0.9);
+
+    box-shadow:
+      0 7px 18px rgba(0, 0, 0, 0.4);
+  }
+
+  .tp-wallet span {
+    font-size: 7px;
+  }
+
+  .tp-wallet strong {
+    font-size: 12px;
+  }
+
+  .tp-header #teenPattiSoundButton {
+    display: grid !important;
+
+    width: 36px;
+    height: 36px;
+
+    font-size: 16px;
+
+    border-radius: 11px;
+
+    background: rgba(2, 20, 19, 0.9);
+
+    box-shadow:
+      0 7px 18px rgba(0, 0, 0, 0.4);
+  }
+}
