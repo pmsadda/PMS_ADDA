@@ -2653,7 +2653,7 @@ input {
   ------------------------- */
 
   .pot-display {
-    top: 1% !important;
+    top: -9% !important;
     left: 50% !important;
     z-index: 70 !important;
 
@@ -3169,5 +3169,127 @@ input {
         17vw,
         122px
       ) !important;
+  }
+}
+
+/* =========================================================
+   REAL MOBILE LANDSCAPE — FINAL VERTICAL CORRECTION
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  :root {
+    --footer-height: 58px;
+    --table-width: min(68vw, 630px);
+  }
+
+  /*
+   * সম্পূর্ণ Poker table উপরে উঠবে।
+   */
+  .poker-table {
+    width: var(--table-width) !important;
+    min-width: 0 !important;
+
+    transform:
+      translateY(-13%) !important;
+  }
+
+  /*
+   * Pot table-এর উপরের দিকে থাকবে,
+   * কিন্তু screen-এর বাইরে যাবে না।
+   */
+  .pot-display {
+    top: -8% !important;
+  }
+
+  /*
+   * Community cards একটু উপরে থাকবে,
+   * যাতে নিজের cards-এর সঙ্গে না মেশে।
+   */
+  .community-cards {
+    top: 36% !important;
+  }
+
+  /*
+   * Bottom human player footer-এর সম্পূর্ণ উপরে।
+   */
+  #playerSeat1 {
+    top: auto !important;
+    right: auto !important;
+    bottom: 28% !important;
+    left: 50% !important;
+
+    z-index: 100 !important;
+
+    transform:
+      translateX(-50%) !important;
+  }
+
+  /*
+   * নিজের বড় cards profile-এর উপরে।
+   */
+  #playerSeat1 .player-cards {
+    bottom: 50px !important;
+    z-index: 105 !important;
+
+    gap: 4px !important;
+
+    scale: 1 !important;
+  }
+
+  #playerSeat1 .hole-card {
+    width: 50px !important;
+    min-width: 50px !important;
+    height: 70px !important;
+  }
+
+  /*
+   * বাম ও ডান পাশের players-ও
+   * footer-এর পেছনে যাবে না।
+   */
+  .seat-2 {
+    top: auto !important;
+    bottom: 30% !important;
+    left: -3% !important;
+
+    transform: none !important;
+  }
+
+  .seat-5 {
+    top: auto !important;
+    right: -3% !important;
+    bottom: 30% !important;
+
+    transform: none !important;
+  }
+
+  .seat-2 .player-cards,
+  .seat-5 .player-cards {
+    bottom: 38px !important;
+    z-index: 35 !important;
+
+    scale: 0.88 !important;
+  }
+
+  /*
+   * Footer একটু compact হবে।
+   */
+  .poker-footer {
+    min-height:
+      var(--footer-height) !important;
+
+    padding: 4px 7px !important;
+  }
+
+  .action-button,
+  .tool-button {
+    min-height: 36px !important;
+  }
+
+  /*
+   * Status message জায়গা না পেলে hide।
+   */
+  .round-status {
+    display: none !important;
   }
 }
