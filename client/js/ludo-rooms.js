@@ -584,6 +584,36 @@ document.addEventListener("DOMContentLoaded", () => {
     joinRoom(entryAmount);
   }
 
+  elements.modeSelector?.addEventListener("click", (event) => {
+    const button = event.target.closest(".ludo-mode-button");
+
+    if (!button || state.isJoining) {
+      return;
+    }
+
+    const selectedMode = Number(button.dataset.playerMode);
+
+    if (selectedMode !== 2 && selectedMode !== 4) {
+      return;
+    }
+
+    state.playerMode = selectedMode;
+
+    elements.modeSelector
+      .querySelectorAll(".ludo-mode-button")
+      .forEach((modeButton) => {
+        const isActive = Number(modeButton.dataset.playerMode) === selectedMode;
+
+        modeButton.classList.toggle("is-active", isActive);
+
+        modeButton.setAttribute("aria-pressed", String(isActive));
+      });
+
+    renderRooms();
+
+    showToast(`${selectedMode}-player Ludo selected`, "success");
+  });
+
   elements.roomGrid.addEventListener("click", handleRoomGridClick);
 
   elements.backBtn.addEventListener("click", () => {
