@@ -1,180 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
+    <head>
+        <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="theme-color"
-        content="#07111f"
-    >
+        <meta
+            name="theme-color"
+            content="#07111f">
 
-    <title>PMS ADDA | Ludo Rooms</title>
+        <title>PMS ADDA | Ludo Rooms</title>
 
-    <script src="../js/app-config.js"></script>
-    <script src="../js/auth-guard.js"></script>
+        <script src="../js/app-config.js"></script>
+        <script src="../js/auth-guard.js"></script>
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-    >
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/common.css"
-    >
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
 
-    <!-- Teen Patti room design reuse করছি -->
-    <link
-        rel="stylesheet"
-        href="../css/teenpatti-rooms.css"
-    >
+        <!-- Teen Patti room design reuse করছি -->
+        <link
+            rel="stylesheet"
+            href="../css/teenpatti-rooms.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/ludo-rooms.css"
-    >
-</head>
+        <link
+            rel="stylesheet"
+            href="../css/ludo-rooms.css">
+    </head>
 
-<body>
+    <body>
 
-    <div class="tp-rooms-app ludo-rooms-app">
+        <div class="tp-rooms-app ludo-rooms-app">
 
-        <!-- Header -->
+            <!-- Header -->
 
-        <header class="tp-rooms-header">
-
-            <button
-                type="button"
-                class="tp-back-button"
-                id="backBtn"
-                aria-label="Back to lobby"
-            >
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-
-            <div class="tp-header-title">
-
-                <h1>
-                    <i class="fa-solid fa-dice"></i>
-                    Ludo
-                </h1>
-
-                <p>
-                    Select your preferred entry room
-                </p>
-
-            </div>
-
-            <div class="tp-wallet-box">
-
-                <span>Available Balance</span>
-
-                <strong>
-                    ৳<span id="walletBalance">0.00</span>
-                </strong>
+            <header class="tp-rooms-header">
 
                 <button
                     type="button"
-                    id="refreshBalanceBtn"
-                    aria-label="Refresh wallet balance"
-                >
-                    <i class="fa-solid fa-rotate"></i>
+                    class="tp-back-button"
+                    id="backBtn"
+                    aria-label="Back to lobby">
+                    <i class="fa-solid fa-arrow-left"></i>
                 </button>
 
-            </div>
+                <div class="tp-header-title">
 
-        </header>
-
-        <!-- Main -->
-
-        <main class="tp-rooms-main">
-
-            <section class="tp-room-heading">
-
-                <div>
-
-                    <span class="tp-section-label">
-                        LUDO TABLE
-                    </span>
-
-                    <h2>Choose Entry Amount</h2>
+                    <h1>
+                        <i class="fa-solid fa-dice"></i>
+                        Ludo
+                    </h1>
 
                     <p>
-                        Select a room according to your wallet balance.
-                        The selected amount will be used as the Ludo
-                        match entry amount.
+                        Select your preferred entry room
                     </p>
 
                 </div>
 
-                <div class="tp-rule-badge">
+                <div class="tp-wallet-box">
 
-                    <i class="fa-solid fa-users"></i>
+                    <span>Available Balance</span>
 
-                    <span>
-                        2–4 players per table
-                    </span>
+                    <strong>
+                        ৳<span id="walletBalance">0.00</span>
+                    </strong>
+
+                    <button
+                        type="button"
+                        id="refreshBalanceBtn"
+                        aria-label="Refresh wallet balance">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
 
                 </div>
 
-            </section>
+            </header>
 
-            <section
-                class="tp-room-grid"
-                id="roomGrid"
-                aria-label="Ludo entry rooms"
-            ></section>
+            <!-- Main -->
 
-        </main>
+            <main class="tp-rooms-main">
 
-        <!-- Loading Overlay -->
+                <section class="tp-room-heading">
 
-        <div
-            class="tp-loader-overlay"
-            id="loaderOverlay"
-            aria-hidden="true"
-        >
+                    <div>
 
-            <div class="tp-loader-content">
+                        <span class="tp-section-label">
+                            LUDO TABLE
+                        </span>
 
-                <div class="tp-loader"></div>
+                        <h2>Choose Entry Amount</h2>
 
-                <p id="loaderMessage">
-                    Preparing Ludo table...
-                </p>
+                        <p>
+                            Select a room according to your wallet balance.
+                            The selected amount will be used as the Ludo
+                            match entry amount.
+                        </p>
+
+                    </div>
+
+                    <div class="tp-rule-badge">
+
+                        <i class="fa-solid fa-users"></i>
+
+                        <span>
+                            2–4 players per table
+                        </span>
+
+                    </div>
+
+                </section>
+
+                <section
+                    class="tp-room-grid"
+                    id="roomGrid"
+                    aria-label="Ludo entry rooms"></section>
+
+                <!-- Ludo Player Mode -->
+
+                <section
+                    id="ludoPlayerMode"
+                    class="ludo-player-mode"
+                    aria-label="Select Ludo player mode">
+                    <div class="ludo-mode-copy">
+
+                        <span>PLAYER MODE</span>
+
+                        <strong>
+                            কতজন নিয়ে খেলবেন?
+                        </strong>
+
+                    </div>
+
+                    <div class="ludo-mode-buttons">
+
+                        <button
+                            type="button"
+                            class="ludo-mode-button is-active"
+                            data-player-mode="2"
+                            aria-pressed="true">
+                            <i class="fa-solid fa-user-group"></i>
+                            2 Players
+                        </button>
+
+                        <button
+                            type="button"
+                            class="ludo-mode-button"
+                            data-player-mode="4"
+                            aria-pressed="false">
+                            <i class="fa-solid fa-users"></i>
+                            4 Players
+                        </button>
+
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- Loading Overlay -->
+
+            <div
+                class="tp-loader-overlay"
+                id="loaderOverlay"
+                aria-hidden="true">
+
+                <div class="tp-loader-content">
+
+                    <div class="tp-loader"></div>
+
+                    <p id="loaderMessage">
+                        Preparing Ludo table...
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Toast -->
+
+            <div
+                class="tp-toast"
+                id="toast"
+                role="status"
+                aria-live="polite">
+
+                <i
+                    class="fa-solid fa-circle-info"
+                    id="toastIcon"></i>
+
+                <span id="toastMessage"></span>
 
             </div>
 
         </div>
 
-        <!-- Toast -->
+        <script src="../js/ludo-rooms.js"></script>
 
-        <div
-            class="tp-toast"
-            id="toast"
-            role="status"
-            aria-live="polite"
-        >
-
-            <i
-                class="fa-solid fa-circle-info"
-                id="toastIcon"
-            ></i>
-
-            <span id="toastMessage"></span>
-
-        </div>
-
-    </div>
-
-    <script src="../js/ludo-rooms.js"></script>
-
-</body>
+    </body>
 
 </html>

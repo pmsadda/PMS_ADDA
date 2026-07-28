@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const elements = {
     roomGrid: document.getElementById("roomGrid"),
 
+    modeSelector: document.getElementById("ludoPlayerMode"),
+
     walletBalance: document.getElementById("walletBalance"),
 
     backBtn: document.getElementById("backBtn"),
@@ -44,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const state = {
     user: null,
+
+    playerMode: 2,
 
     isJoining: false,
 
@@ -268,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function createRoomCard(entryAmount) {
     const hasEnoughBalance = getWalletBalance() >= entryAmount;
 
-    const potentialPrize = entryAmount * 2;
+    const potentialPrize = entryAmount * state.playerMode;
 
     const card = document.createElement("article");
 
@@ -319,8 +323,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span>Players</span>
 
                         <strong>
-                            2–4
-                        </strong>
+    ${state.playerMode}
+</strong>
 
                     </div>
 
@@ -427,7 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       entryAmount,
 
-      playerMode: 2,
+      playerMode: state.playerMode,
 
       selectedAt: new Date().toISOString(),
     };
@@ -467,7 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         body: JSON.stringify({
           entryAmount: amount,
-          playerMode: 2,
+          playerMode: state.playerMode,
         }),
       });
 
@@ -486,7 +490,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         entryAmount: Number(match.entryAmount || amount),
 
-        playerMode: Number(match.playerMode || 2),
+        playerMode: Number(
+          match.requestedPlayerMode || match.playerMode || state.playerMode,
+        ),
 
         matchId,
 

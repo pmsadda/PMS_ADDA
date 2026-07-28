@@ -140,3 +140,141 @@
     box-shadow:
         0 0 0 4px rgba(32, 201, 120, 0.14);
 }
+
+/* ==========================================
+   LUDO PLAYER MODE SELECTOR
+========================================== */
+
+.ludo-player-mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 22px;
+  padding: 16px 18px;
+  gap: 16px;
+
+  border:
+    1px solid
+    rgba(255, 210, 61, 0.24);
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8, 35, 44, 0.96),
+      rgba(3, 17, 25, 0.98)
+    );
+
+  box-shadow:
+    0 12px 30px
+    rgba(0, 0, 0, 0.3);
+}
+
+.ludo-mode-copy {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.ludo-mode-copy span {
+  color: #f3c640;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 1.5px;
+}
+
+.ludo-mode-copy strong {
+  color: #ffffff;
+
+  font-size: 16px;
+}
+
+.ludo-mode-buttons {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(130px, 1fr));
+
+  gap: 9px;
+}
+
+.ludo-mode-button {
+  min-height: 46px;
+
+  padding: 8px 16px;
+
+  color: #b9c8d3;
+  font-weight: 850;
+
+  cursor: pointer;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.13);
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #173b44,
+      #081b25
+    );
+
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.ludo-mode-button:hover {
+  transform: translateY(-2px);
+}
+
+.ludo-mode-button.is-active {
+  color: #17200b;
+
+  border-color:
+    rgba(255, 224, 99, 0.85);
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffe777,
+      #d99b13
+    );
+
+  box-shadow:
+    0 0 18px
+    rgba(255, 199, 35, 0.22);
+}
+
+.ludo-mode-button i {
+  margin-right: 6px;
+}
+
+@media (max-width: 650px) {
+
+  .ludo-player-mode {
+    flex-direction: column;
+    align-items: stretch;
+
+    padding: 14px;
+  }
+
+  .ludo-mode-buttons {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .ludo-mode-button {
+    min-width: 0;
+
+    padding: 8px;
+  }
+}

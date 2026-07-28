@@ -2176,3 +2176,89 @@ button {
     }
   }
 }
+
+/* ==========================================
+   LUDO — PORTRAIT ONLY
+========================================== */
+
+/*
+ * খালি player panel hide হবে।
+ * 2-player match-এ শুধু Red এবং Yellow
+ * বিপরীত দুই মাথায় দেখা যাবে।
+ */
+.player-panel.is-empty {
+  display: none !important;
+}
+
+/*
+ * Landscape হলে game চালু থাকবে না।
+ * ফোন portrait করতে বলা হবে।
+ */
+@media (orientation: landscape) {
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden !important;
+
+    background:
+      radial-gradient(
+        circle at center,
+        #133b35,
+        #020b0d 74%
+      ) !important;
+  }
+
+  body::before {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: grid;
+    place-items: center;
+
+    padding: 25px;
+
+    color: #ffe778;
+
+    font-size:
+      clamp(
+        19px,
+        3.5vw,
+        30px
+      );
+
+    font-weight: 900;
+    line-height: 1.7;
+
+    text-align: center;
+    white-space: pre-line;
+
+    content:
+      "↻\A Ludo খেলতে ফোনটি Portrait করুন";
+
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(15, 57, 49, 0.99),
+        rgba(2, 10, 12, 0.99)
+      );
+  }
+
+  .ludo-app {
+    display: none !important;
+  }
+}
+
+@media (orientation: portrait) {
+
+  body::before {
+    display: none !important;
+  }
+
+  .ludo-app {
+    display: grid;
+  }
+}

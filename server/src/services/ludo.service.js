@@ -21,13 +21,39 @@ const {
    Configuration
 ========================================== */
 
-const MATCHMAKING_WAIT_SECONDS = 10;
+const TWO_PLAYER_WAIT_SECONDS = 10;
+const FOUR_PLAYER_WAIT_SECONDS = 20;
+
+/*
+ * পুরোনো socket fallback-এর জন্য সর্বোচ্চ
+ * matchmaking সময় রাখা হচ্ছে।
+ */
+const MATCHMAKING_WAIT_SECONDS = FOUR_PLAYER_WAIT_SECONDS;
+
 const TURN_DURATION_SECONDS = 10;
 
 const ALLOWED_ENTRY_AMOUNTS = Object.freeze([50, 100, 200, 250, 500, 1000]);
 
 const ALLOWED_PLAYER_MODES = Object.freeze([2, 4]);
 
+/*
+ * 2-player:
+ * Seat 1 = Red
+ * Seat 3 = Yellow
+ *
+ * তাই দুজন board-এর বিপরীত পাশে থাকবে।
+ */
+const SEAT_PLAN_BY_MODE = Object.freeze({
+  2: Object.freeze([1, 3]),
+
+  4: Object.freeze([1, 2, 3, 4]),
+});
+
+function getMatchmakingWaitSeconds(playerMode) {
+  return Number(playerMode) === 4
+    ? FOUR_PLAYER_WAIT_SECONDS
+    : TWO_PLAYER_WAIT_SECONDS;
+}
 const MATCH_STATUS = Object.freeze({
   WAITING: "waiting",
   STARTING: "starting",
@@ -297,6 +323,7 @@ async function createWaitingMatch(
 
   const finance = calculateMatchFinance(entryAmount, requestedPlayerMode);
 
+  const waitSeconds = getMatchmakingWaitSeconds(requestedPlayerMode);
   const [result] = await connection.query(
     `
         INSERT INTO ludo_matches (
@@ -333,7 +360,7 @@ async function createWaitingMatch(
           NOW(),
           DATE_ADD(
             NOW(),
-            INTERVAL 10 SECOND
+            INTERVAL ${waitSeconds} SECOND
           ),
           0,
           0
@@ -381,10 +408,14 @@ async function getUsedSeats(matchId, connection) {
   return rows.map((row) => Number(row.seat_no));
 }
 
-async function findAvailableSeat(matchId, maximumPlayers, connection) {
+async function findAvailableSeat(matchId, playerMode, connection) {
+  const validPlayerMode = validatePlayerMode(playerMode);
+
+  const seatPlan = SEAT_PLAN_BY_MODE[validPlayerMode];
+
   const usedSeats = await getUsedSeats(matchId, connection);
 
-  for (let seatNo = 1; seatNo <= maximumPlayers; seatNo += 1) {
+  for (const seatNo of seatPlan) {
     if (!usedSeats.includes(seatNo)) {
       return seatNo;
     }
@@ -699,6 +730,10 @@ async function finalizeMatchmaking(matchId) {
       throw createServiceError("Ludo match not found.", 404);
     }
 
+    /*
+     * Match অন্য request থেকে ইতোমধ্যে
+     * শুরু হয়ে থাকলে শুধু latest state।
+     */
     if (
       match.match_status !== MATCH_STATUS.WAITING ||
       Boolean(match.entry_collected)
@@ -708,8 +743,14 @@ async function finalizeMatchmaking(matchId) {
       return buildMatchState(validMatchId);
     }
 
+    const requestedPlayerMode = validatePlayerMode(match.requested_player_mode);
+
     const realPlayers = await countRealPlayers(validMatchId, connection);
 
+    /*
+     * কোনো real player না থাকলে
+     * match cancel হবে।
+     */
     if (realPlayers === 0) {
       await connection.query(
         `
@@ -728,15 +769,28 @@ async function finalizeMatchmaking(matchId) {
       return buildMatchState(validMatchId);
     }
 
-    let finalPlayerMode;
+    /*
+     * Selected mode আর ছোট হবে না।
+     *
+     * 2-player mode সবসময় মোট 2।
+     * 4-player mode সবসময় মোট 4।
+     */
+    const finalPlayerMode = requestedPlayerMode;
 
-    if (realPlayers === 1 || realPlayers === 2) {
-      finalPlayerMode = 2;
-    } else {
-      finalPlayerMode = 4;
+    let currentPlayerCount = await updateCurrentPlayers(
+      validMatchId,
+      connection,
+    );
+
+    if (currentPlayerCount > finalPlayerMode) {
+      throw createServiceError("Ludo player count exceeds selected mode.", 409);
     }
 
-    if (realPlayers === 1 || realPlayers === 3) {
+    /*
+     * যত seat খালি থাকবে,
+     * একটি করে আলাদা Bot বসবে।
+     */
+    while (currentPlayerCount < finalPlayerMode) {
       const seatNo = await findAvailableSeat(
         validMatchId,
         finalPlayerMode,
@@ -744,7 +798,7 @@ async function finalizeMatchmaking(matchId) {
       );
 
       if (!seatNo) {
-        throw createServiceError("No seat is available for the Ludo bot.", 409);
+        throw createServiceError("No seat is available for a Ludo bot.", 409);
       }
 
       await insertBotMatchPlayer(
@@ -753,6 +807,8 @@ async function finalizeMatchmaking(matchId) {
         seatNo,
         connection,
       );
+
+      currentPlayerCount += 1;
     }
 
     const finalCount = await updateCurrentPlayers(validMatchId, connection);
@@ -768,9 +824,6 @@ async function finalizeMatchmaking(matchId) {
       connection,
     );
 
-    /*
-     * startMatchIfReady Section 2-এ থাকবে।
-     */
     await startMatchIfReady(validMatchId, connection);
 
     await connection.commit();
@@ -938,7 +991,7 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
       ...state.matchmaking,
       alreadyJoined,
       newMatchCreated,
-      waitSeconds: MATCHMAKING_WAIT_SECONDS,
+      waitSeconds: getMatchmakingWaitSeconds(requestedPlayerMode),
     },
   };
 }
@@ -1801,7 +1854,7 @@ async function buildMatchState(matchId, connection = pool) {
 
       waitingForPlayers: Math.max(requestedPlayerMode - currentPlayers, 0),
 
-      waitSeconds: MATCHMAKING_WAIT_SECONDS,
+      waitSeconds: getMatchmakingWaitSeconds(requestedPlayerMode),
 
       expiresAt: match.matchmaking_expires_at,
     },
@@ -2268,9 +2321,8 @@ async function rollDiceForPlayer(matchId, matchPlayerId) {
       } else {
         const [stateResult] = await connection.query(
           `
-              UPDATE ludo_game_states
-              SET
-                SET
+          UPDATE ludo_game_states
+SET
   dice_value = ?,
   dice_rolled = 1,
   consecutive_sixes = ?,

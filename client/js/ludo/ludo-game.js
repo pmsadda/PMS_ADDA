@@ -1107,7 +1107,7 @@ const LUDO_LIVE = {
           return dice === 6;
         }
 
-        return Number(pawn.totalSteps) + dice <= 57;
+       return Number(pawn.totalSteps) + dice <= 56;
       })
       .map((pawn) => Number(pawn.pawnNo));
 

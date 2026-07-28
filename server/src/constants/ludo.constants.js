@@ -100,37 +100,13 @@ const START_INDEX_BY_COLOR = Object.freeze({
  * pawn এই path-এ প্রবেশ করবে।
  */
 const HOME_PATH_BY_COLOR = Object.freeze({
-  red: Object.freeze([
-    "7-1",
-    "7-2",
-    "7-3",
-    "7-4",
-    "7-5",
-  ]),
+  red: Object.freeze(["7-1", "7-2", "7-3", "7-4", "7-5"]),
 
-  green: Object.freeze([
-    "1-7",
-    "2-7",
-    "3-7",
-    "4-7",
-    "5-7",
-  ]),
+  green: Object.freeze(["1-7", "2-7", "3-7", "4-7", "5-7"]),
 
-  yellow: Object.freeze([
-    "7-13",
-    "7-12",
-    "7-11",
-    "7-10",
-    "7-9",
-  ]),
+  yellow: Object.freeze(["7-13", "7-12", "7-11", "7-10", "7-9"]),
 
-  blue: Object.freeze([
-    "13-7",
-    "12-7",
-    "11-7",
-    "10-7",
-    "9-7",
-  ]),
+  blue: Object.freeze(["13-7", "12-7", "11-7", "10-7", "9-7"]),
 });
 
 /**
@@ -149,12 +125,7 @@ const SAFE_CELLS = Object.freeze([
 
 const SAFE_CELL_SET = new Set(SAFE_CELLS);
 
-const PLAYER_COLORS = Object.freeze([
-  "red",
-  "green",
-  "yellow",
-  "blue",
-]);
+const PLAYER_COLORS = Object.freeze(["red", "green", "yellow", "blue"]);
 
 /**
  * Pawn progress rules:
@@ -167,28 +138,32 @@ const PLAYER_COLORS = Object.freeze([
  *   total_steps = 0
  *
  * main path:
- *   total_steps = 0 থেকে 51
+ *   total_steps = 0 থেকে 50
  *
  * home path:
- *   total_steps = 52 থেকে 56
+ *   total_steps = 51 থেকে 55
  *
  * finished:
- *   total_steps = 57
+ *   total_steps = 56
  */
+
 const MAIN_PATH_LENGTH = MAIN_PATH.length;
+
+/*
+ * Start cell থেকে home-entry cell পর্যন্ত
+ * 51টি relative main-path position।
+ */
+const MAIN_ROUTE_LENGTH = MAIN_PATH_LENGTH - 1;
 
 const HOME_PATH_LENGTH = 5;
 
-const LAST_MAIN_STEP = MAIN_PATH_LENGTH - 1;
+const LAST_MAIN_STEP = MAIN_ROUTE_LENGTH - 1;
 
-const FIRST_HOME_STEP = MAIN_PATH_LENGTH;
+const FIRST_HOME_STEP = MAIN_ROUTE_LENGTH;
 
-const LAST_HOME_STEP =
-  MAIN_PATH_LENGTH + HOME_PATH_LENGTH - 1;
+const LAST_HOME_STEP = FIRST_HOME_STEP + HOME_PATH_LENGTH - 1;
 
-const FINISHED_STEP =
-  MAIN_PATH_LENGTH + HOME_PATH_LENGTH;
-
+const FINISHED_STEP = FIRST_HOME_STEP + HOME_PATH_LENGTH;
 /* ==========================================
    Validation
 ========================================== */
@@ -228,8 +203,7 @@ function isSafeCoordinate(coordinate) {
  * → 1-8
  */
 function getMainPathCoordinate(color, totalSteps) {
-  const normalizedColor =
-    normalizePlayerColor(color);
+  const normalizedColor = normalizePlayerColor(color);
 
   const validSteps = Number(totalSteps);
 
@@ -242,25 +216,18 @@ function getMainPathCoordinate(color, totalSteps) {
     return null;
   }
 
-  const startIndex =
-    START_INDEX_BY_COLOR[normalizedColor];
+  const startIndex = START_INDEX_BY_COLOR[normalizedColor];
 
-  const globalPathIndex =
-    (startIndex + validSteps) %
-    MAIN_PATH_LENGTH;
+  const globalPathIndex = (startIndex + validSteps) % MAIN_PATH_LENGTH;
 
   return {
-    coordinate:
-      MAIN_PATH[globalPathIndex],
+    coordinate: MAIN_PATH[globalPathIndex],
 
     globalPathIndex,
 
-    relativePathPosition:
-      validSteps,
+    relativePathPosition: validSteps,
 
-    isSafe: isSafeCoordinate(
-      MAIN_PATH[globalPathIndex],
-    ),
+    isSafe: isSafeCoordinate(MAIN_PATH[globalPathIndex]),
   };
 }
 
@@ -271,8 +238,7 @@ function getMainPathCoordinate(color, totalSteps) {
  * totalSteps 56 → home path index 4
  */
 function getHomePathCoordinate(color, totalSteps) {
-  const normalizedColor =
-    normalizePlayerColor(color);
+  const normalizedColor = normalizePlayerColor(color);
 
   const validSteps = Number(totalSteps);
 
@@ -285,20 +251,16 @@ function getHomePathCoordinate(color, totalSteps) {
     return null;
   }
 
-  const homePath =
-    HOME_PATH_BY_COLOR[normalizedColor];
+  const homePath = HOME_PATH_BY_COLOR[normalizedColor];
 
-  const homePathIndex =
-    validSteps - FIRST_HOME_STEP;
+  const homePathIndex = validSteps - FIRST_HOME_STEP;
 
   return {
-    coordinate:
-      homePath[homePathIndex],
+    coordinate: homePath[homePathIndex],
 
     homePathIndex,
 
-    relativePathPosition:
-      validSteps,
+    relativePathPosition: validSteps,
 
     isSafe: true,
   };
@@ -323,10 +285,7 @@ function getPawnPosition(color, totalSteps) {
     return {
       status: "active",
       totalSteps: validSteps,
-      ...getMainPathCoordinate(
-        color,
-        validSteps,
-      ),
+      ...getMainPathCoordinate(color, validSteps),
     };
   }
 
@@ -334,10 +293,7 @@ function getPawnPosition(color, totalSteps) {
     return {
       status: "home",
       totalSteps: validSteps,
-      ...getHomePathCoordinate(
-        color,
-        validSteps,
-      ),
+      ...getHomePathCoordinate(color, validSteps),
     };
   }
 
@@ -347,8 +303,7 @@ function getPawnPosition(color, totalSteps) {
     coordinate: null,
     globalPathIndex: null,
     homePathIndex: null,
-    relativePathPosition:
-      FINISHED_STEP,
+    relativePathPosition: FINISHED_STEP,
     isSafe: true,
   };
 }
@@ -358,19 +313,12 @@ function getPawnPosition(color, totalSteps) {
  *
  * Exact roll ছাড়া pawn finish করতে পারবে না।
  */
-function calculatePawnDestination(
-  color,
-  currentTotalSteps,
-  diceValue,
-) {
-  const normalizedColor =
-    normalizePlayerColor(color);
+function calculatePawnDestination(color, currentTotalSteps, diceValue) {
+  const normalizedColor = normalizePlayerColor(color);
 
-  const validCurrentSteps =
-    Number(currentTotalSteps);
+  const validCurrentSteps = Number(currentTotalSteps);
 
-  const validDiceValue =
-    Number(diceValue);
+  const validDiceValue = Number(diceValue);
 
   if (!normalizedColor) {
     return null;
@@ -392,8 +340,7 @@ function calculatePawnDestination(
     return null;
   }
 
-  const destinationSteps =
-    validCurrentSteps + validDiceValue;
+  const destinationSteps = validCurrentSteps + validDiceValue;
 
   /*
    * Finish-এর প্রয়োজনের চেয়ে বেশি roll হলে
@@ -403,10 +350,7 @@ function calculatePawnDestination(
     return null;
   }
 
-  return getPawnPosition(
-    normalizedColor,
-    destinationSteps,
-  );
+  return getPawnPosition(normalizedColor, destinationSteps);
 }
 
 module.exports = {
@@ -417,6 +361,7 @@ module.exports = {
   PLAYER_COLORS,
 
   MAIN_PATH_LENGTH,
+  MAIN_ROUTE_LENGTH,
   HOME_PATH_LENGTH,
   LAST_MAIN_STEP,
   FIRST_HOME_STEP,
