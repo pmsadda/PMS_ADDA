@@ -3214,16 +3214,16 @@ input {
    * Bottom human player footer-এর সম্পূর্ণ উপরে।
    */
   #playerSeat1 {
-    top: auto !important;
-    right: auto !important;
-    bottom: 28% !important;
-    left: 50% !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: 8% !important;
+  left: 50% !important;
 
-    z-index: 100 !important;
+  z-index: 100 !important;
 
-    transform:
-      translateX(-50%) !important;
-  }
+  transform:
+    translateX(-50%) !important;
+}
 
   /*
    * নিজের বড় cards profile-এর উপরে।
@@ -3291,5 +3291,249 @@ input {
    */
   .round-status {
     display: none !important;
+  }
+}
+
+/* =========================================================
+   POKER MATCHMAKING + WINNER OVERLAY — FINAL RESPONSIVE
+========================================================= */
+
+/*
+ * Overlay দেখানোর সময় stage footer এবং
+ * অন্য সব UI element-এর উপরে থাকবে।
+ */
+.poker-stage:has(
+  .matchmaking-overlay:not([hidden])
+),
+.poker-stage:has(
+  .winner-overlay:not([hidden])
+) {
+  z-index: 1200 !important;
+}
+
+/*
+ * সম্পূর্ণ viewport cover করবে।
+ */
+.matchmaking-overlay,
+.winner-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+
+  z-index: 1300 !important;
+
+  display: grid;
+  place-items: center;
+
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+
+  padding: 12px;
+
+  overflow: auto;
+
+  background:
+    rgba(0, 7, 6, 0.82);
+
+  backdrop-filter:
+    blur(9px);
+}
+
+.matchmaking-overlay[hidden],
+.winner-overlay[hidden] {
+  display: none !important;
+}
+
+/*
+ * Desktop এবং mobile—দুই জায়গায় card
+ * viewport-এর বাইরে যাবে না।
+ */
+.matchmaking-card,
+.winner-card {
+  width:
+    min(
+      90vw,
+      390px
+    ) !important;
+
+  max-width: 100%;
+
+  max-height:
+    calc(
+      100dvh - 24px
+    );
+
+  padding: 22px !important;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  border-radius: 20px !important;
+
+  text-align: center;
+}
+
+/* =========================================================
+   MOBILE LANDSCAPE OVERLAYS
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 430px) {
+
+  .matchmaking-overlay,
+  .winner-overlay {
+    padding: 6px !important;
+  }
+
+  .matchmaking-card,
+  .winner-card {
+    width:
+      min(
+        78vw,
+        350px
+      ) !important;
+
+    max-height:
+      calc(
+        100dvh - 12px
+      ) !important;
+
+    padding:
+      10px
+      18px !important;
+
+    border-radius:
+      16px !important;
+  }
+
+  /* Matchmaking animation compact */
+  .search-loader {
+    height: 22px !important;
+
+    margin: 0 auto 3px;
+
+    gap: 6px;
+  }
+
+  .search-loader span {
+    width: 8px;
+    height: 8px;
+  }
+
+  .matchmaking-card h2,
+  .winner-card h2 {
+    margin-top: 3px !important;
+
+    font-size: 18px !important;
+    line-height: 1.1;
+  }
+
+  .matchmaking-card p,
+  .winner-card p {
+    margin-top: 4px !important;
+
+    font-size: 11px !important;
+    line-height: 1.25;
+  }
+
+  #matchmakingTimer {
+    width: 46px !important;
+    height: 46px !important;
+
+    margin:
+      7px
+      auto
+      4px !important;
+
+    font-size: 19px !important;
+
+    border-width:
+      3px !important;
+  }
+
+  .player-count {
+    gap: 4px;
+
+    font-size: 12px;
+  }
+
+  /* Winner content compact */
+  .winner-crown {
+    font-size: 30px !important;
+    line-height: 1;
+  }
+
+  .winner-card > span {
+    margin-top: 3px !important;
+
+    font-size: 9px !important;
+  }
+
+  #winnerAmount {
+    margin:
+      6px
+      0
+      8px !important;
+
+    font-size: 22px !important;
+    line-height: 1;
+  }
+
+  #continueButton {
+    min-height: 36px !important;
+
+    padding:
+      6px
+      18px !important;
+
+    font-size: 12px;
+
+    border-radius: 11px;
+  }
+}
+
+/* Very short landscape phone */
+@media (orientation: landscape) and (max-height: 360px) {
+
+  .matchmaking-card,
+  .winner-card {
+    width:
+      min(
+        74vw,
+        325px
+      ) !important;
+
+    padding:
+      8px
+      15px !important;
+  }
+
+  .winner-crown {
+    font-size: 26px !important;
+  }
+
+  .matchmaking-card h2,
+  .winner-card h2 {
+    font-size: 16px !important;
+  }
+
+  #matchmakingTimer {
+    width: 40px !important;
+    height: 40px !important;
+
+    margin:
+      5px
+      auto
+      3px !important;
+
+    font-size: 17px !important;
+  }
+
+  #winnerAmount {
+    margin:
+      4px
+      0
+      6px !important;
+
+    font-size: 19px !important;
   }
 }
