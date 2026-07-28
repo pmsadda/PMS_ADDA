@@ -743,7 +743,12 @@
     /*
      * Table-এ শুধু active এবং winner player দেখা যাবে।
      */
-    const isVisibleTablePlayer = ["active", "winner"].includes(playerStatus);
+    const isVisibleTablePlayer = [
+      "active",
+      "winner",
+      "packed",
+      "timeout",
+    ].includes(playerStatus);
 
     if (seat.root) {
       seat.root.classList.add("occupied");
@@ -756,7 +761,7 @@
 
       seat.root.classList.toggle(
         "is-packed",
-        ["packed", "timeout", "left"].includes(playerStatus),
+        ["packed", "timeout",].includes(playerStatus),
       );
 
       seat.root.classList.toggle("is-winner", playerStatus === "winner");

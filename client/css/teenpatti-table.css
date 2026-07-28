@@ -3412,3 +3412,21 @@ strong {
     opacity 180ms ease,
     visibility 180ms ease;
 }
+
+/* Packed player visible but faded */
+
+.tp-player.is-packed,
+.player.is-packed {
+  opacity: 0.42 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+
+  filter:
+    grayscale(0.55)
+    saturate(0.65);
+}
+
+.tp-player.is-packed .cards,
+.player.is-packed .cards {
+  opacity: 0.55;
+}
