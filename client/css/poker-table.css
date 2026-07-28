@@ -2601,13 +2601,13 @@ input {
    * পুরোনো CSS table-কে উপরে তুলছিল।
    * এখন table নিচের দিকে থাকবে।
    */
-  .poker-table {
-    width: var(--table-width) !important;
-    min-width: 0 !important;
+ .poker-table {
+  width: var(--table-width) !important;
+  min-width: 0 !important;
 
-    transform:
-      translateY(10%) !important;
-  }
+  transform:
+    translateY(0) !important;
+}
 
   .table-light {
     width: 76vw;
@@ -2835,16 +2835,16 @@ input {
    * Human player নিচের মাঝখানে।
    */
   #playerSeat1 {
-    top: auto !important;
-    right: auto !important;
-    bottom: 1% !important;
-    left: 50% !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: 16% !important;
+  left: 50% !important;
 
-    z-index: 90 !important;
+  z-index: 90 !important;
 
-    transform:
-      translateX(-50%) !important;
-  }
+  transform:
+    translateX(-50%) !important;
+}
 
   /*
    * Side players table-এর দুই পাশে।
@@ -3090,10 +3090,10 @@ input {
     --table-width: min(68vw, 610px);
   }
 
-  .poker-table {
-    transform:
-      translateY(8%) !important;
-  }
+ .poker-table {
+  transform:
+    translateY(0) !important;
+}
 
   .poker-quick-controls {
     top: 5px;
