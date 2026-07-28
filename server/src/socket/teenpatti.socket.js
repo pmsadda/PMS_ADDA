@@ -979,12 +979,35 @@ function initializeTeenPattiSocket(io) {
 
         await emitPublicAction(namespace, tableId, "hand:action", {
           tableId,
+
           userId: socket.user.id,
+
           action,
+
           contributionAmount: result?.contributionAmount || result?.amount || 0,
+
           potAmount: result?.potAmount || null,
+
+          potLimit: result?.potLimit || null,
+
           currentBet: result?.currentBet || null,
         });
+
+        /*
+         * Pot limit পৌঁছালে service winner settlement
+         * complete করে result পাঠাবে।
+         */
+        if (result?.handCompleted === true && result?.settlement) {
+          await emitPublicAction(namespace, tableId, "hand:completed", {
+            tableId,
+
+            reason: "pot_limit",
+
+            potLimit: result.potLimit || null,
+
+            settlement: result.settlement,
+          });
+        }
 
         await broadcastAllStates(namespace, tableId);
         await synchronizeTableRuntime(namespace, tableId);
@@ -1138,26 +1161,35 @@ function initializeTeenPattiSocket(io) {
           socket.user.id,
         );
 
-        await emitPublicAction(namespace, tableId, "side-show:requested", {
-          tableId,
-          requestId:
-            result?.requestId ||
-            result?.sideShowRequestId ||
-            result?.request?.id ||
-            null,
+        if (result?.handCompleted === true && result?.settlement) {
+          /*
+           * Side Show contribution-এ pot limit পৌঁছেছে।
+           * Pending request না পাঠিয়ে winner event পাঠানো হবে।
+           */
+          await emitPublicAction(namespace, tableId, "hand:completed", {
+            tableId,
 
-          requesterHandPlayerId:
-            result?.requesterHandPlayerId ||
-            result?.request?.requesterHandPlayerId ||
-            null,
+            reason: "pot_limit",
 
-          targetHandPlayerId:
-            result?.targetHandPlayerId ||
-            result?.request?.targetHandPlayerId ||
-            null,
+            potLimit: result.potLimit || null,
 
-          expiresAt: result?.expiresAt || result?.request?.expiresAt || null,
-        });
+            settlement: result.settlement,
+          });
+        } else {
+          const sideShow = result?.sideShow || result || {};
+
+          await emitPublicAction(namespace, tableId, "side-show:requested", {
+            tableId,
+
+            requestId: sideShow.sideShowRequestId || sideShow.requestId || null,
+
+            requesterHandPlayerId: sideShow.requesterHandPlayerId || null,
+
+            targetHandPlayerId: sideShow.targetHandPlayerId || null,
+
+            expiresAt: sideShow.expiresAt || null,
+          });
+        }
 
         await broadcastAllStates(namespace, tableId);
         await synchronizeTableRuntime(namespace, tableId);
@@ -1165,7 +1197,10 @@ function initializeTeenPattiSocket(io) {
         if (typeof callback === "function") {
           callback({
             success: true,
-            message: "Side Show request sent successfully.",
+            message:
+              result?.handCompleted === true
+                ? "Pot limit reached. Showdown completed."
+                : "Side Show request sent successfully.",
             data: result,
           });
         }

@@ -649,3 +649,30 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Teen Patti room pot limit */
+
+.tp-pot-limit-stat {
+  grid-column: 1 / -1;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-color: rgba(255, 215, 106, 0.2);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 215, 106, 0.1),
+      rgba(0, 0, 0, 0.16)
+    );
+}
+
+.tp-pot-limit-stat span {
+  margin-bottom: 0;
+}
+
+.tp-pot-limit-stat strong {
+  color: var(--tp-gold);
+}

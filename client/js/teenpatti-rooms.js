@@ -11,23 +11,16 @@ document.addEventListener("DOMContentLoaded", () => {
      Configuration
   ========================================== */
 
-  const API_BASE_URL =
-    APP_CONFIG.API_URL;
+  const API_BASE_URL = APP_CONFIG.API_URL;
 
   const API_TIMEOUT_MS = 15000;
 
-  const ROOM_AMOUNTS = Object.freeze([
-    5,
-    10,
-    20,
-    30,
-    50,
-    100,
-    200,
-    500,
-    1000,
-  ]);
+  const ROOM_AMOUNTS = Object.freeze([5, 10, 20, 30, 50, 100, 200, 500, 1000]);
+  const POT_LIMIT_MULTIPLIER = 120;
 
+  function getPotLimit(bootAmount) {
+    return bootAmount * POT_LIMIT_MULTIPLIER;
+  }
   /* ==========================================
      DOM Elements
   ========================================== */
@@ -39,22 +32,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     backBtn: document.getElementById("backBtn"),
 
-    refreshBalanceBtn:
-      document.getElementById("refreshBalanceBtn"),
+    refreshBalanceBtn: document.getElementById("refreshBalanceBtn"),
 
-    loaderOverlay:
-      document.getElementById("loaderOverlay"),
+    loaderOverlay: document.getElementById("loaderOverlay"),
 
-    loaderMessage:
-      document.getElementById("loaderMessage"),
+    loaderMessage: document.getElementById("loaderMessage"),
 
     toast: document.getElementById("toast"),
 
-    toastMessage:
-      document.getElementById("toastMessage"),
+    toastMessage: document.getElementById("toastMessage"),
 
-    toastIcon:
-      document.getElementById("toastIcon"),
+    toastIcon: document.getElementById("toastIcon"),
   };
 
   /* ==========================================
@@ -96,10 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function saveCurrentUser(user) {
-    localStorage.setItem(
-      "current_user",
-      JSON.stringify(user),
-    );
+    localStorage.setItem("current_user", JSON.stringify(user));
   }
 
   function clearGameStorage() {
@@ -164,8 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================== */
 
   function updateBalanceUI() {
-    elements.walletBalance.textContent =
-      formatMoney(getWalletBalance());
+    elements.walletBalance.textContent = formatMoney(getWalletBalance());
   }
 
   function showLoader(message = "Please wait...") {
@@ -173,50 +157,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     elements.loaderOverlay.classList.add("is-visible");
 
-    elements.loaderOverlay.setAttribute(
-      "aria-hidden",
-      "false",
-    );
+    elements.loaderOverlay.setAttribute("aria-hidden", "false");
   }
 
   function hideLoader() {
     elements.loaderOverlay.classList.remove("is-visible");
 
-    elements.loaderOverlay.setAttribute(
-      "aria-hidden",
-      "true",
-    );
+    elements.loaderOverlay.setAttribute("aria-hidden", "true");
   }
 
-  function showToast(
-    message,
-    type = "info",
-  ) {
+  function showToast(message, type = "info") {
     if (state.toastTimer) {
       window.clearTimeout(state.toastTimer);
     }
 
-    elements.toast.classList.remove(
-      "is-error",
-      "is-success",
-      "is-visible",
-    );
+    elements.toast.classList.remove("is-error", "is-success", "is-visible");
 
     elements.toastMessage.textContent = message;
 
     if (type === "error") {
       elements.toast.classList.add("is-error");
 
-      elements.toastIcon.className =
-        "fa-solid fa-circle-exclamation";
+      elements.toastIcon.className = "fa-solid fa-circle-exclamation";
     } else if (type === "success") {
       elements.toast.classList.add("is-success");
 
-      elements.toastIcon.className =
-        "fa-solid fa-circle-check";
+      elements.toastIcon.className = "fa-solid fa-circle-check";
     } else {
-      elements.toastIcon.className =
-        "fa-solid fa-circle-info";
+      elements.toastIcon.className = "fa-solid fa-circle-info";
     }
 
     window.requestAnimationFrame(() => {
@@ -231,20 +199,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function setRefreshLoading(isLoading) {
     elements.refreshBalanceBtn.disabled = isLoading;
 
-    elements.refreshBalanceBtn.classList.toggle(
-      "is-loading",
-      isLoading,
-    );
+    elements.refreshBalanceBtn.classList.toggle("is-loading", isLoading);
   }
 
   /* ==========================================
      API Helper
   ========================================== */
 
-  async function apiRequest(
-    endpoint,
-    options = {},
-  ) {
+  async function apiRequest(endpoint, options = {}) {
     const controller = new AbortController();
 
     const timeoutId = window.setTimeout(() => {
@@ -254,28 +216,25 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const token = getAccessToken();
 
-      const response = await fetch(
-        `${API_BASE_URL}${endpoint}`,
-        {
-          ...options,
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
 
-          headers: {
-            Accept: "application/json",
+        headers: {
+          Accept: "application/json",
 
-            ...(options.body
-              ? {
-                  "Content-Type": "application/json",
-                }
-              : {}),
+          ...(options.body
+            ? {
+                "Content-Type": "application/json",
+              }
+            : {}),
 
-            Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
 
-            ...(options.headers || {}),
-          },
-
-          signal: controller.signal,
+          ...(options.headers || {}),
         },
-      );
+
+        signal: controller.signal,
+      });
 
       let result = null;
 
@@ -292,10 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!response.ok) {
-        const message =
-          result?.message ||
-          result?.error ||
-          "Request failed";
+        const message = result?.message || result?.error || "Request failed";
 
         const requestError = new Error(message);
 
@@ -307,9 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return result;
     } catch (error) {
       if (error.name === "AbortError") {
-        throw new Error(
-          "Server response timeout. Please try again.",
-        );
+        throw new Error("Server response timeout. Please try again.");
       }
 
       throw error;
@@ -327,8 +281,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const chaalAmount = blindAmount * 2;
 
-    const hasEnoughBalance =
-      getWalletBalance() >= bootAmount;
+    const potLimit = getPotLimit(bootAmount);
+
+    const hasEnoughBalance = getWalletBalance() >= bootAmount;
 
     const card = document.createElement("article");
 
@@ -386,6 +341,15 @@ document.addEventListener("DOMContentLoaded", () => {
           </strong>
 
         </div>
+        <div class="tp-room-stat tp-pot-limit-stat">
+
+  <span>Pot Limit</span>
+
+  <strong>
+    ৳${potLimit.toLocaleString("en-BD")}
+  </strong>
+
+</div>
 
       </div>
 
@@ -406,9 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <i class="fa-solid fa-play"></i>
 
         <span>
-          ${hasEnoughBalance
-            ? "Play Now"
-            : "Low Balance"}
+          ${hasEnoughBalance ? "Play Now" : "Low Balance"}
         </span>
 
       </button>
@@ -421,9 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fragment = document.createDocumentFragment();
 
     ROOM_AMOUNTS.forEach((bootAmount) => {
-      fragment.appendChild(
-        createRoomCard(bootAmount),
-      );
+      fragment.appendChild(createRoomCard(bootAmount));
     });
 
     elements.roomGrid.replaceChildren(fragment);
@@ -433,9 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
      User Data
   ========================================== */
 
-  async function loadLatestUserData({
-    showFeedback = false,
-  } = {}) {
+  async function loadLatestUserData({ showFeedback = false } = {}) {
     setRefreshLoading(true);
 
     try {
@@ -444,9 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const user = result?.data?.user;
 
       if (!user) {
-        throw new Error(
-          "Unable to load account information",
-        );
+        throw new Error("Unable to load account information");
       }
 
       state.user = user;
@@ -458,23 +414,13 @@ document.addEventListener("DOMContentLoaded", () => {
       renderRooms();
 
       if (showFeedback) {
-        showToast(
-          "Balance updated successfully",
-          "success",
-        );
+        showToast("Balance updated successfully", "success");
       }
     } catch (error) {
-      console.error(
-        "Load user error:",
-        error,
-      );
+      console.error("Load user error:", error);
 
       if (showFeedback) {
-        showToast(
-          error.message ||
-            "Unable to update balance",
-          "error",
-        );
+        showToast(error.message || "Unable to update balance", "error");
       }
     } finally {
       setRefreshLoading(false);
@@ -497,13 +443,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       chaalAmount: bootAmount * 2,
 
+      potLimit: getPotLimit(bootAmount),
+
+
       selectedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(
-      "selected_teenpatti_room",
-      JSON.stringify(roomData),
-    );
+    localStorage.setItem("selected_teenpatti_room", JSON.stringify(roomData));
   }
 
   async function joinRoom(bootAmount) {
@@ -512,19 +458,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!validateBootAmount(bootAmount)) {
-      showToast(
-        "Invalid room selected",
-        "error",
-      );
+      showToast("Invalid room selected", "error");
 
       return;
     }
 
     if (getWalletBalance() < bootAmount) {
       showToast(
-        `Minimum ৳${bootAmount.toLocaleString(
-          "en-BD",
-        )} balance required`,
+        `Minimum ৳${bootAmount.toLocaleString("en-BD")} balance required`,
         "error",
       );
 
@@ -533,58 +474,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     state.isJoining = true;
 
-    showLoader(
-      `Joining ৳${bootAmount.toLocaleString(
-        "en-BD",
-      )} room...`,
-    );
+    showLoader(`Joining ৳${bootAmount.toLocaleString("en-BD")} room...`);
 
     try {
       clearGameStorage();
 
-      const result = await apiRequest(
-        "/teenpatti/matchmaking/join",
-        {
-          method: "POST",
+      const result = await apiRequest("/teenpatti/matchmaking/join", {
+        method: "POST",
 
-          body: JSON.stringify({
-            bootAmount,
-          }),
-        },
-      );
+        body: JSON.stringify({
+          bootAmount,
+        }),
+      });
 
       const tableData = result?.data;
 
       if (!tableData?.tableId) {
-        throw new Error(
-          "Invalid table information received",
-        );
+        throw new Error("Invalid table information received");
       }
 
       saveSelectedRoom(bootAmount);
 
-      localStorage.setItem(
-        "current_table",
-        JSON.stringify(tableData),
-      );
+      localStorage.setItem("current_table", JSON.stringify(tableData));
 
-      const tableId = encodeURIComponent(
-        tableData.tableId,
-      );
+      const tableId = encodeURIComponent(tableData.tableId);
 
-      window.location.href =
-        `teenpatti-table.html?tableId=${tableId}`;
+      window.location.href = `teenpatti-table.html?tableId=${tableId}`;
     } catch (error) {
-      console.error(
-        "Join room error:",
-        error,
-      );
+      console.error("Join room error:", error);
 
-      showToast(
-        error.message ||
-          "Unable to join the room",
-        "error",
-      );
+      showToast(error.message || "Unable to join the room", "error");
     } finally {
       state.isJoining = false;
 
@@ -597,61 +516,38 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================== */
 
   function handleRoomGridClick(event) {
-    const button = event.target.closest(
-      ".tp-join-button",
-    );
+    const button = event.target.closest(".tp-join-button");
 
-    if (
-      !button ||
-      button.disabled ||
-      state.isJoining
-    ) {
+    if (!button || button.disabled || state.isJoining) {
       return;
     }
 
-    const bootAmount = Number(
-      button.dataset.bootAmount,
-    );
+    const bootAmount = Number(button.dataset.bootAmount);
 
     joinRoom(bootAmount);
   }
 
-  elements.roomGrid.addEventListener(
-    "click",
-    handleRoomGridClick,
-  );
+  elements.roomGrid.addEventListener("click", handleRoomGridClick);
 
-  elements.backBtn.addEventListener(
-    "click",
-    () => {
-      if (state.isJoining) {
-        return;
-      }
+  elements.backBtn.addEventListener("click", () => {
+    if (state.isJoining) {
+      return;
+    }
 
+    window.location.href = "lobby.html";
+  });
+
+  elements.refreshBalanceBtn.addEventListener("click", () => {
+    loadLatestUserData({
+      showFeedback: true,
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !state.isJoining) {
       window.location.href = "lobby.html";
-    },
-  );
-
-  elements.refreshBalanceBtn.addEventListener(
-    "click",
-    () => {
-      loadLatestUserData({
-        showFeedback: true,
-      });
-    },
-  );
-
-  document.addEventListener(
-    "keydown",
-    (event) => {
-      if (
-        event.key === "Escape" &&
-        !state.isJoining
-      ) {
-        window.location.href = "lobby.html";
-      }
-    },
-  );
+    }
+  });
 
   /* ==========================================
      Initialize
@@ -670,9 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadLatestUserData();
 
-    console.log(
-      "PMS ADDA Teen Patti Rooms initialized",
-    );
+    console.log("PMS ADDA Teen Patti Rooms initialized");
   }
 
   initialize();

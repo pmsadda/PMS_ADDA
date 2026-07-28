@@ -27,6 +27,7 @@ const NEXT_HAND_DELAY_MS = 4000;
 
 const MATCHMAKING_SECONDS = 20;
 const MAX_BLIND_TURNS = 3;
+const POT_LIMIT_MULTIPLIER = 120;
 
 const DEFAULT_SERVICE_CHARGE_PERCENT = 5;
 
@@ -123,6 +124,41 @@ function parseMoney(value, fallback = 0) {
   }
 
   return Number(parsed.toFixed(2));
+}
+
+function getTeenPattiPotLimit(bootAmount) {
+  const validBootAmount = parseMoney(bootAmount);
+
+  return parseMoney(validBootAmount * POT_LIMIT_MULTIPLIER);
+}
+
+function getPotLimitedContribution(hand, requestedAmount) {
+  const currentPot = parseMoney(hand?.pot_amount ?? hand?.potAmount ?? 0);
+
+  const potLimit = getTeenPattiPotLimit(
+    hand?.boot_amount ?? hand?.bootAmount ?? 0,
+  );
+
+  const remainingPot = parseMoney(Math.max(0, potLimit - currentPot));
+
+  const validRequestedAmount = parseMoney(requestedAmount);
+
+  const contributionAmount = parseMoney(
+    Math.min(validRequestedAmount, remainingPot),
+  );
+
+  return {
+    currentPot,
+    potLimit,
+    remainingPot,
+    requestedAmount: validRequestedAmount,
+    contributionAmount,
+
+    reachesPotLimit:
+      potLimit > 0 &&
+      contributionAmount > 0 &&
+      parseMoney(currentPot + contributionAmount) >= potLimit,
+  };
 }
 
 function calculatePercentage(amount, percentage) {
@@ -1207,6 +1243,8 @@ async function buildTableState(connection, tableId) {
       potAmount: parseMoney(table.pot_amount),
 
       bootAmount: parseMoney(table.boot_amount),
+
+      potLimit: getTeenPattiPotLimit(table.boot_amount),
 
       serviceChargePercent: parseMoney(
         table.service_charge,
@@ -2874,6 +2912,8 @@ async function getTeenPattiHandState(tableId, requestingUserId) {
 
         bootAmount: parseMoney(hand.boot_amount),
 
+        potLimit: getTeenPattiPotLimit(hand.boot_amount),
+
         currentBet: parseMoney(hand.current_bet),
 
         potAmount: parseMoney(hand.pot_amount),
@@ -3618,6 +3658,31 @@ async function performTeenPattiBetAction(
       normalizedAction,
     );
 
+    /*
+     * Requested bet-এর কারণে pot limit পার হলে
+     * শুধু pot-এর remaining amount নেওয়া হবে।
+     */
+    const potRule = getPotLimitedContribution(
+      hand,
+      betAction.contributionAmount,
+    );
+
+    assertCondition(
+      potRule.potLimit > 0,
+      "Teen Patti pot limit is invalid.",
+      500,
+      "INVALID_POT_LIMIT",
+    );
+
+    assertCondition(
+      potRule.contributionAmount > 0,
+      "Teen Patti pot limit has already been reached.",
+      409,
+      "POT_LIMIT_REACHED",
+    );
+
+    betAction.contributionAmount = potRule.contributionAmount;
+
     const balanceBefore = parseMoney(actingPlayer.endingBalance);
 
     const balanceAfter = await debitTeenPattiActionAmount(connection, {
@@ -3862,6 +3927,22 @@ async function performTeenPattiBetAction(
       [potAfter, validTableId],
     );
 
+    /*
+     * Pot limit পৌঁছালে active player-দের cards
+     * compare করে সঙ্গে সঙ্গে winner নির্ধারণ হবে।
+     */
+    let settlement = null;
+
+    if (potRule.reachesPotLimit) {
+      settlement = await settleTeenPattiHandWithinTransaction(
+        connection,
+        validTableId,
+        {
+          reason: "showdown",
+        },
+      );
+    }
+
     return {
       handId: Number(hand.id),
 
@@ -3885,12 +3966,20 @@ async function performTeenPattiBetAction(
 
       potAfter,
 
-      nextTurnHandPlayerId: nextPlayer.handPlayerId,
+      potLimit: potRule.potLimit,
 
-      nextTurnSeatNo: nextPlayer.seatNo,
+      handCompleted: settlement !== null,
 
-      actionStartedAt,
-      actionExpiresAt,
+      nextTurnHandPlayerId:
+        settlement === null ? nextPlayer.handPlayerId : null,
+
+      nextTurnSeatNo: settlement === null ? nextPlayer.seatNo : null,
+
+      actionStartedAt: settlement === null ? actionStartedAt : null,
+
+      actionExpiresAt: settlement === null ? actionExpiresAt : null,
+
+      settlement,
     };
   });
 
@@ -3908,6 +3997,12 @@ async function performTeenPattiBetAction(
     potAmount: actionResult.potAfter,
 
     currentBet: actionResult.currentBetAfter,
+
+    potLimit: actionResult.potLimit,
+
+    handCompleted: actionResult.handCompleted === true,
+
+    settlement: actionResult.settlement || null,
 
     handState,
   };
@@ -4816,16 +4911,20 @@ async function packTeenPattiHand(tableId, requestingUserId, options = {}) {
       packedStatus,
       isAutomatic,
 
-      handCompleted: false,
+      potLimit: potRule.potLimit,
 
-      nextTurnHandPlayerId: nextPlayer.handPlayerId,
+      handCompleted: settlement !== null,
 
-      nextTurnSeatNo: nextPlayer.seatNo,
+      nextTurnHandPlayerId:
+        settlement === null ? nextPlayer.handPlayerId : null,
 
-      actionStartedAt,
-      actionExpiresAt,
+      nextTurnSeatNo: settlement === null ? nextPlayer.seatNo : null,
 
-      settlement: null,
+      actionStartedAt: settlement === null ? actionStartedAt : null,
+
+      actionExpiresAt: settlement === null ? actionExpiresAt : null,
+
+      settlement,
     };
   });
 
@@ -4958,7 +5057,15 @@ async function showTeenPattiHand(tableId, requestingUserId) {
 
     const currentTableBet = parseMoney(hand.current_bet);
 
-    const showAmount = parseMoney(currentTableBet * 2);
+    const requestedShowAmount = parseMoney(currentTableBet * 2);
+
+    const potRule = getPotLimitedContribution(hand, requestedShowAmount);
+
+    /*
+     * Show amount pot limit পার করলে শুধু
+     * remaining pot amount নেওয়া হবে।
+     */
+    const showAmount = potRule.contributionAmount;
 
     assertCondition(
       showAmount > 0,
@@ -5073,7 +5180,7 @@ async function showTeenPattiHand(tableId, requestingUserId) {
         actingPlayer.handPlayerId,
         nextSequence,
 
-        showAmount,
+        requestedShowAmount,
         showAmount,
 
         balanceBefore,
@@ -5143,6 +5250,8 @@ async function showTeenPattiHand(tableId, requestingUserId) {
       balanceAfter,
 
       potAfter,
+
+      potLimit: potRule.potLimit,
 
       handCompleted: true,
 
@@ -6127,6 +6236,31 @@ async function performTeenPattiBotAction(
       "INVALID_BOT_ACTION",
     );
 
+    /*
+     * Bot-এর action pot limit পার করলে শুধু
+     * remaining pot amount debit হবে।
+     */
+    const potRule = getPotLimitedContribution(
+      hand,
+      decision.contributionAmount,
+    );
+
+    assertCondition(
+      potRule.potLimit > 0,
+      "Teen Patti pot limit is invalid.",
+      500,
+      "INVALID_POT_LIMIT",
+    );
+
+    assertCondition(
+      potRule.contributionAmount > 0,
+      "Teen Patti pot limit has already been reached.",
+      409,
+      "POT_LIMIT_REACHED",
+    );
+
+    decision.contributionAmount = potRule.contributionAmount;
+
     const balanceBefore = parseMoney(bot.endingBalance);
 
     const balanceAfter = await debitTeenPattiActionAmount(connection, {
@@ -6313,16 +6447,32 @@ async function performTeenPattiBotAction(
 
     await connection.query(
       `
-        UPDATE game_tables
+    UPDATE game_tables
 
-        SET
-          pot_amount = ?
+    SET
+      pot_amount = ?
 
-        WHERE id = ?
-          AND game_status = 'playing'
-        `,
+    WHERE id = ?
+      AND game_status = 'playing'
+  `,
       [potAfter, validTableId],
     );
+
+    /*
+     * Bot-এর contribution-এ pot limit পৌঁছালে
+     * automatic showdown এবং settlement হবে।
+     */
+    let settlement = null;
+
+    if (potRule.reachesPotLimit) {
+      settlement = await settleTeenPattiHandWithinTransaction(
+        connection,
+        validTableId,
+        {
+          reason: "showdown",
+        },
+      );
+    }
 
     return {
       ignored: false,
