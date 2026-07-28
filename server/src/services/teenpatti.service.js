@@ -2199,9 +2199,23 @@ async function startTeenPattiHand(tableId, requestingUserId) {
       DEFAULT_SERVICE_CHARGE_PERCENT,
     );
 
-    const actionStartedAt = new Date();
+    /*
+     * সব player-এর তিনটি করে card distribution হতে
+     * মোট কত সময় লাগবে।
+     */
+    const totalDistributionCards = members.length * 3;
 
-    const actionExpiresAt = createDateAfterSeconds(TURN_SECONDS);
+    const cardDistributionDurationMs =
+      Math.max(0, totalDistributionCards - 1) * 520 + 650;
+
+    /*
+     * Card distribution শেষ হওয়ার পরে প্রথম turn শুরু হবে।
+     */
+    const actionStartedAt = new Date(Date.now() + cardDistributionDurationMs);
+
+    const actionExpiresAt = new Date(
+      actionStartedAt.getTime() + TURN_SECONDS * 1000,
+    );
 
     const [handInsertResult] = await connection.query(
       `
@@ -3475,11 +3489,9 @@ async function performTeenPattiBetAction(
   requestingUserId,
   requestedAction,
 ) {
-  const validTableId =
-    parsePositiveInteger(tableId);
+  const validTableId = parsePositiveInteger(tableId);
 
-  const validUserId =
-    parsePositiveInteger(requestingUserId);
+  const validUserId = parsePositiveInteger(requestingUserId);
 
   assertCondition(
     validTableId !== null,
@@ -3495,215 +3507,163 @@ async function performTeenPattiBetAction(
     "INVALID_USER_ID",
   );
 
-  const normalizedAction = String(
-    requestedAction || "",
-  )
+  const normalizedAction = String(requestedAction || "")
     .trim()
     .toLowerCase();
 
   assertCondition(
-    [
-      ACTION_TYPE.BLIND,
-      ACTION_TYPE.CHAAL,
-      ACTION_TYPE.RAISE,
-    ].includes(normalizedAction),
+    [ACTION_TYPE.BLIND, ACTION_TYPE.CHAAL, ACTION_TYPE.RAISE].includes(
+      normalizedAction,
+    ),
     "Only Blind, Chaal or Raise is allowed.",
     400,
     "INVALID_BET_ACTION",
   );
 
-  const actionResult = await withTransaction(
-    async (connection) => {
-      const table = await getLockedTable(
-        connection,
-        validTableId,
-      );
+  const actionResult = await withTransaction(async (connection) => {
+    const table = await getLockedTable(connection, validTableId);
 
-      assertCondition(
-        table,
-        "Teen Patti table not found.",
-        404,
-        "TABLE_NOT_FOUND",
-      );
+    assertCondition(
+      table,
+      "Teen Patti table not found.",
+      404,
+      "TABLE_NOT_FOUND",
+    );
 
-      const hand = await getActiveHand(
-        connection,
-        validTableId,
-        {
-          lock: true,
-        },
-      );
+    const hand = await getActiveHand(connection, validTableId, {
+      lock: true,
+    });
 
-      assertCondition(
-        hand,
-        "No active Teen Patti hand was found.",
-        409,
-        "NO_ACTIVE_HAND",
-      );
+    assertCondition(
+      hand,
+      "No active Teen Patti hand was found.",
+      409,
+      "NO_ACTIVE_HAND",
+    );
 
-      assertCondition(
-        hand.hand_status === HAND_STATUS.PLAYING,
-        "Teen Patti hand is not accepting actions.",
-        409,
-        "HAND_NOT_PLAYING",
-      );
+    assertCondition(
+      hand.hand_status === HAND_STATUS.PLAYING,
+      "Teen Patti hand is not accepting actions.",
+      409,
+      "HAND_NOT_PLAYING",
+    );
 
-      const pendingSideShow =
-        await getPendingSideShow(
-          connection,
-          Number(hand.id),
-          {
-            lock: true,
-          },
-        );
+    const pendingSideShow = await getPendingSideShow(
+      connection,
+      Number(hand.id),
+      {
+        lock: true,
+      },
+    );
 
-      assertCondition(
-        !pendingSideShow,
-        "Please wait for the Side Show response.",
-        409,
-        "SIDE_SHOW_RESPONSE_PENDING",
-      );
+    assertCondition(
+      !pendingSideShow,
+      "Please wait for the Side Show response.",
+      409,
+      "SIDE_SHOW_RESPONSE_PENDING",
+    );
 
-      const activePlayers =
-        await getLockedActiveHandPlayers(
-          connection,
-          Number(hand.id),
-        );
+    const activePlayers = await getLockedActiveHandPlayers(
+      connection,
+      Number(hand.id),
+    );
 
-      assertCondition(
-        activePlayers.length >= 2,
-        "The hand does not have enough active players.",
-        409,
-        "NOT_ENOUGH_ACTIVE_PLAYERS",
-      );
+    assertCondition(
+      activePlayers.length >= 2,
+      "The hand does not have enough active players.",
+      409,
+      "NOT_ENOUGH_ACTIVE_PLAYERS",
+    );
 
-      const actingPlayer =
-        activePlayers.find(
-          (player) =>
-            player.playerType ===
-              PLAYER_TYPE.REAL &&
-            Number(player.userId) ===
-              validUserId,
-        );
+    const actingPlayer = activePlayers.find(
+      (player) =>
+        player.playerType === PLAYER_TYPE.REAL &&
+        Number(player.userId) === validUserId,
+    );
 
-      assertCondition(
-        actingPlayer,
-        "You are not an active player of this hand.",
-        403,
-        "NOT_ACTIVE_HAND_PLAYER",
-      );
+    assertCondition(
+      actingPlayer,
+      "You are not an active player of this hand.",
+      403,
+      "NOT_ACTIVE_HAND_PLAYER",
+    );
 
-      assertCondition(
-        Number(
-          hand.current_turn_hand_player_id,
-        ) ===
-          Number(
+    assertCondition(
+      Number(hand.current_turn_hand_player_id) ===
+        Number(actingPlayer.handPlayerId),
+      "It is not your turn.",
+      409,
+      "NOT_YOUR_TURN",
+    );
+
+    const blindTurnsBefore =
+      actingPlayer.isSeen === true
+        ? 0
+        : await getBlindTurnCount(
+            connection,
+            Number(hand.id),
             actingPlayer.handPlayerId,
-          ),
-        "It is not your turn.",
-        409,
-        "NOT_YOUR_TURN",
-      );
+          );
 
-      const blindTurnsBefore =
-        actingPlayer.isSeen === true
-          ? 0
-          : await getBlindTurnCount(
-              connection,
-              Number(hand.id),
-              actingPlayer.handPlayerId,
-            );
+    assertCondition(
+      actingPlayer.isSeen === true || blindTurnsBefore < MAX_BLIND_TURNS,
+      "Maximum 3 Blind turns completed. Cards are now Seen.",
+      409,
+      "MAX_BLIND_TURNS_COMPLETED",
+    );
 
-      assertCondition(
-        actingPlayer.isSeen === true ||
-          blindTurnsBefore <
-            MAX_BLIND_TURNS,
-        "Maximum 3 Blind turns completed. Cards are now Seen.",
-        409,
-        "MAX_BLIND_TURNS_COMPLETED",
-      );
+    const betAction = calculateTeenPattiBetAction(
+      hand,
+      actingPlayer,
+      normalizedAction,
+    );
 
-      const betAction =
-        calculateTeenPattiBetAction(
-          hand,
-          actingPlayer,
-          normalizedAction,
-        );
+    const balanceBefore = parseMoney(actingPlayer.endingBalance);
 
-      const balanceBefore = parseMoney(
-        actingPlayer.endingBalance,
-      );
+    const balanceAfter = await debitTeenPattiActionAmount(connection, {
+      playerType: actingPlayer.playerType,
 
-      const balanceAfter =
-        await debitTeenPattiActionAmount(
-          connection,
-          {
-            playerType:
-              actingPlayer.playerType,
+      userId: actingPlayer.userId,
 
-            userId:
-              actingPlayer.userId,
+      botId: actingPlayer.botId,
 
-            botId:
-              actingPlayer.botId,
+      amount: betAction.contributionAmount,
 
-            amount:
-              betAction.contributionAmount,
+      balanceBefore,
 
-            balanceBefore,
+      tableId: validTableId,
 
-            tableId: validTableId,
+      handId: Number(hand.id),
 
-            handId: Number(hand.id),
+      roundNumber: Number(hand.round_number),
 
-            roundNumber: Number(
-              hand.round_number,
-            ),
+      actionType: betAction.actionType,
+    });
 
-            actionType:
-              betAction.actionType,
-          },
-        );
+    const potAfter = parseMoney(
+      parseMoney(hand.pot_amount) + betAction.contributionAmount,
+    );
 
-      const potAfter = parseMoney(
-        parseMoney(hand.pot_amount) +
-          betAction.contributionAmount,
-      );
+    const totalContributionAfter = parseMoney(
+      parseMoney(actingPlayer.totalContribution) + betAction.contributionAmount,
+    );
 
-      const totalContributionAfter =
-        parseMoney(
-          parseMoney(
-            actingPlayer.totalContribution,
-          ) +
-            betAction.contributionAmount,
-        );
+    const isBlindTurn =
+      actingPlayer.isSeen !== true &&
+      [ACTION_TYPE.BLIND, ACTION_TYPE.RAISE].includes(betAction.actionType);
 
-      const isBlindTurn =
-        actingPlayer.isSeen !== true &&
-        [
-          ACTION_TYPE.BLIND,
-          ACTION_TYPE.RAISE,
-        ].includes(
-          betAction.actionType,
-        );
+    const blindTurnsAfter = isBlindTurn
+      ? blindTurnsBefore + 1
+      : blindTurnsBefore;
 
-      const blindTurnsAfter =
-        isBlindTurn
-          ? blindTurnsBefore + 1
-          : blindTurnsBefore;
+    const autoSeenAfterAction =
+      isBlindTurn && blindTurnsAfter >= MAX_BLIND_TURNS;
 
-      const autoSeenAfterAction =
-        isBlindTurn &&
-        blindTurnsAfter >=
-          MAX_BLIND_TURNS;
+    const playerSeenAfterAction =
+      actingPlayer.isSeen === true || autoSeenAfterAction;
 
-      const playerSeenAfterAction =
-        actingPlayer.isSeen === true ||
-        autoSeenAfterAction;
-
-      const [handPlayerUpdateResult] =
-        await connection.query(
-          `
+    const [handPlayerUpdateResult] = await connection.query(
+      `
             UPDATE teen_patti_hand_players
 
             SET
@@ -3717,36 +3677,32 @@ async function performTeenPattiBetAction(
               AND hand_id = ?
               AND player_status = 'active'
           `,
-          [
-            playerSeenAfterAction
-              ? 1
-              : 0,
+      [
+        playerSeenAfterAction ? 1 : 0,
 
-            balanceAfter,
+        balanceAfter,
 
-            betAction.contributionAmount,
+        betAction.contributionAmount,
 
-            totalContributionAfter,
+        totalContributionAfter,
 
-            betAction.actionType,
+        betAction.actionType,
 
-            actingPlayer.handPlayerId,
+        actingPlayer.handPlayerId,
 
-            hand.id,
-          ],
-        );
+        hand.id,
+      ],
+    );
 
-      assertCondition(
-        handPlayerUpdateResult.affectedRows ===
-          1,
-        "Teen Patti player state update failed.",
-        500,
-        "HAND_PLAYER_UPDATE_FAILED",
-      );
+    assertCondition(
+      handPlayerUpdateResult.affectedRows === 1,
+      "Teen Patti player state update failed.",
+      500,
+      "HAND_PLAYER_UPDATE_FAILED",
+    );
 
-      const [tablePlayerUpdateResult] =
-        await connection.query(
-          `
+    const [tablePlayerUpdateResult] = await connection.query(
+      `
             UPDATE table_players
 
             SET
@@ -3758,37 +3714,33 @@ async function performTeenPattiBetAction(
               AND user_id = ?
               AND is_active = 1
           `,
-          [
-            betAction.contributionAmount,
+      [
+        betAction.contributionAmount,
 
-            playerSeenAfterAction
-              ? 1
-              : 0,
+        playerSeenAfterAction ? 1 : 0,
 
-            actingPlayer.tablePlayerId,
+        actingPlayer.tablePlayerId,
 
-            validTableId,
+        validTableId,
 
-            validUserId,
-          ],
-        );
+        validUserId,
+      ],
+    );
 
-      assertCondition(
-        tablePlayerUpdateResult.affectedRows ===
-          1,
-        "Teen Patti table player update failed.",
-        500,
-        "TABLE_PLAYER_UPDATE_FAILED",
-      );
+    assertCondition(
+      tablePlayerUpdateResult.affectedRows === 1,
+      "Teen Patti table player update failed.",
+      500,
+      "TABLE_PLAYER_UPDATE_FAILED",
+    );
 
-      const nextSequence =
-        await getNextActionSequence(
-          connection,
-          Number(hand.id),
-        );
+    const nextSequence = await getNextActionSequence(
+      connection,
+      Number(hand.id),
+    );
 
-      await connection.query(
-        `
+    await connection.query(
+      `
           INSERT INTO teen_patti_hand_actions (
             hand_id,
             hand_player_id,
@@ -3816,65 +3768,51 @@ async function performTeenPattiBetAction(
             0
           )
         `,
-        [
-          hand.id,
+      [
+        hand.id,
 
-          actingPlayer.handPlayerId,
+        actingPlayer.handPlayerId,
 
-          nextSequence,
+        nextSequence,
 
-          betAction.actionType,
+        betAction.actionType,
 
-          betAction.requestedAmount,
+        betAction.requestedAmount,
 
-          betAction.contributionAmount,
+        betAction.contributionAmount,
 
-          balanceBefore,
+        balanceBefore,
 
-          balanceAfter,
+        balanceAfter,
 
-          betAction.currentBetAfter,
+        betAction.currentBetAfter,
 
-          potAfter,
-        ],
-      );
+        potAfter,
+      ],
+    );
 
-      const nextPlayer =
-        findNextActiveMember(
-          activePlayers,
-          actingPlayer.seatNo,
-        );
+    const nextPlayer = findNextActiveMember(activePlayers, actingPlayer.seatNo);
 
-      assertCondition(
-        nextPlayer,
-        "Next active Teen Patti player was not found.",
-        500,
-        "NEXT_PLAYER_NOT_FOUND",
-      );
+    assertCondition(
+      nextPlayer,
+      "Next active Teen Patti player was not found.",
+      500,
+      "NEXT_PLAYER_NOT_FOUND",
+    );
 
-      assertCondition(
-        Number(
-          nextPlayer.handPlayerId,
-        ) !==
-          Number(
-            actingPlayer.handPlayerId,
-          ),
-        "Teen Patti turn could not move to the next player.",
-        500,
-        "TURN_DID_NOT_ADVANCE",
-      );
+    assertCondition(
+      Number(nextPlayer.handPlayerId) !== Number(actingPlayer.handPlayerId),
+      "Teen Patti turn could not move to the next player.",
+      500,
+      "TURN_DID_NOT_ADVANCE",
+    );
 
-      const actionStartedAt =
-        new Date();
+    const actionStartedAt = new Date();
 
-      const actionExpiresAt =
-        createDateAfterSeconds(
-          TURN_SECONDS,
-        );
+    const actionExpiresAt = createDateAfterSeconds(TURN_SECONDS);
 
-      const [turnUpdateResult] =
-        await connection.query(
-          `
+    const [turnUpdateResult] = await connection.query(
+      `
             UPDATE teen_patti_hands
 
             SET
@@ -3889,31 +3827,30 @@ async function performTeenPattiBetAction(
             WHERE id = ?
               AND hand_status = 'playing'
           `,
-          [
-            nextPlayer.handPlayerId,
+      [
+        nextPlayer.handPlayerId,
 
-            betAction.currentBetAfter,
+        betAction.currentBetAfter,
 
-            potAfter,
+        potAfter,
 
-            actionStartedAt,
+        actionStartedAt,
 
-            actionExpiresAt,
+        actionExpiresAt,
 
-            hand.id,
-          ],
-        );
+        hand.id,
+      ],
+    );
 
-      assertCondition(
-        turnUpdateResult.affectedRows ===
-          1,
-        "Teen Patti turn update failed.",
-        500,
-        "TURN_UPDATE_FAILED",
-      );
+    assertCondition(
+      turnUpdateResult.affectedRows === 1,
+      "Teen Patti turn update failed.",
+      500,
+      "TURN_UPDATE_FAILED",
+    );
 
-      await connection.query(
-        `
+    await connection.query(
+      `
           UPDATE game_tables
 
           SET
@@ -3922,76 +3859,55 @@ async function performTeenPattiBetAction(
           WHERE id = ?
             AND game_status = 'playing'
         `,
-        [
-          potAfter,
-          validTableId,
-        ],
-      );
-
-      return {
-        handId:
-          Number(hand.id),
-
-        handPlayerId:
-          actingPlayer.handPlayerId,
-
-        actionType:
-          betAction.actionType,
-
-        contributionAmount:
-          betAction.contributionAmount,
-
-        balanceBefore,
-        balanceAfter,
-
-        blindTurnsBefore,
-        blindTurnsAfter,
-
-        autoSeen:
-          autoSeenAfterAction,
-
-        playerIsSeen:
-          playerSeenAfterAction,
-
-        currentBetAfter:
-          betAction.currentBetAfter,
-
-        potAfter,
-
-        nextTurnHandPlayerId:
-          nextPlayer.handPlayerId,
-
-        nextTurnSeatNo:
-          nextPlayer.seatNo,
-
-        actionStartedAt,
-        actionExpiresAt,
-      };
-    },
-  );
-
-  const handState =
-    await getTeenPattiHandState(
-      validTableId,
-      validUserId,
+      [potAfter, validTableId],
     );
+
+    return {
+      handId: Number(hand.id),
+
+      handPlayerId: actingPlayer.handPlayerId,
+
+      actionType: betAction.actionType,
+
+      contributionAmount: betAction.contributionAmount,
+
+      balanceBefore,
+      balanceAfter,
+
+      blindTurnsBefore,
+      blindTurnsAfter,
+
+      autoSeen: autoSeenAfterAction,
+
+      playerIsSeen: playerSeenAfterAction,
+
+      currentBetAfter: betAction.currentBetAfter,
+
+      potAfter,
+
+      nextTurnHandPlayerId: nextPlayer.handPlayerId,
+
+      nextTurnSeatNo: nextPlayer.seatNo,
+
+      actionStartedAt,
+      actionExpiresAt,
+    };
+  });
+
+  const handState = await getTeenPattiHandState(validTableId, validUserId);
 
   return {
     success: true,
 
-    message:
-      `Teen Patti ${actionResult.actionType} successful.`,
+    message: `Teen Patti ${actionResult.actionType} successful.`,
 
     action: actionResult,
 
-    contributionAmount:
-      actionResult.contributionAmount,
+    contributionAmount: actionResult.contributionAmount,
 
-    potAmount:
-      actionResult.potAfter,
+    potAmount: actionResult.potAfter,
 
-    currentBet:
-      actionResult.currentBetAfter,
+    currentBet: actionResult.currentBetAfter,
 
     handState,
   };
@@ -4637,15 +4553,10 @@ async function settleTeenPattiHandWithinTransaction(
    PACK ACTION
 ========================================================= */
 
-async function packTeenPattiHand(
-  tableId,
-  requestingUserId,
-  options = {},
-) {
+async function packTeenPattiHand(tableId, requestingUserId, options = {}) {
   const validTableId = parsePositiveInteger(tableId);
 
-  const validUserId =
-    parsePositiveInteger(requestingUserId);
+  const validUserId = parsePositiveInteger(requestingUserId);
 
   assertCondition(
     validTableId !== null,
@@ -4661,105 +4572,92 @@ async function packTeenPattiHand(
     "INVALID_USER_ID",
   );
 
-  const isAutomatic =
-    options.isAutomatic === true;
+  const isAutomatic = options.isAutomatic === true;
 
-  const actionResult = await withTransaction(
-    async (connection) => {
-      const table = await getLockedTable(
-        connection,
-        validTableId,
-      );
+  const actionResult = await withTransaction(async (connection) => {
+    const table = await getLockedTable(connection, validTableId);
 
-      assertCondition(
-        table,
-        "Teen Patti table not found.",
-        404,
-        "TABLE_NOT_FOUND",
-      );
+    assertCondition(
+      table,
+      "Teen Patti table not found.",
+      404,
+      "TABLE_NOT_FOUND",
+    );
 
-      const hand = await getActiveHand(
-        connection,
-        validTableId,
-        {
-          lock: true,
-        },
-      );
+    const hand = await getActiveHand(connection, validTableId, {
+      lock: true,
+    });
 
-      assertCondition(
-        hand,
-        "No active Teen Patti hand was found.",
-        409,
-        "NO_ACTIVE_HAND",
-      );
+    assertCondition(
+      hand,
+      "No active Teen Patti hand was found.",
+      409,
+      "NO_ACTIVE_HAND",
+    );
 
-      assertCondition(
-        hand.hand_status === HAND_STATUS.PLAYING,
-        "Teen Patti hand is not accepting Pack.",
-        409,
-        "HAND_NOT_PLAYING",
-      );
+    assertCondition(
+      hand.hand_status === HAND_STATUS.PLAYING,
+      "Teen Patti hand is not accepting Pack.",
+      409,
+      "HAND_NOT_PLAYING",
+    );
 
-      const pendingSideShow =
-        await getPendingSideShow(
-          connection,
-          Number(hand.id),
-          {
-            lock: true,
-          },
-        );
+    const pendingSideShow = await getPendingSideShow(
+      connection,
+      Number(hand.id),
+      {
+        lock: true,
+      },
+    );
 
-      assertCondition(
-        !pendingSideShow,
-        "Please wait for the Side Show response.",
-        409,
-        "SIDE_SHOW_RESPONSE_PENDING",
-      );
+    assertCondition(
+      !pendingSideShow,
+      "Please wait for the Side Show response.",
+      409,
+      "SIDE_SHOW_RESPONSE_PENDING",
+    );
 
-      const activePlayers =
-        await getLockedActiveHandPlayers(
-          connection,
-          Number(hand.id),
-        );
+    const activePlayers = await getLockedActiveHandPlayers(
+      connection,
+      Number(hand.id),
+    );
 
-      assertCondition(
-        activePlayers.length >= 2,
-        "The hand does not have enough active players.",
-        409,
-        "NOT_ENOUGH_ACTIVE_PLAYERS",
-      );
+    assertCondition(
+      activePlayers.length >= 2,
+      "The hand does not have enough active players.",
+      409,
+      "NOT_ENOUGH_ACTIVE_PLAYERS",
+    );
 
-      const actingPlayer = activePlayers.find(
-        (player) =>
-          player.playerType === PLAYER_TYPE.REAL &&
-          Number(player.userId) === validUserId,
-      );
+    const actingPlayer = activePlayers.find(
+      (player) =>
+        player.playerType === PLAYER_TYPE.REAL &&
+        Number(player.userId) === validUserId,
+    );
 
-      assertCondition(
-        actingPlayer,
-        "You are not an active player of this hand.",
-        403,
-        "NOT_ACTIVE_HAND_PLAYER",
-      );
+    assertCondition(
+      actingPlayer,
+      "You are not an active player of this hand.",
+      403,
+      "NOT_ACTIVE_HAND_PLAYER",
+    );
 
-      assertCondition(
-        Number(hand.current_turn_hand_player_id) ===
-          Number(actingPlayer.handPlayerId),
-        "It is not your turn.",
-        409,
-        "NOT_YOUR_TURN",
-      );
+    assertCondition(
+      Number(hand.current_turn_hand_player_id) ===
+        Number(actingPlayer.handPlayerId),
+      "It is not your turn.",
+      409,
+      "NOT_YOUR_TURN",
+    );
 
-      const actionType = isAutomatic
-        ? ACTION_TYPE.TIMEOUT
-        : ACTION_TYPE.PACK;
+    const actionType = isAutomatic ? ACTION_TYPE.TIMEOUT : ACTION_TYPE.PACK;
 
-      const packedStatus = isAutomatic
-        ? PLAYER_STATUS.TIMEOUT
-        : PLAYER_STATUS.PACKED;
+    const packedStatus = isAutomatic
+      ? PLAYER_STATUS.TIMEOUT
+      : PLAYER_STATUS.PACKED;
 
-      await connection.query(
-        `
+    await connection.query(
+      `
           UPDATE teen_patti_hand_players
 
           SET
@@ -4770,16 +4668,11 @@ async function packTeenPattiHand(
             AND hand_id = ?
             AND player_status = 'active'
         `,
-        [
-          packedStatus,
-          actionType,
-          actingPlayer.handPlayerId,
-          hand.id,
-        ],
-      );
+      [packedStatus, actionType, actingPlayer.handPlayerId, hand.id],
+    );
 
-      await connection.query(
-        `
+    await connection.query(
+      `
           UPDATE table_players
 
           SET
@@ -4790,21 +4683,16 @@ async function packTeenPattiHand(
             AND table_id = ?
             AND user_id = ?
         `,
-        [
-          actingPlayer.tablePlayerId,
-          validTableId,
-          validUserId,
-        ],
-      );
+      [actingPlayer.tablePlayerId, validTableId, validUserId],
+    );
 
-      const nextSequence =
-        await getNextActionSequence(
-          connection,
-          Number(hand.id),
-        );
+    const nextSequence = await getNextActionSequence(
+      connection,
+      Number(hand.id),
+    );
 
-      await connection.query(
-        `
+    await connection.query(
+      `
           INSERT INTO teen_patti_hand_actions (
             hand_id,
             hand_player_id,
@@ -4832,78 +4720,72 @@ async function packTeenPattiHand(
             ?
           )
         `,
-        [
-          hand.id,
-          actingPlayer.handPlayerId,
-          nextSequence,
-          actionType,
+      [
+        hand.id,
+        actingPlayer.handPlayerId,
+        nextSequence,
+        actionType,
 
-          actingPlayer.endingBalance,
-          actingPlayer.endingBalance,
+        actingPlayer.endingBalance,
+        actingPlayer.endingBalance,
 
-          parseMoney(hand.current_bet),
-          parseMoney(hand.pot_amount),
+        parseMoney(hand.current_bet),
+        parseMoney(hand.pot_amount),
 
-          isAutomatic ? 1 : 0,
-        ],
+        isAutomatic ? 1 : 0,
+      ],
+    );
+
+    const remainingPlayers = activePlayers.filter(
+      (player) =>
+        Number(player.handPlayerId) !== Number(actingPlayer.handPlayerId),
+    );
+
+    if (remainingPlayers.length === 1) {
+      const settlement = await settleTeenPattiHandWithinTransaction(
+        connection,
+        validTableId,
+        {
+          reason: "last_player",
+        },
       );
 
-      const remainingPlayers =
-        activePlayers.filter(
-          (player) =>
-            Number(player.handPlayerId) !==
-            Number(actingPlayer.handPlayerId),
-        );
+      return {
+        handId: Number(hand.id),
 
-      if (remainingPlayers.length === 1) {
-        const settlement =
-          await settleTeenPattiHandWithinTransaction(
-            connection,
-            validTableId,
-            {
-              reason: "last_player",
-            },
-          );
+        handPlayerId: actingPlayer.handPlayerId,
 
-        return {
-          handId: Number(hand.id),
+        actionType,
+        packedStatus,
+        isAutomatic,
 
-          handPlayerId:
-            actingPlayer.handPlayerId,
+        handCompleted: true,
 
-          actionType,
-          packedStatus,
-          isAutomatic,
+        nextTurnHandPlayerId: null,
+        nextTurnSeatNo: null,
 
-          handCompleted: true,
+        settlement,
+      };
+    }
 
-          nextTurnHandPlayerId: null,
-          nextTurnSeatNo: null,
+    const nextPlayer = findNextActiveMember(
+      remainingPlayers,
+      actingPlayer.seatNo,
+    );
 
-          settlement,
-        };
-      }
+    assertCondition(
+      nextPlayer,
+      "Next active Teen Patti player was not found.",
+      500,
+      "NEXT_PLAYER_NOT_FOUND",
+    );
 
-      const nextPlayer = findNextActiveMember(
-        remainingPlayers,
-        actingPlayer.seatNo,
-      );
+    const actionStartedAt = new Date();
 
-      assertCondition(
-        nextPlayer,
-        "Next active Teen Patti player was not found.",
-        500,
-        "NEXT_PLAYER_NOT_FOUND",
-      );
+    const actionExpiresAt = createDateAfterSeconds(TURN_SECONDS);
 
-      const actionStartedAt = new Date();
-
-      const actionExpiresAt =
-        createDateAfterSeconds(TURN_SECONDS);
-
-      const [turnUpdateResult] =
-        await connection.query(
-          `
+    const [turnUpdateResult] = await connection.query(
+      `
             UPDATE teen_patti_hands
 
             SET
@@ -4915,52 +4797,39 @@ async function packTeenPattiHand(
             WHERE id = ?
               AND hand_status = 'playing'
           `,
-          [
-            nextPlayer.handPlayerId,
-            actionStartedAt,
-            actionExpiresAt,
-            hand.id,
-          ],
-        );
-
-      assertCondition(
-        turnUpdateResult.affectedRows === 1,
-        "Teen Patti turn update failed.",
-        500,
-        "TURN_UPDATE_FAILED",
-      );
-
-      return {
-        handId: Number(hand.id),
-
-        handPlayerId:
-          actingPlayer.handPlayerId,
-
-        actionType,
-        packedStatus,
-        isAutomatic,
-
-        handCompleted: false,
-
-        nextTurnHandPlayerId:
-          nextPlayer.handPlayerId,
-
-        nextTurnSeatNo:
-          nextPlayer.seatNo,
-
-        actionStartedAt,
-        actionExpiresAt,
-
-        settlement: null,
-      };
-    },
-  );
-
-  const handState =
-    await getTeenPattiHandState(
-      validTableId,
-      validUserId,
+      [nextPlayer.handPlayerId, actionStartedAt, actionExpiresAt, hand.id],
     );
+
+    assertCondition(
+      turnUpdateResult.affectedRows === 1,
+      "Teen Patti turn update failed.",
+      500,
+      "TURN_UPDATE_FAILED",
+    );
+
+    return {
+      handId: Number(hand.id),
+
+      handPlayerId: actingPlayer.handPlayerId,
+
+      actionType,
+      packedStatus,
+      isAutomatic,
+
+      handCompleted: false,
+
+      nextTurnHandPlayerId: nextPlayer.handPlayerId,
+
+      nextTurnSeatNo: nextPlayer.seatNo,
+
+      actionStartedAt,
+      actionExpiresAt,
+
+      settlement: null,
+    };
+  });
+
+  const handState = await getTeenPattiHandState(validTableId, validUserId);
 
   return {
     success: true,

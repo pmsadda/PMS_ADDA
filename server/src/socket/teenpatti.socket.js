@@ -327,11 +327,7 @@ function emitPublicAction(namespace, tableId, eventName, payload) {
   namespace.to(getTableRoomName(tableId)).emit(eventName, payload);
 }
 
-async function scheduleTeenPattiMatchmaking(
-  namespace,
-  tableId,
-  tableState,
-) {
+async function scheduleTeenPattiMatchmaking(namespace, tableId, tableState) {
   const matchmaking = tableState?.matchmaking;
 
   if (!matchmaking?.isWaiting) {
@@ -346,99 +342,82 @@ async function scheduleTeenPattiMatchmaking(
   const remainingMilliseconds =
     getRemainingMilliseconds(matchmaking.expiresAt, 0) + 50;
 
-  registerTimer(
-    matchmakingTimers,
-    tableId,
-    remainingMilliseconds,
-    async () => {
-      const completionResult =
-        await teenPattiService.completeTeenPattiMatchmaking(tableId);
+  registerTimer(matchmakingTimers, tableId, remainingMilliseconds, async () => {
+    const completionResult =
+      await teenPattiService.completeTeenPattiMatchmaking(tableId);
 
-      /*
-       * Deadline এখনো শেষ না হলে service যে remaining time
-       * দিয়েছে, সেই অনুযায়ী আবার timer schedule হবে।
-       */
-      if (completionResult?.completed !== true) {
-        const refreshedTableState =
-          await teenPattiService.getTableState(tableId);
+    /*
+     * Deadline এখনো শেষ না হলে service যে remaining time
+     * দিয়েছে, সেই অনুযায়ী আবার timer schedule হবে।
+     */
+    if (completionResult?.completed !== true) {
+      const refreshedTableState = await teenPattiService.getTableState(tableId);
 
-        await broadcastTableState(namespace, tableId);
+      await broadcastTableState(namespace, tableId);
 
-        await scheduleTeenPattiMatchmaking(
-          namespace,
-          tableId,
-          refreshedTableState,
-        );
-
-        return;
-      }
-
-      emitPublicAction(
+      await scheduleTeenPattiMatchmaking(
         namespace,
         tableId,
-        "matchmaking:completed",
-        {
-          tableId,
-          completed: true,
-          botJoined: completionResult?.botJoined === true,
-          joinedBot: completionResult?.joinedBot || null,
-          tableState: completionResult?.tableState || null,
-        },
+        refreshedTableState,
       );
 
-      await broadcastAllStates(namespace, tableId);
+      return;
+    }
 
+    emitPublicAction(namespace, tableId, "matchmaking:completed", {
+      tableId,
+      completed: true,
+      botJoined: completionResult?.botJoined === true,
+      joinedBot: completionResult?.joinedBot || null,
+      tableState: completionResult?.tableState || null,
+    });
+
+    await broadcastAllStates(namespace, tableId);
+
+    /*
+     * Hand start করার জন্য table room-এর একজন
+     * authenticated real user ব্যবহার হবে।
+     */
+    const requestingUserId = await getConnectedTableUserId(namespace, tableId);
+
+    if (!requestingUserId) {
       /*
-       * Hand start করার জন্য table room-এর একজন
-       * authenticated real user ব্যবহার হবে।
+       * সবাই disconnect থাকলে matchmaking DB-তে completed থাকবে।
+       * পরের reconnect-এর সময় synchronizeTableRuntime hand শুরু করবে।
        */
-      const requestingUserId =
-        await getConnectedTableUserId(namespace, tableId);
+      return;
+    }
 
-      if (!requestingUserId) {
-        /*
-         * সবাই disconnect থাকলে matchmaking DB-তে completed থাকবে।
-         * পরের reconnect-এর সময় synchronizeTableRuntime hand শুরু করবে।
-         */
-        return;
+    let startedHand = null;
+
+    try {
+      startedHand = await teenPattiService.startTeenPattiHand(
+        tableId,
+        requestingUserId,
+      );
+    } catch (error) {
+      if (
+        error.code !== "HAND_ALREADY_RUNNING" &&
+        Number(error.statusCode || error.status) !== 409
+      ) {
+        throw error;
       }
+    }
 
-      let startedHand = null;
+    if (startedHand) {
+      emitPublicAction(namespace, tableId, "hand:started", {
+        tableId,
+        handId: startedHand?.handId || startedHand?.hand?.id || null,
+        roundNumber:
+          startedHand?.roundNumber || startedHand?.hand?.roundNumber || null,
+        message: "Teen Patti hand started automatically.",
+      });
+    }
 
-      try {
-        startedHand = await teenPattiService.startTeenPattiHand(
-          tableId,
-          requestingUserId,
-        );
-      } catch (error) {
-        if (
-          error.code !== "HAND_ALREADY_RUNNING" &&
-          Number(error.statusCode || error.status) !== 409
-        ) {
-          throw error;
-        }
-      }
+    await broadcastAllStates(namespace, tableId);
 
-      if (startedHand) {
-        emitPublicAction(namespace, tableId, "hand:started", {
-          tableId,
-          handId:
-            startedHand?.handId ||
-            startedHand?.hand?.id ||
-            null,
-          roundNumber:
-            startedHand?.roundNumber ||
-            startedHand?.hand?.roundNumber ||
-            null,
-          message: "Teen Patti hand started automatically.",
-        });
-      }
-
-      await broadcastAllStates(namespace, tableId);
-
-      await synchronizeTableRuntime(namespace, tableId);
-    },
-  );
+    await synchronizeTableRuntime(namespace, tableId);
+  });
 
   return {
     scheduled: true,
@@ -453,11 +432,7 @@ async function synchronizeTableRuntime(namespace, tableId) {
   const tableState = await teenPattiService.getTableState(tableId);
 
   if (tableState?.matchmaking?.isWaiting === true) {
-    return scheduleTeenPattiMatchmaking(
-      namespace,
-      tableId,
-      tableState,
-    );
+    return scheduleTeenPattiMatchmaking(namespace, tableId, tableState);
   }
 
   clearTimerFromMap(matchmakingTimers, tableId);
@@ -479,9 +454,7 @@ async function synchronizeTableRuntime(namespace, tableId) {
    * ==========================================
    */
   if (hand.status === "completed" && hand.settlementCompleted === true) {
-
     registerTimer(nextHandTimers, tableId, NEXT_HAND_DELAY_MS, async () => {
-
       const result = await teenPattiService.prepareNextTeenPattiHand(
         tableId,
         hand.handId,
@@ -593,7 +566,19 @@ async function synchronizeTableRuntime(namespace, tableId) {
    * ==========================================
    */
   if (currentPlayer.isBot === true) {
-    registerTimer(botTimers, tableId, 1200, async () => {
+    /*
+     * প্রথম turn-এর actionStartedAt card distribution
+     * শেষ হওয়ার সময় সেট করা হয়েছে।
+     */
+    const botTurnStartDelay = getRemainingMilliseconds(hand.actionStartedAt, 0);
+
+    /*
+     * Distribution শেষ হওয়ার ১.২ সেকেন্ড পরে
+     * bot তার action নেবে।
+     */
+    const botActionDelay = botTurnStartDelay + 1200;
+
+    registerTimer(botTimers, tableId, botActionDelay, async () => {
       const result = await teenPattiService.performTeenPattiBotAction(
         tableId,
         hand.handId,
@@ -700,12 +685,11 @@ function initializeTeenPattiSocket(io) {
           socket.user.id,
         );
 
-                /*
+        /*
          * Player ২০ সেকেন্ডের মধ্যে reconnect করলে
          * pending disconnect-forfeit timer বন্ধ হবে।
          */
-        const disconnectTimerKey =
-          `${tableId}:${socket.user.id}`;
+        const disconnectTimerKey = `${tableId}:${socket.user.id}`;
 
         const existingDisconnectTimer =
           disconnectTimers.get(disconnectTimerKey);
@@ -810,104 +794,99 @@ function initializeTeenPattiSocket(io) {
     ========================================================= */
 
     socket.on("hand:start", async (payload = {}, callback) => {
-  try {
-    const tableId = resolveSocketTableId(socket, payload);
+      try {
+        const tableId = resolveSocketTableId(socket, payload);
 
-    const tableState = await teenPattiService.getTableState(tableId);
+        const tableState = await teenPattiService.getTableState(tableId);
 
-    /*
-     * Matchmaking শেষ হওয়ার আগে hand শুরু করা যাবে না।
-     * Runtime timer চালু বা refresh করে waiting response পাঠাবে।
-     */
-    if (tableState?.matchmaking?.isWaiting === true) {
-      const scheduleResult = await scheduleTeenPattiMatchmaking(
-        namespace,
-        tableId,
-        tableState,
-      );
+        /*
+         * Matchmaking শেষ হওয়ার আগে hand শুরু করা যাবে না।
+         * Runtime timer চালু বা refresh করে waiting response পাঠাবে।
+         */
+        if (tableState?.matchmaking?.isWaiting === true) {
+          const scheduleResult = await scheduleTeenPattiMatchmaking(
+            namespace,
+            tableId,
+            tableState,
+          );
 
-      sendCallback(callback, {
-        success: true,
-        waiting: true,
-        matchmakingCompleted: false,
+          sendCallback(callback, {
+            success: true,
+            waiting: true,
+            matchmakingCompleted: false,
 
-        message: "Waiting for Teen Patti players.",
+            message: "Waiting for Teen Patti players.",
 
-        data: {
-          tableId,
-          matchmaking: tableState.matchmaking,
-          schedule: scheduleResult,
-        },
-      });
+            data: {
+              tableId,
+              matchmaking: tableState.matchmaking,
+              schedule: scheduleResult,
+            },
+          });
 
-      return;
-    }
+          return;
+        }
 
-    clearTimerFromMap(matchmakingTimers, tableId);
+        clearTimerFromMap(matchmakingTimers, tableId);
 
-    let result = null;
-    let alreadyRunning = false;
+        let result = null;
+        let alreadyRunning = false;
 
-    try {
-      result = await teenPattiService.startTeenPattiHand(
-        tableId,
-        socket.user.id,
-      );
-    } catch (error) {
-      /*
-       * শুধু running hand idempotent হিসেবে গ্রহণ করা হবে।
-       * অন্য 409 error আর লুকানো হবে না।
-       */
-      if (error.code === "HAND_ALREADY_RUNNING") {
-        alreadyRunning = true;
-      } else {
-        throw error;
+        try {
+          result = await teenPattiService.startTeenPattiHand(
+            tableId,
+            socket.user.id,
+          );
+        } catch (error) {
+          /*
+           * শুধু running hand idempotent হিসেবে গ্রহণ করা হবে।
+           * অন্য 409 error আর লুকানো হবে না।
+           */
+          if (error.code === "HAND_ALREADY_RUNNING") {
+            alreadyRunning = true;
+          } else {
+            throw error;
+          }
+        }
+
+        /*
+         * নতুন hand সত্যিই শুরু হলেই hand:started emit হবে।
+         */
+        if (result) {
+          emitPublicAction(namespace, tableId, "hand:started", {
+            tableId,
+
+            handId: result?.handId || result?.hand?.id || null,
+
+            roundNumber:
+              result?.roundNumber || result?.hand?.roundNumber || null,
+
+            message: "Teen Patti hand started successfully.",
+          });
+        }
+
+        await broadcastAllStates(namespace, tableId);
+
+        await synchronizeTableRuntime(namespace, tableId);
+
+        sendCallback(callback, {
+          success: true,
+          waiting: false,
+          matchmakingCompleted: true,
+          alreadyRunning,
+
+          message: result
+            ? "Teen Patti hand started successfully."
+            : "Teen Patti hand is already running.",
+
+          data: result,
+        });
+      } catch (error) {
+        console.error("TEEN PATTI START HAND ERROR:", error);
+
+        emitSocketError(socket, error, callback);
       }
-    }
-
-    /*
-     * নতুন hand সত্যিই শুরু হলেই hand:started emit হবে।
-     */
-    if (result) {
-      emitPublicAction(namespace, tableId, "hand:started", {
-        tableId,
-
-        handId:
-          result?.handId ||
-          result?.hand?.id ||
-          null,
-
-        roundNumber:
-          result?.roundNumber ||
-          result?.hand?.roundNumber ||
-          null,
-
-        message: "Teen Patti hand started successfully.",
-      });
-    }
-
-    await broadcastAllStates(namespace, tableId);
-
-    await synchronizeTableRuntime(namespace, tableId);
-
-    sendCallback(callback, {
-      success: true,
-      waiting: false,
-      matchmakingCompleted: true,
-      alreadyRunning,
-
-      message: result
-        ? "Teen Patti hand started successfully."
-        : "Teen Patti hand is already running.",
-
-      data: result,
     });
-  } catch (error) {
-    console.error("TEEN PATTI START HAND ERROR:", error);
-
-    emitSocketError(socket, error, callback);
-  }
-});
 
     /* =========================================================
        SEE PRIVATE CARDS
@@ -1089,7 +1068,7 @@ function initializeTeenPattiSocket(io) {
       }
     });
 
-        /* =========================================================
+    /* =========================================================
        SHOW — ONLY TWO ACTIVE PLAYERS
     ========================================================= */
 
@@ -1154,40 +1133,31 @@ function initializeTeenPattiSocket(io) {
       try {
         const tableId = resolveSocketTableId(socket, payload);
 
-        const result =
-          await teenPattiService.requestTeenPattiSideShow(
-            tableId,
-            socket.user.id,
-          );
-
-        await emitPublicAction(
-          namespace,
+        const result = await teenPattiService.requestTeenPattiSideShow(
           tableId,
-          "side-show:requested",
-          {
-            tableId,
-            requestId:
-              result?.requestId ||
-              result?.sideShowRequestId ||
-              result?.request?.id ||
-              null,
-
-            requesterHandPlayerId:
-              result?.requesterHandPlayerId ||
-              result?.request?.requesterHandPlayerId ||
-              null,
-
-            targetHandPlayerId:
-              result?.targetHandPlayerId ||
-              result?.request?.targetHandPlayerId ||
-              null,
-
-            expiresAt:
-              result?.expiresAt ||
-              result?.request?.expiresAt ||
-              null,
-          },
+          socket.user.id,
         );
+
+        await emitPublicAction(namespace, tableId, "side-show:requested", {
+          tableId,
+          requestId:
+            result?.requestId ||
+            result?.sideShowRequestId ||
+            result?.request?.id ||
+            null,
+
+          requesterHandPlayerId:
+            result?.requesterHandPlayerId ||
+            result?.request?.requesterHandPlayerId ||
+            null,
+
+          targetHandPlayerId:
+            result?.targetHandPlayerId ||
+            result?.request?.targetHandPlayerId ||
+            null,
+
+          expiresAt: result?.expiresAt || result?.request?.expiresAt || null,
+        });
 
         await broadcastAllStates(namespace, tableId);
         await synchronizeTableRuntime(namespace, tableId);
@@ -1238,9 +1208,7 @@ function initializeTeenPattiSocket(io) {
           throw invalidRequestError;
         }
 
-        const decision = String(
-          payload.decision || payload.response || "",
-        )
+        const decision = String(payload.decision || payload.response || "")
           .trim()
           .toLowerCase();
 
@@ -1255,42 +1223,29 @@ function initializeTeenPattiSocket(io) {
           throw invalidDecisionError;
         }
 
-        const result =
-          await teenPattiService.respondTeenPattiSideShow(
-            tableId,
-            socket.user.id,
-            requestId,
-            decision,
-          );
-
-        await emitPublicAction(
-          namespace,
+        const result = await teenPattiService.respondTeenPattiSideShow(
           tableId,
-          "side-show:responded",
-          {
-            tableId,
-            requestId,
-            decision,
-
-            packedHandPlayerId:
-              result?.packedHandPlayerId || null,
-
-            winnerHandPlayerId:
-              result?.winnerHandPlayerId || null,
-          },
+          socket.user.id,
+          requestId,
+          decision,
         );
 
+        await emitPublicAction(namespace, tableId, "side-show:responded", {
+          tableId,
+          requestId,
+          decision,
+
+          packedHandPlayerId: result?.packedHandPlayerId || null,
+
+          winnerHandPlayerId: result?.winnerHandPlayerId || null,
+        });
+
         if (result?.settlementCompleted || result?.handCompleted) {
-          await emitPublicAction(
-            namespace,
+          await emitPublicAction(namespace, tableId, "hand:completed", {
             tableId,
-            "hand:completed",
-            {
-              tableId,
-              reason: "side_show",
-              settlement: result?.settlement || result,
-            },
-          );
+            reason: "side_show",
+            settlement: result?.settlement || result,
+          });
         }
 
         await broadcastAllStates(namespace, tableId);
@@ -1313,8 +1268,7 @@ function initializeTeenPattiSocket(io) {
           success: false,
           statusCode: Number(error.statusCode || error.status) || 500,
           code: error.code || "SIDE_SHOW_RESPONSE_FAILED",
-          message:
-            error.message || "Failed to respond to Side Show request.",
+          message: error.message || "Failed to respond to Side Show request.",
         };
 
         if (typeof callback === "function") {
@@ -1377,7 +1331,7 @@ function initializeTeenPattiSocket(io) {
          DISCONNECT MARK
       ===================================================== */
 
-       /* =========================================================
+    /* =========================================================
        DISCONNECT + 20 SECOND RECONNECT GRACE
     ========================================================= */
 
@@ -1399,11 +1353,10 @@ function initializeTeenPattiSocket(io) {
       );
 
       try {
-        const result =
-          await teenPattiService.markTeenPattiDisconnected(
-            tableId,
-            userId,
-          );
+        const result = await teenPattiService.markTeenPattiDisconnected(
+          tableId,
+          userId,
+        );
 
         /*
          * Player ইতোমধ্যে explicit Exit করলে
@@ -1430,8 +1383,7 @@ function initializeTeenPattiSocket(io) {
         /*
          * একই user-এর আগের timer থাকলে বন্ধ করবে।
          */
-        const previousTimer =
-          disconnectTimers.get(disconnectTimerKey);
+        const previousTimer = disconnectTimers.get(disconnectTimerKey);
 
         if (previousTimer) {
           clearTimeout(previousTimer);
@@ -1459,17 +1411,13 @@ function initializeTeenPattiSocket(io) {
              * ভুল করে forfeit না করতে পারে।
              */
             const forfeitResult =
-              await teenPattiService
-                .forfeitDisconnectedTeenPattiPlayer(
-                  tableId,
-                  userId,
-                  disconnectedAt,
-                );
+              await teenPattiService.forfeitDisconnectedTeenPattiPlayer(
+                tableId,
+                userId,
+                disconnectedAt,
+              );
 
-            if (
-              forfeitResult?.skipped ||
-              forfeitResult?.reconnected
-            ) {
+            if (forfeitResult?.skipped || forfeitResult?.reconnected) {
               return;
             }
 
@@ -1488,18 +1436,11 @@ function initializeTeenPattiSocket(io) {
               forfeitResult?.settlementCompleted ||
               forfeitResult?.handCompleted
             ) {
-              await emitPublicAction(
-                namespace,
+              await emitPublicAction(namespace, tableId, "hand:completed", {
                 tableId,
-                "hand:completed",
-                {
-                  tableId,
-                  reason: "disconnect_forfeit",
-                  settlement:
-                    forfeitResult?.settlement ||
-                    forfeitResult,
-                },
-              );
+                reason: "disconnect_forfeit",
+                settlement: forfeitResult?.settlement || forfeitResult,
+              });
             }
 
             await broadcastAllStates(namespace, tableId);
@@ -1510,33 +1451,21 @@ function initializeTeenPattiSocket(io) {
              * reject করতে পারে—এটি server crash নয়।
              */
             if (
-              forfeitError.code ===
-                "PLAYER_ALREADY_RECONNECTED" ||
-              forfeitError.code ===
-                "STALE_DISCONNECT_FORFEIT"
+              forfeitError.code === "PLAYER_ALREADY_RECONNECTED" ||
+              forfeitError.code === "STALE_DISCONNECT_FORFEIT"
             ) {
               return;
             }
 
-            console.error(
-              "TEEN PATTI DISCONNECT FORFEIT ERROR:",
-              forfeitError,
-            );
+            console.error("TEEN PATTI DISCONNECT FORFEIT ERROR:", forfeitError);
           }
         }, graceSeconds * 1000);
 
-        disconnectTimers.set(
-          disconnectTimerKey,
-          disconnectTimer,
-        );
+        disconnectTimers.set(disconnectTimerKey, disconnectTimer);
       } catch (error) {
-        console.error(
-          "TEEN PATTI DISCONNECT HANDLER ERROR:",
-          error,
-        );
+        console.error("TEEN PATTI DISCONNECT HANDLER ERROR:", error);
       }
-       });
-
+    });
   }); // namespace connection বন্ধ
 
   console.log("✅ New Teen Patti Socket.IO initialized");

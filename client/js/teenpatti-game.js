@@ -65,6 +65,12 @@
     matchmaking: null,
 
     cardsRevealed: false,
+
+    cardDistributionActive: false,
+    cardDistributionProgress: new Map(),
+    cardDistributionRunId: 0,
+    cardDistributionEndTimeout: null,
+
     actionPending: false,
     leavingTable: false,
 
@@ -530,18 +536,33 @@
       Math.min(3, Number(cardCount) || safeCards.length || 0),
     );
 
+    const dealtCardCount =
+      STATE.cardDistributionActive === true
+        ? Math.max(
+            0,
+            Number(STATE.cardDistributionProgress.get(container) || 0),
+          )
+        : totalCards;
+
     for (let index = 0; index < totalCards; index += 1) {
       const card = safeCards[index];
 
       const canShowCard = Boolean(shouldReveal) && Boolean(card);
 
-      container.appendChild(
-        createCardImage(
-          canShowCard ? getCardAssetPath(card) : CARD_BACK_PATH,
+      const cardImage = createCardImage(
+        canShowCard ? getCardAssetPath(card) : CARD_BACK_PATH,
 
-          canShowCard ? `${card.rank}${card.suit}` : "Hidden card",
-        ),
+        canShowCard ? `${card.rank}${card.suit}` : "Hidden card",
       );
+
+      /*
+       * Distribution শেষ না হওয়া card hidden থাকবে।
+       */
+      if (index >= dealtCardCount) {
+        cardImage.classList.remove("card-arrived");
+      }
+
+      container.appendChild(cardImage);
     }
   }
 
@@ -842,18 +863,32 @@
   function renderTurnTimer() {
     clearTurnTimer();
 
-    const expiresAt = STATE.hand?.actionExpiresAt;
-
     const handPlaying = normalizeString(STATE.hand?.status) === "playing";
 
-    const updateTimer = () => {
-      const remainingMilliseconds = expiresAt
-        ? new Date(expiresAt).getTime() - Date.now()
-        : 0;
+    const actionExpiresAt = STATE.hand?.actionExpiresAt;
 
-      const remainingSeconds = handPlaying
-        ? Math.max(0, Math.ceil(remainingMilliseconds / 1000))
-        : 0;
+    const updateTimer = () => {
+      let remainingSeconds = 0;
+
+      /*
+       * Distribution চলাকালে timer শুধু 15 দেখাবে।
+       * Distribution-এর সময় timer-এর সঙ্গে যোগ হবে না।
+       */
+      if (handPlaying && STATE.cardDistributionActive === true) {
+        remainingSeconds = TURN_SECONDS;
+      } else if (handPlaying && actionExpiresAt) {
+        const expiryTimestamp = new Date(actionExpiresAt).getTime();
+
+        remainingSeconds = Number.isFinite(expiryTimestamp)
+          ? Math.max(
+              0,
+              Math.min(
+                TURN_SECONDS,
+                Math.ceil((expiryTimestamp - Date.now()) / 1000),
+              ),
+            )
+          : 0;
+      }
 
       if (DOM.turnTimer) {
         DOM.turnTimer.textContent = String(remainingSeconds);
@@ -868,15 +903,15 @@
         DOM.turnTimerProgress.style.width = `${percentage}%`;
       }
 
-      if (remainingSeconds <= 0) {
+      if (remainingSeconds <= 0 && STATE.cardDistributionActive !== true) {
         clearTurnTimer();
       }
     };
 
     updateTimer();
 
-    if (handPlaying && expiresAt) {
-      STATE.turnInterval = setInterval(updateTimer, 250);
+    if (handPlaying && actionExpiresAt) {
+      STATE.turnInterval = window.setInterval(updateTimer, 250);
     }
   }
 
@@ -910,6 +945,7 @@
     const controlsLocked =
       !STATE.socketConnected ||
       !STATE.socketJoined ||
+      STATE.cardDistributionActive ||
       !handPlaying ||
       !isActive ||
       !isMyTurn ||
@@ -922,7 +958,11 @@
 
     setButtonDisabled(
       DOM.seenButton,
-      !handPlaying || !isActive || playerIsSeen || STATE.actionPending,
+      STATE.cardDistributionActive ||
+        !handPlaying ||
+        !isActive ||
+        playerIsSeen ||
+        STATE.actionPending,
     );
 
     setButtonDisabled(DOM.betButton, controlsLocked);
@@ -1355,6 +1395,9 @@
 
       STATE.cardsRevealed = false;
 
+      STATE.cardDistributionActive = true;
+      STATE.cardDistributionProgress.clear();
+
       await requestLatestHandState();
 
       window.setTimeout(animateCardDistribution, 120);
@@ -1428,6 +1471,20 @@
       hideRoundCountdown();
 
       STATE.cardsRevealed = false;
+
+      /*
+       * New hand state আসার আগেই distribution mode
+       * চালু হবে। তাই তিনটি card আগে দেখা যাবে না।
+       */
+      if (payload?.handStarted === true) {
+        STATE.cardDistributionActive = true;
+
+        STATE.cardDistributionProgress.clear();
+
+        renderActionButtons();
+      } else {
+        STATE.cardDistributionActive = false;
+      }
 
       await requestLatestHandState();
     });
@@ -1886,75 +1943,205 @@
     return image;
   }
 
-  function animateSingleCard(targetElement, delay) {
-    window.setTimeout(() => {
-      const deckRectangle = DOM.deck?.getBoundingClientRect();
-
-      const targetRectangle = targetElement?.getBoundingClientRect();
-
-      if (!deckRectangle || !targetRectangle) {
-        return;
-      }
-
-      const startRectangle = {
-        left: deckRectangle.left + deckRectangle.width / 2,
-
-        top: deckRectangle.top + deckRectangle.height / 2,
-
-        width: Math.max(28, deckRectangle.width * 0.72),
-
-        height: Math.max(40, deckRectangle.height * 0.72),
-      };
-
-      const flyingCard = createFlyingImage(CARD_BACK_PATH, startRectangle);
-
-      playSound("cardDeal", 0.45);
-
-      requestAnimationFrame(() => {
-        flyingCard.style.left = `${
-          targetRectangle.left + targetRectangle.width / 2
-        }px`;
-
-        flyingCard.style.top = `${
-          targetRectangle.top + targetRectangle.height / 2
-        }px`;
-
-        flyingCard.style.transform =
-          "translate(-50%, -50%) scale(1) rotate(5deg)";
-      });
-
-      window.setTimeout(() => {
-        flyingCard.style.opacity = "0";
-
-        window.setTimeout(() => flyingCard.remove(), 130);
-      }, 380);
-    }, delay);
+  function waitForCardDistribution(milliseconds) {
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, milliseconds);
+    });
   }
 
-  function animateCardDistribution() {
-    const occupiedSeats = DOM.seats.filter((seat) =>
-      seat.root?.classList.contains("occupied"),
+  async function animateSingleCard(
+    targetContainer,
+    cardNumber,
+    distributionRunId,
+  ) {
+    if (
+      STATE.cardDistributionRunId !== distributionRunId ||
+      STATE.cardDistributionActive !== true
+    ) {
+      return false;
+    }
+
+    /*
+     * প্রতিবার latest card element নেওয়া হবে।
+     */
+    const targetCard = targetContainer?.children?.[cardNumber] || null;
+
+    const targetElement = targetCard || targetContainer;
+
+    const deckRectangle = DOM.deck?.getBoundingClientRect();
+
+    const targetRectangle = targetElement?.getBoundingClientRect();
+
+    if (
+      !deckRectangle ||
+      !targetRectangle ||
+      targetRectangle.width <= 0 ||
+      targetRectangle.height <= 0
+    ) {
+      return false;
+    }
+
+    const startRectangle = {
+      left: deckRectangle.left + deckRectangle.width / 2,
+
+      top: deckRectangle.top + deckRectangle.height / 2,
+
+      width: Math.max(28, deckRectangle.width * 0.72),
+
+      height: Math.max(40, deckRectangle.height * 0.72),
+    };
+
+    const flyingCard = createFlyingImage(CARD_BACK_PATH, startRectangle);
+
+    flyingCard.style.transition =
+      "left 450ms cubic-bezier(.2,.75,.25,1), " +
+      "top 450ms cubic-bezier(.2,.75,.25,1), " +
+      "transform 450ms ease, opacity 70ms ease";
+
+    playSound("cardDeal", 0.45);
+
+    /*
+     * Browser-কে starting position render করার সময় দেওয়া হবে।
+     */
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve);
+      });
+    });
+
+    if (STATE.cardDistributionRunId !== distributionRunId) {
+      flyingCard.remove();
+      return false;
+    }
+
+    flyingCard.style.left = `${
+      targetRectangle.left + targetRectangle.width / 2
+    }px`;
+
+    flyingCard.style.top = `${
+      targetRectangle.top + targetRectangle.height / 2
+    }px`;
+
+    flyingCard.style.transform = "translate(-50%, -50%) scale(1) rotate(5deg)";
+
+    /*
+     * এই card পৌঁছানো পর্যন্ত অপেক্ষা করবে।
+     */
+    await waitForCardDistribution(470);
+
+    if (STATE.cardDistributionRunId !== distributionRunId) {
+      flyingCard.remove();
+      return false;
+    }
+
+    const previousCardCount = Number(
+      STATE.cardDistributionProgress.get(targetContainer) || 0,
+    );
+
+    STATE.cardDistributionProgress.set(
+      targetContainer,
+      Math.max(previousCardCount, cardNumber + 1),
+    );
+
+    /*
+     * State render হয়ে element বদলে গেলেও
+     * latest card-টি reveal হবে।
+     */
+    const latestTargetCard =
+      targetContainer?.children?.[cardNumber] || targetCard;
+
+    latestTargetCard?.classList.add("card-arrived");
+
+    flyingCard.style.opacity = "0";
+
+    await waitForCardDistribution(50);
+
+    flyingCard.remove();
+
+    return true;
+  }
+
+  async function animateCardDistribution() {
+    const occupiedSeats = DOM.seats.filter(
+      (seat) => seat.root?.classList.contains("occupied") && seat.cards,
     );
 
     if (occupiedSeats.length < 2) {
+      STATE.cardDistributionActive = false;
+
+      renderActionButtons();
+      renderTurnTimer();
+
       return;
     }
 
-    let animationIndex = 0;
+    /*
+     * আগের distribution invalid হয়ে যাবে।
+     */
+    STATE.cardDistributionRunId += 1;
+
+    const distributionRunId = STATE.cardDistributionRunId;
+
+    if (STATE.cardDistributionEndTimeout) {
+      clearTimeout(STATE.cardDistributionEndTimeout);
+
+      STATE.cardDistributionEndTimeout = null;
+    }
+
+    STATE.cardDistributionActive = true;
+
+    STATE.cardDistributionProgress.clear();
+
+    renderActionButtons();
+    renderTurnTimer();
 
     /*
-     * একবারে একজনকে ৩ card নয়।
-     * Dealer-এর মতো round-robin deal হবে।
+     * শুরুতে সব card hidden থাকবে।
+     */
+    occupiedSeats.forEach((seat) => {
+      STATE.cardDistributionProgress.set(seat.cards, 0);
+
+      Array.from(seat.cards.children).forEach((card) => {
+        card.classList.remove("card-arrived");
+      });
+    });
+
+    /*
+     * Round-robin:
+     * সবাইকে প্রথম card,
+     * সবাইকে দ্বিতীয় card,
+     * সবাইকে তৃতীয় card।
      */
     for (let cardNumber = 0; cardNumber < 3; cardNumber += 1) {
-      occupiedSeats.forEach((seat) => {
-        animateSingleCard(seat.cards || seat.root, animationIndex * 115);
+      for (const seat of occupiedSeats) {
+        if (STATE.cardDistributionRunId !== distributionRunId) {
+          return;
+        }
 
-        animationIndex += 1;
-      });
+        await animateSingleCard(seat.cards, cardNumber, distributionRunId);
+      }
     }
-  }
 
+    if (STATE.cardDistributionRunId !== distributionRunId) {
+      return;
+    }
+
+    /*
+     * সব card পৌঁছানোর পর distribution শেষ।
+     */
+    STATE.cardDistributionActive = false;
+
+    occupiedSeats.forEach((seat) => {
+      Array.from(seat.cards.children).forEach((card) => {
+        card.classList.add("card-arrived");
+      });
+    });
+
+    STATE.cardDistributionProgress.clear();
+
+    renderActionButtons();
+    renderTurnTimer();
+  }
   /* =========================================================
      CHIP-TO-POT ANIMATION
   ========================================================= */
