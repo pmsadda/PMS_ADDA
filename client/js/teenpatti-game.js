@@ -23,7 +23,11 @@
 
   const CHIP_IMAGE_PATH = "../assets/chips/chip10.png";
 
-  const WINNER_OVERLAY_SECONDS = 4;
+  const CARD_REVEAL_DURATION_MS = 2000;
+
+  const WINNER_OVERLAY_DURATION_MS = 4000;
+
+  const NEXT_ROUND_COUNTDOWN_SECONDS = 5;
 
   /* =========================================================
      PAGE PARAMETERS + AUTHENTICATION
@@ -65,7 +69,9 @@
     leavingTable: false,
 
     turnInterval: null,
+    winnerRevealTimeout: null,
     winnerInterval: null,
+    roundCountdownInterval: null,
     matchmakingInterval: null,
 
     lastHandId: null,
@@ -158,6 +164,10 @@
     winnerNetAmount: document.getElementById("winnerNetAmount"),
 
     nextRoundText: document.getElementById("nextRoundText"),
+
+    roundCountdownOverlay: document.getElementById("roundCountdownOverlay"),
+
+    roundCountdownNumber: document.getElementById("roundCountdownNumber"),
 
     toast: document.getElementById("gameToast"),
 
@@ -276,11 +286,63 @@
     }
   }
 
+  function clearWinnerRevealTimer() {
+    if (STATE.winnerRevealTimeout) {
+      clearTimeout(STATE.winnerRevealTimeout);
+      STATE.winnerRevealTimeout = null;
+    }
+  }
+
   function clearWinnerTimer() {
     if (STATE.winnerInterval) {
-      clearInterval(STATE.winnerInterval);
+      clearTimeout(STATE.winnerInterval);
       STATE.winnerInterval = null;
     }
+  }
+
+  function clearRoundCountdownTimer() {
+    if (STATE.roundCountdownInterval) {
+      clearInterval(STATE.roundCountdownInterval);
+      STATE.roundCountdownInterval = null;
+    }
+  }
+
+  function hideRoundCountdown() {
+    clearRoundCountdownTimer();
+
+    DOM.roundCountdownOverlay?.classList.remove("show");
+
+    DOM.roundCountdownOverlay?.setAttribute("aria-hidden", "true");
+  }
+
+  function showRoundCountdown() {
+    clearRoundCountdownTimer();
+
+    let remainingSeconds = NEXT_ROUND_COUNTDOWN_SECONDS;
+
+    DOM.roundCountdownOverlay?.classList.add("show");
+
+    DOM.roundCountdownOverlay?.setAttribute("aria-hidden", "false");
+
+    const renderCountdown = () => {
+      if (DOM.roundCountdownNumber) {
+        DOM.roundCountdownNumber.textContent = String(
+          Math.max(0, remainingSeconds),
+        );
+      }
+    };
+
+    renderCountdown();
+
+    STATE.roundCountdownInterval = window.setInterval(() => {
+      remainingSeconds -= 1;
+
+      renderCountdown();
+
+      if (remainingSeconds <= 0) {
+        clearRoundCountdownTimer();
+      }
+    }, 1000);
   }
 
   function clearMatchmakingTimer() {
@@ -1286,12 +1348,15 @@
         remainingSeconds: 0,
       };
 
+      clearWinnerRevealTimer();
+      hideWinnerOverlay();
+      hideRoundCountdown();
       hideMatchmakingOverlay();
 
       STATE.cardsRevealed = false;
-      hideWinnerOverlay();
 
       await requestLatestHandState();
+
       window.setTimeout(animateCardDistribution, 120);
     });
 
@@ -1321,24 +1386,48 @@
     STATE.socket.on("hand:completed", async (payload) => {
       console.log("🏆 Teen Patti hand completed:", payload);
 
+      const completedEventTime = Date.now();
+
+      clearWinnerRevealTimer();
+      hideWinnerOverlay();
+      hideRoundCountdown();
       disableAllActions();
 
       /*
-       * Completed private state আগে load হবে।
-       * এতে winner এবং active player cards reveal হবে।
+       * Completed state load হওয়ার পরে active player-দের
+       * cards table-এ reveal হবে।
        */
       await requestLatestHandState();
 
       renderGameState();
-      playSound("winner", 0.8);
-      showWinnerOverlay(payload);
+
+      /*
+       * Completed event আসার সময় থেকে মোট ২ সেকেন্ড
+       * cards table-এ দেখা যাবে।
+       */
+      const stateLoadingTime = Date.now() - completedEventTime;
+
+      const remainingRevealTime = Math.max(
+        0,
+        CARD_REVEAL_DURATION_MS - stateLoadingTime,
+      );
+
+      STATE.winnerRevealTimeout = window.setTimeout(() => {
+        STATE.winnerRevealTimeout = null;
+
+        playSound("winner", 0.8);
+        showWinnerOverlay(payload);
+      }, remainingRevealTime);
     });
 
     STATE.socket.on("hand:next-round", async (payload) => {
       console.log("🔄 Teen Patti next round:", payload);
 
-      STATE.cardsRevealed = false;
+      clearWinnerRevealTimer();
       hideWinnerOverlay();
+      hideRoundCountdown();
+
+      STATE.cardsRevealed = false;
 
       await requestLatestHandState();
     });
@@ -1684,26 +1773,23 @@
 
     DOM.winnerOverlay?.classList.add("show");
 
+    if (DOM.nextRoundText) {
+      DOM.nextRoundText.textContent = "New round countdown will begin shortly";
+    }
+
     clearWinnerTimer();
 
-    let remainingSeconds = WINNER_OVERLAY_SECONDS;
+    /*
+     * Winner overlay ৪ সেকেন্ড দেখা যাবে।
+     * তারপর overlay বন্ধ হয়ে table countdown শুরু হবে।
+     */
+    STATE.winnerInterval = window.setTimeout(() => {
+      STATE.winnerInterval = null;
 
-    const updateCountdown = () => {
-      if (DOM.nextRoundText) {
-        DOM.nextRoundText.textContent = `Next round starting in ${remainingSeconds}...`;
-      }
+      DOM.winnerOverlay?.classList.remove("show");
 
-      if (remainingSeconds <= 0) {
-        hideWinnerOverlay();
-        return;
-      }
-
-      remainingSeconds -= 1;
-    };
-
-    updateCountdown();
-
-    STATE.winnerInterval = setInterval(updateCountdown, 1000);
+      showRoundCountdown();
+    }, WINNER_OVERLAY_DURATION_MS);
   }
 
   /* =========================================================
@@ -2306,8 +2392,13 @@
       STATE.socketJoined = false;
 
       clearTurnTimer();
+      clearWinnerRevealTimer();
       clearWinnerTimer();
+      clearRoundCountdownTimer();
       clearMatchmakingTimer();
+
+      hideWinnerOverlay();
+      hideRoundCountdown();
 
       localStorage.removeItem("current_table");
       localStorage.removeItem("selected_teenpatti_room");

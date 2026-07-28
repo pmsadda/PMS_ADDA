@@ -3154,3 +3154,130 @@ strong {
     gap: 7px;
   }
 }
+
+/* =========================================================
+   NEW ROUND TABLE COUNTDOWN
+========================================================= */
+
+.round-countdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 29000;
+
+  display: grid;
+  place-items: center;
+
+  opacity: 0;
+  visibility: hidden;
+
+  /*
+   * Countdown কোনো button block করবে না।
+   * তাই countdown চলার সময় Exit button কাজ করবে।
+   */
+  pointer-events: none;
+
+  transition:
+    opacity 180ms ease,
+    visibility 180ms ease;
+}
+
+.round-countdown-overlay.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+}
+
+.round-countdown-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 170px;
+  min-height: 135px;
+
+  padding: 14px 18px;
+
+  text-align: center;
+
+  border: 2px solid rgba(255, 215, 71, 0.82);
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(9, 57, 50, 0.94),
+      rgba(2, 24, 27, 0.94)
+    );
+
+  box-shadow:
+    0 0 28px rgba(255, 205, 45, 0.35),
+    0 16px 35px rgba(0, 0, 0, 0.55);
+
+  animation: tpRoundCountdownEntry 240ms ease both;
+}
+
+.round-countdown-label {
+  color: #ffe38a;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+}
+
+.round-countdown-number {
+  display: block;
+
+  margin: 4px 0;
+
+  color: #ffffff;
+  font-size: 62px;
+  font-weight: 900;
+  line-height: 1;
+
+  text-shadow:
+    0 0 12px rgba(255, 215, 71, 0.72),
+    0 0 25px rgba(255, 180, 20, 0.4);
+
+  animation: tpCountdownPulse 1s ease infinite;
+}
+
+.round-countdown-message {
+  color: #b9d6d0;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+@keyframes tpRoundCountdownEntry {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tpCountdownPulse {
+  0%,
+  100% {
+    transform: scale(0.94);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@media (max-height: 540px) and (orientation: landscape) {
+  .round-countdown-card {
+    width: 140px;
+    min-height: 105px;
+    padding: 10px 14px;
+  }
+
+  .round-countdown-number {
+    font-size: 46px;
+  }
+}

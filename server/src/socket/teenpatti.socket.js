@@ -15,6 +15,15 @@ const nextHandTimers = new Map();
 const disconnectTimers = new Map();
 const matchmakingTimers = new Map();
 
+const CARD_REVEAL_DURATION_MS = 2000;
+const WINNER_OVERLAY_DURATION_MS = 4000;
+const NEXT_ROUND_COUNTDOWN_MS = 5000;
+
+const NEXT_HAND_DELAY_MS =
+  CARD_REVEAL_DURATION_MS +
+  WINNER_OVERLAY_DURATION_MS +
+  NEXT_ROUND_COUNTDOWN_MS;
+
 /* =========================================================
    AUTHENTICATION
 ========================================================= */
@@ -470,7 +479,9 @@ async function synchronizeTableRuntime(namespace, tableId) {
    * ==========================================
    */
   if (hand.status === "completed" && hand.settlementCompleted === true) {
-    registerTimer(nextHandTimers, tableId, 4000, async () => {
+
+    registerTimer(nextHandTimers, tableId, NEXT_HAND_DELAY_MS, async () => {
+
       const result = await teenPattiService.prepareNextTeenPattiHand(
         tableId,
         hand.handId,
