@@ -15,7 +15,7 @@ function createAccessToken(user) {
     },
     process.env.JWT_SECRET,
     {
-      expiresIn: "7d",
+      expiresIn: "30m",
     },
   );
 }
