@@ -626,6 +626,8 @@
         "is-disconnected",
       );
 
+      seat.root.classList.add("is-resolved-seat");
+
       seat.root.dataset.playerId = "";
       seat.root.dataset.seatNumber = String(seatNumber);
     }
@@ -738,8 +740,15 @@
 
     const playerStatus = normalizeString(player.status || player.playerStatus);
 
+    /*
+     * Table-এ শুধু active এবং winner player দেখা যাবে।
+     */
+    const isVisibleTablePlayer = ["active", "winner"].includes(playerStatus);
+
     if (seat.root) {
       seat.root.classList.add("occupied");
+
+      seat.root.classList.toggle("is-resolved-seat", !isVisibleTablePlayer);
 
       seat.root.classList.toggle("active-turn", Boolean(player.isCurrentTurn));
 

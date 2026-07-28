@@ -3382,3 +3382,33 @@ strong {
       0 7px 18px rgba(0, 0, 0, 0.4);
   }
 }
+
+/* =========================================================
+   RESOLVED / EMPTY TEEN PATTI SEATS
+========================================================= */
+
+/*
+ * JavaScript load হওয়ার আগেও empty Waiting seats
+ * table-এ দেখা যাবে না।
+ */
+.tp-player:not(.occupied),
+.player:not(.occupied),
+.tp-player.is-resolved-seat,
+.player.is-resolved-seat {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/*
+ * Active player হলে smoothভাবে আবার দেখা যাবে।
+ */
+.tp-player.occupied:not(.is-resolved-seat),
+.player.occupied:not(.is-resolved-seat) {
+  opacity: 1;
+  visibility: visible;
+
+  transition:
+    opacity 180ms ease,
+    visibility 180ms ease;
+}
