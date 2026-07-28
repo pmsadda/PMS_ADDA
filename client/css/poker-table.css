@@ -2496,924 +2496,28 @@ input {
 }
 
 /* =========================================================
-   POKER MOBILE LANDSCAPE — SEAT + OVERLAY FINAL FIX
+   PMS ADDA POKER — FINAL CLEAN RESPONSIVE LAYOUT
 ========================================================= */
 
-@media (orientation: landscape) and (max-width: 1100px),
-       (orientation: landscape) and (max-height: 620px) {
-
-  /* Human player footer-এর উপরে থাকবে */
-  .seat-1 {
-    left: 50%;
-    bottom: 18%;
-    transform: translateX(-50%);
-  }
-
-  /* Left-side player */
-  .seat-2 {
-    left: 1%;
-    bottom: 31%;
-    transform: none;
-  }
-
-  /* Right-side player */
-  .seat-5 {
-    right: 1%;
-    bottom: 31%;
-    transform: none;
-  }
-
-  /* Top players */
-  .seat-3 {
-    top: 8%;
-    left: 15%;
-  }
-
-  .seat-4 {
-    top: 8%;
-    right: 15%;
-  }
-
-  /* Hole cards যেন footer-এর নিচে না যায় */
-  .seat-1 .player-cards {
-    bottom: 40px;
-  }
-
-  .seat-2 .player-cards,
-  .seat-5 .player-cards {
-    bottom: 36px;
-  }
-
-  /* Winner এবং matchmaking overlay সবকিছুর উপরে */
-  .poker-stage:has(.matchmaking-overlay:not([hidden])),
-  .poker-stage:has(.winner-overlay:not([hidden])) {
-    z-index: 1000;
-  }
-
-  .matchmaking-overlay,
-  .winner-overlay {
-    z-index: 1100;
-    padding: 10px;
-  }
-
-  .matchmaking-card,
-  .winner-card {
-    width: min(88vw, 360px);
-    max-height: calc(100dvh - 20px);
-    padding: 16px 20px;
-    overflow-y: auto;
-    border-radius: 18px;
-  }
-
-  .matchmaking-card h2,
-  .winner-card h2 {
-    margin-top: 5px;
-    font-size: 20px;
-  }
-
-  .winner-crown {
-    font-size: 34px;
-  }
-
-  #winnerAmount {
-    margin: 8px 0 10px;
-    font-size: 23px;
-  }
-
-  #matchmakingTimer {
-    width: 55px;
-    height: 55px;
-    margin: 10px auto 7px;
-    font-size: 22px;
-  }
-}
-
-/* Very short landscape screen */
-@media (orientation: landscape) and (max-height: 380px) {
-
-  .seat-1 {
-    bottom: 20%;
-  }
-
-  .seat-2,
-  .seat-5 {
-    bottom: 33%;
-  }
-
-  .matchmaking-card,
-  .winner-card {
-    padding: 12px 18px;
-  }
-}
-
-/* =========================================================
-   POKER 344PX HEIGHT — PLAYER POSITION CORRECTION
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  /* Bottom-center human player */
-  .seat-1 {
-    left: 50%;
-    bottom: 38%;
-    transform: translateX(-50%);
-  }
-
-  /* Bottom-left player */
-  .seat-2 {
-    left: 2%;
-    bottom: 47%;
-    transform: none;
-  }
-
-  /* Top-left player */
-  .seat-3 {
-    top: 7%;
-    left: 16%;
-    transform: none;
-  }
-
-  /* Top-right player */
-  .seat-4 {
-    top: 7%;
-    right: 16%;
-    transform: none;
-  }
-
-  /* Bottom-right player */
-  .seat-5 {
-    right: 2%;
-    bottom: 47%;
-    transform: none;
-  }
-
-  /* Cards profile-এর কাছাকাছি থাকবে */
-  .player-cards {
-    bottom: 33px;
-    scale: 0.7;
-  }
-
-  .player-bet {
-    scale: 0.7;
-  }
-
-  /* Active player অন্য element-এর নিচে যাবে না */
-  .player-seat.is-current-turn {
-    z-index: 80;
-  }
-}
-
-/* =========================================================
-   POKER MOBILE — CENTER CONTENT SEPARATION
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  /* Community cards একটু উপরে */
-  .community-cards {
-    top: 40%;
-  }
-
-  /* Pot উপরে থাকবে */
-  .pot-display {
-    top: 12%;
-  }
-
-  /* Round message cards-এর নিচে */
-  .round-status {
-    top: 61%;
-  }
-
-  /* Human profile একটু নিচে */
-  .seat-1 {
-    left: 50%;
-    bottom: 31%;
-    transform: translateX(-50%);
-  }
-
-  .seat-1 .player-cards {
-    bottom: 35px;
-    scale: 0.66;
-  }
-
-  /* Human-এর bet label profile-এর উপরে */
-  .seat-1 .player-bet {
-    scale: 0.68;
-  }
-}
-
-/* =========================================================
-   POKER 344PX LANDSCAPE — DEFINITIVE CENTER FIX
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  /* Pot একদম উপরের table area-তে */
-  .pot-display {
-    top: 4%;
-  }
-
-  /* Community cards উপরের অর্ধে */
-  .community-cards {
-    top: 33%;
-  }
-
-  .community-card {
-    width: clamp(30px, 3.7vw, 38px);
-  }
-
-  /* Status community cards-এর পরে */
-  .round-status {
-    top: 57%;
-    padding: 2px 8px;
-    font-size: 8px;
-  }
-
-  /* Human profile footer-এর সম্পূর্ণ উপরে */
-  .seat-1 {
-    left: 50%;
-    bottom: 40%;
-    transform: translateX(-50%);
-  }
-
-  /* Human hole cards ছোট—community cards ঢাকবে না */
-  .seat-1 .player-cards {
-    bottom: 27px;
-    scale: 0.52;
-  }
-
-  .seat-1 .player-bet {
-    scale: 0.6;
-  }
-}
-
-/* =========================================================
-   POKER MOBILE LANDSCAPE — CORRECT TABLE/PLAYER LAYOUT
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  :root {
-    --table-width: min(60vw, 580px);
-  }
-
-  /* Table একটু ছোট এবং উপরে */
-  .poker-table {
-    width: var(--table-width);
-    min-width: 0;
-    transform: translateY(-10%);
-  }
-
-  /* Pot এবং community স্বাভাবিক জায়গায় */
-  .pot-display {
-    top: 7%;
-  }
-
-  .community-cards {
-    top: 46%;
-  }
-
-  .community-card {
-    width: clamp(30px, 3.7vw, 39px);
-  }
-
-  .round-status {
-    top: 70%;
-  }
-
-  /* Bottom-center player আবার table-এর নিচে */
-  .seat-1 {
-    left: 50%;
-    bottom: 2%;
-    transform: translateX(-50%);
-  }
-
-  /* Bottom-left */
-  .seat-2 {
-    left: 1%;
-    bottom: 16%;
-    transform: none;
-  }
-
-  /* Top-left */
-  .seat-3 {
-    top: 9%;
-    left: 12%;
-    transform: none;
-  }
-
-  /* Top-right */
-  .seat-4 {
-    top: 9%;
-    right: 12%;
-    transform: none;
-  }
-
-  /* Bottom-right */
-  .seat-5 {
-    right: 1%;
-    bottom: 16%;
-    transform: none;
-  }
-
-  /* Player cards normal size */
-  .player-cards,
-  .seat-1 .player-cards {
-    bottom: 34px;
-    scale: 0.66;
-  }
-
-  .player-bet,
-  .seat-1 .player-bet {
-    scale: 0.68;
-  }
-
-  .player-seat.is-current-turn {
-    z-index: 80;
-  }
-}
-
-/* =========================================================
-   POKER MOBILE LANDSCAPE — CORRECT TABLE/PLAYER LAYOUT
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  :root {
-    --table-width: min(60vw, 580px);
-  }
-
-  /* Table একটু ছোট এবং উপরে */
-  .poker-table {
-    width: var(--table-width);
-    min-width: 0;
-    transform: translateY(-10%);
-  }
-
-  /* Pot এবং community স্বাভাবিক জায়গায় */
-  .pot-display {
-    top: 7%;
-  }
-
-  .community-cards {
-    top: 46%;
-  }
-
-  .community-card {
-    width: clamp(30px, 3.7vw, 39px);
-  }
-
-  .round-status {
-    top: 70%;
-  }
-
-  /* Bottom-center player আবার table-এর নিচে */
-  .seat-1 {
-    left: 50%;
-    bottom: 2%;
-    transform: translateX(-50%);
-  }
-
-  /* Bottom-left */
-  .seat-2 {
-    left: 1%;
-    bottom: 16%;
-    transform: none;
-  }
-
-  /* Top-left */
-  .seat-3 {
-    top: 9%;
-    left: 12%;
-    transform: none;
-  }
-
-  /* Top-right */
-  .seat-4 {
-    top: 9%;
-    right: 12%;
-    transform: none;
-  }
-
-  /* Bottom-right */
-  .seat-5 {
-    right: 1%;
-    bottom: 16%;
-    transform: none;
-  }
-
-  /* Player cards normal size */
-  .player-cards,
-  .seat-1 .player-cards {
-    bottom: 34px;
-    scale: 0.66;
-  }
-
-  .player-bet,
-  .seat-1 .player-bet {
-    scale: 0.68;
-  }
-
-  .player-seat.is-current-turn {
-    z-index: 80;
-  }
-}
-/* FORCE BOTTOM PLAYER POSITION */
-@media (orientation: landscape) and (max-height: 430px) {
-
-  #playerSeat1 {
-    top: auto !important;
-    right: auto !important;
-    bottom: 18% !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    z-index: 90 !important;
-  }
-
-  #playerSeat1 .player-profile {
-    position: relative !important;
-    z-index: 5 !important;
-  }
-
-  #playerSeat1 .player-cards {
-    bottom: 35px !important;
-    scale: 0.62 !important;
-  }
-}
-
-/* =========================================================
-   POKER MOBILE — CLEAR HOLE CARDS
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  /* Human cards profile-এর উপরে */
-  #playerSeat1 .player-cards {
-    bottom: 52px !important;
-    z-index: 15 !important;
-    scale: 0.88 !important;
-    gap: 2px !important;
-  }
-
-  #playerSeat1 .hole-card {
-    width: 34px !important;
-    min-width: 34px !important;
-    height: 48px !important;
-    margin-left: 0 !important;
-
-    overflow: hidden !important;
-
-    border: 2px solid #ffffff !important;
-    border-radius: 5px !important;
-
-    background-color: #ffffff !important;
-
-    box-shadow:
-      0 4px 9px rgba(0, 0, 0, 0.75),
-      0 0 7px rgba(255, 215, 70, 0.45) !important;
-  }
-
-  #playerSeat1 .hole-card:first-child {
-    transform: rotate(-4deg) !important;
-  }
-
-  #playerSeat1 .hole-card:last-child {
-    transform: rotate(4deg) !important;
-  }
-
-  #playerSeat1 .hole-card img {
-    display: block !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: fill !important;
-  }
-
-  /* Badge cards-এর সামনে আসবে না */
-  #playerSeat1 .player-badges {
-    z-index: 20 !important;
-  }
-
-  /* Other players' cards */
-  .player-seat:not(#playerSeat1) .player-cards {
-    z-index: 8 !important;
-    scale: 0.72 !important;
-  }
-}
-
-/* =========================================================
-   POKER MOBILE — CARD SPACING FINAL
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  /* Community cards human cards থেকে আলাদা থাকবে */
-  .community-cards {
-    top: 34% !important;
-  }
-
-  /* Pot community cards-এর উপরে */
-  .pot-display {
-    top: 2% !important;
-  }
-
-  /* Short screen-এ status text card ঢাকবে না */
-  .round-status {
-    display: none !important;
-  }
-
-  /* Human cards profile-এর ঠিক উপরে */
-  #playerSeat1 .player-cards {
-    bottom: 50px !important;
-    z-index: 15 !important;
-  }
-}
-
-/* =========================================================
-   POKER MOBILE — LARGE HUMAN HOLE CARDS
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  #playerSeat1 .player-cards {
-    bottom: 51px !important;
-    z-index: 25 !important;
-    scale: 1 !important;
-    gap: 3px !important;
-  }
-
-  #playerSeat1 .hole-card {
-    width: 42px !important;
-    min-width: 42px !important;
-    height: 58px !important;
-    margin: 0 !important;
-
-    border: 2px solid #ffffff !important;
-    border-radius: 5px !important;
-
-    
-
-    box-shadow:
-      0 5px 12px rgba(0, 0, 0, 0.8),
-      0 0 8px rgba(255, 215, 70, 0.55) !important;
-  }
-
-  #playerSeat1 .hole-card:first-child {
-    transform: rotate(-3deg) !important;
-  }
-
-  #playerSeat1 .hole-card:last-child {
-    transform: rotate(3deg) !important;
-  }
-
-  #playerSeat1 .hole-card img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: fill !important;
-  }
-}
-
-/* =========================================================
-   POKER MOBILE — POT OUTSIDE TABLE
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  .pot-display {
-    top: -12% !important;
-    left: 50% !important;
-    z-index: 50 !important;
-
-    min-width: 108px !important;
-
-    padding: 5px 12px !important;
-    gap: 0 !important;
-
-    border: 1px solid rgba(255, 215, 70, 0.65) !important;
-    border-radius: 14px !important;
-
-    background:
-      linear-gradient(
-        145deg,
-        rgba(62, 40, 7, 0.96),
-        rgba(17, 15, 9, 0.97)
-      ) !important;
-
-    box-shadow:
-      0 6px 14px rgba(0, 0, 0, 0.55),
-      0 0 12px rgba(255, 205, 45, 0.18) !important;
-
-    transform: translateX(-50%) !important;
-  }
-
-  .pot-display > span {
-    color: #ffe37b !important;
-    font-size: 8px !important;
-    line-height: 1.1 !important;
-    letter-spacing: 1px !important;
-  }
-
-  .pot-display strong {
-    margin-top: 1px !important;
-    color: #ffffff !important;
-    font-size: 14px !important;
-    line-height: 1.1 !important;
-  }
-
-  .pot-chips {
-    width: 65px !important;
-    height: 12px !important;
-    margin-top: 1px !important;
-  }
-
-  /* Pot সরানোর পর community cards মাঝখানে */
-  .community-cards {
-    top: 40% !important;
-  }
-}
-
-
-/* =========================================================
-   POKER MOBILE — REFERENCE STYLE POT
-   Chip + Amount above community cards
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  .pot-display {
-    top: 15% !important;
-    left: 50% !important;
-    z-index: 45 !important;
-
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    width: auto !important;
-    min-width: 118px !important;
-    height: 34px !important;
-
-    padding: 3px 13px 3px 7px !important;
-    gap: 5px !important;
-
-    border: 1px solid rgba(255, 216, 70, 0.72) !important;
-    border-radius: 8px !important;
-
-    background:
-      linear-gradient(
-        180deg,
-        rgba(77, 55, 10, 0.97),
-        rgba(31, 23, 8, 0.98)
-      ) !important;
-
-    box-shadow:
-      0 5px 12px rgba(0, 0, 0, 0.65),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15),
-      0 0 10px rgba(255, 203, 42, 0.2) !important;
-
-    transform: translateX(-50%) !important;
-  }
-
-  /* Mobile-এ TOTAL POT text দরকার নেই */
-  .pot-display > span {
-    display: none !important;
-  }
-
-  /* Chip amount-এর আগে */
-  .pot-chips {
-    order: 1 !important;
-
-    width: 29px !important;
-    height: 29px !important;
-
-    margin: 0 !important;
-    flex: 0 0 29px !important;
-  }
-
-  .pot-display strong {
-    order: 2 !important;
-
-    margin: 0 !important;
-
-    color: #ffffff !important;
-    font-size: 17px !important;
-    font-weight: 900 !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-
-    text-shadow:
-      0 2px 3px rgba(0, 0, 0, 0.8),
-      0 0 8px rgba(255, 215, 70, 0.4) !important;
-  }
-
-  /* Pot-এর নিচে community cards */
-  .community-cards {
-    top: 43% !important;
-  }
-
-  /* নিজের বড় cards নিচে থাকবে */
-  #playerSeat1 .player-cards {
-    bottom: 51px !important;
-    z-index: 25 !important;
-    scale: 1 !important;
-  }
-}
-
-/* =========================================================
-   POKER HOLE CARD IMAGE FIX
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  #playerSeat1 .player-cards {
-    bottom: 51px !important;
-    z-index: 25 !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-
-    gap: 3px !important;
-    scale: 1 !important;
-  }
-
-  #playerSeat1 .hole-card {
-    width: 42px !important;
-    min-width: 42px !important;
-    height: 58px !important;
-
-    margin: 0 !important;
-    overflow: hidden !important;
-
-    border: 2px solid #ffffff !important;
-    border-radius: 5px !important;
-
-    /* background shorthand ব্যবহার করা যাবে না */
-    background-color: #ffffff !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-    background-size: 100% 100% !important;
-
-    box-shadow:
-      0 5px 12px rgba(0, 0, 0, 0.8),
-      0 0 8px rgba(255, 215, 70, 0.5) !important;
-  }
-
-  #playerSeat1 .hole-card:first-child {
-    transform: rotate(-3deg) !important;
-  }
-
-  #playerSeat1 .hole-card:last-child {
-    transform: rotate(3deg) !important;
-  }
-}
-
-/* =========================================================
-   POKER MOBILE — FINAL CARD LAYERS
-   Pot → Community → Hole Cards → Player
-========================================================= */
-
-@media (orientation: landscape) and (max-height: 430px) {
-
-  /* Pot table-এর উপরের অংশে */
-  .pot-display {
-    top: 0 !important;
-    left: 50% !important;
-    z-index: 50 !important;
-
-    min-width: 120px !important;
-    height: 34px !important;
-
-    padding: 3px 13px 3px 40px !important;
-
-    transform: translateX(-50%) !important;
-  }
-
-  /* Reference ছবির মতো স্থায়ী chip */
-  .pot-display::before {
-    content: "" !important;
-
-    position: absolute !important;
-    top: 50% !important;
-    left: 6px !important;
-
-    width: 29px !important;
-    height: 29px !important;
-
-    background:
-      url("../assets/chips/chip10.png")
-      center / contain
-      no-repeat !important;
-
-    filter:
-      drop-shadow(0 3px 4px rgba(0, 0, 0, 0.65)) !important;
-
-    transform: translateY(-50%) !important;
-  }
-
-  /* Animation container amount-এর layout নষ্ট করবে না */
-  .pot-chips {
-    position: absolute !important;
-    inset: 0 !important;
-
-    width: 100% !important;
-    height: 100% !important;
-
-    pointer-events: none !important;
-  }
-
-  .pot-display strong {
-    position: relative !important;
-    z-index: 2 !important;
-
-    margin: 0 !important;
-
-    font-size: 17px !important;
-    white-space: nowrap !important;
-  }
-
-  /* Community cards Pot-এর নিচে */
-  .community-cards {
-    top: 31% !important;
-    z-index: 20 !important;
-  }
-
-  /* নিজের cards community cards-এর নিচে */
-  #playerSeat1 .player-cards {
-    bottom: 51px !important;
-    z-index: 30 !important;
-
-    display: flex !important;
-    gap: 4px !important;
-
-    scale: 1 !important;
-  }
-
-  #playerSeat1 .hole-card {
-    width: 42px !important;
-    min-width: 42px !important;
-    height: 58px !important;
-  }
-
-  /* Player profile cards-এর নিচে */
-  #playerSeat1 .player-profile {
-    position: relative !important;
-    z-index: 35 !important;
-  }
-
-  #playerSeat1 .player-badges {
-    z-index: 40 !important;
-  }
-}
-
-/* Poker pot final position */
-@media (orientation: landscape) and (max-height: 430px) {
-
-  .pot-display {
-    top: -8% !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-  }
-}
-
-/* Pot completely above the Poker table */
-@media (orientation: landscape) and (max-height: 430px) {
-
-  .pot-display {
-    top: -23% !important;
-    left: 50% !important;
-    z-index: 70 !important;
-
-    transform: translateX(-50%) !important;
-  }
-}
-
-/* Community cards একটু উপরে */
-@media (orientation: landscape) and (max-height: 430px) {
-
-  .community-cards {
-    top: 27% !important;
-  }
-}
-
-/* =========================================================
-   POKER — HEADER REMOVED
-   KEEP ONLY FLOATING WALLET AND SOUND
-========================================================= */
-
-/*
- * Header-এর জন্য আলাদা row থাকবে না।
- * শুধু table stage এবং footer থাকবে।
- */
+/* Header বাদ দিয়ে Stage + Footer */
 .poker-app {
+  height: 100vh;
+  height: 100dvh;
+
   grid-template-rows:
     minmax(0, 1fr)
     var(--footer-height) !important;
 }
 
-/*
- * Wallet এবং sound কোনো bar ছাড়াই
- * table screen-এর উপরে ডান পাশে থাকবে।
- */
+/* Empty/Waiting seat table clutter করবে না */
+.player-seat.is-empty {
+  display: none !important;
+}
+
+/* =========================================================
+   FLOATING WALLET AND SOUND
+========================================================= */
+
 .poker-quick-controls {
   position: absolute;
   top: 14px;
@@ -3431,31 +2535,88 @@ input {
 
   border:
     1px solid
-    rgba(255, 212, 71, 0.3);
+    rgba(255, 212, 71, 0.32);
 
   border-radius: 15px;
 
   background:
     linear-gradient(
       145deg,
-      rgba(7, 31, 34, 0.92),
-      rgba(2, 15, 20, 0.94)
+      rgba(7, 31, 34, 0.94),
+      rgba(2, 15, 20, 0.96)
     );
 
   box-shadow:
     0 7px 18px
-    rgba(0, 0, 0, 0.38);
+    rgba(0, 0, 0, 0.4);
 
   backdrop-filter: blur(10px);
 }
 
-.poker-quick-controls .icon-button {
-  flex: 0 0 auto;
-}
+/* =========================================================
+   MOBILE AND TABLET LANDSCAPE
+========================================================= */
 
-/* Mobile and tablet landscape */
 @media (orientation: landscape) and (max-width: 1100px),
        (orientation: landscape) and (max-height: 620px) {
+
+  :root {
+    --footer-height: 64px;
+    --table-width: min(70vw, 650px);
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+
+    overflow: hidden;
+  }
+
+  .poker-app {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+
+    min-width: 0;
+
+    padding: 5px 7px;
+    gap: 4px;
+  }
+
+  /*
+   * Table এবং seat stage-এর বাইরে গেলেও
+   * অপ্রয়োজনীয়ভাবে কাটা যাবে না।
+   */
+  .poker-stage {
+    min-width: 0;
+    min-height: 0;
+
+    overflow: visible !important;
+  }
+
+  /*
+   * পুরোনো CSS table-কে উপরে তুলছিল।
+   * এখন table নিচের দিকে থাকবে।
+   */
+  .poker-table {
+    width: var(--table-width) !important;
+    min-width: 0 !important;
+
+    transform:
+      translateY(10%) !important;
+  }
+
+  .table-light {
+    width: 76vw;
+    height: 100%;
+  }
+
+  /* -------------------------
+     Wallet and Sound
+  ------------------------- */
 
   .poker-quick-controls {
     top: 7px;
@@ -3464,8 +2625,9 @@ input {
   }
 
   .poker-quick-controls .wallet-box {
-    min-width: 91px;
+    min-width: 92px;
     padding: 4px 9px;
+
     border-radius: 12px;
   }
 
@@ -3480,13 +2642,458 @@ input {
   .poker-quick-controls .icon-button {
     width: 38px;
     height: 38px;
+
     border-radius: 12px;
+
     font-size: 18px;
+  }
+
+  /* -------------------------
+     Pot
+  ------------------------- */
+
+  .pot-display {
+    top: 1% !important;
+    left: 50% !important;
+    z-index: 70 !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: auto !important;
+    min-width: 120px !important;
+    height: 36px !important;
+
+    padding:
+      3px
+      13px
+      3px
+      42px !important;
+
+    border:
+      1px solid
+      rgba(255, 216, 70, 0.72) !important;
+
+    border-radius: 9px !important;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(77, 55, 10, 0.97),
+        rgba(31, 23, 8, 0.98)
+      ) !important;
+
+    box-shadow:
+      0 5px 12px
+        rgba(0, 0, 0, 0.65),
+      inset 0 1px 0
+        rgba(255, 255, 255, 0.15) !important;
+
+    transform:
+      translateX(-50%) !important;
+  }
+
+  .pot-display > span {
+    display: none !important;
+  }
+
+  .pot-display::before {
+    position: absolute;
+    top: 50%;
+    left: 7px;
+
+    width: 29px;
+    height: 29px;
+
+    content: "";
+
+    background:
+      url("../assets/chips/chip10.png")
+      center / contain
+      no-repeat;
+
+    transform: translateY(-50%);
+
+    filter:
+      drop-shadow(
+        0 3px 4px
+        rgba(0, 0, 0, 0.65)
+      );
+  }
+
+  .pot-display strong {
+    position: relative;
+    z-index: 2;
+
+    margin: 0 !important;
+
+    font-size: 18px !important;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .pot-chips {
+    position: absolute !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    pointer-events: none;
+  }
+
+  /* -------------------------
+     Larger Community Cards
+  ------------------------- */
+
+  .community-cards {
+    top: 40% !important;
+    left: 50% !important;
+    z-index: 25 !important;
+
+    gap: 5px !important;
+
+    transform:
+      translate(-50%, -50%) !important;
+  }
+
+  .community-card {
+    width:
+      clamp(
+        43px,
+        5.15vw,
+        52px
+      ) !important;
+
+    border-width: 2px;
+    border-radius: 6px;
+  }
+
+  .round-status {
+    top: 67% !important;
+
+    min-width: 135px;
+
+    padding: 3px 9px;
+
+    font-size: 9px;
+  }
+
+  /* -------------------------
+     Player Seats
+  ------------------------- */
+
+  .player-seat {
+    width:
+      clamp(
+        120px,
+        15vw,
+        142px
+      ) !important;
+
+    min-height: 48px;
+  }
+
+  .player-profile {
+    grid-template-columns:
+      34px
+      minmax(0, 1fr)
+      24px;
+
+    min-height: 47px;
+
+    padding: 4px 6px;
+    gap: 4px;
+
+    border-radius: 13px;
+  }
+
+  .player-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .player-name {
+    font-size: 10px;
+  }
+
+  .player-stack,
+  .player-action {
+    font-size: 9px;
+  }
+
+  .turn-timer {
+    width: 24px;
+    height: 24px;
+
+    font-size: 9px;
+  }
+
+  /*
+   * Human player নিচের মাঝখানে।
+   */
+  #playerSeat1 {
+    top: auto !important;
+    right: auto !important;
+    bottom: 1% !important;
+    left: 50% !important;
+
+    z-index: 90 !important;
+
+    transform:
+      translateX(-50%) !important;
+  }
+
+  /*
+   * Side players table-এর দুই পাশে।
+   */
+  .seat-2 {
+    top: auto !important;
+    bottom: 18% !important;
+    left: -4% !important;
+
+    transform: none !important;
+  }
+
+  .seat-5 {
+    top: auto !important;
+    right: -4% !important;
+    bottom: 18% !important;
+
+    transform: none !important;
+  }
+
+  /*
+   * Top players একটু নিচে থাকবে,
+   * তাই তাদের cards screen-এর বাইরে কাটবে না।
+   */
+  .seat-3 {
+    top: 16% !important;
+    left: 12% !important;
+
+    transform: none !important;
+  }
+
+  .seat-4 {
+    top: 16% !important;
+    right: 12% !important;
+
+    transform: none !important;
+  }
+
+  /* -------------------------
+     Hole Cards
+  ------------------------- */
+
+  .player-cards {
+    bottom: 37px !important;
+    z-index: 12 !important;
+
+    gap: 2px !important;
+
+    scale: 0.78 !important;
+  }
+
+  /*
+   * নিজের দুইটি card আরও বড় ও পরিষ্কার।
+   */
+  #playerSeat1 .player-cards {
+    bottom: 49px !important;
+    z-index: 30 !important;
+
+    display: flex !important;
+    align-items: flex-end !important;
+
+    gap: 4px !important;
+
+    scale: 1 !important;
+  }
+
+  #playerSeat1 .hole-card {
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 64px !important;
+
+    margin: 0 !important;
+
+    overflow: hidden !important;
+
+    border:
+      2px solid
+      #ffffff !important;
+
+    border-radius: 6px !important;
+
+    background-color:
+      #ffffff !important;
+
+    background-position:
+      center !important;
+
+    background-repeat:
+      no-repeat !important;
+
+    background-size:
+      100% 100% !important;
+
+    box-shadow:
+      0 5px 12px
+        rgba(0, 0, 0, 0.8),
+      0 0 8px
+        rgba(255, 215, 70, 0.5) !important;
+  }
+
+  #playerSeat1 .hole-card:first-child {
+    transform:
+      rotate(-3deg) !important;
+  }
+
+  #playerSeat1 .hole-card:last-child {
+    transform:
+      rotate(3deg) !important;
+  }
+
+  #playerSeat1 .player-profile {
+    position: relative;
+    z-index: 35;
+  }
+
+  #playerSeat1 .player-badges {
+    z-index: 40;
+  }
+
+  .player-bet {
+    scale: 0.78 !important;
+  }
+
+  .player-seat.is-current-turn {
+    z-index: 95 !important;
+  }
+
+  /* -------------------------
+     Footer
+  ------------------------- */
+
+  .poker-footer {
+    grid-template-columns:
+      75px
+      minmax(0, 1fr)
+      58px;
+
+    min-height:
+      var(--footer-height);
+
+    padding: 5px 7px;
+    gap: 6px;
+
+    border-radius: 16px;
+  }
+
+  .footer-status {
+    font-size: 9px;
+  }
+
+  .connection-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .action-controls {
+    grid-template-columns:
+      minmax(55px, 0.75fr)
+      minmax(65px, 0.9fr)
+      minmax(105px, 1.35fr)
+      minmax(65px, 0.9fr)
+      minmax(55px, 0.75fr);
+
+    gap: 5px;
+  }
+
+  .action-button,
+  .tool-button {
+    min-width: 0;
+    min-height: 38px;
+
+    padding-right: 6px;
+    padding-left: 6px;
+
+    font-size: 11px;
+
+    border-radius: 11px;
+  }
+
+  .raise-control {
+    min-width: 0;
+
+    padding: 4px 7px;
+    gap: 3px;
+  }
+
+  .raise-values {
+    font-size: 8px;
+  }
+
+  .raise-values strong {
+    font-size: 10px;
+  }
+
+  .footer-tools {
+    gap: 4px;
+  }
+
+  .footer-tools
+  .tool-button:not(.exit-button) {
+    display: none;
+  }
+
+  .exit-button {
+    width: 55px;
+
+    padding: 0 6px;
+  }
+
+  /* -------------------------
+     Overlay
+  ------------------------- */
+
+  .matchmaking-overlay,
+  .winner-overlay {
+    z-index: 1100;
+
+    padding: 10px;
+  }
+
+  .matchmaking-card,
+  .winner-card {
+    width: min(88vw, 360px);
+    max-height:
+      calc(100dvh - 20px);
+
+    padding: 16px 20px;
+
+    overflow-y: auto;
+
+    border-radius: 18px;
   }
 }
 
-/* Very short mobile landscape */
+/* =========================================================
+   VERY SHORT LANDSCAPE
+========================================================= */
+
 @media (orientation: landscape) and (max-height: 380px) {
+
+  :root {
+    --footer-height: 59px;
+    --table-width: min(68vw, 610px);
+  }
+
+  .poker-table {
+    transform:
+      translateY(8%) !important;
+  }
 
   .poker-quick-controls {
     top: 5px;
@@ -3501,6 +3108,66 @@ input {
   .poker-quick-controls .icon-button {
     width: 34px;
     height: 34px;
+
     font-size: 16px;
+  }
+
+  .community-card {
+    width:
+      clamp(
+        39px,
+        4.8vw,
+        46px
+      ) !important;
+  }
+
+  #playerSeat1 .hole-card {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 58px !important;
+  }
+
+  .round-status {
+    display: none !important;
+  }
+}
+
+/* =========================================================
+   SMALL LANDSCAPE WIDTH
+========================================================= */
+
+@media (orientation: landscape) and (max-width: 700px) {
+
+  :root {
+    --table-width: min(69vw, 480px);
+  }
+
+  .footer-status span:last-child {
+    display: none;
+  }
+
+  .poker-footer {
+    grid-template-columns:
+      22px
+      minmax(0, 1fr)
+      52px;
+  }
+
+  .community-card {
+    width:
+      clamp(
+        36px,
+        5.7vw,
+        43px
+      ) !important;
+  }
+
+  .player-seat {
+    width:
+      clamp(
+        108px,
+        17vw,
+        122px
+      ) !important;
   }
 }
