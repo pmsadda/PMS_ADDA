@@ -515,7 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   DOM.historyAction?.addEventListener("click", () =>
-    navigateTo("./history.html"),
+    navigateTo("./wallet.html#transactionHistory"),
   );
 
   DOM.supportAction?.addEventListener("click", () =>

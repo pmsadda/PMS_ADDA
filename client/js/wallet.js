@@ -6,14 +6,17 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================================= */
 
   const token =
-    localStorage.getItem("access_token") ||
-    localStorage.getItem("token") ||
-    "";
+    localStorage.getItem("access_token") || localStorage.getItem("token") || "";
 
   const STATE = {
     user: null,
     wallet: null,
     transactions: [],
+
+    transactionOffset: 0,
+    transactionHasMore: false,
+    transactionLoading: false,
+
     loading: false,
     lastLoadedAt: 0,
     toastTimer: null,
@@ -28,56 +31,35 @@ document.addEventListener("DOMContentLoaded", () => {
     userName: document.getElementById("userName"),
     userId: document.getElementById("userId"),
 
-    walletBalance:
-      document.getElementById("walletBalance"),
-    lastUpdated:
-      document.getElementById("lastUpdated"),
+    walletBalance: document.getElementById("walletBalance"),
+    lastUpdated: document.getElementById("lastUpdated"),
 
-    totalDeposit:
-      document.getElementById("totalDeposit"),
-    totalWithdraw:
-      document.getElementById("totalWithdraw"),
-    totalWinning:
-      document.getElementById("totalWinning"),
-    totalLose:
-      document.getElementById("totalLose"),
-    serviceCharge:
-      document.getElementById("serviceCharge"),
-    winRate:
-      document.getElementById("winRate"),
+    totalDeposit: document.getElementById("totalDeposit"),
+    totalWithdraw: document.getElementById("totalWithdraw"),
+    totalWinning: document.getElementById("totalWinning"),
+    totalLose: document.getElementById("totalLose"),
+    serviceCharge: document.getElementById("serviceCharge"),
+    winRate: document.getElementById("winRate"),
 
-    transactionList:
-      document.getElementById("transactionList"),
+    transactionList: document.getElementById("transactionList"),
+    transactionHistory: document.getElementById("transactionHistory"),
 
-    refreshButton:
-      document.getElementById("refreshBalance"),
+    refreshButton: document.getElementById("refreshBalance"),
 
-    depositButton:
-      document.getElementById("depositBtn"),
-    withdrawButton:
-      document.getElementById("withdrawBtn"),
-    historyButton:
-      document.getElementById("historyBtn"),
-    bonusButton:
-      document.getElementById("bonusBtn"),
-    viewAllButton:
-      document.getElementById("viewAllBtn"),
+    depositButton: document.getElementById("depositBtn"),
+    withdrawButton: document.getElementById("withdrawBtn"),
+    historyButton: document.getElementById("historyBtn"),
+    bonusButton: document.getElementById("bonusBtn"),
+    viewAllButton: document.getElementById("viewAllBtn"),
 
-    homeButton:
-      document.getElementById("walletHomeBtn"),
-    walletButton:
-      document.getElementById("walletNavBtn"),
-    gamesButton:
-      document.getElementById("walletGamesBtn"),
-    supportButton:
-      document.getElementById("walletSupportBtn"),
-    profileButton:
-      document.getElementById("walletProfileBtn"),
+    homeButton: document.getElementById("walletHomeBtn"),
+    walletButton: document.getElementById("walletNavBtn"),
+    gamesButton: document.getElementById("walletGamesBtn"),
+    supportButton: document.getElementById("walletSupportBtn"),
+    profileButton: document.getElementById("walletProfileBtn"),
 
-    loader:
-      document.getElementById("loaderOverlay"),
-    toast:
-      document.getElementById("toast"),
+    loader: document.getElementById("loaderOverlay"),
+    toast: document.getElementById("toast"),
   };
 
   /* =========================================================
@@ -87,13 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function formatMoney(value) {
     const amount = Number(value);
 
-    return (Number.isFinite(amount) ? amount : 0).toLocaleString(
-      "en-BD",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      },
-    );
+    return (Number.isFinite(amount) ? amount : 0).toLocaleString("en-BD", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   }
 
   function normalizeString(value) {
@@ -181,8 +160,55 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================================= */
 
   async function requestWalletSummary() {
+    const response = await fetch(window.APP_CONFIG.api("/wallet/summary"), {
+      method: "GET",
+
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+
+      cache: "no-store",
+    });
+
+    let result = null;
+
+    try {
+      result = await response.json();
+    } catch (error) {
+      result = null;
+    }
+
+    if (response.status === 401) {
+      redirectToLogin();
+
+      throw new Error("Your login session has expired.");
+    }
+
+    if (!response.ok) {
+      const requestError = new Error(
+        result?.message || "Wallet summary load করা যায়নি।",
+      );
+
+      requestError.statusCode = response.status;
+      requestError.code = result?.code || "WALLET_SUMMARY_ERROR";
+
+      throw requestError;
+    }
+
+    return result?.data || null;
+  }
+
+  async function requestWalletTransactions(offset = 0) {
+    const safeOffset =
+      Number.isInteger(Number(offset)) && Number(offset) >= 0
+        ? Number(offset)
+        : 0;
+
     const response = await fetch(
-      window.APP_CONFIG.api("/wallet/summary"),
+      window.APP_CONFIG.api(
+        `/wallet/transactions?limit=20&offset=${safeOffset}`,
+      ),
       {
         method: "GET",
 
@@ -211,18 +237,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!response.ok) {
       const requestError = new Error(
-        result?.message ||
-          "Wallet summary load করা যায়নি।",
+        result?.message || "Transaction history load করা যায়নি।",
       );
 
       requestError.statusCode = response.status;
-      requestError.code =
-        result?.code || "WALLET_SUMMARY_ERROR";
+
+      requestError.code = result?.code || "WALLET_TRANSACTIONS_ERROR";
 
       throw requestError;
     }
 
-    return result?.data || null;
+    return (
+      result?.data || {
+        transactions: [],
+
+        pagination: {
+          hasMore: false,
+          nextOffset: null,
+        },
+      }
+    );
   }
 
   /* =========================================================
@@ -233,10 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const user = STATE.user || {};
 
     const displayName =
-      user.fullName ||
-      user.full_name ||
-      user.username ||
-      "PMS ADDA Player";
+      user.fullName || user.full_name || user.username || "PMS ADDA Player";
 
     if (DOM.userName) {
       DOM.userName.textContent = displayName;
@@ -257,16 +288,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       DOM.userAvatar.onerror = () => {
         DOM.userAvatar.onerror = null;
-        DOM.userAvatar.src =
-          "../assets/images/default-avatar.png";
+        DOM.userAvatar.src = "../assets/images/default-avatar.png";
       };
     }
   }
 
   function setMoney(element, value) {
     if (element) {
-      element.textContent =
-        `৳ ${formatMoney(value)}`;
+      element.textContent = `৳ ${formatMoney(value)}`;
     }
   }
 
@@ -274,47 +303,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const wallet = STATE.wallet || {};
 
     if (DOM.walletBalance) {
-      DOM.walletBalance.textContent =
-        formatMoney(wallet.balance);
+      DOM.walletBalance.textContent = formatMoney(wallet.balance);
     }
 
-    setMoney(
-      DOM.totalDeposit,
-      wallet.totalDeposit,
-    );
+    setMoney(DOM.totalDeposit, wallet.totalDeposit);
 
-    setMoney(
-      DOM.totalWithdraw,
-      wallet.totalWithdraw,
-    );
+    setMoney(DOM.totalWithdraw, wallet.totalWithdraw);
 
-    setMoney(
-      DOM.totalWinning,
-      wallet.totalWinning,
-    );
+    setMoney(DOM.totalWinning, wallet.totalWinning);
 
-    setMoney(
-      DOM.totalLose,
-      wallet.totalLoss,
-    );
+    setMoney(DOM.totalLose, wallet.totalLoss);
 
-    setMoney(
-      DOM.serviceCharge,
-      wallet.totalServiceCharge,
-    );
+    setMoney(DOM.serviceCharge, wallet.totalServiceCharge);
 
     if (DOM.winRate) {
       const winRate = Number(wallet.winRate);
 
-      DOM.winRate.textContent =
-        `${Number.isFinite(winRate) ? winRate : 0}%`;
+      DOM.winRate.textContent = `${Number.isFinite(winRate) ? winRate : 0}%`;
     }
 
     if (DOM.lastUpdated) {
-      DOM.lastUpdated.textContent =
-        formatDate(
-          wallet.updatedAt || new Date(),
-        );
+      DOM.lastUpdated.textContent = formatDate(wallet.updatedAt || new Date());
     }
   }
 
@@ -323,9 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================================= */
 
   function getTransactionPresentation(transaction) {
-    const type = normalizeString(
-      transaction.transactionType,
-    );
+    const type = normalizeString(transaction.transactionType);
 
     const presentations = {
       deposit: {
@@ -394,11 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
         title: type
           ? type
               .split("_")
-              .map(
-                (word) =>
-                  word.charAt(0).toUpperCase() +
-                  word.slice(1),
-              )
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
               .join(" ")
           : "Wallet Transaction",
 
@@ -409,8 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getStatusClass(status) {
-    const normalizedStatus =
-      normalizeString(status);
+    const normalizedStatus = normalizeString(status);
 
     if (
       normalizedStatus === "completed" ||
@@ -428,8 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function createTransactionElement(transaction) {
-    const presentation =
-      getTransactionPresentation(transaction);
+    const presentation = getTransactionPresentation(transaction);
 
     const item = document.createElement("article");
 
@@ -437,11 +438,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const icon = document.createElement("div");
 
-    icon.className =
-      `transaction-icon ${presentation.className}`;
+    icon.className = `transaction-icon ${presentation.className}`;
 
-    const iconElement =
-      document.createElement("i");
+    const iconElement = document.createElement("i");
 
     iconElement.className = presentation.icon;
 
@@ -453,14 +452,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const title = document.createElement("h4");
 
-    title.textContent =
-      transaction.description ||
-      presentation.title;
+    title.textContent = transaction.description || presentation.title;
 
     const date = document.createElement("p");
 
-    date.textContent =
-      formatDate(transaction.createdAt);
+    date.textContent = formatDate(transaction.createdAt);
 
     details.append(title, date);
 
@@ -470,28 +466,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const amount = document.createElement("h4");
 
-    const direction =
-      normalizeString(transaction.direction);
+    const direction = normalizeString(transaction.direction);
 
     const isCredit = direction === "credit";
 
-    amount.className =
-      `amount ${isCredit ? "plus" : "minus"}`;
+    amount.className = `amount ${isCredit ? "plus" : "minus"}`;
 
-    amount.textContent =
-      `${isCredit ? "+" : "-"} ৳${formatMoney(
-        transaction.amount,
-      )}`;
+    amount.textContent = `${isCredit ? "+" : "-"} ৳${formatMoney(
+      transaction.amount,
+    )}`;
 
     const status = document.createElement("span");
 
-    status.className =
-      `status ${getStatusClass(
-        transaction.status,
-      )}`;
+    status.className = `status ${getStatusClass(transaction.status)}`;
 
-    status.textContent =
-      transaction.status || "completed";
+    status.textContent = transaction.status || "completed";
 
     right.append(amount, status);
     item.append(icon, details, right);
@@ -513,31 +502,114 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const icon = document.createElement("i");
 
-      icon.className =
-        "fa-solid fa-receipt";
+      icon.className = "fa-solid fa-receipt";
 
-      const message =
-        document.createElement("p");
+      const message = document.createElement("p");
 
-      message.textContent =
-        "No wallet transactions yet.";
+      message.textContent = "No wallet transactions yet.";
 
       empty.append(icon, message);
+
       DOM.transactionList.appendChild(empty);
+
+      /*
+       * Transaction না থাকলে
+       * Load More button দেখাবে না।
+       */
+      if (DOM.viewAllButton) {
+        DOM.viewAllButton.hidden = true;
+      }
 
       return;
     }
 
-    const fragment =
-      document.createDocumentFragment();
+    const fragment = document.createDocumentFragment();
 
     STATE.transactions.forEach((transaction) => {
-      fragment.appendChild(
-        createTransactionElement(transaction),
-      );
+      fragment.appendChild(createTransactionElement(transaction));
     });
 
     DOM.transactionList.appendChild(fragment);
+
+    if (DOM.viewAllButton) {
+      DOM.viewAllButton.hidden = !STATE.transactionHasMore;
+
+      DOM.viewAllButton.disabled = STATE.transactionLoading;
+
+      DOM.viewAllButton.textContent = STATE.transactionLoading
+        ? "Loading..."
+        : "Load More";
+    }
+  }
+
+  function scrollToTransactionHistory() {
+    DOM.transactionHistory?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+
+  async function loadMoreTransactions() {
+    if (STATE.transactionLoading || !STATE.transactionHasMore) {
+      return;
+    }
+
+    STATE.transactionLoading = true;
+
+    if (DOM.viewAllButton) {
+      DOM.viewAllButton.disabled = true;
+
+      DOM.viewAllButton.textContent = "Loading...";
+    }
+
+    try {
+      const data = await requestWalletTransactions(STATE.transactionOffset);
+
+      const newTransactions = Array.isArray(data?.transactions)
+        ? data.transactions
+        : [];
+
+      /*
+       * একই transaction দ্বিতীয়বার
+       * list-এ যোগ হবে না।
+       */
+      const knownTransactionIds = new Set(
+        STATE.transactions.map((transaction) => Number(transaction.id)),
+      );
+
+      newTransactions.forEach((transaction) => {
+        const transactionId = Number(transaction.id);
+
+        if (knownTransactionIds.has(transactionId)) {
+          return;
+        }
+
+        STATE.transactions.push(transaction);
+
+        knownTransactionIds.add(transactionId);
+      });
+
+      STATE.transactionHasMore = Boolean(data?.pagination?.hasMore);
+
+      STATE.transactionOffset =
+        Number(data?.pagination?.nextOffset) || STATE.transactions.length;
+
+      renderTransactions();
+    } catch (error) {
+      console.error("LOAD MORE TRANSACTIONS ERROR:", error);
+
+      showToast(error.message || "আরও transaction load করা যায়নি।", "error");
+    } finally {
+      STATE.transactionLoading = false;
+
+      if (DOM.viewAllButton) {
+        DOM.viewAllButton.disabled = false;
+
+        DOM.viewAllButton.textContent = "Load More";
+
+        DOM.viewAllButton.hidden = !STATE.transactionHasMore;
+      }
+    }
   }
 
   /* =========================================================
@@ -549,8 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const showFullLoader =
-      options.showLoader === true;
+    const showFullLoader = options.showLoader === true;
 
     if (showFullLoader) {
       showLoader();
@@ -563,21 +634,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const data = await requestWalletSummary();
+      const [data, transactionData] = await Promise.all([
+        requestWalletSummary(),
+        requestWalletTransactions(0),
+      ]);
 
       if (!data?.user || !data?.wallet) {
-        throw new Error(
-          "Invalid Wallet summary received.",
-        );
+        throw new Error("Invalid Wallet summary received.");
       }
 
       STATE.user = data.user;
       STATE.wallet = data.wallet;
-      STATE.transactions = Array.isArray(
-        data.transactions,
-      )
-        ? data.transactions
+      STATE.transactions = Array.isArray(transactionData?.transactions)
+        ? transactionData.transactions
         : [];
+
+      STATE.transactionHasMore = Boolean(transactionData?.pagination?.hasMore);
+
+      STATE.transactionOffset =
+        Number(transactionData?.pagination?.nextOffset) ||
+        STATE.transactions.length;
 
       renderUser();
       renderWallet();
@@ -594,22 +670,12 @@ document.addEventListener("DOMContentLoaded", () => {
       STATE.lastLoadedAt = Date.now();
 
       if (options.showSuccess === true) {
-        showToast(
-          "Wallet updated successfully.",
-          "success",
-        );
+        showToast("Wallet updated successfully.", "success");
       }
     } catch (error) {
-      console.error(
-        "DYNAMIC WALLET LOAD ERROR:",
-        error,
-      );
+      console.error("DYNAMIC WALLET LOAD ERROR:", error);
 
-      showToast(
-        error.message ||
-          "Wallet load করা যায়নি।",
-        "error",
-      );
+      showToast(error.message || "Wallet load করা যায়নি।", "error");
     } finally {
       hideLoader();
     }
@@ -619,101 +685,71 @@ document.addEventListener("DOMContentLoaded", () => {
      ACTIONS
   ========================================================= */
 
-  DOM.refreshButton?.addEventListener(
-    "click",
-    async () => {
-      const icon =
-        DOM.refreshButton.querySelector("i");
+  DOM.refreshButton?.addEventListener("click", async () => {
+    const icon = DOM.refreshButton.querySelector("i");
 
-      icon?.classList.add("fa-spin");
+    icon?.classList.add("fa-spin");
 
-      await loadWallet({
-        showSuccess: true,
-      });
+    await loadWallet({
+      showSuccess: true,
+    });
 
-      icon?.classList.remove("fa-spin");
-    },
+    icon?.classList.remove("fa-spin");
+  });
+
+  DOM.depositButton?.addEventListener("click", () =>
+    navigateTo("./deposit.html"),
   );
 
-  DOM.depositButton?.addEventListener(
-    "click",
-    () => navigateTo("./deposit.html"),
+  DOM.withdrawButton?.addEventListener("click", () =>
+    navigateTo("./withdraw.html"),
   );
 
-  DOM.withdrawButton?.addEventListener(
-    "click",
-    () => navigateTo("./withdraw.html"),
-  );
+  DOM.historyButton?.addEventListener("click", scrollToTransactionHistory);
 
-  DOM.historyButton?.addEventListener(
-    "click",
-    () => navigateTo("./history.html"),
-  );
+  DOM.viewAllButton?.addEventListener("click", loadMoreTransactions);
 
-  DOM.viewAllButton?.addEventListener(
-    "click",
-    () => navigateTo("./history.html"),
-  );
-
-  DOM.bonusButton?.addEventListener(
-    "click",
-    () => {
-      showToast(
-        "Bonus feature coming soon.",
-        "info",
-      );
-    },
-  );
+  DOM.bonusButton?.addEventListener("click", () => {
+    showToast("Bonus feature coming soon.", "info");
+  });
 
   /* =========================================================
      BOTTOM NAVIGATION
   ========================================================= */
 
-  DOM.homeButton?.addEventListener(
-    "click",
-    () => navigateTo("./lobby.html"),
+  DOM.homeButton?.addEventListener("click", () => navigateTo("./lobby.html"));
+
+  DOM.walletButton?.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+
+  DOM.gamesButton?.addEventListener("click", () =>
+    navigateTo("./lobby.html#games"),
   );
 
-  DOM.walletButton?.addEventListener(
-    "click",
-    () => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    },
+  DOM.supportButton?.addEventListener("click", () =>
+    navigateTo("./support.html"),
   );
 
-  DOM.gamesButton?.addEventListener(
-    "click",
-    () => navigateTo("./lobby.html#games"),
-  );
-
-  DOM.supportButton?.addEventListener(
-    "click",
-    () => navigateTo("./support.html"),
-  );
-
-  DOM.profileButton?.addEventListener(
-    "click",
-    () => navigateTo("./profile.html"),
+  DOM.profileButton?.addEventListener("click", () =>
+    navigateTo("./profile.html"),
   );
 
   /* =========================================================
      AUTOMATIC REFRESH
   ========================================================= */
 
-  document.addEventListener(
-    "visibilitychange",
-    () => {
-      if (
-        document.visibilityState === "visible" &&
-        Date.now() - STATE.lastLoadedAt > 15000
-      ) {
-        loadWallet();
-      }
-    },
-  );
+  document.addEventListener("visibilitychange", () => {
+    if (
+      document.visibilityState === "visible" &&
+      Date.now() - STATE.lastLoadedAt > 15000
+    ) {
+      loadWallet();
+    }
+  });
 
   window.addEventListener("focus", () => {
     if (Date.now() - STATE.lastLoadedAt > 15000) {
@@ -727,10 +763,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function initializeWallet() {
     if (!window.APP_CONFIG) {
-      showToast(
-        "APP_CONFIG পাওয়া যায়নি।",
-        "error",
-      );
+      showToast("APP_CONFIG পাওয়া যায়নি।", "error");
 
       return;
     }
@@ -744,9 +777,11 @@ document.addEventListener("DOMContentLoaded", () => {
       showLoader: true,
     });
 
-    console.log(
-      "✅ PMS ADDA dynamic Wallet loaded",
-    );
+    if (window.location.hash === "#transactionHistory") {
+      window.setTimeout(scrollToTransactionHistory, 50);
+    }
+
+    console.log("✅ PMS ADDA dynamic Wallet loaded");
   }
 
   initializeWallet();

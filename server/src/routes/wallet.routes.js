@@ -4,11 +4,10 @@ const express = require("express");
 
 const {
   getWalletSummary,
+  getWalletTransactions,
 } = require("../controllers/wallet.controller");
 
-const {
-  requireAuth,
-} = require("../middleware/auth.middleware");
+const { requireAuth } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
@@ -18,10 +17,7 @@ const router = express.Router();
  * Authenticated user-এর wallet,
  * statistics এবং recent transactions।
  */
-router.get(
-  "/summary",
-  requireAuth,
-  getWalletSummary,
-);
+router.get("/summary", requireAuth, getWalletSummary);
+router.get("/transactions", requireAuth, getWalletTransactions);
 
 module.exports = router;

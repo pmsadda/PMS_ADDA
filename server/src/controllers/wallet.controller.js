@@ -39,6 +39,44 @@ function parsePositiveInteger(value) {
   return parsed;
 }
 
+function parseNonNegativeInteger(value) {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function mapTransactionRow(transaction) {
+  return {
+    id: Number(transaction.id),
+
+    transactionId: transaction.transaction_id,
+
+    transactionType: transaction.transaction_type,
+
+    direction: transaction.direction,
+
+    amount: parseMoney(transaction.amount),
+
+    balanceBefore: parseMoney(transaction.balance_before),
+
+    balanceAfter: parseMoney(transaction.balance_after),
+
+    status: transaction.status,
+
+    referenceType: transaction.reference_type,
+
+    referenceId: transaction.reference_id,
+
+    description: transaction.description,
+
+    createdAt: transaction.created_at,
+  };
+}
+
 /* =========================================================
    GET WALLET SUMMARY
 ========================================================= */
@@ -55,10 +93,9 @@ async function getWalletSummary(req, res, next) {
       );
     }
 
-    const [userResult, summaryResult, transactionResult] =
-      await Promise.all([
-        pool.execute(
-          `
+    const [userResult, summaryResult, transactionResult] = await Promise.all([
+      pool.execute(
+        `
           SELECT
             id,
             uid,
@@ -66,6 +103,7 @@ async function getWalletSummary(req, res, next) {
             username,
             phone,
             email,
+            avatar_url,
             account_status,
             wallet_balance,
             turnover_amount,
@@ -76,11 +114,11 @@ async function getWalletSummary(req, res, next) {
           WHERE id = ?
           LIMIT 1
           `,
-          [userId],
-        ),
+        [userId],
+      ),
 
-        pool.execute(
-          `
+      pool.execute(
+        `
           SELECT
             COALESCE(
               SUM(
@@ -143,11 +181,11 @@ async function getWalletSummary(req, res, next) {
           FROM wallet_transactions
           WHERE user_id = ?
           `,
-          [userId],
-        ),
+        [userId],
+      ),
 
-        pool.execute(
-          `
+      pool.execute(
+        `
           SELECT
             id,
             transaction_id,
@@ -166,9 +204,9 @@ async function getWalletSummary(req, res, next) {
           ORDER BY id DESC
           LIMIT 10
           `,
-          [userId],
-        ),
-      ]);
+        [userId],
+      ),
+    ]);
 
     const userRows = userResult[0];
     const summaryRows = summaryResult[0];
@@ -185,72 +223,25 @@ async function getWalletSummary(req, res, next) {
     const user = userRows[0];
     const summary = summaryRows[0] || {};
 
-    const winningTransactions = Number(
-      summary.winning_transactions || 0,
-    );
+    const winningTransactions = Number(summary.winning_transactions || 0);
 
-    const losingTransactions = Number(
-      summary.losing_transactions || 0,
-    );
+    const losingTransactions = Number(summary.losing_transactions || 0);
 
-    const completedGameResults =
-      winningTransactions + losingTransactions;
+    const completedGameResults = winningTransactions + losingTransactions;
 
     const winRate =
       completedGameResults > 0
         ? Number(
-            (
-              (winningTransactions /
-                completedGameResults) *
-              100
-            ).toFixed(2),
+            ((winningTransactions / completedGameResults) * 100).toFixed(2),
           )
         : 0;
 
-    const transactions = transactionRows.map(
-      (transaction) => ({
-        id: Number(transaction.id),
-
-        transactionId:
-          transaction.transaction_id,
-
-        transactionType:
-          transaction.transaction_type,
-
-        direction:
-          transaction.direction,
-
-        amount:
-          parseMoney(transaction.amount),
-
-        balanceBefore:
-          parseMoney(transaction.balance_before),
-
-        balanceAfter:
-          parseMoney(transaction.balance_after),
-
-        status:
-          transaction.status,
-
-        referenceType:
-          transaction.reference_type,
-
-        referenceId:
-          transaction.reference_id,
-
-        description:
-          transaction.description,
-
-        createdAt:
-          transaction.created_at,
-      }),
-    );
+    const transactions = transactionRows.map(mapTransactionRow);
 
     return res.status(200).json({
       success: true,
 
-      message:
-        "Wallet summary loaded successfully.",
+      message: "Wallet summary loaded successfully.",
 
       data: {
         user: {
@@ -260,38 +251,28 @@ async function getWalletSummary(req, res, next) {
           username: user.username,
           phone: user.phone,
           email: user.email,
-          accountStatus:
-            user.account_status,
+          avatarUrl: user.avatar_url || null,
+          accountStatus: user.account_status,
         },
 
         wallet: {
-          balance:
-            parseMoney(user.wallet_balance),
+          balance: parseMoney(user.wallet_balance),
 
-          turnoverAmount:
-            parseMoney(user.turnover_amount),
+          turnoverAmount: parseMoney(user.turnover_amount),
 
-          totalDeposit:
-            parseMoney(user.total_deposit),
+          totalDeposit: parseMoney(user.total_deposit),
 
-          totalWithdraw:
-            parseMoney(user.total_withdraw),
+          totalWithdraw: parseMoney(user.total_withdraw),
 
-          totalWinning:
-            parseMoney(summary.total_winning),
+          totalWinning: parseMoney(summary.total_winning),
 
-          totalLoss:
-            parseMoney(summary.total_loss),
+          totalLoss: parseMoney(summary.total_loss),
 
-          totalServiceCharge:
-            parseMoney(
-              summary.total_service_charge,
-            ),
+          totalServiceCharge: parseMoney(summary.total_service_charge),
 
           winRate,
 
-          updatedAt:
-            user.updated_at,
+          updatedAt: user.updated_at,
         },
 
         transactions,
@@ -302,6 +283,151 @@ async function getWalletSummary(req, res, next) {
   }
 }
 
+/* =========================================================
+   GET PAGINATED WALLET TRANSACTIONS
+========================================================= */
+
+async function getWalletTransactions(
+  req,
+  res,
+  next,
+) {
+  try {
+    const userId =
+      parsePositiveInteger(
+        req.user?.id,
+      );
+
+    if (!userId) {
+      throw createControllerError(
+        "Authenticated user ID is required.",
+        401,
+        "INVALID_AUTHENTICATED_USER",
+      );
+    }
+
+    const requestedPage =
+      parsePositiveInteger(
+        req.query.page,
+      ) || 1;
+
+    const requestedLimit =
+      parsePositiveInteger(
+        req.query.limit,
+      ) || 20;
+
+    /*
+     * এক request-এ সর্বোচ্চ ৫০টি।
+     */
+    const limit =
+      Math.min(
+        requestedLimit,
+        50,
+      );
+
+    const requestedOffset =
+      parseNonNegativeInteger(
+        req.query.offset,
+      );
+
+    const offset =
+      requestedOffset === null
+        ? (requestedPage - 1) * limit
+        : requestedOffset;
+
+    const [
+      countResult,
+      transactionResult,
+    ] = await Promise.all([
+      pool.execute(
+        `
+          SELECT
+            COUNT(*) AS total
+          FROM wallet_transactions
+          WHERE user_id = ?
+        `,
+        [userId],
+      ),
+
+      pool.execute(
+        `
+          SELECT
+            id,
+            transaction_id,
+            transaction_type,
+            direction,
+            amount,
+            balance_before,
+            balance_after,
+            status,
+            reference_type,
+            reference_id,
+            description,
+            created_at
+          FROM wallet_transactions
+          WHERE user_id = ?
+          ORDER BY id DESC
+          LIMIT ?
+          OFFSET ?
+        `,
+        [
+          userId,
+          limit,
+          offset,
+        ],
+      ),
+    ]);
+
+    const total =
+      Number(
+        countResult[0][0]?.total ||
+        0,
+      );
+
+    const transactions =
+      transactionResult[0].map(
+        mapTransactionRow,
+      );
+
+    const loadedUntil =
+      offset +
+      transactions.length;
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Wallet transactions loaded successfully.",
+
+      data: {
+        transactions,
+
+        pagination: {
+          page:
+            Math.floor(
+              offset / limit,
+            ) + 1,
+
+          limit,
+          offset,
+          total,
+
+          hasMore:
+            loadedUntil < total,
+
+          nextOffset:
+            loadedUntil < total
+              ? loadedUntil
+              : null,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getWalletSummary,
+  getWalletTransactions,
 };

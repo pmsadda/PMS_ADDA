@@ -63,7 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     depositButton: document.getElementById("depositBtn"),
     withdrawButton: document.getElementById("withdrawBtn"),
-    historyButton: document.getElementById("historyBtn"),
 
     teenPattiButton: document.getElementById("teenPattiBtn"),
     pokerButton: document.getElementById("pokerBtn"),
@@ -589,8 +588,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const [userResult, depositResult, withdrawResult, noticeResult] =
         await Promise.allSettled([
           requestAPI("/auth/me"),
-          requestAPI("/deposit/my-history"),
-          requestAPI("/withdraw/my-history"),
+          requestAPI("/deposits/my-history"),
+          requestAPI("/withdraws/my-history"),
           requestAPI("/lobby-notices/public"),
         ]);
 
@@ -624,11 +623,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ])
           : [];
 
-                STATE.lobbyNotices =
+      STATE.lobbyNotices =
         noticeResult.status === "fulfilled"
-          ? extractLobbyNotices(
-              noticeResult.value,
-            )
+          ? extractLobbyNotices(noticeResult.value)
           : [];
 
       renderLobbyNotice();
@@ -734,10 +731,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   DOM.withdrawButton?.addEventListener("click", () =>
     navigateTo("./withdraw.html"),
-  );
-
-  DOM.historyButton?.addEventListener("click", () =>
-    navigateTo("./history.html"),
   );
 
   /* =========================================================

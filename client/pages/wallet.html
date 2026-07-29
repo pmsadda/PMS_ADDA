@@ -265,175 +265,36 @@
             </section>
 
             <!-- Recent Transactions -->
+            <!-- Transaction History -->
 
-            <section class="transactions">
+            <section
+                class="transactions"
+                id="transactionHistory">
 
                 <div class="section-header">
 
                     <h3>
-
-                        Recent Transactions
-
+                        Transaction History
                     </h3>
 
                     <button
-                        id="viewAllBtn">
-
-                        View All
-
+                        id="viewAllBtn"
+                        type="button"
+                        hidden>
+                        Load More
                     </button>
 
                 </div>
 
+                <!--
+        সব transaction wallet.js
+        API থেকে এখানে তৈরি করবে।
+        কোনো demo transaction থাকবে না।
+    -->
+
                 <div
                     id="transactionList"
-                    class="transaction-list">
-
-                    <!-- Deposit -->
-
-                    <div class="transaction-item">
-
-                        <div class="transaction-icon deposit">
-
-                            <i class="fa-solid fa-circle-plus"></i>
-
-                        </div>
-
-                        <div class="transaction-details">
-
-                            <h4>Deposit</h4>
-
-                            <p>Today • 10:30 AM</p>
-
-                        </div>
-
-                        <div class="transaction-right">
-
-                            <h4 class="amount plus">
-
-                                + ৳1000
-
-                            </h4>
-
-                            <span class="status success">
-
-                                Success
-
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                    <!-- Win -->
-
-                    <div class="transaction-item">
-
-                        <div class="transaction-icon win">
-
-                            <i class="fa-solid fa-trophy"></i>
-
-                        </div>
-
-                        <div class="transaction-details">
-
-                            <h4>Teen Patti Win</h4>
-
-                            <p>Today • 11:45 AM</p>
-
-                        </div>
-
-                        <div class="transaction-right">
-
-                            <h4 class="amount plus">
-
-                                + ৳580
-
-                            </h4>
-
-                            <span class="status success">
-
-                                Won
-
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                    <!-- Withdraw -->
-
-                    <div class="transaction-item">
-
-                        <div class="transaction-icon withdraw">
-
-                            <i class="fa-solid fa-money-bill-transfer"></i>
-
-                        </div>
-
-                        <div class="transaction-details">
-
-                            <h4>Withdraw</h4>
-
-                            <p>Yesterday • 09:15 PM</p>
-
-                        </div>
-
-                        <div class="transaction-right">
-
-                            <h4 class="amount minus">
-
-                                - ৳500
-
-                            </h4>
-
-                            <span class="status pending">
-
-                                Pending
-
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                    <!-- Lose -->
-
-                    <div class="transaction-item">
-
-                        <div class="transaction-icon lose">
-
-                            <i class="fa-solid fa-circle-xmark"></i>
-
-                        </div>
-
-                        <div class="transaction-details">
-
-                            <h4>Poker Lose</h4>
-
-                            <p>Yesterday • 08:40 PM</p>
-
-                        </div>
-
-                        <div class="transaction-right">
-
-                            <h4 class="amount minus">
-
-                                - ৳120
-
-                            </h4>
-
-                            <span class="status failed">
-
-                                Lost
-
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
+                    class="transaction-list"></div>
 
             </section>
 
