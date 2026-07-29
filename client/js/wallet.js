@@ -37,10 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     totalDeposit: document.getElementById("totalDeposit"),
     totalWithdraw: document.getElementById("totalWithdraw"),
     totalWinning: document.getElementById("totalWinning"),
-    totalLose: document.getElementById("totalLose"),
-    serviceCharge: document.getElementById("serviceCharge"),
-    winRate: document.getElementById("winRate"),
-
+    
     transactionList: document.getElementById("transactionList"),
     transactionHistory: document.getElementById("transactionHistory"),
 
@@ -311,17 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setMoney(DOM.totalWithdraw, wallet.totalWithdraw);
 
     setMoney(DOM.totalWinning, wallet.totalWinning);
-
-    setMoney(DOM.totalLose, wallet.totalLoss);
-
-    setMoney(DOM.serviceCharge, wallet.totalServiceCharge);
-
-    if (DOM.winRate) {
-      const winRate = Number(wallet.winRate);
-
-      DOM.winRate.textContent = `${Number.isFinite(winRate) ? winRate : 0}%`;
-    }
-
+    
     if (DOM.lastUpdated) {
       DOM.lastUpdated.textContent = formatDate(wallet.updatedAt || new Date());
     }
