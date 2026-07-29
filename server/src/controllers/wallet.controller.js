@@ -287,16 +287,9 @@ async function getWalletSummary(req, res, next) {
    GET PAGINATED WALLET TRANSACTIONS
 ========================================================= */
 
-async function getWalletTransactions(
-  req,
-  res,
-  next,
-) {
+async function getWalletTransactions(req, res, next) {
   try {
-    const userId =
-      parsePositiveInteger(
-        req.user?.id,
-      );
+    const userId = parsePositiveInteger(req.user?.id);
 
     if (!userId) {
       throw createControllerError(
@@ -306,39 +299,21 @@ async function getWalletTransactions(
       );
     }
 
-    const requestedPage =
-      parsePositiveInteger(
-        req.query.page,
-      ) || 1;
+    const requestedPage = parsePositiveInteger(req.query.page) || 1;
 
-    const requestedLimit =
-      parsePositiveInteger(
-        req.query.limit,
-      ) || 20;
+    const requestedLimit = parsePositiveInteger(req.query.limit) || 20;
 
     /*
      * এক request-এ সর্বোচ্চ ৫০টি।
      */
-    const limit =
-      Math.min(
-        requestedLimit,
-        50,
-      );
+    const limit = Math.min(requestedLimit, 50);
 
-    const requestedOffset =
-      parseNonNegativeInteger(
-        req.query.offset,
-      );
+    const requestedOffset = parseNonNegativeInteger(req.query.offset);
 
     const offset =
-      requestedOffset === null
-        ? (requestedPage - 1) * limit
-        : requestedOffset;
+      requestedOffset === null ? (requestedPage - 1) * limit : requestedOffset;
 
-    const [
-      countResult,
-      transactionResult,
-    ] = await Promise.all([
+    const [countResult, transactionResult] = await Promise.all([
       pool.execute(
         `
           SELECT
@@ -367,58 +342,37 @@ async function getWalletTransactions(
           FROM wallet_transactions
           WHERE user_id = ?
           ORDER BY id DESC
-          LIMIT ?
-          OFFSET ?
-        `,
-        [
-          userId,
-          limit,
-          offset,
-        ],
+        LIMIT ${limit}
+OFFSET ${offset}
+`,
+        [userId],
       ),
     ]);
 
-    const total =
-      Number(
-        countResult[0][0]?.total ||
-        0,
-      );
+    const total = Number(countResult[0][0]?.total || 0);
 
-    const transactions =
-      transactionResult[0].map(
-        mapTransactionRow,
-      );
+    const transactions = transactionResult[0].map(mapTransactionRow);
 
-    const loadedUntil =
-      offset +
-      transactions.length;
+    const loadedUntil = offset + transactions.length;
 
     return res.status(200).json({
       success: true,
 
-      message:
-        "Wallet transactions loaded successfully.",
+      message: "Wallet transactions loaded successfully.",
 
       data: {
         transactions,
 
         pagination: {
-          page:
-            Math.floor(
-              offset / limit,
-            ) + 1,
+          page: Math.floor(offset / limit) + 1,
 
           limit,
           offset,
           total,
 
-          hasMore:
-            loadedUntil < total,
+          hasMore: loadedUntil < total,
 
-          nextOffset:
-            loadedUntil < total
-              ? loadedUntil
-              : null,
+          nextOffset: loadedUntil < total ? loadedUntil : null,
         },
       },
     });
