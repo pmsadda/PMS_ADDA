@@ -29,6 +29,34 @@ async function getDashboardStats(req, res) {
     }
 }
 
+async function updateServiceCharges(
+    req,
+    res,
+    next
+) {
+    try {
+        const serviceCharges =
+            await adminDashboardService
+                .updateServiceCharges(
+                    req.body
+                );
+
+        return res.status(200).json({
+            success: true,
+
+            message:
+                "Service charges updated successfully.",
+
+            data: {
+                serviceCharges
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
-    getDashboardStats
+    getDashboardStats,
+    updateServiceCharges
 };

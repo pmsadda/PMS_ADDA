@@ -136,52 +136,30 @@ function getPlayerColor(seatNo) {
   return PLAYER_COLORS[index] || null;
 }
 
-function calculateMatchFinance(entryAmount, finalPlayerMode) {
-  const amount = Number(entryAmount);
-
-  const playerMode = Number(finalPlayerMode);
-
-  const totalPot = amount * playerMode;
-
-  const serviceChargePercent = 10;
-
-  const serviceChargeAmount = Number(
-    (totalPot * (serviceChargePercent / 100)).toFixed(2),
+async function getConfiguredLudoServiceCharge(
+  connection,
+) {
+  const [rows] = await connection.query(
+    `
+      SELECT
+        COALESCE(
+          AVG(service_charge),
+          10
+        ) AS service_charge
+      FROM game_rooms
+      WHERE game_type = 'ludo'
+    `,
   );
 
-  const distributableAmount = Number(
-    (totalPot - serviceChargeAmount).toFixed(2),
+  const configuredCharge = Number(
+    rows[0]?.service_charge,
   );
 
-  let firstPrize = distributableAmount;
-
-  let secondPrize = 0;
-
-  if (playerMode === 4) {
-    /*
-     * Runner-up পাবে:
-     * নিজের entry + entry-এর 50%
-     */
-    secondPrize = Number((amount * 0.5).toFixed(2));
-
-    firstPrize = Number((distributableAmount - secondPrize).toFixed(2));
-
-    if (firstPrize <= secondPrize) {
-      throw createServiceError(
-        "Entry amount is too low for the configured prize structure.",
-        500,
-      );
-    }
-  }
-
-  return {
-    totalPot,
-    serviceChargePercent,
-    serviceChargeAmount,
-    distributableAmount,
-    firstPrize,
-    secondPrize,
-  };
+  return Number.isFinite(configuredCharge) &&
+    configuredCharge >= 0 &&
+    configuredCharge <= 20
+    ? Number(configuredCharge.toFixed(2))
+    : 10;
 }
 
 /* ==========================================
@@ -293,6 +271,7 @@ async function findWaitingMatch(entryAmount, requestedPlayerMode, connection) {
           requested_player_mode,
           player_mode,
           current_players,
+          service_charge_percent,
           match_status,
           matchmaking_started_at,
           matchmaking_expires_at,
@@ -325,7 +304,16 @@ async function createWaitingMatch(
 ) {
   const matchCode = createMatchCode();
 
-  const finance = calculateMatchFinance(entryAmount, requestedPlayerMode);
+  const serviceChargePercent =
+  await getConfiguredLudoServiceCharge(
+    connection,
+  );
+
+const finance = calculateMatchFinance(
+  entryAmount,
+  requestedPlayerMode,
+  serviceChargePercent,
+);
 
   const waitSeconds = getMatchmakingWaitSeconds(requestedPlayerMode);
   const [result] = await connection.query(
@@ -384,12 +372,15 @@ async function createWaitingMatch(
     ],
   );
 
-  return {
-    id: Number(result.insertId),
-    matchCode,
-    entryAmount,
-    requestedPlayerMode,
-  };
+ return {
+  id: Number(result.insertId),
+  matchCode,
+  entryAmount,
+  requestedPlayerMode,
+
+  service_charge_percent:
+    serviceChargePercent,
+ };
 }
 
 /* ==========================================
@@ -649,13 +640,18 @@ async function countRealPlayers(matchId, connection) {
    Apply Final Player Mode
 ========================================== */
 
-async function applyFinalPlayerMode(
+ async function applyFinalPlayerMode(
   matchId,
   entryAmount,
   finalPlayerMode,
+  serviceChargePercent,
   connection,
 ) {
-  const finance = calculateMatchFinance(entryAmount, finalPlayerMode);
+  const finance = calculateMatchFinance(
+    entryAmount,
+    finalPlayerMode,
+    serviceChargePercent,
+  );
 
   await connection.query(
     `
@@ -717,6 +713,7 @@ async function finalizeMatchmaking(matchId) {
             requested_player_mode,
             player_mode,
             current_players,
+            service_charge_percent,
             match_status,
             matchmaking_expires_at,
             entry_collected
@@ -822,11 +819,12 @@ async function finalizeMatchmaking(matchId) {
     }
 
     await applyFinalPlayerMode(
-      validMatchId,
-      Number(match.entry_amount),
-      finalPlayerMode,
-      connection,
-    );
+   validMatchId,
+   Number(match.entry_amount),
+   finalPlayerMode,
+   Number(match.service_charge_percent),
+   connection,
+   );
 
     await startMatchIfReady(validMatchId, connection);
 
@@ -965,12 +963,16 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
      * timeout-এর আগেই match start।
      */
     if (currentPlayers === requestedPlayerMode) {
+
       await applyFinalPlayerMode(
-        matchId,
+       matchId,
         validEntryAmount,
-        requestedPlayerMode,
+         requestedPlayerMode,
+        Number(
+         match.service_charge_percent,
+        ),
         connection,
-      );
+        );
 
       await startMatchIfReady(matchId, connection);
     }

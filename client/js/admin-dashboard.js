@@ -311,7 +311,7 @@ function updateServiceChargeValues(serviceCharges) {
 
   const pokerCharge = serviceCharges.poker ?? 5;
 
-  const ludoCharge = serviceCharges.ludo ?? 5;
+  const ludoCharge = serviceCharges.ludo ?? 10;
 
   setInputValue("teenPattiCharge", teenPattiCharge);
 
@@ -382,26 +382,130 @@ function closeChargeConfirmModal() {
   }
 }
 
-function confirmServiceChargeSave() {
+async function confirmServiceChargeSave() {
   const charges = getChargeValues();
 
-  /*
-  Backend service-charge update API এখনো
-  তৈরি না হওয়ায় শুধু UI update করা হচ্ছে।
-  */
+  if (!validateChargeValues(charges)) {
+    showToast(
+      "Service charge must be between 0 and 20.",
+      "error",
+    );
 
-  setText("teenPattiChargeLabel", charges.teenPatti);
+    return;
+  }
 
-  setText("pokerChargeLabel", charges.poker);
+  const token = getAccessToken();
 
-  setText("ludoChargeLabel", charges.ludo);
+  if (!token) {
+    window.location.href =
+      "../pages/login.html";
 
-  closeChargeConfirmModal();
+    return;
+  }
 
-  showToast(
-    "Charge values updated on the dashboard. Backend save API is not connected yet.",
-  );
+  const confirmButton =
+    document.getElementById(
+      "confirmChargeSave",
+    );
+
+  try {
+    if (confirmButton) {
+      confirmButton.disabled = true;
+    }
+
+    showLoader();
+
+    const response = await fetch(
+      `${API_BASE_URL}/admin/dashboard/service-charges`,
+      {
+        method: "PATCH",
+
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+
+          Accept:
+            "application/json",
+
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify(charges),
+      },
+    );
+
+    const result =
+      await parseResponse(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      localStorage.removeItem(
+        "access_token",
+      );
+
+      throw new Error(
+        "Your admin session has expired.",
+      );
+    }
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+      throw new Error(
+        result.message ||
+        "Service charge update failed.",
+      );
+    }
+
+    const savedCharges =
+      result.data?.serviceCharges ||
+      charges;
+
+    updateServiceChargeValues(
+      savedCharges,
+    );
+
+    closeChargeConfirmModal();
+
+    showToast(
+      result.message ||
+      "Service charges updated successfully.",
+    );
+  } catch (error) {
+    console.error(
+      "SERVICE CHARGE UPDATE ERROR:",
+      error,
+    );
+
+    showToast(
+      error.message ||
+      "Service charge update failed.",
+      "error",
+    );
+
+    if (
+      error.message ===
+      "Your admin session has expired."
+    ) {
+      window.setTimeout(() => {
+        window.location.href =
+          "../pages/login.html";
+      }, 1200);
+    }
+  } finally {
+    if (confirmButton) {
+      confirmButton.disabled = false;
+    }
+
+    hideLoader();
+  }
 }
+
+
 
 /* =========================
    Recent request rendering

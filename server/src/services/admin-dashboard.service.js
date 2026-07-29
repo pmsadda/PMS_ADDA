@@ -1,18 +1,14 @@
-const { pool } = require(
-  "../config/database"
-);
+const { pool } = require("../config/database");
 
 async function getDashboardStats() {
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     /* =========================
        USER STATISTICS
     ========================= */
 
-    const [userRows] =
-      await connection.query(`
+    const [userRows] = await connection.query(`
         SELECT
           COUNT(*) AS total,
 
@@ -71,8 +67,7 @@ async function getDashboardStats() {
        DEPOSIT STATISTICS
     ========================= */
 
-    const [depositRows] =
-      await connection.query(`
+    const [depositRows] = await connection.query(`
         SELECT
           COUNT(*) AS total_count,
 
@@ -167,8 +162,7 @@ async function getDashboardStats() {
        WITHDRAW STATISTICS
     ========================= */
 
-    const [withdrawRows] =
-      await connection.query(`
+    const [withdrawRows] = await connection.query(`
         SELECT
           COUNT(*) AS total_count,
 
@@ -260,11 +254,64 @@ async function getDashboardStats() {
       `);
 
     /* =========================
+   RECENT REQUESTS
+========================= */
+
+    const [recentDepositRows] = await connection.query(`
+    SELECT
+      dr.id,
+      dr.deposit_id AS requestId,
+      dr.method,
+      dr.amount,
+      dr.status,
+      dr.created_at AS createdAt,
+
+      COALESCE(
+        NULLIF(u.full_name, ''),
+        u.username,
+        'Unknown User'
+      ) AS userName
+
+    FROM deposit_requests dr
+
+    INNER JOIN users u
+      ON u.id = dr.user_id
+
+    ORDER BY dr.id DESC
+
+    LIMIT 5
+  `);
+
+    const [recentWithdrawRows] = await connection.query(`
+    SELECT
+      wr.id,
+      wr.withdraw_id AS requestId,
+      wr.method,
+      wr.amount,
+      wr.status,
+      wr.created_at AS createdAt,
+
+      COALESCE(
+        NULLIF(u.full_name, ''),
+        u.username,
+        'Unknown User'
+      ) AS userName
+
+    FROM withdraw_requests wr
+
+    INNER JOIN users u
+      ON u.id = wr.user_id
+
+    ORDER BY wr.id DESC
+
+    LIMIT 5
+  `);
+
+    /* =========================
        REVENUE STATISTICS
     ========================= */
 
-    const [revenueRows] =
-      await connection.query(`
+    const [revenueRows] = await connection.query(`
         SELECT
           COUNT(*) AS total_rounds,
 
@@ -325,8 +372,7 @@ async function getDashboardStats() {
        ROOM STATISTICS
     ========================= */
 
-    const [roomRows] =
-      await connection.query(`
+    const [roomRows] = await connection.query(`
         SELECT
           COUNT(*) AS total_tables,
 
@@ -355,8 +401,7 @@ async function getDashboardStats() {
        BOT STATISTICS
     ========================= */
 
-    const [botRows] =
-      await connection.query(`
+    const [botRows] = await connection.query(`
         SELECT
           COUNT(*) AS total_bots,
 
@@ -379,8 +424,7 @@ async function getDashboardStats() {
         FROM teen_patti_bots
       `);
 
-    const [activeBotRows] =
-      await connection.query(`
+    const [activeBotRows] = await connection.query(`
         SELECT
           COALESCE(
             SUM(
@@ -405,8 +449,7 @@ async function getDashboardStats() {
        SERVICE CHARGE
     ========================= */
 
-    const [chargeRows] =
-      await connection.query(`
+    const [chargeRows] = await connection.query(`
         SELECT
           COALESCE(
             AVG(
@@ -446,266 +489,304 @@ async function getDashboardStats() {
         WHERE status != 'disabled'
       `);
 
-    const userStats =
-      userRows[0] || {};
+    const userStats = userRows[0] || {};
 
-    const depositStats =
-      depositRows[0] || {};
+    const depositStats = depositRows[0] || {};
 
-    const withdrawStats =
-      withdrawRows[0] || {};
+    const withdrawStats = withdrawRows[0] || {};
 
-    const revenueStats =
-      revenueRows[0] || {};
+    const revenueStats = revenueRows[0] || {};
 
-    const roomStats =
-      roomRows[0] || {};
+    const roomStats = roomRows[0] || {};
 
-    const botStats =
-      botRows[0] || {};
+    const botStats = botRows[0] || {};
 
-    const activeBotStats =
-      activeBotRows[0] || {};
+    const activeBotStats = activeBotRows[0] || {};
 
-    const chargeStats =
-      chargeRows[0] || {};
+    const chargeStats = chargeRows[0] || {};
 
     return {
       users: {
-        total: Number(
-          userStats.total || 0
-        ),
+        total: Number(userStats.total || 0),
 
-        active: Number(
-          userStats.active || 0
-        ),
+        active: Number(userStats.active || 0),
 
-        blocked: Number(
-          userStats.blocked || 0
-        ),
+        blocked: Number(userStats.blocked || 0),
 
-        online: Number(
-          userStats.online || 0
-        ),
+        online: Number(userStats.online || 0),
 
-        totalWalletBalance: Number(
-          userStats.total_wallet_balance || 0
-        ),
+        totalWalletBalance: Number(userStats.total_wallet_balance || 0),
 
-        totalDeposit: Number(
-          userStats.users_total_deposit || 0
-        ),
+        totalDeposit: Number(userStats.users_total_deposit || 0),
 
-        totalWithdraw: Number(
-          userStats.users_total_withdraw || 0
-        )
+        totalWithdraw: Number(userStats.users_total_withdraw || 0),
       },
 
       deposits: {
-        totalCount: Number(
-          depositStats.total_count || 0
-        ),
+        totalCount: Number(depositStats.total_count || 0),
 
-        totalAmount: Number(
-          depositStats.total_amount || 0
-        ),
+        totalAmount: Number(depositStats.total_amount || 0),
 
-        todayAmount: Number(
-          depositStats.today_amount || 0
-        ),
+        todayAmount: Number(depositStats.today_amount || 0),
 
         pending: {
-          count: Number(
-            depositStats.pending_count || 0
-          ),
+          count: Number(depositStats.pending_count || 0),
 
-          amount: Number(
-            depositStats.pending_amount || 0
-          )
+          amount: Number(depositStats.pending_amount || 0),
         },
 
         approved: {
-          count: Number(
-            depositStats.approved_count || 0
-          ),
+          count: Number(depositStats.approved_count || 0),
 
-          amount: Number(
-            depositStats.approved_amount || 0
-          )
+          amount: Number(depositStats.approved_amount || 0),
         },
 
         rejected: {
-          count: Number(
-            depositStats.rejected_count || 0
-          ),
+          count: Number(depositStats.rejected_count || 0),
 
-          amount: Number(
-            depositStats.rejected_amount || 0
-          )
-        }
+          amount: Number(depositStats.rejected_amount || 0),
+        },
       },
 
       withdrawals: {
-        totalCount: Number(
-          withdrawStats.total_count || 0
-        ),
+        totalCount: Number(withdrawStats.total_count || 0),
 
-        totalAmount: Number(
-          withdrawStats.total_amount || 0
-        ),
+        totalAmount: Number(withdrawStats.total_amount || 0),
 
-        todayAmount: Number(
-          withdrawStats.today_amount || 0
-        ),
+        todayAmount: Number(withdrawStats.today_amount || 0),
 
         pending: {
-          count: Number(
-            withdrawStats.pending_count || 0
-          ),
+          count: Number(withdrawStats.pending_count || 0),
 
-          amount: Number(
-            withdrawStats.pending_amount || 0
-          )
+          amount: Number(withdrawStats.pending_amount || 0),
         },
 
         approved: {
-          count: Number(
-            withdrawStats.approved_count || 0
-          ),
+          count: Number(withdrawStats.approved_count || 0),
 
-          amount: Number(
-            withdrawStats.approved_amount || 0
-          )
+          amount: Number(withdrawStats.approved_amount || 0),
         },
 
         rejected: {
-          count: Number(
-            withdrawStats.rejected_count || 0
-          ),
+          count: Number(withdrawStats.rejected_count || 0),
 
-          amount: Number(
-            withdrawStats.rejected_amount || 0
-          )
-        }
+          amount: Number(withdrawStats.rejected_amount || 0),
+        },
       },
 
       revenue: {
-        totalAmount: Number(
-          revenueStats.total_revenue || 0
-        ),
+        totalAmount: Number(revenueStats.total_revenue || 0),
 
-        todayAmount: Number(
-          revenueStats.today_revenue || 0
-        ),
+        todayAmount: Number(revenueStats.today_revenue || 0),
 
-        totalRounds: Number(
-          revenueStats.total_rounds || 0
-        ),
+        totalRounds: Number(revenueStats.total_rounds || 0),
 
-        realPlayerRevenue: Number(
-          revenueStats.real_player_revenue || 0
-        ),
+        realPlayerRevenue: Number(revenueStats.real_player_revenue || 0),
 
-        botRevenue: Number(
-          revenueStats.bot_revenue || 0
-        )
+        botRevenue: Number(revenueStats.bot_revenue || 0),
       },
 
       games: {
         teenPatti: {
-          revenue: Number(
-            revenueStats.total_revenue || 0
-          ),
+          revenue: Number(revenueStats.total_revenue || 0),
 
-          roundsPlayed: Number(
-            revenueStats.total_rounds || 0
-          )
+          roundsPlayed: Number(revenueStats.total_rounds || 0),
         },
 
         poker: {
           revenue: 0,
-          roundsPlayed: 0
+          roundsPlayed: 0,
         },
 
         ludo: {
           revenue: 0,
-          roundsPlayed: 0
-        }
+          roundsPlayed: 0,
+        },
       },
 
       rooms: {
-        total: Number(
-          roomStats.total_tables || 0
-        ),
+        total: Number(roomStats.total_tables || 0),
 
-        active: Number(
-          roomStats.active_tables || 0
-        )
+        active: Number(roomStats.active_tables || 0),
       },
 
       bots: {
-        total: Number(
-          botStats.total_bots || 0
-        ),
+        total: Number(botStats.total_bots || 0),
 
-        enabled: Number(
-          botStats.enabled_bots || 0
-        ),
+        enabled: Number(botStats.enabled_bots || 0),
 
-        active: Number(
-          activeBotStats.active_bots || 0
-        ),
+        active: Number(activeBotStats.active_bots || 0),
 
-        totalBalance: Number(
-          botStats.total_bot_balance || 0
-        ),
+        totalBalance: Number(botStats.total_bot_balance || 0),
 
-        gamesPlayed: Number(
-          revenueStats.total_rounds || 0
-        ),
+        gamesPlayed: Number(revenueStats.total_rounds || 0),
 
-        winRounds: Number(
-          revenueStats.bot_win_rounds || 0
-        ),
+        winRounds: Number(revenueStats.bot_win_rounds || 0),
 
-        revenue: Number(
-          revenueStats.bot_revenue || 0
-        ),
+        revenue: Number(revenueStats.bot_revenue || 0),
 
-        totalWin: Number(
-          activeBotStats.total_bot_win || 0
-        ),
+        totalWin: Number(activeBotStats.total_bot_win || 0),
 
         loss: 0,
 
-        netResult: Number(
-          activeBotStats.total_bot_win || 0
-        )
+        netResult: Number(activeBotStats.total_bot_win || 0),
       },
 
       serviceCharges: {
-        teenPatti: Number(
-          chargeStats.teen_patti_charge || 5
-        ),
+        teenPatti: Number(chargeStats.teen_patti_charge || 5),
 
-        poker: Number(
-          chargeStats.poker_charge || 5
-        ),
+        poker: Number(chargeStats.poker_charge || 5),
 
-        ludo: Number(
-          chargeStats.ludo_charge || 5
-        )
+        ludo: Number(chargeStats.ludo_charge || 10),
       },
 
-      recentDeposits: [],
+      recentDeposits:
+  recentDepositRows.map(
+    (request) => ({
+      id: Number(request.id),
 
-      recentWithdrawals: []
+      requestId:
+        request.requestId,
+
+      userName:
+        request.userName,
+
+      method:
+        request.method,
+
+      amount: Number(
+        request.amount || 0
+      ),
+
+      status:
+        request.status,
+
+      createdAt:
+        request.createdAt
+    })
+  ),
+
+recentWithdrawals:
+  recentWithdrawRows.map(
+    (request) => ({
+      id: Number(request.id),
+
+      requestId:
+        request.requestId,
+
+      userName:
+        request.userName,
+
+      method:
+        request.method,
+
+      amount: Number(
+        request.amount || 0
+      ),
+
+      status:
+        request.status,
+
+      createdAt:
+        request.createdAt
+    })
+  )
     };
   } finally {
     connection.release();
   }
 }
 
+function validateServiceCharge(value) {
+  const charge = Number(value);
+
+  if (
+    !Number.isFinite(charge) ||
+    charge < 0 ||
+    charge > 20
+  ) {
+    const error = new Error(
+      "Service charge must be between 0 and 20."
+    );
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return Number(charge.toFixed(2));
+}
+
+async function updateServiceCharges(
+  serviceCharges
+) {
+  const charges = {
+    teenPatti: validateServiceCharge(
+      serviceCharges?.teenPatti
+    ),
+
+    poker: validateServiceCharge(
+      serviceCharges?.poker
+    ),
+
+    ludo: validateServiceCharge(
+      serviceCharges?.ludo
+    )
+  };
+
+  const connection =
+    await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const chargeUpdates = [
+      [
+        "teen_patti",
+        charges.teenPatti
+      ],
+
+      [
+        "poker",
+        charges.poker
+      ],
+
+      [
+        "ludo",
+        charges.ludo
+      ]
+    ];
+
+    for (
+      const [
+        gameType,
+        serviceCharge
+      ] of chargeUpdates
+    ) {
+      await connection.query(
+        `
+        UPDATE game_rooms
+        SET service_charge = ?
+        WHERE game_type = ?
+        `,
+        [
+          serviceCharge,
+          gameType
+        ]
+      );
+    }
+
+    await connection.commit();
+
+    return charges;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
 module.exports = {
-  getDashboardStats
+  getDashboardStats,
+  updateServiceCharges
 };
