@@ -38,13 +38,17 @@ const ALLOWED_PLAYER_MODES = Object.freeze([2, 4]);
 
 /*
  * 2-player:
- * Seat 1 = Red
- * Seat 3 = Yellow
  *
- * তাই দুজন board-এর বিপরীত পাশে থাকবে।
+ * প্রথম Real Player:
+ * Seat 4 = Blue
+ *
+ * দ্বিতীয় Real Player অথবা Bot:
+ * Seat 2 = Green
+ *
+ * Blue এবং Green board-এর বিপরীত পাশে।
  */
 const SEAT_PLAN_BY_MODE = Object.freeze({
-  2: Object.freeze([1, 3]),
+  2: Object.freeze([4, 2]),
 
   4: Object.freeze([1, 2, 3, 4]),
 });
