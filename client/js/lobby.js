@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     withdrawals: [],
     notifications: [],
     lobbyNotices: [],
+    gameAvailability: {},
     loading: false,
     lastLoadedAt: 0,
     toastTimer: null,
@@ -513,6 +514,103 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function extractGameAvailability(result) {
+    const games = result?.data?.games || result?.games || {};
+
+    if (!games || typeof games !== "object" || Array.isArray(games)) {
+      return {};
+    }
+
+    return games;
+  }
+
+  function renderGameAvailability() {
+    const gameConfigs = [
+      {
+        gameType: "teen_patti",
+        button: DOM.teenPattiButton,
+      },
+      {
+        gameType: "poker",
+        button: DOM.pokerButton,
+      },
+      {
+        gameType: "ludo",
+        button: DOM.ludoButton,
+      },
+    ];
+
+    gameConfigs.forEach(({ gameType, button }) => {
+      if (!button) {
+        return;
+      }
+
+      const game = STATE.gameAvailability[gameType] || null;
+
+      /*
+       * API data পাওয়া না গেলে network
+       * সমস্যার কারণে game বন্ধ হবে না।
+       */
+      const available = game?.available !== false;
+
+      const card = button.closest(".game-card");
+
+      button.disabled = !available;
+
+      button.setAttribute("aria-disabled", String(!available));
+
+      card?.classList.toggle("is-unavailable", !available);
+
+      const icon = document.createElement("i");
+
+      icon.className = available ? "fa-solid fa-play" : "fa-solid fa-ban";
+
+      button.replaceChildren(
+        icon,
+
+        document.createTextNode(available ? " Play Now" : " Unavailable"),
+      );
+
+      const gameInfo = card?.querySelector(".game-info");
+
+      if (!gameInfo) {
+        return;
+      }
+
+      let liveStatus = gameInfo.querySelector(".game-live-status");
+
+      if (!liveStatus) {
+        liveStatus = document.createElement("p");
+
+        liveStatus.className = "game-live-status";
+
+        gameInfo.insertBefore(liveStatus, button);
+      }
+
+      if (!available) {
+        liveStatus.textContent = "Temporarily unavailable";
+
+        liveStatus.classList.add("is-offline");
+
+        return;
+      }
+
+      liveStatus.classList.remove("is-offline");
+
+      const activePlayers = Number(game?.activePlayers || 0);
+
+      const availableRooms = Number(game?.availableRooms || 0);
+
+      if (activePlayers > 0) {
+        liveStatus.textContent = `${activePlayers} players active`;
+      } else if (availableRooms > 0) {
+        liveStatus.textContent = `${availableRooms} rooms available`;
+      } else {
+        liveStatus.textContent = "Available now";
+      }
+    });
+  }
+
   function hideLobbyNotice() {
     if (DOM.lobbyNotice) {
       DOM.lobbyNotice.hidden = true;
@@ -585,13 +683,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const [userResult, depositResult, withdrawResult, noticeResult] =
-        await Promise.allSettled([
-          requestAPI("/auth/me"),
-          requestAPI("/deposits/my-history"),
-          requestAPI("/withdraws/my-history"),
-          requestAPI("/lobby-notices/public"),
-        ]);
+      const [
+        userResult,
+        depositResult,
+        withdrawResult,
+        noticeResult,
+        gameResult,
+      ] = await Promise.allSettled([
+        requestAPI("/auth/me"),
+        requestAPI("/deposits/my-history"),
+        requestAPI("/withdraws/my-history"),
+        requestAPI("/lobby-notices/public"),
+        requestAPI("/games/availability"),
+      ]);
 
       if (userResult.status === "rejected") {
         throw userResult.reason;
@@ -624,13 +728,24 @@ document.addEventListener("DOMContentLoaded", () => {
           : [];
 
       STATE.lobbyNotices =
-        noticeResult.status === "fulfilled"
-          ? extractLobbyNotices(noticeResult.value)
-          : [];
+  noticeResult.status === "fulfilled"
+    ? extractLobbyNotices(
+        noticeResult.value,
+      )
+    : [];
 
-      renderLobbyNotice();
+STATE.gameAvailability =
+  gameResult.status === "fulfilled"
+    ? extractGameAvailability(
+        gameResult.value,
+      )
+    : {};
 
-      buildNotifications();
+renderLobbyNotice();
+
+renderGameAvailability();
+
+buildNotifications();
       renderUser();
       renderNotifications();
 

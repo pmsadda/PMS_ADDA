@@ -216,6 +216,93 @@ async function getGameSummary() {
     };
 }
 
+async function getPublicGameAvailability() {
+    const gameTypes = [
+        "teen_patti",
+        "poker",
+        "ludo"
+    ];
+
+    const [rows] = await pool.query(`
+        SELECT
+            game_type,
+
+            COUNT(*) AS total_rooms,
+
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN status IN (
+                            'waiting',
+                            'running'
+                        )
+                        THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS available_rooms,
+
+            COALESCE(
+                SUM(current_players),
+                0
+            ) AS active_players
+
+        FROM game_rooms
+
+        WHERE game_type IN (
+            'teen_patti',
+            'poker',
+            'ludo'
+        )
+
+        GROUP BY game_type
+    `);
+
+    const games = {};
+
+    gameTypes.forEach((gameType) => {
+        const row =
+            rows.find(
+                (item) =>
+                    String(item.game_type) ===
+                    gameType
+            ) || null;
+
+        const totalRooms = Number(
+            row?.total_rooms || 0
+        );
+
+        const availableRooms = Number(
+            row?.available_rooms || 0
+        );
+
+        games[gameType] = {
+            gameType,
+
+            /*
+             * কোনো game_rooms record না থাকলে
+             * game-এর নিজস্ব room module চলবে।
+             *
+             * Record থাকলে অন্তত একটি waiting
+             * অথবা running room থাকতে হবে।
+             */
+            available:
+                totalRooms === 0 ||
+                availableRooms > 0,
+
+            totalRooms,
+            availableRooms,
+
+            activePlayers: Number(
+                row?.active_players || 0
+            )
+        };
+    });
+
+    return games;
+}
+
 async function getRooms(queryParams = {}) {
     const page = parsePositiveInteger(
         queryParams.page,
@@ -799,6 +886,7 @@ async function deleteRoom(roomId) {
 
 module.exports = {
     getGameSummary,
+    getPublicGameAvailability,
     getRooms,
     getRoomById,
     createRoom,

@@ -1538,3 +1538,78 @@ button:focus{
         text-overflow: ellipsis;
     }
 }
+
+/* ==========================================
+   DYNAMIC GAME AVAILABILITY
+========================================== */
+
+.game-live-status {
+    margin: 0 0 12px;
+
+    color: #59e391;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.game-live-status::before {
+    display: inline-block;
+
+    width: 7px;
+    height: 7px;
+
+    margin-right: 7px;
+
+    content: "";
+
+    border-radius: 50%;
+
+    background: #35e783;
+
+    box-shadow:
+        0 0 9px
+        rgba(53, 231, 131, 0.7);
+}
+
+.game-live-status.is-offline {
+    color: #ff8585;
+}
+
+.game-live-status.is-offline::before {
+    background: #ff5d5d;
+
+    box-shadow:
+        0 0 9px
+        rgba(255, 93, 93, 0.55);
+}
+
+.game-card.is-unavailable {
+    opacity: 0.62;
+
+    filter: saturate(0.55);
+}
+
+.game-card.is-unavailable:hover {
+    transform: none;
+
+    border-color:
+        rgba(255, 255, 255, 0.12);
+
+    box-shadow: none;
+}
+
+.play-btn:disabled {
+    cursor: not-allowed;
+
+    color: #c4c4c4;
+
+    background: #343434;
+
+    box-shadow: none;
+}
+
+.play-btn:disabled:hover {
+    transform: none;
+
+    box-shadow: none;
+}

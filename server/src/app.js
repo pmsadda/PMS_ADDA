@@ -28,6 +28,10 @@ const adminUsersRoutes = require("./routes/admin-users.routes");
 
 const adminGamesRoutes = require("./routes/admin-games.routes");
 
+const adminGamesController = require("./controllers/admin-games.controller");
+
+const { requireAuth } = require("./middleware/auth.middleware");
+
 const adminBotsRoutes = require("./routes/admin-bots.routes");
 
 const teenPattiRoutes = require("./routes/teenpatti.routes");
@@ -96,6 +100,15 @@ app.use("/api/withdraws", withdrawRoutes);
 app.use("/api/wallet", walletRoutes);
 
 app.use("/api/lobby-notices", lobbyNoticeRoutes);
+
+/*
+ * Lobby game availability
+ */
+app.get(
+  "/api/games/availability",
+  requireAuth,
+  adminGamesController.getPublicGameAvailability,
+);
 
 app.use("/api/admin/withdraws", adminWithdrawRoutes);
 

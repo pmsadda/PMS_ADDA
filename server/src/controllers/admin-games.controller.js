@@ -44,6 +44,31 @@ async function getGameSummary(req, res) {
     }
 }
 
+async function getPublicGameAvailability(
+    req,
+    res,
+    next
+) {
+    try {
+        const games =
+            await adminGamesService
+                .getPublicGameAvailability();
+
+        return res.status(200).json({
+            success: true,
+
+            message:
+                "Game availability loaded successfully.",
+
+            data: {
+                games
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 async function getRooms(req, res) {
     try {
         const result =
@@ -288,6 +313,7 @@ async function deleteRoom(req, res) {
 
 module.exports = {
     getGameSummary,
+    getPublicGameAvailability,
     getRooms,
     getRoomById,
     createRoom,
