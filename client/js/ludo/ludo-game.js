@@ -658,83 +658,202 @@ const LUDO_LIVE = {
     }
   },
 
-  renderPlayers() {
-    this.colors.forEach((color) => {
-      const suffix = color.charAt(0).toUpperCase() + color.slice(1);
+renderPlayers() {
+  const me = this.getMe();
 
-      const panel = this.getElement(`playerPanel${suffix}`);
+  const perspectiveSlots = [
+    "view-bottom-left",
+    "view-top-left",
+    "view-top-right",
+    "view-bottom-right",
+  ];
 
-      const name = this.getElement(`playerName${suffix}`);
+  const localColorIndex =
+    this.colors.indexOf(
+      String(me?.color || "").toLowerCase(),
+    );
 
-      const balance = this.getElement(`playerBalance${suffix}`);
+  this.colors.forEach((color) => {
+    const suffix =
+      color.charAt(0).toUpperCase() +
+      color.slice(1);
 
-      const avatar = this.getElement(`playerAvatar${suffix}`);
+    const panel =
+      this.getElement(
+        `playerPanel${suffix}`,
+      );
 
-      const player = this.state.players.find((item) => item.color === color);
+    const name =
+      this.getElement(
+        `playerName${suffix}`,
+      );
 
-      panel?.classList.toggle("is-empty", !player);
+    const balance =
+      this.getElement(
+        `playerBalance${suffix}`,
+      );
 
-      panel?.classList.toggle("is-online", Boolean(player));
+    const avatar =
+      this.getElement(
+        `playerAvatar${suffix}`,
+      );
 
-      if (!player) {
-        if (name) {
-          name.textContent = "Waiting…";
-        }
+    const player =
+      this.state.players.find(
+        (item) => item.color === color,
+      );
 
-        if (balance) {
-          balance.textContent = "৳0";
-        }
+    panel?.classList.remove(
+      ...perspectiveSlots,
+      "is-local-player",
+      "is-bot-player",
+    );
 
-        return;
-      }
+    panel?.classList.toggle(
+      "is-empty",
+      !player,
+    );
 
+    panel?.classList.toggle(
+      "is-online",
+      Boolean(player),
+    );
+
+    if (!player) {
       if (name) {
-        name.textContent =
-          player.fullName ||
-          player.username ||
-          (player.isBot ? "Ludo Bot" : `Player ${player.seatNo}`);
+        name.textContent = "Waiting…";
       }
 
       if (balance) {
-        balance.textContent = player.isBot
-          ? "BOT"
-          : this.formatMoney(player.walletBalance);
+        balance.hidden = false;
+        balance.textContent = "৳0";
       }
 
-      if (avatar && player.avatarUrl) {
-        const rawUrl = String(player.avatarUrl);
+      return;
+    }
 
-        let avatarUrl = rawUrl;
+    /*
+     * প্রত্যেক user-এর নিজের profile
+     * তার screen-এর নিচে থাকবে।
+     */
+    if (panel && localColorIndex >= 0) {
+      const playerColorIndex =
+        this.colors.indexOf(color);
 
-        if (!/^https?:\/\//i.test(rawUrl) && !rawUrl.startsWith("/")) {
-          avatarUrl = rawUrl.startsWith("assets/")
+      const relativePosition =
+        (
+          playerColorIndex -
+          localColorIndex +
+          this.colors.length
+        ) % this.colors.length;
+
+      panel.classList.add(
+        perspectiveSlots[
+          relativePosition
+        ],
+      );
+    }
+
+    const isLocalPlayer =
+      Number(player.id) ===
+      Number(me?.id);
+
+    panel?.classList.toggle(
+      "is-local-player",
+      isLocalPlayer,
+    );
+
+    panel?.classList.toggle(
+      "is-bot-player",
+      Boolean(player.isBot),
+    );
+
+    if (name) {
+      /*
+       * Bot-এর আসল নাম থাকবে।
+       * কোনো fallback-এও Bot লেখা হবে না।
+       */
+      name.textContent =
+        player.fullName ||
+        player.username ||
+        `Player ${player.seatNo}`;
+    }
+
+    if (balance) {
+      /*
+       * Bot profile-এ BOT লেখা এবং
+       * balance line দুটোই hide হবে।
+       */
+      balance.hidden =
+        Boolean(player.isBot);
+
+      balance.textContent =
+        player.isBot
+          ? ""
+          : this.formatMoney(
+              player.walletBalance,
+            );
+    }
+
+    if (avatar && player.avatarUrl) {
+      const rawUrl =
+        String(player.avatarUrl);
+
+      let avatarUrl = rawUrl;
+
+      if (
+        !/^https?:\/\//i.test(rawUrl) &&
+        !rawUrl.startsWith("/")
+      ) {
+        avatarUrl =
+          rawUrl.startsWith("assets/")
             ? `../${rawUrl}`
             : `../assets/images/avatars/${rawUrl}`;
-        }
+      }
 
-        if (avatar.dataset.failedSrc !== avatarUrl) {
-          avatar.onerror = () => {
-            avatar.dataset.failedSrc = avatarUrl;
+      if (
+        avatar.dataset.failedSrc !==
+        avatarUrl
+      ) {
+        avatar.onerror = () => {
+          avatar.dataset.failedSrc =
+            avatarUrl;
 
-            avatar.hidden = true;
+          avatar.hidden = true;
 
-            const wrapper = avatar.closest(".player-avatar");
+          const wrapper =
+            avatar.closest(
+              ".player-avatar",
+            );
 
-            wrapper?.classList.add("has-fallback-avatar");
+          wrapper?.classList.add(
+            "has-fallback-avatar",
+          );
 
-            wrapper.dataset.letter = (player.fullName || "P")
+          wrapper.dataset.letter =
+            (
+              player.fullName ||
+              player.username ||
+              "P"
+            )
               .charAt(0)
               .toUpperCase();
-          };
+        };
 
-          if (avatar.src !== new URL(avatarUrl, window.location.href).href) {
-            avatar.hidden = false;
-            avatar.src = avatarUrl;
-          }
+        if (
+          avatar.src !==
+          new URL(
+            avatarUrl,
+            window.location.href,
+          ).href
+        ) {
+          avatar.hidden = false;
+          avatar.src = avatarUrl;
         }
       }
-    });
-  },
+    }
+  });
+},
 
   renderMatchmaking() {
     const match = this.state.match;

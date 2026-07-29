@@ -2264,19 +2264,54 @@ button {
 }
 
 /* ==========================================
-   LUDO — REMOVE HEADER
+   LUDO — HEADER AND PLAYER PERSPECTIVE
 ========================================== */
 
+/* Header এবং তার জায়গা সম্পূর্ণ remove */
 .game-header {
   display: none !important;
 }
 
 @media (orientation: portrait) {
   .ludo-app {
-    grid-template-rows: auto !important;
+    grid-template-rows:
+      auto !important;
   }
 
   .game-stage {
     margin-top: 0 !important;
   }
+
+  /*
+   * Local player সবসময় নিচের বাঁ পাশে।
+   * বিপরীত player উপরের দিকে থাকবে।
+   */
+  .game-stage
+  .player-panel.view-bottom-left {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+    justify-self: stretch !important;
+  }
+
+  .game-stage
+  .player-panel.view-top-left {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    justify-self: stretch !important;
+  }
+
+  .game-stage
+  .player-panel.view-top-right {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    justify-self: stretch !important;
+  }
+
+  .game-stage
+  .player-panel.view-bottom-right {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+    justify-self: stretch !important;
+  }
 }
+
