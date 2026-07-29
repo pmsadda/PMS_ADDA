@@ -5,7 +5,6 @@
 
 const { pool } = require("../config/database");
 
-
 /* ==========================================
    Helper: Generate Transaction ID
 ========================================== */
@@ -13,26 +12,17 @@ const { pool } = require("../config/database");
 function generateTransactionId(prefix = "WTX") {
   const timestamp = Date.now();
 
-  const randomNumber =
-    Math.floor(
-      100000 + Math.random() * 900000
-    );
+  const randomNumber = Math.floor(100000 + Math.random() * 900000);
 
   return `${prefix}-${timestamp}-${randomNumber}`;
 }
-
 
 /* ==========================================
    Helper: Validate Withdraw Status
 ========================================== */
 
 function validateStatus(status) {
-  const allowedStatuses = [
-    "all",
-    "pending",
-    "approved",
-    "rejected"
-  ];
+  const allowedStatuses = ["all", "pending", "approved", "rejected"];
 
   if (!allowedStatuses.includes(status)) {
     return "all";
@@ -41,24 +31,19 @@ function validateStatus(status) {
   return status;
 }
 
-
 /* ==========================================
    Get Withdraw Requests
 ========================================== */
 
-async function getWithdrawRequests(
-  status = "all"
-) {
-  const selectedStatus =
-    validateStatus(status);
+async function getWithdrawRequests(status = "all") {
+  const selectedStatus = validateStatus(status);
 
   const queryParams = [];
 
   let whereClause = "";
 
   if (selectedStatus !== "all") {
-    whereClause =
-      "WHERE wr.status = ?";
+    whereClause = "WHERE wr.status = ?";
 
     queryParams.push(selectedStatus);
   }
@@ -128,34 +113,26 @@ async function getWithdrawRequests(
 
       wr.created_at DESC
     `,
-    queryParams
+    queryParams,
   );
 
   return rows;
 }
 
-
 /* ==========================================
    Approve Withdraw
 ========================================== */
 
-async function approveWithdraw(
-  withdrawId,
-  adminNote = null,
-  adminId = null
-) {
-  const connection =
-    await pool.getConnection();
+async function approveWithdraw(withdrawId, adminNote = null, adminId = null) {
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-
     /* Lock withdraw request */
 
-    const [withdrawRows] =
-      await connection.execute(
-        `
+    const [withdrawRows] = await connection.execute(
+      `
         SELECT
           id,
           withdraw_id,
@@ -169,27 +146,18 @@ async function approveWithdraw(
         WHERE id = ?
         FOR UPDATE
         `,
-        [withdrawId]
-      );
-
+      [withdrawId],
+    );
 
     if (withdrawRows.length === 0) {
-      throw new Error(
-        "Withdrawal request not found."
-      );
+      throw new Error("Withdrawal request not found.");
     }
 
-
-    const withdraw =
-      withdrawRows[0];
-
+    const withdraw = withdrawRows[0];
 
     if (withdraw.status !== "pending") {
-      throw new Error(
-        `Withdrawal request is already ${withdraw.status}.`
-      );
+      throw new Error(`Withdrawal request is already ${withdraw.status}.`);
     }
-
 
     /*
       Frontend বর্তমানে adminNote-এর মধ্যে
@@ -199,22 +167,16 @@ async function approveWithdraw(
       admin note হিসেবে save করা হচ্ছে।
     */
 
-    const paymentReference =
-      adminNote
-        ? String(adminNote).slice(0, 100)
-        : null;
+    const paymentReference = adminNote ? String(adminNote).slice(0, 100) : null;
 
-    const safeAdminNote =
-      adminNote
-        ? String(adminNote).slice(0, 255)
-        : "Withdrawal approved by admin";
-
+    const safeAdminNote = adminNote
+      ? String(adminNote).slice(0, 255)
+      : "Withdrawal approved by admin";
 
     /* Update withdraw request */
 
-    const [updateResult] =
-      await connection.execute(
-        `
+    const [updateResult] = await connection.execute(
+      `
         UPDATE withdraw_requests
         SET
           status = 'approved',
@@ -231,21 +193,12 @@ async function approveWithdraw(
           id = ?
           AND status = 'pending'
         `,
-        [
-          paymentReference,
-          safeAdminNote,
-          adminId || null,
-          withdrawId
-        ]
-      );
-
+      [paymentReference, safeAdminNote, adminId || null, withdrawId],
+    );
 
     if (updateResult.affectedRows !== 1) {
-      throw new Error(
-        "Withdrawal approval failed."
-      );
+      throw new Error("Withdrawal approval failed.");
     }
-
 
     /*
       Withdraw request তৈরির সময় user balance
@@ -255,62 +208,78 @@ async function approveWithdraw(
       deduct করা হবে না।
     */
 
+    const [userUpdateResult] = await connection.execute(
+      `
+    UPDATE users
+    SET total_withdraw =
+      COALESCE(total_withdraw, 0) + ?
+    WHERE id = ?
+    `,
+      [Number(withdraw.amount), withdraw.user_id],
+    );
+
+    if (userUpdateResult.affectedRows !== 1) {
+      throw new Error("User total withdrawal update failed.");
+    }
+
+    await connection.execute(
+      `
+  UPDATE wallet_transactions
+  SET
+    status = 'completed',
+    description = ?
+  WHERE user_id = ?
+    AND transaction_type = 'withdraw'
+    AND direction = 'debit'
+    AND reference_type = 'withdraw_request'
+    AND reference_id = ?
+    AND status = 'pending'
+  `,
+      [
+        `Withdrawal approved: ${withdraw.withdraw_id}`,
+        withdraw.user_id,
+        String(withdraw.withdraw_id),
+      ],
+    );
 
     await connection.commit();
-
 
     return {
       id: Number(withdraw.id),
 
-      withdrawId:
-        withdraw.withdraw_id,
+      withdrawId: withdraw.withdraw_id,
 
-      userId:
-        Number(withdraw.user_id),
+      userId: Number(withdraw.user_id),
 
-      amount:
-        Number(withdraw.amount),
+      amount: Number(withdraw.amount),
 
       status: "approved",
 
-      adminPaymentReference:
-        paymentReference
+      adminPaymentReference: paymentReference,
     };
-
-
   } catch (error) {
     await connection.rollback();
 
     throw error;
-
-
   } finally {
     connection.release();
   }
 }
 
-
 /* ==========================================
    Reject Withdraw and Refund Balance
 ========================================== */
 
-async function rejectWithdraw(
-  withdrawId,
-  adminNote = null,
-  adminId = null
-) {
-  const connection =
-    await pool.getConnection();
+async function rejectWithdraw(withdrawId, adminNote = null, adminId = null) {
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-
     /* Lock withdraw request */
 
-    const [withdrawRows] =
-      await connection.execute(
-        `
+    const [withdrawRows] = await connection.execute(
+      `
         SELECT
           id,
           withdraw_id,
@@ -321,20 +290,14 @@ async function rejectWithdraw(
         WHERE id = ?
         FOR UPDATE
         `,
-        [withdrawId]
-      );
-
+      [withdrawId],
+    );
 
     if (withdrawRows.length === 0) {
-      throw new Error(
-        "Withdrawal request not found."
-      );
+      throw new Error("Withdrawal request not found.");
     }
 
-
-    const withdraw =
-      withdrawRows[0];
-
+    const withdraw = withdrawRows[0];
 
     /*
       এটি duplicate refund বন্ধ করবে।
@@ -344,17 +307,13 @@ async function rejectWithdraw(
     */
 
     if (withdraw.status !== "pending") {
-      throw new Error(
-        `Withdrawal request is already ${withdraw.status}.`
-      );
+      throw new Error(`Withdrawal request is already ${withdraw.status}.`);
     }
-
 
     /* Lock user wallet */
 
-    const [userRows] =
-      await connection.execute(
-        `
+    const [userRows] = await connection.execute(
+      `
         SELECT
           id,
           wallet_balance
@@ -362,92 +321,56 @@ async function rejectWithdraw(
         WHERE id = ?
         FOR UPDATE
         `,
-        [withdraw.user_id]
-      );
-
+      [withdraw.user_id],
+    );
 
     if (userRows.length === 0) {
-      throw new Error(
-        "Withdrawal user not found."
-      );
+      throw new Error("Withdrawal user not found.");
     }
 
+    const user = userRows[0];
 
-    const user =
-      userRows[0];
+    const refundAmount = Number(withdraw.amount);
 
+    const balanceBefore = Number(user.wallet_balance);
 
-    const refundAmount =
-      Number(withdraw.amount);
+    const balanceAfter = balanceBefore + refundAmount;
 
-
-    const balanceBefore =
-      Number(user.wallet_balance);
-
-
-    const balanceAfter =
-      balanceBefore + refundAmount;
-
-
-    if (
-      !Number.isFinite(refundAmount) ||
-      refundAmount <= 0
-    ) {
-      throw new Error(
-        "Invalid withdrawal refund amount."
-      );
+    if (!Number.isFinite(refundAmount) || refundAmount <= 0) {
+      throw new Error("Invalid withdrawal refund amount.");
     }
-
 
     if (!Number.isFinite(balanceBefore)) {
-      throw new Error(
-        "Invalid current wallet balance."
-      );
+      throw new Error("Invalid current wallet balance.");
     }
-
 
     /* Refund wallet */
 
-    const [walletUpdateResult] =
-      await connection.execute(
-        `
+    const [walletUpdateResult] = await connection.execute(
+      `
         UPDATE users
         SET wallet_balance = ?
         WHERE id = ?
         `,
-        [
-          balanceAfter,
-          withdraw.user_id
-        ]
-      );
+      [balanceAfter, withdraw.user_id],
+    );
 
-
-    if (
-      walletUpdateResult.affectedRows !== 1
-    ) {
-      throw new Error(
-        "Wallet refund failed."
-      );
+    if (walletUpdateResult.affectedRows !== 1) {
+      throw new Error("Wallet refund failed.");
     }
 
+    const safeRejectReason = adminNote
+      ? String(adminNote).slice(0, 100)
+      : "Rejected by admin";
 
-    const safeRejectReason =
-      adminNote
-        ? String(adminNote).slice(0, 100)
-        : "Rejected by admin";
-
-
-    const safeAdminNote =
-      adminNote
-        ? String(adminNote).slice(0, 255)
-        : "Withdrawal rejected and balance refunded";
-
+    const safeAdminNote = adminNote
+      ? String(adminNote).slice(0, 255)
+      : "Withdrawal rejected and balance refunded";
 
     /* Mark request rejected */
 
-    const [withdrawUpdateResult] =
-      await connection.execute(
-        `
+    const [withdrawUpdateResult] = await connection.execute(
+      `
         UPDATE withdraw_requests
         SET
           status = 'rejected',
@@ -464,29 +387,42 @@ async function rejectWithdraw(
           id = ?
           AND status = 'pending'
         `,
-        [
-          safeRejectReason,
-          safeAdminNote,
-          adminId || null,
-          withdrawId
-        ]
-      );
+      [safeRejectReason, safeAdminNote, adminId || null, withdrawId],
+    );
 
-
-    if (
-      withdrawUpdateResult.affectedRows !== 1
-    ) {
-      throw new Error(
-        "Withdrawal rejection failed."
-      );
+    if (withdrawUpdateResult.affectedRows !== 1) {
+      throw new Error("Withdrawal rejection failed.");
     }
 
+    await connection.execute(
+  `
+  UPDATE wallet_transactions
+  SET
+    status = 'failed',
+    description = ?
+  WHERE user_id = ?
+    AND transaction_type = 'withdraw'
+    AND direction = 'debit'
+    AND reference_type = 'withdraw_request'
+    AND reference_id = ?
+    AND status = 'pending'
+  `,
+  [
+    `Withdrawal rejected: ${String(
+      withdraw.withdraw_id ||
+      withdraw.id
+    )}`,
+    withdraw.user_id,
+    String(
+      withdraw.withdraw_id ||
+      withdraw.id
+    )
+  ]
+);
 
     /* Generate wallet transaction ID */
 
-    const transactionId =
-      generateTransactionId("WRF");
-
+    const transactionId = generateTransactionId("WRF");
 
     /*
       transaction_type = withdraw
@@ -499,9 +435,8 @@ async function rejectWithdraw(
       আগে থেকেই ENUM-এ আছে।
     */
 
-    const [transactionResult] =
-      await connection.execute(
-        `
+    const [transactionResult] = await connection.execute(
+      `
         INSERT INTO wallet_transactions (
           transaction_id,
           user_id,
@@ -531,74 +466,56 @@ async function rejectWithdraw(
           ?
         )
         `,
-        [
-          transactionId,
+      [
+        transactionId,
 
-          withdraw.user_id,
+        withdraw.user_id,
 
-          refundAmount,
+        refundAmount,
 
-          balanceBefore,
+        balanceBefore,
 
-          balanceAfter,
+        balanceAfter,
 
-          String(
-            withdraw.withdraw_id ||
-            withdraw.id
-          ),
+        String(withdraw.withdraw_id || withdraw.id),
 
-          safeAdminNote,
+        safeAdminNote,
 
-          adminId || null
-        ]
-      );
+        adminId || null,
+      ],
+    );
 
-
-    if (
-      transactionResult.affectedRows !== 1
-    ) {
-      throw new Error(
-        "Refund transaction creation failed."
-      );
+    if (transactionResult.affectedRows !== 1) {
+      throw new Error("Refund transaction creation failed.");
     }
 
-
     await connection.commit();
-
 
     return {
       id: Number(withdraw.id),
 
-      withdrawId:
-        withdraw.withdraw_id,
+      withdrawId: withdraw.withdraw_id,
 
-      userId:
-        Number(withdraw.user_id),
+      userId: Number(withdraw.user_id),
 
       status: "rejected",
 
-      refundedAmount:
-        refundAmount,
+      refundedAmount: refundAmount,
 
       balanceBefore,
 
       balanceAfter,
 
-      transactionId
+      transactionId,
     };
-
-
   } catch (error) {
     await connection.rollback();
 
     throw error;
-
-
   } finally {
     connection.release();
   }
 }
-
 
 /* ==========================================
    Exports
@@ -607,5 +524,5 @@ async function rejectWithdraw(
 module.exports = {
   getWithdrawRequests,
   approveWithdraw,
-  rejectWithdraw
+  rejectWithdraw,
 };

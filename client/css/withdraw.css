@@ -1084,3 +1084,103 @@ input:focus{
     background:#e6c200;
 
 }
+
+/* ==========================================
+   DYNAMIC WITHDRAW STATUS
+========================================== */
+
+.status-card.is-eligible {
+    border-color: rgba(76, 175, 80, 0.4);
+}
+
+.status-card.is-eligible .status-icon {
+    background: rgba(76, 175, 80, 0.15);
+}
+
+.status-card.is-eligible .status-icon i,
+.status-card.is-eligible .status-info h4 {
+    color: #4caf50;
+}
+
+.status-card.is-pending {
+    border-color: rgba(255, 193, 7, 0.4);
+}
+
+.status-card.is-blocked {
+    border-color: rgba(244, 67, 54, 0.4);
+}
+
+.status-card.is-blocked .status-icon {
+    background: rgba(244, 67, 54, 0.15);
+}
+
+.status-card.is-blocked .status-icon i,
+.status-card.is-blocked .status-info h4 {
+    color: #f44336;
+}
+
+.submit-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+    box-shadow: none;
+}
+
+.history-empty {
+    padding: 28px 18px;
+    color: #999999;
+    text-align: center;
+    background: #1b1b1b;
+    border: 1px dashed rgba(255, 215, 0, 0.2);
+    border-radius: 15px;
+}
+
+.history-empty i {
+    margin-bottom: 10px;
+    color: #ffd700;
+    font-size: 24px;
+}
+
+.history-empty p {
+    font-size: 14px;
+}
+
+.history-card-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.history-card-copy h4,
+.history-card-copy p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-status.approved,
+.history-status.completed {
+    color: #4caf50;
+    background: rgba(76, 175, 80, 0.13);
+}
+
+.history-status.rejected,
+.history-status.failed {
+    color: #f44336;
+    background: rgba(244, 67, 54, 0.13);
+}
+
+@media (max-width: 520px) {
+    .history-card {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .history-card-copy {
+        width: calc(100% - 95px);
+    }
+
+    .history-amount {
+        width: 100%;
+        text-align: right;
+    }
+}

@@ -5,473 +5,596 @@
 ========================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
+  const API_BASE_URL = window.APP_CONFIG.API_URL;
 
-    const API_BASE_URL =
-    APP_CONFIG.API_URL;
+  const backBtn = document.getElementById("backBtn");
+  const balance = document.getElementById("balance");
 
-    const backBtn = document.getElementById("backBtn");
-    const balance = document.getElementById("balance");
+  const paymentCards = document.querySelectorAll(".payment-card");
 
-    const paymentCards =
-        document.querySelectorAll(".payment-card");
+  const accountNumber = document.getElementById("accountNumber");
 
-    const accountNumber =
-        document.getElementById("accountNumber");
+  const withdrawAmount = document.getElementById("withdrawAmount");
 
-    const withdrawAmount =
-        document.getElementById("withdrawAmount");
+  const lastFourDigit = document.getElementById("lastFourDigit");
 
-    const lastFourDigit =
-        document.getElementById("lastFourDigit");
+  const submitWithdraw = document.getElementById("submitWithdraw");
 
-    const submitWithdraw =
-        document.getElementById("submitWithdraw");
+  const confirmModal = document.getElementById("confirmModal");
 
-    const confirmModal =
-        document.getElementById("confirmModal");
+  const cancelWithdraw = document.getElementById("cancelWithdraw");
 
-    const cancelWithdraw =
-        document.getElementById("cancelWithdraw");
+  const confirmWithdraw = document.getElementById("confirmWithdraw");
 
-    const confirmWithdraw =
-        document.getElementById("confirmWithdraw");
+  const loader = document.getElementById("loaderOverlay");
 
-    const loader =
-        document.getElementById("loaderOverlay");
+  const successModal = document.getElementById("successModal");
 
-    const successModal =
-        document.getElementById("successModal");
+  const failedModal = document.getElementById("failedModal");
 
-    const failedModal =
-        document.getElementById("failedModal");
+  const successOkBtn = document.getElementById("successOkBtn");
 
-    const successOkBtn =
-        document.getElementById("successOkBtn");
+  const failedOkBtn = document.getElementById("failedOkBtn");
 
-    const failedOkBtn =
-        document.getElementById("failedOkBtn");
+  const toast = document.getElementById("toast");
 
-    const toast =
-        document.getElementById("toast");
+  const toastMessage = document.getElementById("toastMessage");
 
-    const toastMessage =
-        document.getElementById("toastMessage");
+  const withdrawStatusCard = document.getElementById("withdrawStatusCard");
 
-    const failedMessage =
-        document.getElementById("failedMessage");
+  const withdrawStatusIcon = document.getElementById("withdrawStatusIcon");
 
-    const token =
-        localStorage.getItem("access_token");
+  const withdrawStatusTitle = document.getElementById("withdrawStatusTitle");
 
-    let selectedMethod = "bkash";
+  const withdrawStatusMessage = document.getElementById(
+    "withdrawStatusMessage",
+  );
 
-    let currentBalance = 0;
+  const withdrawHistoryList = document.getElementById("withdrawHistoryList");
 
-    let pendingWithdrawData = null;
+  const token = localStorage.getItem("access_token");
 
+  let selectedMethod = "bkash";
 
-    /* ==========================
+  let currentBalance = 0;
+
+  let totalDeposit = 0;
+
+  let turnoverAmount = 0;
+
+  let withdrawHistory = [];
+
+  let currentPendingWithdraw = null;
+
+  let pendingWithdrawData = null;
+
+  /* ==========================
        Login Check
     ========================== */
 
-    if (!token) {
-        window.location.replace("login.html");
-        return;
-    }
+  if (!token) {
+    window.location.replace("login.html");
+    return;
+  }
 
-
-    /* ==========================
+  /* ==========================
        Helper Functions
     ========================== */
 
-    function showLoader() {
-        loader.style.display = "flex";
-    }
+  function showLoader() {
+    loader.style.display = "flex";
+  }
 
-    function hideLoader() {
-        loader.style.display = "none";
-    }
+  function hideLoader() {
+    loader.style.display = "none";
+  }
 
-    function showToast(message) {
-        toastMessage.textContent = message;
-        toast.style.display = "block";
+  function showToast(message) {
+    toastMessage.textContent = message;
+    toast.style.display = "block";
 
-        setTimeout(() => {
-            toast.style.display = "none";
-        }, 2500);
-    }
+    setTimeout(() => {
+      toast.style.display = "none";
+    }, 2500);
+  }
 
-    function showFailed(message) {
-        failedMessage.textContent = message;
-        failedModal.style.display = "flex";
-    }
+  function showFailed(message) {
+    failedMessage.textContent = message;
+    failedModal.style.display = "flex";
+  }
 
-
-    /* ==========================
+  /* ==========================
        Load Live Balance
     ========================== */
 
-    async function loadCurrentUser() {
-        try {
-            const response = await fetch(
-                `${API_URL}/auth/me`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+  function formatMoney(value) {
+    const amount = Number(value);
 
-            const result = await response.json();
+    return (Number.isFinite(amount) ? amount : 0).toLocaleString("en-BD", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
 
-            if (response.status === 401) {
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("current_user");
+  function formatDate(value) {
+    const date = value ? new Date(value) : null;
 
-                window.location.replace("login.html");
-                return;
-            }
-
-            if (!response.ok || !result.success) {
-                throw new Error(
-                    result.message || "User data load failed."
-                );
-            }
-
-            const user = result.data.user;
-
-            currentBalance =
-                Number(user.walletBalance || 0);
-
-            balance.textContent =
-                currentBalance.toFixed(2);
-
-            localStorage.setItem(
-                "current_user",
-                JSON.stringify(user)
-            );
-
-        } catch (error) {
-            console.error(error);
-
-            showToast(
-                error.message || "Balance load failed."
-            );
-        }
+    if (!date || Number.isNaN(date.getTime())) {
+      return "Recently";
     }
 
+    return date.toLocaleString("en-BD", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
 
-    /* ==========================
+  function normalizeStatus(value) {
+    return String(value || "pending")
+      .trim()
+      .toLowerCase();
+  }
+
+  async function requestWithdrawAPI(path) {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        Accept: "application/json",
+
+        Authorization: `Bearer ${token}`,
+      },
+
+      cache: "no-store",
+    });
+
+    let result = null;
+
+    try {
+      result = await response.json();
+    } catch (error) {
+      result = null;
+    }
+
+    if (response.status === 401) {
+      localStorage.removeItem("access_token");
+
+      localStorage.removeItem("current_user");
+
+      window.location.replace("login.html");
+
+      throw new Error("Your login session has expired.");
+    }
+
+    if (!response.ok || result?.success === false) {
+      throw new Error(result?.message || "Withdraw data load failed.");
+    }
+
+    return result;
+  }
+
+  function setWithdrawStatus(statusClass, iconClass, title, message) {
+    withdrawStatusCard.classList.remove(
+      "is-eligible",
+      "is-pending",
+      "is-blocked",
+    );
+
+    withdrawStatusCard.classList.add(statusClass);
+
+    withdrawStatusIcon.innerHTML = "";
+
+    const icon = document.createElement("i");
+
+    icon.className = iconClass;
+
+    withdrawStatusIcon.appendChild(icon);
+
+    withdrawStatusTitle.textContent = title;
+
+    withdrawStatusMessage.textContent = message;
+  }
+
+  function renderWithdrawStatus() {
+    const remainingTurnover = Math.max(0, totalDeposit - turnoverAmount);
+
+    if (currentPendingWithdraw) {
+      setWithdrawStatus(
+        "is-pending",
+        "fa-solid fa-hourglass-half",
+        "Withdrawal Pending",
+        `৳${formatMoney(
+          currentPendingWithdraw.amount,
+        )} request is waiting for admin verification.`,
+      );
+
+      submitWithdraw.disabled = true;
+      return;
+    }
+
+    if (remainingTurnover > 0) {
+      setWithdrawStatus(
+        "is-blocked",
+        "fa-solid fa-circle-exclamation",
+        "Turnover Incomplete",
+        `Complete ৳${formatMoney(
+          remainingTurnover,
+        )} more turnover before withdrawing.`,
+      );
+
+      submitWithdraw.disabled = true;
+      return;
+    }
+
+    if (currentBalance < 500) {
+      setWithdrawStatus(
+        "is-blocked",
+        "fa-solid fa-wallet",
+        "Insufficient Balance",
+        "Minimum withdraw amount is ৳500.00.",
+      );
+
+      submitWithdraw.disabled = true;
+      return;
+    }
+
+    setWithdrawStatus(
+      "is-eligible",
+      "fa-solid fa-circle-check",
+      "Withdrawal Available",
+      "Your balance and turnover requirements are complete.",
+    );
+
+    submitWithdraw.disabled = false;
+  }
+
+  function getHistoryStatusLabel(status) {
+    if (status === "approved") {
+      return "Completed";
+    }
+
+    if (status === "rejected") {
+      return "Rejected";
+    }
+
+    return "Pending";
+  }
+
+  function createWithdrawHistoryCard(withdrawal) {
+    const card = document.createElement("article");
+
+    card.className = "history-card";
+
+    const copy = document.createElement("div");
+
+    copy.className = "history-card-copy";
+
+    const title = document.createElement("h4");
+
+    title.textContent = `${String(
+      withdrawal.method || "Withdraw",
+    ).toUpperCase()} Withdraw`;
+
+    const date = document.createElement("p");
+
+    date.textContent = formatDate(withdrawal.createdAt);
+
+    copy.append(title, date);
+
+    const statusValue = normalizeStatus(withdrawal.status);
+
+    const status = document.createElement("div");
+
+    status.className = `history-status ${statusValue}`;
+
+    status.textContent = getHistoryStatusLabel(statusValue);
+
+    const amount = document.createElement("div");
+
+    amount.className = "history-amount";
+
+    amount.textContent = `- ৳${formatMoney(withdrawal.amount)}`;
+
+    card.append(copy, status, amount);
+
+    return card;
+  }
+
+  function renderWithdrawHistory() {
+    withdrawHistoryList.replaceChildren();
+
+    if (withdrawHistory.length === 0) {
+      const empty = document.createElement("div");
+
+      empty.className = "history-empty";
+
+      const icon = document.createElement("i");
+
+      icon.className = "fa-solid fa-receipt";
+
+      const text = document.createElement("p");
+
+      text.textContent = "No withdrawal request found.";
+
+      empty.append(icon, text);
+
+      withdrawHistoryList.appendChild(empty);
+
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    withdrawHistory.slice(0, 10).forEach((withdrawal) => {
+      fragment.appendChild(createWithdrawHistoryCard(withdrawal));
+    });
+
+    withdrawHistoryList.appendChild(fragment);
+  }
+
+  async function loadWithdrawData() {
+    try {
+      const [summaryResult, historyResult] = await Promise.all([
+        requestWithdrawAPI("/wallet/summary"),
+
+        requestWithdrawAPI("/withdraws/my-history"),
+      ]);
+
+      const wallet = summaryResult?.data?.wallet || {};
+
+      currentBalance = Number(wallet.balance || 0);
+
+      totalDeposit = Number(wallet.totalDeposit || 0);
+
+      turnoverAmount = Number(wallet.turnoverAmount || 0);
+
+      withdrawHistory = historyResult?.data?.withdrawals || [];
+
+      if (!Array.isArray(withdrawHistory)) {
+        withdrawHistory = [];
+      }
+
+      currentPendingWithdraw =
+        withdrawHistory.find(
+          (withdrawal) => normalizeStatus(withdrawal.status) === "pending",
+        ) || null;
+
+      balance.textContent = formatMoney(currentBalance);
+
+      renderWithdrawHistory();
+
+      renderWithdrawStatus();
+    } catch (error) {
+      console.error("DYNAMIC WITHDRAW LOAD ERROR:", error);
+
+      showFailed(error.message || "Withdraw data load failed.");
+    }
+  }
+
+  /* ==========================
        Back Button
     ========================== */
 
-    if (backBtn) {
-        backBtn.addEventListener("click", () => {
-            history.back();
-        });
-    }
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      history.back();
+    });
+  }
 
-
-    /* ==========================
+  /* ==========================
        Payment Method
     ========================== */
 
-    paymentCards.forEach((card) => {
+  paymentCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      paymentCards.forEach((item) => {
+        item.classList.remove("active");
+      });
 
-        card.addEventListener("click", () => {
+      card.classList.add("active");
 
-            paymentCards.forEach((item) => {
-                item.classList.remove("active");
-            });
-
-            card.classList.add("active");
-
-            selectedMethod =
-                card.dataset.method;
-        });
-
+      selectedMethod = card.dataset.method;
     });
+  });
 
-
-    /* ==========================
+  /* ==========================
        Submit Withdraw
     ========================== */
 
-    submitWithdraw.addEventListener("click", () => {
+  submitWithdraw.addEventListener("click", () => {
+    const account = accountNumber.value.trim();
 
-        const account =
-            accountNumber.value.trim();
+    const amount = Number(withdrawAmount.value);
 
-        const amount =
-            Number(withdrawAmount.value);
+    const last4 = lastFourDigit.value.trim();
 
-        const last4 =
-            lastFourDigit.value.trim();
+    if (!/^01\d{9}$/.test(account)) {
+      showToast("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন।");
 
-        if (!/^01\d{9}$/.test(account)) {
-            showToast(
-                "সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন।"
-            );
+      accountNumber.focus();
+      return;
+    }
 
-            accountNumber.focus();
-            return;
-        }
+    if (!Number.isFinite(amount) || amount < 500) {
+      showToast("Minimum withdraw ৳500.");
 
-        if (!amount || amount < 100) {
-            showToast(
-                "Minimum withdraw ৳100."
-            );
+      withdrawAmount.focus();
+      return;
+    }
 
-            withdrawAmount.focus();
-            return;
-        }
+    if (amount > currentBalance) {
+      showToast("Wallet balance পর্যাপ্ত নয়।");
 
-        if (amount > currentBalance) {
-            showToast(
-                "Wallet balance পর্যাপ্ত নয়।"
-            );
+      withdrawAmount.focus();
+      return;
+    }
 
-            withdrawAmount.focus();
-            return;
-        }
+    if (!/^\d{4}$/.test(last4)) {
+      showToast("শেষ ৪টি সংখ্যা সঠিকভাবে দিন।");
 
-        if (!/^\d{4}$/.test(last4)) {
-            showToast(
-                "শেষ ৪টি সংখ্যা সঠিকভাবে দিন।"
-            );
+      lastFourDigit.focus();
+      return;
+    }
 
-            lastFourDigit.focus();
-            return;
-        }
+    if (account.slice(-4) !== last4) {
+      showToast("Account number-এর শেষ ৪টি সংখ্যার সঙ্গে মিল নেই।");
 
-        pendingWithdrawData = {
-            method: selectedMethod,
-            accountNumber: account,
-            amount: amount,
-            lastFourDigits: last4
-        };
+      lastFourDigit.focus();
+      return;
+    }
 
-        document.getElementById(
-            "confirmMethod"
-        ).textContent =
-            selectedMethod.toUpperCase();
+    pendingWithdrawData = {
+      method: selectedMethod,
+      accountNumber: account,
+      amount: amount,
+      lastFourDigits: last4,
+    };
 
-        document.getElementById(
-            "confirmAccount"
-        ).textContent =
-            account;
+    document.getElementById("confirmMethod").textContent =
+      selectedMethod.toUpperCase();
 
-        document.getElementById(
-            "confirmAmount"
-        ).textContent =
-            amount.toFixed(2);
+    document.getElementById("confirmAccount").textContent = account;
 
-        confirmModal.style.display = "flex";
-    });
+    document.getElementById("confirmAmount").textContent = amount.toFixed(2);
 
+    confirmModal.style.display = "flex";
+  });
 
-    /* ==========================
+  /* ==========================
        Cancel Withdraw
     ========================== */
 
-    cancelWithdraw.addEventListener("click", () => {
-        confirmModal.style.display = "none";
-        pendingWithdrawData = null;
-    });
+  cancelWithdraw.addEventListener("click", () => {
+    confirmModal.style.display = "none";
+    pendingWithdrawData = null;
+  });
 
-
-    /* ==========================
+  /* ==========================
        Confirm Withdraw API
     ========================== */
 
-    confirmWithdraw.addEventListener(
-        "click",
-        async () => {
+  confirmWithdraw.addEventListener("click", async () => {
+    if (!pendingWithdrawData) {
+      return;
+    }
 
-            if (!pendingWithdrawData) {
-                return;
-            }
+    confirmModal.style.display = "none";
 
-            confirmModal.style.display = "none";
+    showLoader();
 
-            showLoader();
+    confirmWithdraw.disabled = true;
 
-            confirmWithdraw.disabled = true;
+    try {
+      const response = await fetch(`${API_BASE_URL}/withdraws`, {
+        method: "POST",
 
-            try {
-                const response = await fetch(
-                    `${API_URL}/withdraws`,
-                    {
-                        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
 
-                        headers: {
-                            "Content-Type":
-                                "application/json",
+          Authorization: `Bearer ${token}`,
+        },
 
-                            Authorization:
-                                `Bearer ${token}`
-                        },
+        body: JSON.stringify(pendingWithdrawData),
+      });
 
-                        body: JSON.stringify(
-                            pendingWithdrawData
-                        )
-                    }
-                );
+      const result = await response.json();
 
-                const result =
-                    await response.json();
+      if (response.status === 401) {
+        localStorage.removeItem("access_token");
 
-                if (response.status === 401) {
-                    localStorage.removeItem(
-                        "access_token"
-                    );
+        localStorage.removeItem("current_user");
 
-                    localStorage.removeItem(
-                        "current_user"
-                    );
+        window.location.replace("login.html");
 
-                    window.location.replace(
-                        "login.html"
-                    );
+        return;
+      }
 
-                    return;
-                }
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Withdraw request failed.");
+      }
 
-                if (!response.ok || !result.success) {
-                    throw new Error(
-                        result.message ||
-                        "Withdraw request failed."
-                    );
-                }
+      const withdraw = result.data.withdraw;
 
-                const withdraw =
-                    result.data.withdraw;
+      currentBalance = Number(withdraw.remainingBalance);
 
-                currentBalance =
-                    Number(
-                        withdraw.remainingBalance
-                    );
+      balance.textContent = currentBalance.toFixed(2);
 
-                balance.textContent =
-                    currentBalance.toFixed(2);
+      successModal.style.display = "flex";
 
-                successModal.style.display =
-                    "flex";
+      pendingWithdrawData = null;
+    } catch (error) {
+      console.error(error);
 
-                pendingWithdrawData = null;
+      showFailed(error.message || "Withdraw request failed.");
+    } finally {
+      hideLoader();
 
-            } catch (error) {
-                console.error(error);
+      confirmWithdraw.disabled = false;
+    }
+  });
 
-                showFailed(
-                    error.message ||
-                    "Withdraw request failed."
-                );
-
-            } finally {
-                hideLoader();
-
-                confirmWithdraw.disabled =
-                    false;
-            }
-        }
-    );
-
-
-    /* ==========================
+  /* ==========================
        Success Button
     ========================== */
 
-    successOkBtn.addEventListener(
-        "click",
-        () => {
+  successOkBtn.addEventListener("click", () => {
+    successModal.style.display = "none";
 
-            successModal.style.display =
-                "none";
+    accountNumber.value = "";
+    withdrawAmount.value = "";
+    lastFourDigit.value = "";
 
-            accountNumber.value = "";
-            withdrawAmount.value = "";
-            lastFourDigit.value = "";
+    showToast("Withdrawal request submitted.");
 
-            showToast(
-                "Withdrawal request submitted."
-            );
+    loadWithdrawData();
+  });
 
-            loadCurrentUser();
-        }
-    );
-
-
-    /* ==========================
+  /* ==========================
        Failed Button
     ========================== */
 
-    failedOkBtn.addEventListener(
-        "click",
-        () => {
+  failedOkBtn.addEventListener("click", () => {
+    failedModal.style.display = "none";
+  });
 
-            failedModal.style.display =
-                "none";
-        }
-    );
-
-
-    /* ==========================
+  /* ==========================
        Close Modals
     ========================== */
 
-    window.addEventListener(
-        "click",
-        (event) => {
+  window.addEventListener("click", (event) => {
+    if (event.target === confirmModal) {
+      confirmModal.style.display = "none";
+    }
 
-            if (event.target === confirmModal) {
-                confirmModal.style.display =
-                    "none";
-            }
+    if (event.target === successModal) {
+      successModal.style.display = "none";
+    }
 
-            if (event.target === successModal) {
-                successModal.style.display =
-                    "none";
-            }
+    if (event.target === failedModal) {
+      failedModal.style.display = "none";
+    }
+  });
 
-            if (event.target === failedModal) {
-                failedModal.style.display =
-                    "none";
-            }
-        }
-    );
-
-
-    /* ==========================
+  /* ==========================
        ESC Key
     ========================== */
 
-    document.addEventListener(
-        "keydown",
-        (event) => {
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      confirmModal.style.display = "none";
 
-            if (event.key === "Escape") {
-                confirmModal.style.display =
-                    "none";
+      successModal.style.display = "none";
 
-                successModal.style.display =
-                    "none";
+      failedModal.style.display = "none";
+    }
+  });
 
-                failedModal.style.display =
-                    "none";
-            }
-        }
-    );
-
-
-    /* ==========================
+  /* ==========================
        Start Page
     ========================== */
 
-    loadCurrentUser();
+  loadWithdrawData();
 
-    console.log(
-        "Withdraw API Connected Successfully"
-    );
-
+  console.log("Withdraw API Connected Successfully");
 });
