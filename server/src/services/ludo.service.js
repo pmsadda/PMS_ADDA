@@ -136,20 +136,96 @@ function getPlayerColor(seatNo) {
   return PLAYER_COLORS[index] || null;
 }
 
+function calculateMatchFinance(
+  entryAmount,
+  finalPlayerMode,
+  configuredServiceCharge = 10,
+) {
+  const amount = Number(entryAmount);
+
+  const playerMode =
+    Number(finalPlayerMode);
+
+  const totalPot =
+    amount * playerMode;
+
+  const parsedServiceCharge =
+    Number(configuredServiceCharge);
+
+  const serviceChargePercent =
+    Number.isFinite(
+      parsedServiceCharge,
+    ) &&
+    parsedServiceCharge >= 0 &&
+    parsedServiceCharge <= 20
+      ? Number(
+          parsedServiceCharge.toFixed(2),
+        )
+      : 10;
+
+  const serviceChargeAmount =
+    Number(
+      (
+        totalPot *
+        (serviceChargePercent / 100)
+      ).toFixed(2),
+    );
+
+  const distributableAmount =
+    Number(
+      (
+        totalPot -
+        serviceChargeAmount
+      ).toFixed(2),
+    );
+
+  let firstPrize =
+    distributableAmount;
+
+  let secondPrize = 0;
+
+  if (playerMode === 4) {
+    secondPrize = Number(
+      (amount * 0.5).toFixed(2),
+    );
+
+    firstPrize = Number(
+      (
+        distributableAmount -
+        secondPrize
+      ).toFixed(2),
+    );
+
+    if (firstPrize <= secondPrize) {
+      throw createServiceError(
+        "Entry amount is too low for the configured prize structure.",
+        500,
+      );
+    }
+  }
+
+  return {
+    totalPot,
+    serviceChargePercent,
+    serviceChargeAmount,
+    distributableAmount,
+    firstPrize,
+    secondPrize,
+  };
+}
+
 async function getConfiguredLudoServiceCharge(
   connection,
 ) {
-  const [rows] = await connection.query(
-    `
-      SELECT
-        COALESCE(
-          AVG(service_charge),
-          10
-        ) AS service_charge
-      FROM game_rooms
-      WHERE game_type = 'ludo'
-    `,
-  );
+ const [rows] = await connection.query(
+  `
+    SELECT
+      service_charge
+    FROM game_settings
+    WHERE game_type = 'ludo'
+    LIMIT 1
+  `,
+);
 
   const configuredCharge = Number(
     rows[0]?.service_charge,

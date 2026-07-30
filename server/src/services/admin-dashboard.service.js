@@ -450,44 +450,39 @@ async function getDashboardStats() {
     ========================= */
 
     const [chargeRows] = await connection.query(`
-        SELECT
-          COALESCE(
-            AVG(
-              CASE
-                WHEN game_type = 'teen_patti'
-                THEN service_charge
-                ELSE NULL
-              END
-            ),
-            5
-          ) AS teen_patti_charge,
+    SELECT
+      COALESCE(
+        MAX(
+          CASE
+            WHEN game_type = 'teen_patti'
+            THEN service_charge
+          END
+        ),
+        5
+      ) AS teen_patti_charge,
 
-          COALESCE(
-            AVG(
-              CASE
-                WHEN game_type = 'poker'
-                THEN service_charge
-                ELSE NULL
-              END
-            ),
-            5
-          ) AS poker_charge,
+      COALESCE(
+        MAX(
+          CASE
+            WHEN game_type = 'poker'
+            THEN service_charge
+          END
+        ),
+        5
+      ) AS poker_charge,
 
-          COALESCE(
-            AVG(
-              CASE
-                WHEN game_type = 'ludo'
-                THEN service_charge
-                ELSE NULL
-              END
-            ),
-            5
-          ) AS ludo_charge
+      COALESCE(
+        MAX(
+          CASE
+            WHEN game_type = 'ludo'
+            THEN service_charge
+          END
+        ),
+        10
+      ) AS ludo_charge
 
-        FROM game_rooms
-
-        WHERE status != 'disabled'
-      `);
+    FROM game_settings
+  `);
 
     const userStats = userRows[0] || {};
 
@@ -640,57 +635,37 @@ async function getDashboardStats() {
         ludo: Number(chargeStats.ludo_charge || 10),
       },
 
-      recentDeposits:
-  recentDepositRows.map(
-    (request) => ({
-      id: Number(request.id),
+      recentDeposits: recentDepositRows.map((request) => ({
+        id: Number(request.id),
 
-      requestId:
-        request.requestId,
+        requestId: request.requestId,
 
-      userName:
-        request.userName,
+        userName: request.userName,
 
-      method:
-        request.method,
+        method: request.method,
 
-      amount: Number(
-        request.amount || 0
-      ),
+        amount: Number(request.amount || 0),
 
-      status:
-        request.status,
+        status: request.status,
 
-      createdAt:
-        request.createdAt
-    })
-  ),
+        createdAt: request.createdAt,
+      })),
 
-recentWithdrawals:
-  recentWithdrawRows.map(
-    (request) => ({
-      id: Number(request.id),
+      recentWithdrawals: recentWithdrawRows.map((request) => ({
+        id: Number(request.id),
 
-      requestId:
-        request.requestId,
+        requestId: request.requestId,
 
-      userName:
-        request.userName,
+        userName: request.userName,
 
-      method:
-        request.method,
+        method: request.method,
 
-      amount: Number(
-        request.amount || 0
-      ),
+        amount: Number(request.amount || 0),
 
-      status:
-        request.status,
+        status: request.status,
 
-      createdAt:
-        request.createdAt
-    })
-  )
+        createdAt: request.createdAt,
+      })),
     };
   } finally {
     connection.release();
@@ -700,14 +675,8 @@ recentWithdrawals:
 function validateServiceCharge(value) {
   const charge = Number(value);
 
-  if (
-    !Number.isFinite(charge) ||
-    charge < 0 ||
-    charge > 20
-  ) {
-    const error = new Error(
-      "Service charge must be between 0 and 20."
-    );
+  if (!Number.isFinite(charge) || charge < 0 || charge > 20) {
+    const error = new Error("Service charge must be between 0 and 20.");
 
     error.statusCode = 400;
     throw error;
@@ -716,62 +685,56 @@ function validateServiceCharge(value) {
   return Number(charge.toFixed(2));
 }
 
-async function updateServiceCharges(
-  serviceCharges
-) {
+async function updateServiceCharges(serviceCharges, adminId = null) {
   const charges = {
-    teenPatti: validateServiceCharge(
-      serviceCharges?.teenPatti
-    ),
+    teenPatti: validateServiceCharge(serviceCharges?.teenPatti),
 
-    poker: validateServiceCharge(
-      serviceCharges?.poker
-    ),
+    poker: validateServiceCharge(serviceCharges?.poker),
 
-    ludo: validateServiceCharge(
-      serviceCharges?.ludo
-    )
+    ludo: validateServiceCharge(serviceCharges?.ludo),
   };
 
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
     const chargeUpdates = [
-      [
-        "teen_patti",
-        charges.teenPatti
-      ],
+      ["teen_patti", charges.teenPatti],
 
-      [
-        "poker",
-        charges.poker
-      ],
+      ["poker", charges.poker],
 
-      [
-        "ludo",
-        charges.ludo
-      ]
+      ["ludo", charges.ludo],
     ];
 
-    for (
-      const [
-        gameType,
-        serviceCharge
-      ] of chargeUpdates
-    ) {
+    for (const [gameType, serviceCharge] of chargeUpdates) {
+      await connection.query(
+        `
+  INSERT INTO game_settings (
+    game_type,
+    service_charge,
+    updated_by
+  )
+  VALUES (
+    ?,
+    ?,
+    ?
+  )
+  ON DUPLICATE KEY UPDATE
+    service_charge =
+      VALUES(service_charge),
+    updated_by =
+      VALUES(updated_by)
+  `,
+        [gameType, serviceCharge, adminId],
+      );
       await connection.query(
         `
         UPDATE game_rooms
         SET service_charge = ?
         WHERE game_type = ?
         `,
-        [
-          serviceCharge,
-          gameType
-        ]
+        [serviceCharge, gameType],
       );
     }
 
@@ -788,5 +751,5 @@ async function updateServiceCharges(
 
 module.exports = {
   getDashboardStats,
-  updateServiceCharges
+  updateServiceCharges,
 };
