@@ -247,7 +247,9 @@
                     <div class="content-card-header">
 
                         <div>
-                            <h2>Teen Patti Bots</h2>
+                            <h2 id="botTableTitle">
+                                Teen Patti Bots
+                            </h2>
 
                             <p>
                                 Add, deduct or set bot balance
@@ -276,6 +278,25 @@
                                 placeholder="Search bot name or code">
 
                         </div>
+
+                        <select
+                            id="botGameFilter"
+                            class="filter-select"
+                            aria-label="Select bot game">
+
+                            <option value="teen_patti">
+                                Teen Patti
+                            </option>
+
+                            <option value="poker">
+                                Poker
+                            </option>
+
+                            <option value="ludo">
+                                Ludo
+                            </option>
+
+                        </select>
 
                         <select
                             id="botStatusFilter"
@@ -572,50 +593,81 @@
                         id="settingsBotId"
                         type="hidden">
 
-                    <div class="form-group">
+                    <div id="cardBotSettingsFields">
 
-                        <label for="botDifficulty">
-                            Difficulty
+                        <div class="form-group">
+
+                            <label for="botDifficulty">
+                                Difficulty
+                            </label>
+
+                            <select
+                                id="botDifficulty"
+                                required>
+
+                                <option value="easy">
+                                    Easy
+                                </option>
+
+                                <option value="normal">
+                                    Normal
+                                </option>
+
+                                <option value="hard">
+                                    Hard
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="botPlayingStyle">
+                                Playing Style
+                            </label>
+
+                            <select
+                                id="botPlayingStyle"
+                                required>
+
+                                <option value="aggressive">
+                                    Aggressive
+                                </option>
+
+                                <option value="balanced">
+                                    Balanced
+                                </option>
+
+                                <option value="defensive">
+                                    Defensive
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="ludoBotSettingsField"
+                        class="form-group"
+                        hidden>
+
+                        <label for="botLevel">
+                            Ludo Bot Level
                         </label>
 
-                        <select
-                            id="botDifficulty"
-                            required>
-                            <option value="easy">
-                                Easy
-                            </option>
+                        <select id="botLevel">
 
                             <option value="normal">
                                 Normal
                             </option>
 
-                            <option value="hard">
-                                Hard
-                            </option>
-                        </select>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="botPlayingStyle">
-                            Playing Style
-                        </label>
-
-                        <select
-                            id="botPlayingStyle"
-                            required>
-                            <option value="aggressive">
-                                Aggressive
+                            <option value="smart">
+                                Smart
                             </option>
 
-                            <option value="balanced">
-                                Balanced
-                            </option>
-
-                            <option value="defensive">
-                                Defensive
-                            </option>
                         </select>
 
                     </div>

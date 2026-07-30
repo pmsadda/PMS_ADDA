@@ -1,27 +1,22 @@
-const adminBotsService = require(
-    "../services/admin-bots.service"
-);
+const adminBotsService = require("../services/admin-bots.service");
 
 /* =========================
    সব Bot দেখাবে
 ========================= */
 
-async function getBots(
-    req,
-    res,
-    next
-) {
-    try {
-        const bots =
-            await adminBotsService.getBots();
+async function getBots(req, res, next) {
+  try {
+    const bots = await adminBotsService.getBots(
+      req.query.gameType || "teen_patti",
+    );
 
-        return res.status(200).json({
-            success: true,
-            data: bots
-        });
-    } catch (error) {
-        next(error);
-    }
+    return res.status(200).json({
+      success: true,
+      data: bots,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 /* =========================
@@ -29,55 +24,57 @@ async function getBots(
 ========================= */
 
 async function getBotById(
-    req,
-    res,
-    next
+  req,
+  res,
+  next,
 ) {
-    try {
-        const bot =
-            await adminBotsService.getBotById(
-                req.params.botId
-            );
+  try {
+    const bot =
+      await adminBotsService
+        .getBotById(
+          req.query.gameType ||
+            "teen_patti",
 
-        return res.status(200).json({
-            success: true,
-            data: bot
-        });
-    } catch (error) {
-        next(error);
-    }
+          req.params.botId,
+        );
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        data: bot,
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 /* =========================
    Bot Balance পরিবর্তন
 ========================= */
 
-async function updateBotBalance(
-    req,
-    res,
-    next
-) {
-    try {
-        const adminUserId =
-            Number(req.user.id);
+async function updateBotBalance(req, res, next) {
+  try {
+    const adminUserId = Number(req.user.id);
 
-        const result =
-            await adminBotsService
-                .updateBotBalance(
-                    req.params.botId,
-                    adminUserId,
-                    req.body
-                );
+    const result = await adminBotsService.updateBotBalance(
+      req.body.gameType || "teen_patti",
 
-        return res.status(200).json({
-            success: true,
-            message:
-                "Bot balance updated successfully.",
-            data: result
-        });
-    } catch (error) {
-        next(error);
-    }
+      req.params.botId,
+
+      adminUserId,
+
+      req.body,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Bot balance updated successfully.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 /* =========================
@@ -93,14 +90,20 @@ async function updateBotStatus(
         const bot =
             await adminBotsService
                 .updateBotStatus(
+                    req.body.gameType ||
+                    "teen_patti",
+
                     req.params.botId,
+
                     req.body.status
                 );
 
         return res.status(200).json({
             success: true,
+
             message:
                 "Bot status updated successfully.",
+
             data: bot
         });
     } catch (error) {
@@ -112,64 +115,56 @@ async function updateBotStatus(
    Bot Settings পরিবর্তন
 ========================= */
 
-async function updateBotSettings(
-    req,
-    res,
-    next
-) {
-    try {
+async function updateBotSettings(req, res, next) {
+  try {
+    const bot = await adminBotsService
+   .updateBotSettings(
+    req.body.gameType ||
+    "teen_patti",
 
-        const bot =
-            await adminBotsService
-                .updateBotSettings(
-                    req.params.botId,
-                    req.body
-                );
+    req.params.botId,
 
-        return res.status(200).json({
-            success: true,
-            message:
-                "Bot settings updated successfully.",
-            data: bot
-        });
+    req.body
+);
 
-    } catch (error) {
-
-        next(error);
-
-    }
+    return res.status(200).json({
+      success: true,
+      message: "Bot settings updated successfully.",
+      data: bot,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 /* =========================
    Balance History
 ========================= */
 
-async function getBalanceHistory(
-    req,
-    res,
-    next
-) {
-    try {
-        const history =
-            await adminBotsService
-                .getBalanceHistory(
-                    req.params.botId
-                );
+async function getBalanceHistory(req, res, next) {
+  try {
+    const history = await adminBotsService
+    .getBalanceHistory(
+    req.query.gameType ||
+    "teen_patti",
 
-        return res.status(200).json({
-            success: true,
-            data: history
-        });
-    } catch (error) {
-        next(error);
-    }
+    req.params.botId
+);
+
+    return res.status(200).json({
+      success: true,
+      data: history,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 module.exports = {
-    getBots,
-    getBotById,
-    updateBotBalance,
-    updateBotStatus,
-    updateBotSettings,
-    getBalanceHistory
+  getBots,
+  getBotById,
+  updateBotBalance,
+  updateBotStatus,
+  updateBotSettings,
+  getBalanceHistory,
 };

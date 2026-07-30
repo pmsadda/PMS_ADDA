@@ -1,13 +1,18 @@
-const API_BASE_URL =
-    APP_CONFIG.api(
-        "/admin/bots"
-    );
+const API_BASE_URL = APP_CONFIG.api("/admin/bots");
 
 const botState = {
   bots: [],
+
+  gameType: "teen_patti",
+
   selectedBotId: null,
+
+  selectedBotGameType: null,
+
   selectedStatus: null,
+
   search: "",
+
   status: "all",
 };
 
@@ -26,7 +31,11 @@ const elements = {
 
   botsTableBody: document.getElementById("botsTableBody"),
 
+  botTableTitle: document.getElementById("botTableTitle"),
+
   botSearchInput: document.getElementById("botSearchInput"),
+
+  botGameFilter: document.getElementById("botGameFilter"),
 
   botStatusFilter: document.getElementById("botStatusFilter"),
 
@@ -81,6 +90,12 @@ const elements = {
   botDifficulty: document.getElementById("botDifficulty"),
 
   botPlayingStyle: document.getElementById("botPlayingStyle"),
+
+  cardBotSettingsFields: document.getElementById("cardBotSettingsFields"),
+
+  ludoBotSettingsField: document.getElementById("ludoBotSettingsField"),
+
+  botLevel: document.getElementById("botLevel"),
 
   closeSettingsModalBtn: document.getElementById("closeSettingsModalBtn"),
 
@@ -375,11 +390,17 @@ function renderBots() {
 
       const botCode = escapeHtml(bot.botCode || "-");
 
-      const difficulty = String(bot.difficulty || "normal")
+      const isLudo = bot.gameType === "ludo";
+
+      const difficulty = String(
+        isLudo ? bot.botLevel || "normal" : bot.difficulty || "normal",
+      )
         .trim()
         .toLowerCase();
 
-      const playingStyle = String(bot.playingStyle || "balanced")
+      const playingStyle = String(
+        isLudo ? "ludo_ai" : bot.playingStyle || "balanced",
+      )
         .trim()
         .toLowerCase();
 
@@ -388,6 +409,7 @@ function renderBots() {
           easy: "Easy",
           normal: "Normal",
           hard: "Hard",
+          smart: "Smart",
         }[difficulty] || "Normal";
 
       const playingStyleText =
@@ -395,6 +417,7 @@ function renderBots() {
           aggressive: "Aggressive",
           balanced: "Balanced",
           defensive: "Defensive",
+          ludo_ai: "Ludo AI",
         }[playingStyle] || "Balanced";
 
       const status = bot.status === "active" ? "active" : "disabled";
@@ -536,23 +559,38 @@ async function loadBots() {
   showLoader();
 
   try {
-    const result = await apiRequest();
+    const gameType = encodeURIComponent(botState.gameType);
+
+    const result = await apiRequest(`?gameType=${gameType}`);
 
     botState.bots = Array.isArray(result.data) ? result.data : [];
+
+    const gameTitle =
+      {
+        teen_patti: "Teen Patti Bots",
+
+        poker: "Poker Bots",
+
+        ludo: "Ludo Bots",
+      }[botState.gameType] || "Bots";
+
+    if (elements.botTableTitle) {
+      elements.botTableTitle.textContent = gameTitle;
+    }
 
     renderSummary();
     renderBots();
   } catch (error) {
     elements.botsTableBody.innerHTML = `
-                <tr>
-                    <td
-                        colspan="6"
-                        class="empty-table-message"
-                    >
-                        ${escapeHtml(error.message)}
-                    </td>
-                </tr>
-            `;
+      <tr>
+        <td
+          colspan="8"
+          class="empty-table-message"
+        >
+          ${escapeHtml(error.message)}
+        </td>
+      </tr>
+    `;
 
     showToast(error.message, "error");
   } finally {
@@ -583,6 +621,8 @@ function openBalanceModal(botId) {
 
   botState.selectedBotId = Number(bot.id);
 
+  botState.selectedBotGameType = bot.gameType || botState.gameType;
+
   elements.selectedBotId.value = bot.id;
 
   elements.selectedBotName.textContent = `${bot.botName} — Current Balance: ৳${formatMoney(
@@ -604,6 +644,7 @@ function closeBalanceModal() {
   elements.balanceForm.reset();
 
   botState.selectedBotId = null;
+  botState.selectedBotGameType = null;
 }
 
 async function submitBalanceForm(event) {
@@ -616,6 +657,8 @@ async function submitBalanceForm(event) {
   const amount = Number(elements.balanceAmount.value);
 
   const note = elements.balanceNote.value.trim();
+
+  const gameType = botState.selectedBotGameType || botState.gameType;
 
   if (!botId || !Number.isFinite(amount) || amount < 0) {
     showToast("Enter a valid amount.", "error");
@@ -638,6 +681,7 @@ async function submitBalanceForm(event) {
       method: "PATCH",
 
       body: {
+        gameType,
         actionType,
         amount,
         note,
@@ -687,7 +731,11 @@ async function openHistoryModal(botId) {
   elements.historyModal.classList.add("show");
 
   try {
-    const result = await apiRequest(`/${botId}/balance-history`);
+    const gameType = encodeURIComponent(bot.gameType || botState.gameType);
+
+    const result = await apiRequest(
+      `/${botId}/balance-history?gameType=${gameType}`,
+    );
 
     const history = Array.isArray(result.data) ? result.data : [];
 
@@ -783,70 +831,152 @@ function openSettingsModal(botId) {
   const bot = findBot(botId);
 
   if (!bot) {
-    showToast("Bot not found.", "error");
+    showToast(
+      "Bot not found.",
+      "error",
+    );
 
     return;
   }
 
-  botState.selectedBotId = Number(bot.id);
+  botState.selectedBotId =
+    Number(bot.id);
 
-  elements.settingsBotId.value = bot.id;
+  botState.selectedBotGameType =
+    bot.gameType ||
+    botState.gameType;
 
-  elements.settingsBotName.textContent = `${bot.botName} AI settings`;
+  elements.settingsBotId.value =
+    bot.id;
 
-  elements.botDifficulty.value = bot.difficulty || "normal";
+  elements.settingsBotName.textContent =
+    `${bot.botName} AI settings`;
 
-  elements.botPlayingStyle.value = bot.playingStyle || "balanced";
+  const isLudo =
+    botState.selectedBotGameType ===
+    "ludo";
 
-  elements.settingsModal.classList.add("show");
+  elements.cardBotSettingsFields.hidden =
+    isLudo;
+
+  elements.ludoBotSettingsField.hidden =
+    !isLudo;
+
+  elements.botDifficulty.disabled =
+    isLudo;
+
+  elements.botPlayingStyle.disabled =
+    isLudo;
+
+  elements.botLevel.disabled =
+    !isLudo;
+
+  if (isLudo) {
+    elements.botLevel.value =
+      bot.botLevel ||
+      "normal";
+  } else {
+    elements.botDifficulty.value =
+      bot.difficulty ||
+      "normal";
+
+    elements.botPlayingStyle.value =
+      bot.playingStyle ||
+      "balanced";
+  }
+
+  elements.settingsModal.classList.add(
+    "show",
+  );
 }
 
 function closeSettingsModal() {
-  elements.settingsModal.classList.remove("show");
+  elements.settingsModal.classList.remove(
+    "show",
+  );
 
   elements.settingsForm.reset();
 
   botState.selectedBotId = null;
+
+  botState.selectedBotGameType =
+    null;
 }
 
 async function submitSettingsForm(event) {
   event.preventDefault();
 
-  const botId = Number(elements.settingsBotId.value);
+  const botId =
+    Number(
+      elements.settingsBotId.value,
+    );
 
-  const difficulty = elements.botDifficulty.value;
-
-  const playingStyle = elements.botPlayingStyle.value;
+  const gameType =
+    botState.selectedBotGameType ||
+    botState.gameType;
 
   if (!botId) {
-    showToast("Invalid bot.", "error");
+    showToast(
+      "Invalid bot.",
+      "error",
+    );
 
     return;
   }
 
-  elements.saveSettingsBtn.disabled = true;
+  elements.saveSettingsBtn.disabled =
+    true;
 
   showLoader();
 
   try {
-    const result = await apiRequest(`/${botId}/settings`, {
-      method: "PATCH",
+    const body =
+      gameType === "ludo"
+        ? {
+            gameType,
 
-      body: {
-        difficulty,
-        playingStyle,
-      },
-    });
+            botLevel:
+              elements.botLevel.value,
+          }
+        : {
+            gameType,
 
-    showToast(result.message || "Bot settings updated.");
+            difficulty:
+              elements
+                .botDifficulty
+                .value,
+
+            playingStyle:
+              elements
+                .botPlayingStyle
+                .value,
+          };
+
+    const result =
+      await apiRequest(
+        `/${botId}/settings`,
+        {
+          method: "PATCH",
+          body,
+        },
+      );
+
+    showToast(
+      result.message ||
+        "Bot settings updated.",
+    );
 
     closeSettingsModal();
 
     await loadBots();
   } catch (error) {
-    showToast(error.message, "error");
+    showToast(
+      error.message,
+      "error",
+    );
   } finally {
-    elements.saveSettingsBtn.disabled = false;
+    elements.saveSettingsBtn.disabled =
+      false;
 
     hideLoader();
   }
@@ -867,6 +997,10 @@ function openStatusModal(botId, nextStatus) {
 
   botState.selectedBotId = Number(botId);
 
+  botState.selectedBotGameType =
+  bot.gameType ||
+  botState.gameType;
+
   botState.selectedStatus = nextStatus;
 
   const actionText = nextStatus === "active" ? "enable" : "disable";
@@ -885,6 +1019,9 @@ function closeStatusModal() {
 
   botState.selectedBotId = null;
 
+  botState.selectedBotGameType =
+  null;
+
   botState.selectedStatus = null;
 }
 
@@ -892,6 +1029,10 @@ async function confirmStatusChange() {
   const botId = botState.selectedBotId;
 
   const status = botState.selectedStatus;
+
+  const gameType =
+  botState.selectedBotGameType ||
+  botState.gameType;
 
   if (!botId || !status) {
     return;
@@ -906,8 +1047,9 @@ async function confirmStatusChange() {
       method: "PATCH",
 
       body: {
-        status,
-      },
+  gameType,
+  status,
+},
     });
 
     showToast(result.message || "Bot status updated.");
@@ -1006,6 +1148,34 @@ function closeModalOnOutsideClick(event) {
 
 function bindEvents() {
   elements.refreshBotsBtn?.addEventListener("click", loadBots);
+
+  elements.botGameFilter?.addEventListener("change", async (event) => {
+    const gameType = event.target.value;
+
+    if (!["teen_patti", "poker", "ludo"].includes(gameType)) {
+      return;
+    }
+
+    botState.gameType = gameType;
+
+    botState.selectedBotId = null;
+
+    botState.selectedBotGameType = null;
+
+    botState.search = "";
+
+    botState.status = "all";
+
+    if (elements.botSearchInput) {
+      elements.botSearchInput.value = "";
+    }
+
+    if (elements.botStatusFilter) {
+      elements.botStatusFilter.value = "all";
+    }
+
+    await loadBots();
+  });
 
   elements.botSearchInput?.addEventListener("input", (event) => {
     botState.search = event.target.value;
