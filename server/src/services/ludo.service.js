@@ -110,15 +110,99 @@ function createWalletTransactionId() {
   return `LTX${Date.now()}${random}`;
 }
 
-function validateEntryAmount(value) {
-  const amount = parsePositiveInteger(value);
+async function validateEntryAmount(
+  value,
+  connection = pool,
+) {
+  const amount =
+    parsePositiveInteger(value);
 
-  if (!amount || !ALLOWED_ENTRY_AMOUNTS.includes(amount)) {
-    throw createServiceError("Please select a valid Ludo entry amount.", 400);
+  if (!amount) {
+    throw createServiceError(
+      "Please select a valid Ludo entry amount.",
+      400,
+    );
+  }
+
+  const [rows] =
+    await connection.query(
+      `
+        SELECT id
+        FROM game_rooms
+        WHERE game_type = 'ludo'
+          AND boot_amount = ?
+          AND status IN (
+            'waiting',
+            'running'
+          )
+        LIMIT 1
+      `,
+      [amount],
+    );
+
+  if (!rows[0]) {
+    throw createServiceError(
+      "This Ludo room is currently unavailable.",
+      409,
+    );
   }
 
   return amount;
 }
+ 
+async function getAvailableRooms() {
+  const [rows] =
+    await pool.query(
+      `
+        SELECT
+          id,
+          room_code,
+          room_name,
+          max_players,
+          boot_amount,
+          status
+
+        FROM game_rooms
+
+        WHERE game_type = 'ludo'
+          AND status IN (
+            'waiting',
+            'running'
+          )
+
+        ORDER BY
+          boot_amount ASC,
+          id ASC
+      `,
+    );
+
+  return rows.map((room) => ({
+    id:
+      Number(room.id),
+
+    roomCode:
+      room.room_code,
+
+    roomName:
+      room.room_name,
+
+    maxPlayers:
+      Number(
+        room.max_players ||
+        4,
+      ),
+
+    entryAmount:
+      Number(
+        room.boot_amount ||
+        0,
+      ),
+
+    status:
+      room.status,
+  }));
+}
+
 
 function validatePlayerMode(value) {
   const mode = parsePositiveInteger(value);
@@ -927,7 +1011,7 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
     throw createServiceError("Invalid user ID.", 400);
   }
 
-  const validEntryAmount = validateEntryAmount(entryAmount);
+  
 
   const requestedPlayerMode = validatePlayerMode(playerMode);
 
@@ -938,10 +1022,16 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
   let alreadyJoined = false;
   let newMatchCreated = false;
 
-  try {
-    await connection.beginTransaction();
+ try {
+  await connection.beginTransaction();
 
-    const user = await getLockedUser(validUserId, connection);
+  const validEntryAmount =
+    await validateEntryAmount(
+      entryAmount,
+      connection,
+    );
+
+  const user = await getLockedUser(validUserId, connection);
 
     validateUserForLudo(user, validEntryAmount);
 
@@ -989,14 +1079,15 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
     );
 
     if (!match) {
-      match = await createWaitingMatch(
-        validEntryAmount,
-        requestedPlayerMode,
-        connection,
-      );
+  match =
+    await createWaitingMatch(
+      validEntryAmount,
+      requestedPlayerMode,
+      connection,
+    );
 
-      newMatchCreated = true;
-    }
+  newMatchCreated = true;
+}
 
     matchId = Number(match.id);
 
@@ -4261,6 +4352,7 @@ async function runBotTurn(matchId) {
 ========================================== */
 
 module.exports = {
+   getAvailableRooms,
   joinMatchmaking,
   finalizeMatchmaking,
 

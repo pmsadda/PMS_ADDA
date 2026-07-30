@@ -12,8 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const API_TIMEOUT_MS = 15000;
 
-  const ROOM_AMOUNTS = Object.freeze([50, 100, 200, 250, 500, 1000]);
-
   /* ==================================
            DOM Elements
         ================================== */
@@ -46,6 +44,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const state = {
     user: null,
+
+    rooms: [],
+
+    isLoadingRooms: false,
 
     playerMode: 2,
 
@@ -269,7 +271,17 @@ document.addEventListener("DOMContentLoaded", () => {
            Room Rendering
         ================================== */
 
-  function createRoomCard(entryAmount) {
+  function escapeHtml(value) {
+    const element = document.createElement("div");
+
+    element.textContent = String(value ?? "");
+
+    return element.innerHTML;
+  }
+
+  function createRoomCard(room) {
+    const entryAmount = Number(room.entryAmount);
+
     const hasEnoughBalance = getWalletBalance() >= entryAmount;
 
     const potentialPrize = entryAmount * state.playerMode;
@@ -287,96 +299,159 @@ document.addEventListener("DOMContentLoaded", () => {
       : `Minimum ৳${entryAmount} required`;
 
     card.innerHTML = `
-                <div class="tp-room-top">
+    <div class="tp-room-top">
 
-                    <div>
+      <div>
 
-                        <p class="tp-room-label">
-                            ENTRY AMOUNT
-                        </p>
+        <p class="tp-room-label">
+          ${escapeHtml(room.roomName || "Ludo Room")}
+        </p>
 
-                        <h3 class="tp-boot-amount">
-                            ৳${entryAmount.toLocaleString("en-BD")}
-                        </h3>
+        <h3 class="tp-boot-amount">
+          ৳${entryAmount.toLocaleString("en-BD")}
+        </h3>
 
-                        <div class="ludo-room-colors">
-                            <span class="ludo-color-red"></span>
-                            <span class="ludo-color-green"></span>
-                            <span class="ludo-color-yellow"></span>
-                            <span class="ludo-color-blue"></span>
-                        </div>
+        <div class="ludo-room-colors">
+          <span class="ludo-color-red"></span>
+          <span class="ludo-color-green"></span>
+          <span class="ludo-color-yellow"></span>
+          <span class="ludo-color-blue"></span>
+        </div>
 
-                    </div>
+      </div>
 
-                    <div class="tp-room-icon ludo-room-icon">
+      <div class="tp-room-icon ludo-room-icon">
+        <i class="fa-solid fa-dice-six"></i>
+      </div>
 
-                        <i class="fa-solid fa-dice-six"></i>
+    </div>
 
-                    </div>
+    <div class="tp-room-details">
 
-                </div>
+      <div class="tp-room-stat">
 
-                <div class="tp-room-details">
+        <span>Players</span>
 
-                    <div class="tp-room-stat">
+        <strong>
+          ${state.playerMode}
+        </strong>
 
-                        <span>Players</span>
+      </div>
 
-                        <strong>
-    ${state.playerMode}
-</strong>
+      <div class="tp-room-stat">
 
-                    </div>
+        <span>Base Prize</span>
 
-                    <div class="tp-room-stat">
+        <strong>
+          ৳${potentialPrize.toLocaleString("en-BD")}
+        </strong>
 
-                        <span>Base Prize</span>
+      </div>
 
-                        <strong>
-                            ৳${potentialPrize.toLocaleString("en-BD")}
-                        </strong>
+    </div>
 
-                    </div>
+    <div class="tp-room-status">
 
-                </div>
+      <span class="tp-room-status-dot"></span>
 
-                <div class="tp-room-status">
+      <span>
+        ${statusText}
+      </span>
 
-                    <span class="tp-room-status-dot"></span>
+    </div>
 
-                    <span>
-                        ${statusText}
-                    </span>
+    <button
+      type="button"
+      class="tp-join-button"
+      data-room-id="${Number(room.id)}"
+      data-entry-amount="${entryAmount}"
+      ${hasEnoughBalance ? "" : "disabled"}
+    >
 
-                </div>
+      <i class="fa-solid fa-play"></i>
 
-                <button
-                    type="button"
-                    class="tp-join-button"
-                    data-entry-amount="${entryAmount}"
-                    ${hasEnoughBalance ? "" : "disabled"}
-                >
+      <span>
+        ${hasEnoughBalance ? "Play Now" : "Low Balance"}
+      </span>
 
-                    <i class="fa-solid fa-play"></i>
-
-                    <span>
-                        ${hasEnoughBalance ? "Play Now" : "Low Balance"}
-                    </span>
-
-                </button>
-            `;
+    </button>
+  `;
 
     return card;
   }
 
   function renderRooms() {
+    if (state.isLoadingRooms) {
+      elements.roomGrid.innerHTML = `
+      <div class="tp-room-empty">
+        Loading Ludo rooms...
+      </div>
+    `;
+
+      return;
+    }
+
+    if (!state.rooms.length) {
+      elements.roomGrid.innerHTML = `
+      <div class="tp-room-empty">
+        No Ludo rooms are currently available.
+      </div>
+    `;
+
+      return;
+    }
+
     const fragment = document.createDocumentFragment();
 
-    ROOM_AMOUNTS.forEach((entryAmount) => {
-      fragment.appendChild(createRoomCard(entryAmount));
+    state.rooms.forEach((room) => {
+      fragment.appendChild(createRoomCard(room));
     });
 
     elements.roomGrid.replaceChildren(fragment);
+  }
+
+  async function loadAvailableRooms() {
+    state.isLoadingRooms = true;
+
+    renderRooms();
+
+    try {
+      const result = await apiRequest("/ludo/rooms");
+
+      const rooms = Array.isArray(result?.data?.rooms) ? result.data.rooms : [];
+
+      state.rooms = rooms
+        .map((room) => ({
+          id: Number(room.id),
+
+          roomCode: room.roomCode || null,
+
+          roomName: room.roomName || "Ludo Room",
+
+          maxPlayers: Number(room.maxPlayers || 4),
+
+          entryAmount: Number(room.entryAmount),
+
+          status: room.status || "waiting",
+        }))
+        .filter(
+          (room) =>
+            Number.isInteger(room.id) &&
+            room.id > 0 &&
+            Number.isFinite(room.entryAmount) &&
+            room.entryAmount > 0,
+        );
+    } catch (error) {
+      state.rooms = [];
+
+      console.error("Load Ludo rooms error:", error);
+
+      showToast(error.message || "Unable to load Ludo rooms", "error");
+    } finally {
+      state.isLoadingRooms = false;
+
+      renderRooms();
+    }
   }
 
   /* ==================================
@@ -422,7 +497,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ================================== */
 
   function validateEntryAmount(entryAmount) {
-    return ROOM_AMOUNTS.includes(entryAmount);
+    return state.rooms.some(
+      (room) => Number(room.entryAmount) === Number(entryAmount),
+    );
   }
 
   function saveSelectedRoom(entryAmount) {
@@ -636,7 +713,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateBalanceUI();
 
-  renderRooms();
+  loadAvailableRooms();
 
   loadLatestUserData();
 });

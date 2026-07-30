@@ -3,6 +3,54 @@
 const ludoService =
   require("../services/ludo.service");
 
+
+  /* ==========================================
+   Get Available Ludo Rooms
+========================================== */
+
+async function getAvailableRooms(
+  req,
+  res,
+) {
+  try {
+    const rooms =
+      await ludoService
+        .getAvailableRooms();
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Ludo rooms loaded successfully.",
+
+        data: {
+          rooms,
+        },
+      });
+  } catch (error) {
+    console.error(
+      "GET LUDO ROOMS ERROR:",
+      error,
+    );
+
+    return res
+      .status(
+        error.statusCode ||
+          error.status ||
+          500,
+      )
+      .json({
+        success: false,
+
+        message:
+          error.message ||
+          "Unable to load Ludo rooms.",
+      });
+  }
+}
+
 /* ==========================================
    Join Ludo Matchmaking
 ========================================== */
@@ -107,6 +155,7 @@ async function getMatchState(
 }
 
 module.exports = {
+  getAvailableRooms,
   joinMatchmaking,
   getMatchState,
 };

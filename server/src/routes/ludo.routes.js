@@ -25,6 +25,16 @@ const router =
 /*
  * Ludo matchmaking join
  */
+
+/*
+ * Available Ludo rooms
+ */
+router.get(
+  "/rooms",
+  requireAuth,
+  controller.getAvailableRooms,
+);
+
 router.post(
   "/matchmaking/join",
   requireAuth,
