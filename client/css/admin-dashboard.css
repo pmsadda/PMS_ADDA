@@ -2230,3 +2230,33 @@ a:focus-visible {
         width: 100%;
     }
 }
+
+/* ==========================================
+   ADMIN DYNAMIC UI STATES
+========================================== */
+
+.loader-overlay.show {
+    display: flex;
+}
+
+.toast.show {
+    display: block;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.toast.success {
+    border-left-color: #4caf50;
+}
+
+.toast.error {
+    border-left-color: #f44336;
+}
+
+.confirm-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+}

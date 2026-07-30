@@ -354,31 +354,61 @@ function openChargeConfirmModal() {
   const charges = getChargeValues();
 
   if (!validateChargeValues(charges)) {
-    showToast("Service charge must be between 0 and 20.", "error");
+    showToast(
+      "Service charge must be between 0 and 20.",
+      "error",
+    );
 
     return;
   }
 
-  setText("confirmTeenPattiCharge", charges.teenPatti);
+  setText(
+    "confirmTeenPattiCharge",
+    charges.teenPatti,
+  );
 
-  setText("confirmPokerCharge", charges.poker);
+  setText(
+    "confirmPokerCharge",
+    charges.poker,
+  );
 
-  setText("confirmLudoCharge", charges.ludo);
+  setText(
+    "confirmLudoCharge",
+    charges.ludo,
+  );
 
-  const modal = document.getElementById("chargeConfirmModal");
+  const modal =
+    document.getElementById(
+      "chargeConfirmModal",
+    );
 
   if (modal) {
     modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
+
+    modal.style.display = "flex";
+
+    modal.setAttribute(
+      "aria-hidden",
+      "false",
+    );
   }
 }
 
 function closeChargeConfirmModal() {
-  const modal = document.getElementById("chargeConfirmModal");
+  const modal =
+    document.getElementById(
+      "chargeConfirmModal",
+    );
 
   if (modal) {
     modal.classList.remove("show");
-    modal.setAttribute("aria-hidden", "true");
+
+    modal.style.display = "none";
+
+    modal.setAttribute(
+      "aria-hidden",
+      "true",
+    );
   }
 }
 
