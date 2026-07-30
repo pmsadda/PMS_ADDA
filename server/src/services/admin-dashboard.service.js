@@ -368,6 +368,60 @@ async function getDashboardStats() {
         FROM teen_patti_revenue_history
       `);
 
+    const [pokerRevenueRows] = await connection.query(`
+    SELECT
+      COUNT(*) AS total_rounds,
+
+      COALESCE(
+        SUM(service_charge_amount),
+        0
+      ) AS total_revenue,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN DATE(completed_at) =
+                 CURRENT_DATE()
+            THEN service_charge_amount
+            ELSE 0
+          END
+        ),
+        0
+      ) AS today_revenue
+
+    FROM poker_hands
+
+    WHERE hand_status = 'completed'
+      AND settlement_completed = 1
+  `);
+
+    const [ludoRevenueRows] = await connection.query(`
+    SELECT
+      COUNT(*) AS total_rounds,
+
+      COALESCE(
+        SUM(service_charge_amount),
+        0
+      ) AS total_revenue,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN DATE(completed_at) =
+                 CURRENT_DATE()
+            THEN service_charge_amount
+            ELSE 0
+          END
+        ),
+        0
+      ) AS today_revenue
+
+    FROM ludo_matches
+
+    WHERE match_status = 'completed'
+      AND settlement_completed = 1
+  `);
+
     /* =========================
        ROOM STATISTICS
     ========================= */
@@ -492,6 +546,25 @@ async function getDashboardStats() {
 
     const revenueStats = revenueRows[0] || {};
 
+    const pokerRevenueStats = pokerRevenueRows[0] || {};
+
+    const ludoRevenueStats = ludoRevenueRows[0] || {};
+
+    const totalRevenue =
+      Number(revenueStats.total_revenue || 0) +
+      Number(pokerRevenueStats.total_revenue || 0) +
+      Number(ludoRevenueStats.total_revenue || 0);
+
+    const todayRevenue =
+      Number(revenueStats.today_revenue || 0) +
+      Number(pokerRevenueStats.today_revenue || 0) +
+      Number(ludoRevenueStats.today_revenue || 0);
+
+    const totalRounds =
+      Number(revenueStats.total_rounds || 0) +
+      Number(pokerRevenueStats.total_rounds || 0) +
+      Number(ludoRevenueStats.total_rounds || 0);
+
     const roomStats = roomRows[0] || {};
 
     const botStats = botRows[0] || {};
@@ -570,11 +643,11 @@ async function getDashboardStats() {
       },
 
       revenue: {
-        totalAmount: Number(revenueStats.total_revenue || 0),
+        totalAmount: totalRevenue,
 
-        todayAmount: Number(revenueStats.today_revenue || 0),
+        todayAmount: todayRevenue,
 
-        totalRounds: Number(revenueStats.total_rounds || 0),
+        totalRounds,
 
         realPlayerRevenue: Number(revenueStats.real_player_revenue || 0),
 
@@ -589,13 +662,15 @@ async function getDashboardStats() {
         },
 
         poker: {
-          revenue: 0,
-          roundsPlayed: 0,
+          revenue: Number(pokerRevenueStats.total_revenue || 0),
+
+          roundsPlayed: Number(pokerRevenueStats.total_rounds || 0),
         },
 
         ludo: {
-          revenue: 0,
-          roundsPlayed: 0,
+          revenue: Number(ludoRevenueStats.total_revenue || 0),
+
+          roundsPlayed: Number(ludoRevenueStats.total_rounds || 0),
         },
       },
 
