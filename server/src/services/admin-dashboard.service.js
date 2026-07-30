@@ -426,30 +426,91 @@ async function getDashboardStats() {
        ROOM STATISTICS
     ========================= */
 
-    const [roomRows] = await connection.query(`
-        SELECT
-          COUNT(*) AS total_tables,
+    const [roomRows] =
+  await connection.query(`
+    SELECT
+      COALESCE(
+        SUM(room_group.total_tables),
+        0
+      ) AS total_tables,
 
-          COALESCE(
-            SUM(
-              CASE
-                WHEN gt.game_status IN (
-                  'waiting',
-                  'playing'
-                )
-                AND gr.status != 'disabled'
-                THEN 1
-                ELSE 0
-              END
-            ),
-            0
-          ) AS active_tables
+      COALESCE(
+        SUM(room_group.active_tables),
+        0
+      ) AS active_tables
 
-        FROM game_tables gt
+    FROM (
 
-        INNER JOIN game_rooms gr
-          ON gr.id = gt.room_id
-      `);
+      SELECT
+        COUNT(*) AS total_tables,
+
+        SUM(
+          CASE
+            WHEN gt.game_status IN (
+              'waiting',
+              'playing'
+            )
+            AND gr.status != 'disabled'
+            THEN 1
+            ELSE 0
+          END
+        ) AS active_tables
+
+      FROM game_tables gt
+
+      INNER JOIN game_rooms gr
+        ON gr.id = gt.room_id
+
+      WHERE gr.game_type =
+            'teen_patti'
+
+      UNION ALL
+
+      SELECT
+        COUNT(*) AS total_tables,
+
+        SUM(
+          CASE
+            WHEN pt.table_status IN (
+              'waiting',
+              'starting',
+              'playing',
+              'paused'
+            )
+            AND gr.status != 'disabled'
+            THEN 1
+            ELSE 0
+          END
+        ) AS active_tables
+
+      FROM poker_tables pt
+
+      INNER JOIN game_rooms gr
+        ON gr.id = pt.room_id
+
+      WHERE gr.game_type = 'poker'
+
+      UNION ALL
+
+      SELECT
+        COUNT(*) AS total_tables,
+
+        SUM(
+          CASE
+            WHEN lm.match_status IN (
+              'waiting',
+              'starting',
+              'playing'
+            )
+            THEN 1
+            ELSE 0
+          END
+        ) AS active_tables
+
+      FROM ludo_matches lm
+
+    ) AS room_group
+  `);
 
     /* =========================
        BOT STATISTICS
