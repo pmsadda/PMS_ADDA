@@ -1189,70 +1189,54 @@
     }, 20000);
   }
 
-  function scheduleRealtimeRefresh(
-  update = {},
-) {
-  window.clearTimeout(
-    SUPPORT_STATE.realtimeRefreshTimer,
-  );
+  function scheduleRealtimeRefresh(update = {}) {
+    window.clearTimeout(SUPPORT_STATE.realtimeRefreshTimer);
 
-  SUPPORT_STATE.realtimeRefreshTimer =
-    window.setTimeout(async () => {
+    SUPPORT_STATE.realtimeRefreshTimer = window.setTimeout(async () => {
       await loadTickets({
         preserveSelection: true,
         silent: true,
       });
 
-      const updatedTicketId =
-        Number(update.ticketId);
+      const updatedTicketId = Number(update.ticketId);
 
       if (
         SUPPORT_STATE.selectedTicketId &&
-        Number(
-          SUPPORT_STATE.selectedTicketId,
-        ) === updatedTicketId &&
+        Number(SUPPORT_STATE.selectedTicketId) === updatedTicketId &&
         !SUPPORT_STATE.isSendingReply
       ) {
-        await openTicket(
-          SUPPORT_STATE.selectedTicketId,
-          {
-            silent: true,
-          },
-        );
+        await openTicket(SUPPORT_STATE.selectedTicketId, {
+          silent: true,
+        });
       }
     }, 150);
-}
-
-function connectSupportSocket() {
-  /*
-   * Socket.IO load ব্যর্থ হলে existing
-   * automatic HTTP refresh চালু থাকবে।
-   */
-  if (typeof window.io !== "function") {
-    startAutoRefresh();
-
-    return;
   }
 
-  const token = getAccessToken();
+  function connectSupportSocket() {
+    /*
+     * Socket.IO load ব্যর্থ হলে existing
+     * automatic HTTP refresh চালু থাকবে।
+     */
+    if (typeof window.io !== "function") {
+      startAutoRefresh();
 
-  SUPPORT_STATE.socket =
-    window.io(
+      return;
+    }
+
+    const token = getAccessToken();
+
+    SUPPORT_STATE.socket = window.io(
       `${window.APP_CONFIG.SERVER_URL}/support`,
       {
         auth: {
           token,
         },
 
-        transports: [
-          "websocket",
-          "polling",
-        ],
+        transports: ["websocket", "polling"],
 
         reconnection: true,
 
-        reconnectionAttempts:
-          Infinity,
+        reconnectionAttempts: Infinity,
 
         reconnectionDelay: 700,
 
@@ -1260,48 +1244,31 @@ function connectSupportSocket() {
       },
     );
 
-  SUPPORT_STATE.socket.on(
-    "connect",
-    () => {
+    SUPPORT_STATE.socket.on("connect", () => {
       /*
        * Live socket চালু হলে unnecessary
        * polling বন্ধ হবে।
        */
-      window.clearInterval(
-        SUPPORT_STATE.refreshTimer,
-      );
+      window.clearInterval(SUPPORT_STATE.refreshTimer);
 
       loadTickets({
         preserveSelection: true,
         silent: true,
       });
-    },
-  );
+    });
 
-  SUPPORT_STATE.socket.on(
-    "support:update",
-    scheduleRealtimeRefresh,
-  );
+    SUPPORT_STATE.socket.on("support:update", scheduleRealtimeRefresh);
 
-  SUPPORT_STATE.socket.on(
-    "disconnect",
-    () => {
+    SUPPORT_STATE.socket.on("disconnect", () => {
       startAutoRefresh();
-    },
-  );
+    });
 
-  SUPPORT_STATE.socket.on(
-    "connect_error",
-    (error) => {
-      console.warn(
-        "SUPPORT SOCKET CONNECTION WARNING:",
-        error.message,
-      );
+    SUPPORT_STATE.socket.on("connect_error", (error) => {
+      console.warn("SUPPORT SOCKET CONNECTION WARNING:", error.message);
 
       startAutoRefresh();
-    },
-  );
-}
+    });
+  }
 
   async function initializeSupport() {
     cacheElements();
@@ -1318,6 +1285,11 @@ function connectSupportSocket() {
 
     console.log("✅ PMS ADDA Support Center loaded");
   }
-
-  document.addEventListener("DOMContentLoaded", initializeSupport);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeAdminSupport, {
+      once: true,
+    });
+  } else {
+    initializeAdminSupport();
+  }
 })();

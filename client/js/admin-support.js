@@ -2559,121 +2559,81 @@
     }, 30000);
   };
 
+  const scheduleRealtimeRefresh = (update = {}) => {
+    window.clearTimeout(state.realtimeRefreshTimer);
 
-  const scheduleRealtimeRefresh = (
-  update = {},
-) => {
-  window.clearTimeout(
-    state.realtimeRefreshTimer,
-  );
-
-  state.realtimeRefreshTimer =
-    window.setTimeout(async () => {
+    state.realtimeRefreshTimer = window.setTimeout(async () => {
       await loadTickets({
         silent: true,
       });
 
-      const updatedTicketId =
-        toNumber(
-          update.ticketId,
-          0,
-        );
+      const updatedTicketId = toNumber(update.ticketId, 0);
 
       if (
-        state.selectedTicketId ===
-          updatedTicketId &&
-        elements.ticketDetailsPanel
-          ?.classList.contains("open") &&
+        state.selectedTicketId === updatedTicketId &&
+        elements.ticketDetailsPanel?.classList.contains("open") &&
         !state.isUpdatingTicket &&
         !state.isSubmittingReply
       ) {
-        await loadTicketDetails(
-          state.selectedTicketId,
-          {
-            openPanel: false,
-            silent: true,
-          },
-        );
+        await loadTicketDetails(state.selectedTicketId, {
+          openPanel: false,
+          silent: true,
+        });
       }
     }, 150);
-};
+  };
 
-const connectSupportSocket = () => {
-  /*
-   * Socket.IO unavailable হলে existing
-   * HTTP automatic refresh চালু থাকবে।
-   */
-  if (typeof window.io !== "function") {
-    startAutomaticRefresh();
+  const connectSupportSocket = () => {
+    /*
+     * Socket.IO unavailable হলে existing
+     * HTTP automatic refresh চালু থাকবে।
+     */
+    if (typeof window.io !== "function") {
+      startAutomaticRefresh();
 
-    return;
-  }
+      return;
+    }
 
-  state.socket =
-    window.io(
-      `${window.APP_CONFIG.SERVER_URL}/support`,
-      {
-        auth: {
-          token: getAccessToken(),
-        },
-
-        transports: [
-          "websocket",
-          "polling",
-        ],
-
-        reconnection: true,
-
-        reconnectionAttempts:
-          Infinity,
-
-        reconnectionDelay: 700,
-
-        timeout: 10000,
+    state.socket = window.io(`${window.APP_CONFIG.SERVER_URL}/support`, {
+      auth: {
+        token: getAccessToken(),
       },
-    );
 
-  state.socket.on(
-    "connect",
-    () => {
+      transports: ["websocket", "polling"],
+
+      reconnection: true,
+
+      reconnectionAttempts: Infinity,
+
+      reconnectionDelay: 700,
+
+      timeout: 10000,
+    });
+
+    state.socket.on("connect", () => {
       /*
        * Live socket connected হলে
        * unnecessary polling বন্ধ হবে।
        */
-      window.clearInterval(
-        state.refreshTimer,
-      );
+      window.clearInterval(state.refreshTimer);
 
       loadTickets({
         silent: true,
       });
-    },
-  );
+    });
 
-  state.socket.on(
-    "support:update",
-    scheduleRealtimeRefresh,
-  );
+    state.socket.on("support:update", scheduleRealtimeRefresh);
 
-  state.socket.on(
-    "disconnect",
-    () => {
+    state.socket.on("disconnect", () => {
       startAutomaticRefresh();
-    },
-  );
+    });
 
-  state.socket.on(
-    "connect_error",
-    (error) => {
-      console.warn(
-        "ADMIN SUPPORT SOCKET WARNING:",
-        error.message,
-      );
+    state.socket.on("connect_error", (error) => {
+      console.warn("ADMIN SUPPORT SOCKET WARNING:", error.message);
 
       startAutomaticRefresh();
-    },
-  );
-};
+    });
+  };
 
   /* =====================================================
        INITIALIZATION
@@ -2714,7 +2674,13 @@ const connectSupportSocket = () => {
     });
   };
 
-  document.addEventListener("DOMContentLoaded", initializeAdminSupport);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeAdminSupport, {
+      once: true,
+    });
+  } else {
+    initializeAdminSupport();
+  }
 
   /* =====================================================
        OPTIONAL DEBUG ACCESS
