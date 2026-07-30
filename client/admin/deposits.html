@@ -15,9 +15,9 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-            <script src="../js/app-config.js"></script>
+        <script src="../js/app-config.js"></script>
 
-            <script src="../js/auth-guard.js"></script>
+        <script src="../js/auth-guard.js"></script>
 
         <!-- Shared CSS -->
         <link
@@ -265,6 +265,298 @@
                         </div>
 
                     </article>
+
+                </section>
+
+                <!-- =========================
+     Deposit Payment Settings
+========================== -->
+
+                <section
+                    class="payment-settings-panel"
+                    id="paymentSettingsPanel">
+
+                    <div class="payment-settings-header">
+
+                        <div>
+
+                            <span class="section-kicker">
+                                PAYMENT SETTINGS
+                            </span>
+
+                            <h2>
+                                Deposit Payment Numbers
+                            </h2>
+
+                            <p>
+                                User Deposit page-এ দেখানো
+                                bKash, Nagad ও Rocket number
+                                এখান থেকে নিয়ন্ত্রণ করুন।
+                            </p>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="payment-settings-refresh"
+                            id="refreshPaymentSettings">
+
+                            <i class="fa-solid fa-rotate"></i>
+
+                            Refresh
+
+                        </button>
+
+                    </div>
+
+                    <form
+                        id="depositPaymentSettingsForm"
+                        class="payment-settings-form"
+                        novalidate>
+
+                        <div class="payment-settings-grid">
+
+                            <!-- bKash -->
+
+                            <article
+                                class="payment-method-setting bkash"
+                                data-payment-method="bkash">
+
+                                <div class="payment-method-heading">
+
+                                    <div class="payment-method-icon">
+                                        B
+                                    </div>
+
+                                    <div>
+                                        <strong>bKash</strong>
+                                        <span>
+                                            Deposit account
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                <label>
+                                    Account Number
+
+                                    <input
+                                        type="tel"
+                                        inputmode="numeric"
+                                        maxlength="11"
+                                        placeholder="01XXXXXXXXX"
+                                        autocomplete="off"
+                                        data-payment-field="accountNumber">
+                                </label>
+
+                                <label>
+                                    Account Type
+
+                                    <select
+                                        data-payment-field="accountType">
+
+                                        <option value="personal">
+                                            Personal
+                                        </option>
+
+                                        <option value="agent">
+                                            Agent
+                                        </option>
+
+                                        <option value="merchant">
+                                            Merchant
+                                        </option>
+
+                                    </select>
+                                </label>
+
+                                <label>
+                                    Status
+
+                                    <select
+                                        data-payment-field="status">
+
+                                        <option value="active">
+                                            Active
+                                        </option>
+
+                                        <option value="disabled">
+                                            Disabled
+                                        </option>
+
+                                    </select>
+                                </label>
+
+                            </article>
+
+                            <!-- Nagad -->
+
+                            <article
+                                class="payment-method-setting nagad"
+                                data-payment-method="nagad">
+
+                                <div class="payment-method-heading">
+
+                                    <div class="payment-method-icon">
+                                        N
+                                    </div>
+
+                                    <div>
+                                        <strong>Nagad</strong>
+                                        <span>
+                                            Deposit account
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                <label>
+                                    Account Number
+
+                                    <input
+                                        type="tel"
+                                        inputmode="numeric"
+                                        maxlength="11"
+                                        placeholder="01XXXXXXXXX"
+                                        autocomplete="off"
+                                        data-payment-field="accountNumber">
+                                </label>
+
+                                <label>
+                                    Account Type
+
+                                    <select
+                                        data-payment-field="accountType">
+
+                                        <option value="personal">
+                                            Personal
+                                        </option>
+
+                                        <option value="agent">
+                                            Agent
+                                        </option>
+
+                                        <option value="merchant">
+                                            Merchant
+                                        </option>
+
+                                    </select>
+                                </label>
+
+                                <label>
+                                    Status
+
+                                    <select
+                                        data-payment-field="status">
+
+                                        <option value="active">
+                                            Active
+                                        </option>
+
+                                        <option value="disabled">
+                                            Disabled
+                                        </option>
+
+                                    </select>
+                                </label>
+
+                            </article>
+
+                            <!-- Rocket -->
+
+                            <article
+                                class="payment-method-setting rocket"
+                                data-payment-method="rocket">
+
+                                <div class="payment-method-heading">
+
+                                    <div class="payment-method-icon">
+                                        R
+                                    </div>
+
+                                    <div>
+                                        <strong>Rocket</strong>
+                                        <span>
+                                            Deposit account
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                <label>
+                                    Account Number
+
+                                    <input
+                                        type="tel"
+                                        inputmode="numeric"
+                                        maxlength="11"
+                                        placeholder="01XXXXXXXXX"
+                                        autocomplete="off"
+                                        data-payment-field="accountNumber">
+                                </label>
+
+                                <label>
+                                    Account Type
+
+                                    <select
+                                        data-payment-field="accountType">
+
+                                        <option value="personal">
+                                            Personal
+                                        </option>
+
+                                        <option value="agent">
+                                            Agent
+                                        </option>
+
+                                        <option value="merchant">
+                                            Merchant
+                                        </option>
+
+                                    </select>
+                                </label>
+
+                                <label>
+                                    Status
+
+                                    <select
+                                        data-payment-field="status">
+
+                                        <option value="active">
+                                            Active
+                                        </option>
+
+                                        <option value="disabled">
+                                            Disabled
+                                        </option>
+
+                                    </select>
+                                </label>
+
+                            </article>
+
+                        </div>
+
+                        <div class="payment-settings-footer">
+
+                            <p id="paymentSettingsUpdatedText">
+                                Payment settings loading...
+                            </p>
+
+                            <button
+                                type="submit"
+                                class="save-payment-settings"
+                                id="savePaymentSettings">
+
+                                <i class="fa-solid fa-floppy-disk"></i>
+
+                                Save Payment Numbers
+
+                            </button>
+
+                        </div>
+
+                    </form>
 
                 </section>
 

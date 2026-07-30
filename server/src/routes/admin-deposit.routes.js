@@ -1,11 +1,13 @@
 const express = require("express");
 
 const {
-    getDepositRequests,
-    approveDeposit,
-    rejectDeposit
+  getPaymentSettings,
+  savePaymentSettings,
+  getDepositRequests,
+  approveDeposit,
+  rejectDeposit,
 } = require(
-    "../controllers/admin-deposit.controller"
+  "../controllers/admin-deposit.controller"
 );
 
 const {
@@ -14,6 +16,24 @@ const {
 } = require("../middleware/auth.middleware");
 
 const router = express.Router();
+
+/* ==========================
+   Deposit Payment Settings
+========================== */
+
+router.get(
+  "/payment-settings",
+  requireAuth,
+  requireAdmin,
+  getPaymentSettings,
+);
+
+router.patch(
+  "/payment-settings",
+  requireAuth,
+  requireAdmin,
+  savePaymentSettings,
+);
 
 /* ==========================
    সব Deposit Request

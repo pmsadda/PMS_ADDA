@@ -12,9 +12,9 @@
         <link rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-            <script src="../js/app-config.js"></script>
+        <script src="../js/app-config.js"></script>
 
-            <script src="../js/auth-guard.js"></script>
+        <script src="../js/auth-guard.js"></script>
 
         <link rel="stylesheet" href="../css/common.css">
 
@@ -48,45 +48,88 @@
 
             </section>
 
+            <div
+                class="official-number"
+                id="officialNumberCard">
+                <p id="paymentMethodTitle">
+                    Loading Payment Method
+                </p>
+
+                <span
+                    class="merchant-account-type"
+                    id="merchantAccountType">
+                    Please wait
+                </span>
+
+                <h2 id="merchantNumber">
+                    —
+                </h2>
+
+                <button
+                    type="button"
+                    id="copyNumberBtn"
+                    disabled>
+                    <i class="fa-regular fa-copy"></i>
+
+                    Copy Number
+                </button>
+            </div>
+
             <section class="deposit-form">
 
                 <h3>Deposit Money</h3>
 
                 <label>Select Payment Method</label>
 
-                <div class="payment-grid">
-
-                    <button class="payment-card active"
-                        data-method="bkash">
-
-                        <img src="../assets/payment/bkash.png"
+                <div
+                    class="payment-grid"
+                    id="paymentMethodGrid"
+                    aria-label="Available payment methods">
+                    <button
+                        type="button"
+                        class="payment-card"
+                        data-method="bkash"
+                        aria-pressed="false"
+                        disabled>
+                        <img
+                            src="../assets/payment/bkash.png"
                             alt="bKash">
 
                         <span>bKash</span>
-
                     </button>
 
-                    <button class="payment-card"
-                        data-method="nagad">
-
-                        <img src="../assets/payment/nagad.png"
+                    <button
+                        type="button"
+                        class="payment-card"
+                        data-method="nagad"
+                        aria-pressed="false"
+                        disabled>
+                        <img
+                            src="../assets/payment/nagad.png"
                             alt="Nagad">
 
                         <span>Nagad</span>
-
                     </button>
 
-                    <button class="payment-card"
-                        data-method="rocket">
-
-                        <img src="../assets/payment/rocket.png"
+                    <button
+                        type="button"
+                        class="payment-card"
+                        data-method="rocket"
+                        aria-pressed="false"
+                        disabled>
+                        <img
+                            src="../assets/payment/rocket.png"
                             alt="Rocket">
 
                         <span>Rocket</span>
-
                     </button>
-
                 </div>
+
+                <p
+                    class="payment-method-message"
+                    id="paymentMethodMessage">
+                    Loading available payment methods...
+                </p>
 
                 <label>Deposit Amount</label>
 
@@ -142,29 +185,11 @@
 
                 </div>
 
-                <div class="official-number">
-
-                    <p>Official bKash Number</p>
-
-                    <h2 id="merchantNumber">
-
-                        01XXXXXXXXX
-
-                    </h2>
-
-                    <button id="copyNumberBtn">
-
-                        <i class="fa-regular fa-copy"></i>
-
-                        Copy Number
-
-                    </button>
-
-                </div>
-
                 <button
+                    type="button"
                     id="submitDeposit"
-                    class="submit-btn">
+                    class="submit-btn"
+                    disabled>
 
                     <i class="fa-solid fa-paper-plane"></i>
 

@@ -11,6 +11,17 @@ const {
 
 const router = express.Router();
 
+
+/* ==========================
+   Active Payment Methods
+========================== */
+
+router.get(
+  "/payment-methods",
+  requireAuth,
+  getPaymentMethods,
+);
+
 /* ==========================
    Submit Deposit Request
 ========================== */

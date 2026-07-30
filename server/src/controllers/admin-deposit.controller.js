@@ -5,6 +5,70 @@ const {
 } = require("../services/admin-deposit.service");
 
 /* ==========================
+   Get Payment Settings
+========================== */
+
+async function getPaymentSettings(
+  req,
+  res,
+  next,
+) {
+  try {
+    const paymentMethods =
+      await getAdminPaymentSettings();
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Deposit payment settings loaded successfully.",
+
+      data: {
+        paymentMethods,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
+   Update Payment Settings
+========================== */
+
+async function savePaymentSettings(
+  req,
+  res,
+  next,
+) {
+  try {
+    const paymentMethods =
+      req.body?.paymentMethods;
+
+    const updatedMethods =
+      await updatePaymentSettings(
+        req.user.id,
+        paymentMethods,
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Deposit payment settings updated successfully.",
+
+      data: {
+        paymentMethods:
+          updatedMethods,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+/* ==========================
    Get All Deposit Requests
 ========================== */
 
@@ -111,6 +175,9 @@ async function getDepositRequests(
         next(error);
     }
 }
+
+
+
 
 /* ==========================
    Approve Deposit Request
@@ -241,7 +308,9 @@ async function rejectDeposit(
 }
 
 module.exports = {
-    getDepositRequests,
-    approveDeposit,
-    rejectDeposit
+  getPaymentSettings,
+  savePaymentSettings,
+  getDepositRequests,
+  approveDeposit,
+  rejectDeposit,
 };

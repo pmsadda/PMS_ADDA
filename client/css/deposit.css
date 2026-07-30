@@ -827,3 +827,135 @@ input:focus{
     outline-offset:2px;
 
 }
+
+/* ==========================================
+   DYNAMIC DEPOSIT PAYMENT METHODS
+========================================== */
+
+.payment-grid {
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(105px, 1fr)
+        );
+}
+
+/* API load হওয়ার আগে disabled state */
+
+.payment-card:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.7);
+}
+
+.payment-card:disabled:hover {
+    transform: none;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* Active payment method */
+
+.payment-card.active {
+    opacity: 1;
+    filter: none;
+    border-color: #FFD700;
+    background: #2a2412;
+    box-shadow:
+        0 8px 20px
+        rgba(255, 215, 0, 0.16);
+}
+
+/* API status message */
+
+.payment-method-message {
+    margin:
+        -8px 0
+        20px;
+
+    color: #a9a9a9;
+
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.payment-method-message.is-success {
+    color: #71e6a1;
+}
+
+.payment-method-message.is-error {
+    color: #ff7f88;
+}
+
+/* Personal / Agent / Merchant label */
+
+.merchant-account-type {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 8px;
+    padding: 5px 12px;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.25);
+
+    border-radius: 999px;
+
+    color: #f6d86c;
+    background:
+        rgba(255, 215, 0, 0.08);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+/* Number loading state */
+
+.official-number.is-loading {
+    opacity: 0.7;
+}
+
+.official-number.is-unavailable {
+    border-color:
+        rgba(255, 91, 102, 0.35);
+}
+
+.official-number.is-unavailable h2 {
+    color: #ff7f88;
+}
+
+/* Disabled action buttons */
+
+#copyNumberBtn:disabled,
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#copyNumberBtn:disabled:hover,
+.submit-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+@media (max-width: 480px) {
+    .payment-grid {
+        grid-template-columns:
+            repeat(
+                auto-fit,
+                minmax(100px, 1fr)
+            );
+    }
+
+    .payment-card {
+        justify-content: center;
+    }
+}
