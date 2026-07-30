@@ -4,6 +4,15 @@ const {
     rejectDepositRequest
 } = require("../services/admin-deposit.service");
 
+
+const {
+    getAdminPaymentSettings,
+    updatePaymentSettings
+} = require(
+    "../services/deposit-payment.service"
+);
+
+
 /* ==========================
    Get Payment Settings
 ========================== */
