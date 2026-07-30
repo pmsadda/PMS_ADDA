@@ -2,8 +2,11 @@ const express = require("express");
 
 const {
     submitDepositRequest,
-    getMyDepositHistory
-} = require("../controllers/deposit.controller");
+    getMyDepositHistory,
+    getPaymentMethods
+} = require(
+    "../controllers/deposit.controller"
+);
 
 const {
     requireAuth
