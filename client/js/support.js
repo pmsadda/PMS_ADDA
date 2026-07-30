@@ -1286,10 +1286,10 @@
     console.log("✅ PMS ADDA Support Center loaded");
   }
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeAdminSupport, {
+    document.addEventListener("DOMContentLoaded", initializeSupport, {
       once: true,
     });
   } else {
-    initializeAdminSupport();
+    initializeSupport();
   }
 })();
