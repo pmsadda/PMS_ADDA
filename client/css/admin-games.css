@@ -151,9 +151,21 @@ body {
     font-size: 22px;
 }
 
+.summary-card p {
+    margin: 0;
+    color: #64748b;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
 .summary-card h3 {
     margin-top: 5px;
+
+    color: #0f172a;
+
     font-size: 28px;
+    font-weight: 800;
 }
 
 /* Content Card */
@@ -174,8 +186,16 @@ body {
 }
 
 .content-card-header h2 {
-    font-size: 24px;
     margin-bottom: 5px;
+
+    color: #0f172a;
+
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.content-card-header p {
+    color: #64748b;
 }
 
 .content-card-header p {
