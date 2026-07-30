@@ -2450,7 +2450,8 @@ input {
   }
 
   body::before {
-    content: "↻\A Poker খেলতে ফোনটি Landscape করুন";
+    content:
+  "↻\A Starting Landscape Mode\A Screen-এ একবার tap করুন";
     position: fixed;
     inset: 0;
     z-index: 999999;
