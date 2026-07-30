@@ -1,46 +1,55 @@
-const express = require("express");
+"use strict";
 
-const adminUsersController = require(
-  "../controllers/admin-users.controller"
+const express =
+  require("express");
+
+const adminUsersController =
+  require(
+    "../controllers/admin-users.controller"
+  );
+
+const {
+  requireAuth,
+  requireAdmin
+} = require(
+  "../middleware/auth.middleware"
 );
 
-const router = express.Router();
+const router =
+  express.Router();
 
 /*
- * তোমার project-এ admin authentication middleware
- * থাকলে এখানে import করবে।
- *
- * উদাহরণ:
- *
- * const {
- *   authenticateToken,
- *   requireAdmin
- * } = require("../middlewares/auth.middleware");
- *
- * router.use(
- *   authenticateToken,
- *   requireAdmin
- * );
+ * এই router-এর সব endpoint
+ * authenticated Admin-only।
  */
+
+router.use(
+  requireAuth,
+  requireAdmin
+);
 
 router.get(
   "/summary",
-  adminUsersController.getUserSummary
+  adminUsersController
+    .getUserSummary
 );
 
 router.get(
   "/",
-  adminUsersController.getUsers
+  adminUsersController
+    .getUsers
 );
 
 router.get(
   "/:userId",
-  adminUsersController.getUserById
+  adminUsersController
+    .getUserById
 );
 
 router.patch(
   "/:userId/status",
-  adminUsersController.updateUserStatus
+  adminUsersController
+    .updateUserStatus
 );
 
 module.exports = router;

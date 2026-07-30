@@ -1,44 +1,73 @@
-const express = require("express");
+"use strict";
 
-const adminGamesController = require(
+const express =
+  require("express");
+
+const adminGamesController =
+  require(
     "../controllers/admin-games.controller"
+  );
+
+const {
+  requireAuth,
+  requireAdmin
+} = require(
+  "../middleware/auth.middleware"
 );
 
-const router = express.Router();
+const router =
+  express.Router();
 
-router.get(
-    "/summary",
-    adminGamesController.getGameSummary
+/*
+ * Room create, update, status এবং
+ * delete—সব endpoint Admin-only।
+ */
+
+router.use(
+  requireAuth,
+  requireAdmin
 );
 
 router.get(
-    "/",
-    adminGamesController.getRooms
+  "/summary",
+  adminGamesController
+    .getGameSummary
 );
 
 router.get(
-    "/:roomId",
-    adminGamesController.getRoomById
+  "/",
+  adminGamesController
+    .getRooms
+);
+
+router.get(
+  "/:roomId",
+  adminGamesController
+    .getRoomById
 );
 
 router.post(
-    "/",
-    adminGamesController.createRoom
+  "/",
+  adminGamesController
+    .createRoom
 );
 
 router.patch(
-    "/:roomId",
-    adminGamesController.updateRoom
+  "/:roomId",
+  adminGamesController
+    .updateRoom
 );
 
 router.patch(
-    "/:roomId/status",
-    adminGamesController.updateRoomStatus
+  "/:roomId/status",
+  adminGamesController
+    .updateRoomStatus
 );
 
 router.delete(
-    "/:roomId",
-    adminGamesController.deleteRoom
+  "/:roomId",
+  adminGamesController
+    .deleteRoom
 );
 
 module.exports = router;
