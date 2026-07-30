@@ -3,6 +3,12 @@ const {
   getUserDepositRequests,
 } = require("../services/deposit.service");
 
+const {
+    getActivePaymentMethods
+} = require(
+    "../services/deposit-payment.service"
+);
+
 /* ==========================
    Active Payment Methods
 ========================== */
