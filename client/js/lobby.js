@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     withdrawals: [],
     notifications: [],
     lobbyNotices: [],
+    lobbyBanner: null,
     gameAvailability: {},
     loading: false,
     lastLoadedAt: 0,
@@ -37,6 +38,14 @@ document.addEventListener("DOMContentLoaded", () => {
     lobbyNoticeTrack: document.getElementById("lobbyNoticeTrack"),
 
     lobbyNoticeText: document.getElementById("lobbyNoticeText"),
+
+    lobbyBanner: document.getElementById("lobbyBanner"),
+
+    lobbyBannerLink: document.getElementById("lobbyBannerLink"),
+
+    lobbyBannerImage: document.getElementById("lobbyBannerImage"),
+
+    lobbyBannerLoading: document.getElementById("lobbyBannerLoading"),
 
     refreshButton: document.getElementById("refreshBtn"),
 
@@ -665,6 +674,145 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================================================
+   DYNAMIC LOBBY BANNER
+========================================================= */
+
+  function extractLobbyBanner(result) {
+    return result?.data?.banner || null;
+  }
+
+  function resolveLobbyBannerImageUrl(imageUrl) {
+    if (!imageUrl) {
+      return null;
+    }
+
+    if (/^https?:\/\//i.test(imageUrl)) {
+      return imageUrl;
+    }
+
+    const apiOrigin = new URL(window.APP_CONFIG.API_URL, window.location.origin)
+      .origin;
+
+    return new URL(imageUrl, apiOrigin).href;
+  }
+
+  function hideLobbyBanner() {
+    if (DOM.lobbyBanner) {
+      DOM.lobbyBanner.hidden = true;
+    }
+
+    if (DOM.lobbyBannerImage) {
+      DOM.lobbyBannerImage.removeAttribute("src");
+
+      DOM.lobbyBannerImage.alt = "PMS ADDA lobby advertisement";
+    }
+
+    if (DOM.lobbyBannerLoading) {
+      DOM.lobbyBannerLoading.hidden = true;
+    }
+
+    if (DOM.lobbyBannerLink) {
+      DOM.lobbyBannerLink.removeAttribute("href");
+
+      DOM.lobbyBannerLink.removeAttribute("target");
+
+      DOM.lobbyBannerLink.removeAttribute("title");
+    }
+  }
+
+  function setLobbyBannerTarget(banner) {
+    if (!DOM.lobbyBannerLink) {
+      return;
+    }
+
+    const targetUrl = String(banner?.targetUrl || "").trim();
+
+    if (!targetUrl) {
+      DOM.lobbyBannerLink.removeAttribute("href");
+
+      DOM.lobbyBannerLink.removeAttribute("target");
+
+      DOM.lobbyBannerLink.removeAttribute("title");
+
+      return;
+    }
+
+    let parsedUrl;
+
+    try {
+      parsedUrl = new URL(targetUrl);
+    } catch (error) {
+      DOM.lobbyBannerLink.removeAttribute("href");
+
+      DOM.lobbyBannerLink.removeAttribute("target");
+
+      return;
+    }
+
+    if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+      DOM.lobbyBannerLink.removeAttribute("href");
+
+      DOM.lobbyBannerLink.removeAttribute("target");
+
+      return;
+    }
+
+    DOM.lobbyBannerLink.href = parsedUrl.toString();
+
+    DOM.lobbyBannerLink.target = "_blank";
+
+    DOM.lobbyBannerLink.rel = "noopener noreferrer";
+
+    DOM.lobbyBannerLink.title = banner.title || "Open advertisement";
+  }
+
+  function renderLobbyBanner() {
+    if (!DOM.lobbyBanner || !DOM.lobbyBannerImage) {
+      return;
+    }
+
+    const banner = STATE.lobbyBanner;
+
+    if (!banner || banner.status !== "active" || !banner.imageUrl) {
+      hideLobbyBanner();
+      return;
+    }
+
+    const imageUrl = resolveLobbyBannerImageUrl(banner.imageUrl);
+
+    if (!imageUrl) {
+      hideLobbyBanner();
+      return;
+    }
+
+    DOM.lobbyBanner.hidden = false;
+
+    if (DOM.lobbyBannerLoading) {
+      DOM.lobbyBannerLoading.hidden = false;
+    }
+
+    DOM.lobbyBannerImage.alt = banner.title || "PMS ADDA lobby advertisement";
+
+    setLobbyBannerTarget(banner);
+
+    DOM.lobbyBannerImage.onload = () => {
+      if (DOM.lobbyBannerLoading) {
+        DOM.lobbyBannerLoading.hidden = true;
+      }
+
+      DOM.lobbyBanner.hidden = false;
+    };
+
+    DOM.lobbyBannerImage.onerror = () => {
+      console.error("Lobby banner image could not be loaded.");
+
+      hideLobbyBanner();
+    };
+
+    DOM.lobbyBannerImage.src = imageUrl;
+  }
+
+  /* =========================================================
      LOAD DYNAMIC LOBBY DATA
   ========================================================= */
 
@@ -688,12 +836,14 @@ document.addEventListener("DOMContentLoaded", () => {
         depositResult,
         withdrawResult,
         noticeResult,
+        bannerResult,
         gameResult,
       ] = await Promise.allSettled([
         requestAPI("/auth/me"),
         requestAPI("/deposits/my-history"),
         requestAPI("/withdraws/my-history"),
         requestAPI("/lobby-notices/public"),
+        requestAPI("/lobby-banner"),
         requestAPI("/games/availability"),
       ]);
 
@@ -728,24 +878,26 @@ document.addEventListener("DOMContentLoaded", () => {
           : [];
 
       STATE.lobbyNotices =
-  noticeResult.status === "fulfilled"
-    ? extractLobbyNotices(
-        noticeResult.value,
-      )
-    : [];
+        noticeResult.status === "fulfilled"
+          ? extractLobbyNotices(noticeResult.value)
+          : [];
 
-STATE.gameAvailability =
-  gameResult.status === "fulfilled"
-    ? extractGameAvailability(
-        gameResult.value,
-      )
-    : {};
+      STATE.lobbyBanner =
+        bannerResult.status === "fulfilled"
+          ? extractLobbyBanner(bannerResult.value)
+          : null;
 
-renderLobbyNotice();
+      STATE.gameAvailability =
+        gameResult.status === "fulfilled"
+          ? extractGameAvailability(gameResult.value)
+          : {};
 
-renderGameAvailability();
+      renderLobbyNotice();
+      renderLobbyBanner();
 
-buildNotifications();
+      renderGameAvailability();
+
+      buildNotifications();
       renderUser();
       renderNotifications();
 

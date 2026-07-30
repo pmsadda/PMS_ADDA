@@ -1613,3 +1613,159 @@ button:focus{
 
     box-shadow: none;
 }
+
+
+/* ==========================================
+   DYNAMIC LOBBY BANNER
+========================================== */
+
+.lobby-banner[hidden] {
+    display: none !important;
+}
+
+.lobby-banner {
+    position: relative;
+
+    width: 100%;
+
+    margin:
+        0 0
+        18px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.24);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(28, 25, 10, 0.98),
+            rgba(7, 15, 20, 0.98)
+        );
+
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.28);
+
+    animation:
+        lobbyBannerReveal
+        350ms ease;
+}
+
+.lobby-banner-link {
+    position: relative;
+
+    display: block;
+
+    width: 100%;
+    aspect-ratio: 16 / 5;
+
+    overflow: hidden;
+
+    color: inherit;
+    text-decoration: none;
+
+    cursor: default;
+}
+
+.lobby-banner-link[href] {
+    cursor: pointer;
+}
+
+.lobby-banner-image {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition:
+        transform 280ms ease,
+        filter 280ms ease;
+}
+
+.lobby-banner-link[href]:hover
+.lobby-banner-image {
+    transform: scale(1.018);
+    filter: brightness(1.04);
+}
+
+.lobby-banner-loading {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    gap: 8px;
+
+    color: #d7bd5c;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(44, 36, 8, 0.96),
+            rgba(5, 12, 17, 0.98)
+        );
+
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.lobby-banner-loading[hidden] {
+    display: none;
+}
+
+.lobby-banner-loading i {
+    color: #ffd84e;
+
+    font-size: 20px;
+}
+
+@keyframes lobbyBannerReveal {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 620px) {
+    .lobby-banner {
+        margin-bottom: 14px;
+
+        border-radius: 14px;
+    }
+
+    .lobby-banner-link {
+        aspect-ratio: 16 / 6;
+    }
+
+    .lobby-banner-loading {
+        font-size: 10px;
+    }
+}
+
+@media (
+    prefers-reduced-motion:
+    reduce
+) {
+    .lobby-banner {
+        animation: none;
+    }
+
+    .lobby-banner-image {
+        transition: none;
+    }
+}

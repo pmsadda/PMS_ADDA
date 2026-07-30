@@ -20,6 +20,10 @@ const supportRoutes = require("./routes/support.routes");
 
 const lobbyNoticeRoutes = require("./routes/lobby-notice.routes");
 
+const lobbyBannerRoutes = require("./routes/lobby-banner.routes");
+
+const adminLobbyBannerRoutes = require("./routes/admin-lobby-banner.routes");
+
 const adminDashboardRoutes = require("./routes/admin-dashboard.routes");
 
 const adminTransactionRoutes = require("./routes/admin-transactions.routes");
@@ -100,6 +104,10 @@ app.use("/api/withdraws", withdrawRoutes);
 app.use("/api/wallet", walletRoutes);
 
 app.use("/api/lobby-notices", lobbyNoticeRoutes);
+
+app.use("/api/lobby-banner", lobbyBannerRoutes);
+
+app.use("/api/admin/lobby-banner", adminLobbyBannerRoutes);
 
 /*
  * Lobby game availability
