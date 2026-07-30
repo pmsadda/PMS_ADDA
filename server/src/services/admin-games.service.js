@@ -244,9 +244,36 @@ async function getPublicGameAvailability() {
             ) AS available_rooms,
 
             COALESCE(
-                SUM(current_players),
-                0
-            ) AS active_players
+    SUM(
+        CASE
+            WHEN game_type IN (
+                'teen_patti',
+                'poker'
+            )
+            THEN current_players
+            ELSE 0
+        END
+    ),
+    0
+)
++
+COALESCE(
+    (
+        SELECT
+            SUM(
+                lm.current_players
+            )
+
+        FROM ludo_matches lm
+
+        WHERE lm.match_status IN (
+            'waiting',
+            'starting',
+            'playing'
+        )
+    ),
+    0
+) AS active_players,
 
         FROM game_rooms
 
