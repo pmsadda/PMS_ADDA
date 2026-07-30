@@ -843,7 +843,48 @@
 
         </div>
 
-        <script src="../js/admin-support.js"></script>
+        <script>
+  (() => {
+    const loadAdminSupport = () => {
+      const supportScript =
+        document.createElement("script");
+
+      supportScript.src =
+        "../js/admin-support.js";
+
+      document.body.appendChild(
+        supportScript,
+      );
+    };
+
+    const socketScript =
+      document.createElement("script");
+
+    socketScript.src =
+      window.APP_CONFIG.server(
+        "/socket.io/socket.io.js",
+      );
+
+    socketScript.onload =
+      loadAdminSupport;
+
+    socketScript.onerror = () => {
+      console.error(
+        "Failed to load the Socket.IO client.",
+      );
+
+      /*
+       * Socket load না হলেও Admin Support-এর
+       * HTTP fallback চালু থাকবে।
+       */
+      loadAdminSupport();
+    };
+
+    document.body.appendChild(
+      socketScript,
+    );
+  })();
+</script>
 
     </body>
 

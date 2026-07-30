@@ -11,6 +11,8 @@
     isSendingReply: false,
     isClosingTicket: false,
     refreshTimer: null,
+    realtimeRefreshTimer: null,
+    socket: null,
     toastTimer: null,
     ticketAttachments: [],
     replyAttachments: [],
@@ -876,200 +878,152 @@
     renderAttachmentPreview(type);
   }
 
- async function handleCreateTicket(event) {
-  event.preventDefault();
+  async function handleCreateTicket(event) {
+    event.preventDefault();
 
-  if (SUPPORT_STATE.isSubmittingTicket) {
-    return;
-  }
+    if (SUPPORT_STATE.isSubmittingTicket) {
+      return;
+    }
 
-  const category = ELEMENTS.ticketCategoryInput.value;
+    const category = ELEMENTS.ticketCategoryInput.value;
 
-  const subject =
-    ELEMENTS.ticketSubjectInput.value.trim();
+    const subject = ELEMENTS.ticketSubjectInput.value.trim();
 
-  const message =
-    ELEMENTS.ticketMessageInput.value.trim();
+    const message = ELEMENTS.ticketMessageInput.value.trim();
 
-  if (!category) {
-    showToast(
-      "একটি Support category নির্বাচন করুন।",
-      "error",
-    );
+    if (!category) {
+      showToast("একটি Support category নির্বাচন করুন।", "error");
 
-    return;
-  }
+      return;
+    }
 
-  if (subject.length < 5 || subject.length > 150) {
-    showToast(
-      "Subject 5 থেকে 150 character হতে হবে।",
-      "error",
-    );
+    if (subject.length < 5 || subject.length > 150) {
+      showToast("Subject 5 থেকে 150 character হতে হবে।", "error");
 
-    return;
-  }
+      return;
+    }
 
-  if (message.length < 10 || message.length > 3000) {
-    showToast(
-      "Message 10 থেকে 3000 character হতে হবে।",
-      "error",
-    );
+    if (message.length < 10 || message.length > 3000) {
+      showToast("Message 10 থেকে 3000 character হতে হবে।", "error");
 
-    return;
-  }
+      return;
+    }
 
-  SUPPORT_STATE.isSubmittingTicket = true;
+    SUPPORT_STATE.isSubmittingTicket = true;
 
-  setButtonLoading(
-    ELEMENTS.submitTicketButton,
-    true,
-    "Submitting...",
-  );
+    setButtonLoading(ELEMENTS.submitTicketButton, true, "Submitting...");
 
-  try {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    formData.append("category", category);
-    formData.append("subject", subject);
-    formData.append("message", message);
+      formData.append("category", category);
+      formData.append("subject", subject);
+      formData.append("message", message);
 
-    SUPPORT_STATE.ticketAttachments.forEach((file) => {
-      formData.append(
-        "attachments",
-        file,
-        file.name,
-      );
-    });
+      SUPPORT_STATE.ticketAttachments.forEach((file) => {
+        formData.append("attachments", file, file.name);
+      });
 
-    const result = await apiRequest(
-      "/support/tickets",
-      {
+      const result = await apiRequest("/support/tickets", {
         method: "POST",
         body: formData,
-      },
-    );
+      });
 
-    const createdTicket =
-      result.data?.ticket || result.data;
+      const createdTicket = result.data?.ticket || result.data;
 
-    SUPPORT_STATE.isSubmittingTicket = false;
+      SUPPORT_STATE.isSubmittingTicket = false;
 
-    clearSupportAttachments("ticket");
+      clearSupportAttachments("ticket");
 
-    closeTicketModal();
+      closeTicketModal();
 
-    showToast(
-      "Support Ticket সফলভাবে তৈরি হয়েছে।",
-    );
+      showToast("Support Ticket সফলভাবে তৈরি হয়েছে।");
 
-    await loadTickets({
-      preserveSelection: false,
-    });
+      await loadTickets({
+        preserveSelection: false,
+      });
 
-    if (createdTicket?.id) {
-      await openTicket(Number(createdTicket.id));
-    } else if (SUPPORT_STATE.tickets[0]?.id) {
-      await openTicket(
-        Number(SUPPORT_STATE.tickets[0].id),
-      );
+      if (createdTicket?.id) {
+        await openTicket(Number(createdTicket.id));
+      } else if (SUPPORT_STATE.tickets[0]?.id) {
+        await openTicket(Number(SUPPORT_STATE.tickets[0].id));
+      }
+    } catch (error) {
+      console.error("CREATE SUPPORT TICKET ERROR:", error);
+
+      showToast(error.message, "error");
+    } finally {
+      SUPPORT_STATE.isSubmittingTicket = false;
+
+      setButtonLoading(ELEMENTS.submitTicketButton, false);
     }
-  } catch (error) {
-    console.error(
-      "CREATE SUPPORT TICKET ERROR:",
-      error,
-    );
-
-    showToast(error.message, "error");
-  } finally {
-    SUPPORT_STATE.isSubmittingTicket = false;
-
-    setButtonLoading(
-      ELEMENTS.submitTicketButton,
-      false,
-    );
   }
-}
 
   async function handleSendReply(event) {
-  event.preventDefault();
+    event.preventDefault();
 
-  if (
-    SUPPORT_STATE.isSendingReply ||
-    !SUPPORT_STATE.selectedTicketId
-  ) {
-    return;
-  }
+    if (SUPPORT_STATE.isSendingReply || !SUPPORT_STATE.selectedTicketId) {
+      return;
+    }
 
-  const message =
-    ELEMENTS.replyMessageInput.value.trim();
+    const message = ELEMENTS.replyMessageInput.value.trim();
 
-  if (message.length < 1 || message.length > 3000) {
-    showToast("Reply message লিখুন।", "error");
+    if (message.length < 1 || message.length > 3000) {
+      showToast("Reply message লিখুন।", "error");
 
-    ELEMENTS.replyMessageInput.focus();
+      ELEMENTS.replyMessageInput.focus();
 
-    return;
-  }
+      return;
+    }
 
-  SUPPORT_STATE.isSendingReply = true;
+    SUPPORT_STATE.isSendingReply = true;
 
-  ELEMENTS.sendReplyButton.disabled = true;
+    ELEMENTS.sendReplyButton.disabled = true;
 
-  ELEMENTS.sendReplyButton.innerHTML = `
+    ELEMENTS.sendReplyButton.innerHTML = `
     <i class="fa-solid fa-spinner fa-spin"></i>
   `;
 
-  try {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    formData.append("message", message);
+      formData.append("message", message);
 
-    SUPPORT_STATE.replyAttachments.forEach((file) => {
-      formData.append(
-        "attachments",
-        file,
-        file.name,
+      SUPPORT_STATE.replyAttachments.forEach((file) => {
+        formData.append("attachments", file, file.name);
+      });
+
+      await apiRequest(
+        `/support/tickets/${SUPPORT_STATE.selectedTicketId}/messages`,
+        {
+          method: "POST",
+          body: formData,
+        },
       );
-    });
 
-    await apiRequest(
-      `/support/tickets/${SUPPORT_STATE.selectedTicketId}/messages`,
-      {
-        method: "POST",
-        body: formData,
-      },
-    );
+      ELEMENTS.replyMessageInput.value = "";
 
-    ELEMENTS.replyMessageInput.value = "";
+      clearSupportAttachments("reply");
 
-    clearSupportAttachments("reply");
+      updateReplyCounter();
 
-    updateReplyCounter();
+      await openTicket(SUPPORT_STATE.selectedTicketId);
 
-    await openTicket(
-      SUPPORT_STATE.selectedTicketId,
-    );
+      showToast("Message এবং screenshot সফলভাবে পাঠানো হয়েছে।");
+    } catch (error) {
+      console.error("SEND SUPPORT REPLY ERROR:", error);
 
-    showToast(
-      "Message এবং screenshot সফলভাবে পাঠানো হয়েছে।",
-    );
-  } catch (error) {
-    console.error(
-      "SEND SUPPORT REPLY ERROR:",
-      error,
-    );
+      showToast(error.message, "error");
+    } finally {
+      SUPPORT_STATE.isSendingReply = false;
 
-    showToast(error.message, "error");
-  } finally {
-    SUPPORT_STATE.isSendingReply = false;
+      ELEMENTS.sendReplyButton.disabled = false;
 
-    ELEMENTS.sendReplyButton.disabled = false;
-
-    ELEMENTS.sendReplyButton.innerHTML = `
+      ELEMENTS.sendReplyButton.innerHTML = `
       <i class="fa-solid fa-paper-plane"></i>
     `;
+    }
   }
-}
 
   async function handleCloseTicket() {
     if (SUPPORT_STATE.isClosingTicket || !SUPPORT_STATE.selectedTicketId) {
@@ -1205,27 +1159,13 @@
       }
     });
 
-ELEMENTS.ticketAttachmentInput.addEventListener(
-  "change",
-  event => {
-    handleAttachmentSelection(
-      event,
-      "ticket",
-    );
-  },
-);
+    ELEMENTS.ticketAttachmentInput.addEventListener("change", (event) => {
+      handleAttachmentSelection(event, "ticket");
+    });
 
-ELEMENTS.replyAttachmentInput.addEventListener(
-  "change",
-  event => {
-    handleAttachmentSelection(
-      event,
-      "reply",
-    );
-  },
-);
-
-
+    ELEMENTS.replyAttachmentInput.addEventListener("change", (event) => {
+      handleAttachmentSelection(event, "reply");
+    });
   }
 
   function startAutoRefresh() {
@@ -1249,6 +1189,120 @@ ELEMENTS.replyAttachmentInput.addEventListener(
     }, 20000);
   }
 
+  function scheduleRealtimeRefresh(
+  update = {},
+) {
+  window.clearTimeout(
+    SUPPORT_STATE.realtimeRefreshTimer,
+  );
+
+  SUPPORT_STATE.realtimeRefreshTimer =
+    window.setTimeout(async () => {
+      await loadTickets({
+        preserveSelection: true,
+        silent: true,
+      });
+
+      const updatedTicketId =
+        Number(update.ticketId);
+
+      if (
+        SUPPORT_STATE.selectedTicketId &&
+        Number(
+          SUPPORT_STATE.selectedTicketId,
+        ) === updatedTicketId &&
+        !SUPPORT_STATE.isSendingReply
+      ) {
+        await openTicket(
+          SUPPORT_STATE.selectedTicketId,
+          {
+            silent: true,
+          },
+        );
+      }
+    }, 150);
+}
+
+function connectSupportSocket() {
+  /*
+   * Socket.IO load ব্যর্থ হলে existing
+   * automatic HTTP refresh চালু থাকবে।
+   */
+  if (typeof window.io !== "function") {
+    startAutoRefresh();
+
+    return;
+  }
+
+  const token = getAccessToken();
+
+  SUPPORT_STATE.socket =
+    window.io(
+      `${window.APP_CONFIG.SERVER_URL}/support`,
+      {
+        auth: {
+          token,
+        },
+
+        transports: [
+          "websocket",
+          "polling",
+        ],
+
+        reconnection: true,
+
+        reconnectionAttempts:
+          Infinity,
+
+        reconnectionDelay: 700,
+
+        timeout: 10000,
+      },
+    );
+
+  SUPPORT_STATE.socket.on(
+    "connect",
+    () => {
+      /*
+       * Live socket চালু হলে unnecessary
+       * polling বন্ধ হবে।
+       */
+      window.clearInterval(
+        SUPPORT_STATE.refreshTimer,
+      );
+
+      loadTickets({
+        preserveSelection: true,
+        silent: true,
+      });
+    },
+  );
+
+  SUPPORT_STATE.socket.on(
+    "support:update",
+    scheduleRealtimeRefresh,
+  );
+
+  SUPPORT_STATE.socket.on(
+    "disconnect",
+    () => {
+      startAutoRefresh();
+    },
+  );
+
+  SUPPORT_STATE.socket.on(
+    "connect_error",
+    (error) => {
+      console.warn(
+        "SUPPORT SOCKET CONNECTION WARNING:",
+        error.message,
+      );
+
+      startAutoRefresh();
+    },
+  );
+}
+
   async function initializeSupport() {
     cacheElements();
     bindEvents();
@@ -1260,7 +1314,7 @@ ELEMENTS.replyAttachmentInput.addEventListener(
       preserveSelection: false,
     });
 
-    startAutoRefresh();
+    connectSupportSocket();
 
     console.log("✅ PMS ADDA Support Center loaded");
   }

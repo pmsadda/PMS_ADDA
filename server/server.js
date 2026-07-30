@@ -15,6 +15,8 @@ const { initializeLudoSocket } = require("./src/socket/ludo.socket");
 
 const { initializePokerSocket } = require("./src/socket/poker.socket");
 
+const { initializeSupportSocket } = require("./src/socket/support.socket");
+
 const PORT = Number(process.env.PORT) || 5000;
 
 const HOST = process.env.HOST || "0.0.0.0";
@@ -38,12 +40,15 @@ const io = new Server(httpServer, {
   },
 });
 
+app.set("io", io);
+
 /*
  * Teen Patti socket events চালু করা।
  */
 initializeTeenPattiSocket(io);
 initializeLudoSocket(io);
 initializePokerSocket(io);
+initializeSupportSocket(io);
 
 /*
  * Server start।

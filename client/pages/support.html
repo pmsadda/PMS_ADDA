@@ -519,6 +519,47 @@
       </span>
     </div>
 
-    <script src="../js/support.js"></script>
+   <script>
+  (() => {
+    const loadSupportPage = () => {
+      const supportScript =
+        document.createElement("script");
+
+      supportScript.src =
+        "../js/support.js";
+
+      document.body.appendChild(
+        supportScript,
+      );
+    };
+
+    const socketScript =
+      document.createElement("script");
+
+    socketScript.src =
+      window.APP_CONFIG.server(
+        "/socket.io/socket.io.js",
+      );
+
+    socketScript.onload =
+      loadSupportPage;
+
+    socketScript.onerror = () => {
+      console.error(
+        "Failed to load the Socket.IO client.",
+      );
+
+      /*
+       * Socket load না হলেও Support-এর
+       * HTTP fallback চালু থাকবে।
+       */
+      loadSupportPage();
+    };
+
+    document.body.appendChild(
+      socketScript,
+    );
+  })();
+</script>
   </body>
 </html>

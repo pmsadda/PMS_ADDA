@@ -33,6 +33,8 @@
 
     searchTimer: null,
     refreshTimer: null,
+    realtimeRefreshTimer: null,
+    socket: null,
 
     confirmResolver: null,
 
@@ -2557,6 +2559,122 @@
     }, 30000);
   };
 
+
+  const scheduleRealtimeRefresh = (
+  update = {},
+) => {
+  window.clearTimeout(
+    state.realtimeRefreshTimer,
+  );
+
+  state.realtimeRefreshTimer =
+    window.setTimeout(async () => {
+      await loadTickets({
+        silent: true,
+      });
+
+      const updatedTicketId =
+        toNumber(
+          update.ticketId,
+          0,
+        );
+
+      if (
+        state.selectedTicketId ===
+          updatedTicketId &&
+        elements.ticketDetailsPanel
+          ?.classList.contains("open") &&
+        !state.isUpdatingTicket &&
+        !state.isSubmittingReply
+      ) {
+        await loadTicketDetails(
+          state.selectedTicketId,
+          {
+            openPanel: false,
+            silent: true,
+          },
+        );
+      }
+    }, 150);
+};
+
+const connectSupportSocket = () => {
+  /*
+   * Socket.IO unavailable হলে existing
+   * HTTP automatic refresh চালু থাকবে।
+   */
+  if (typeof window.io !== "function") {
+    startAutomaticRefresh();
+
+    return;
+  }
+
+  state.socket =
+    window.io(
+      `${window.APP_CONFIG.SERVER_URL}/support`,
+      {
+        auth: {
+          token: getAccessToken(),
+        },
+
+        transports: [
+          "websocket",
+          "polling",
+        ],
+
+        reconnection: true,
+
+        reconnectionAttempts:
+          Infinity,
+
+        reconnectionDelay: 700,
+
+        timeout: 10000,
+      },
+    );
+
+  state.socket.on(
+    "connect",
+    () => {
+      /*
+       * Live socket connected হলে
+       * unnecessary polling বন্ধ হবে।
+       */
+      window.clearInterval(
+        state.refreshTimer,
+      );
+
+      loadTickets({
+        silent: true,
+      });
+    },
+  );
+
+  state.socket.on(
+    "support:update",
+    scheduleRealtimeRefresh,
+  );
+
+  state.socket.on(
+    "disconnect",
+    () => {
+      startAutomaticRefresh();
+    },
+  );
+
+  state.socket.on(
+    "connect_error",
+    (error) => {
+      console.warn(
+        "ADMIN SUPPORT SOCKET WARNING:",
+        error.message,
+      );
+
+      startAutomaticRefresh();
+    },
+  );
+};
+
   /* =====================================================
        INITIALIZATION
     ===================================================== */
@@ -2585,7 +2703,7 @@
 
     await loadTickets();
 
-    startAutomaticRefresh();
+    connectSupportSocket();
 
     console.log("✅ PMS ADDA Admin Support frontend loaded", {
       apiUrl: buildApiUrl(SUPPORT_API_BASE),

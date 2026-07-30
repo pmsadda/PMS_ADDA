@@ -2,6 +2,8 @@
 
 const supportService = require("../services/support.service");
 
+const { getSupportUserRoom } = require("../socket/support.socket");
+
 /*
 |--------------------------------------------------------------------------
 | Common response helpers
@@ -46,6 +48,50 @@ function getAuthenticatedUserId(request) {
   );
 }
 
+function emitSupportUpdate(request, eventType, result, fallbackUserId = null) {
+  try {
+    const namespace = request.app.get("io")?.of("/support");
+
+    if (!namespace) {
+      return;
+    }
+
+    const responseData = result?.data || result;
+
+    const ticket = responseData?.ticket || responseData;
+
+    const ticketId = Number(ticket?.id || ticket?.ticketId);
+
+    const userId = Number(ticket?.userId || fallbackUserId);
+
+    if (!Number.isInteger(ticketId) || ticketId < 1) {
+      return;
+    }
+
+    const rooms = ["support:admins"];
+
+    if (Number.isInteger(userId) && userId > 0) {
+      rooms.push(getSupportUserRoom(userId));
+    }
+
+    namespace.to(rooms).emit("support:update", {
+      eventType,
+      ticketId,
+
+      userId: Number.isInteger(userId) && userId > 0 ? userId : null,
+
+      status: ticket?.status || null,
+
+      priority: ticket?.priority || null,
+
+      updatedAt:
+        ticket?.updatedAt || ticket?.lastMessageAt || new Date().toISOString(),
+    });
+  } catch (error) {
+    console.warn("SUPPORT REAL-TIME BROADCAST WARNING:", error.message);
+  }
+}
+
 /*
 |--------------------------------------------------------------------------
 | Create support ticket
@@ -61,6 +107,8 @@ async function createTicket(request, response) {
       request.body || {},
       request.files || [],
     );
+
+    emitSupportUpdate(request, "ticket_created", result, userId);
 
     return sendSuccess(
       response,
@@ -147,6 +195,8 @@ async function replyToMyTicket(request, response) {
       request.files || [],
     );
 
+    emitSupportUpdate(request, "user_replied", result, userId);
+
     return sendSuccess(
       response,
       201,
@@ -172,6 +222,8 @@ async function closeMyTicket(request, response) {
     const ticketId = request.params.ticketId;
 
     const result = await supportService.closeUserTicket(userId, ticketId);
+
+    emitSupportUpdate(request, "ticket_closed", result, userId);
 
     return sendSuccess(
       response,
@@ -263,6 +315,8 @@ async function replyToTicketAsAdmin(request, response) {
       request.files || [],
     );
 
+    emitSupportUpdate(request, "admin_replied", result);
+
     return sendSuccess(
       response,
       201,
@@ -293,6 +347,8 @@ async function updateTicketAsAdmin(request, response) {
       ticketId,
       request.body || {},
     );
+
+    emitSupportUpdate(request, "ticket_updated", result);
 
     return sendSuccess(
       response,
