@@ -455,49 +455,213 @@ async function getDashboardStats() {
        BOT STATISTICS
     ========================= */
 
-    const [botRows] = await connection.query(`
-        SELECT
-          COUNT(*) AS total_bots,
+    const [botRows] =
+  await connection.query(`
+    SELECT
+      COALESCE(
+        SUM(bot_group.total_bots),
+        0
+      ) AS total_bots,
 
-          COALESCE(
-            SUM(
-              CASE
-                WHEN status = 'active'
-                THEN 1
-                ELSE 0
-              END
-            ),
-            0
-          ) AS enabled_bots,
+      COALESCE(
+        SUM(bot_group.enabled_bots),
+        0
+      ) AS enabled_bots,
 
-          COALESCE(
-            SUM(wallet_balance),
-            0
-          ) AS total_bot_balance
+      COALESCE(
+        SUM(bot_group.total_balance),
+        0
+      ) AS total_bot_balance
 
-        FROM teen_patti_bots
-      `);
+    FROM (
+      SELECT
+        COUNT(*) AS total_bots,
 
-    const [activeBotRows] = await connection.query(`
-        SELECT
-          COALESCE(
-            SUM(
-              CASE
-                WHEN is_active = 1
-                THEN 1
-                ELSE 0
-              END
-            ),
-            0
-          ) AS active_bots,
+        SUM(
+          CASE
+            WHEN status = 'active'
+            THEN 1
+            ELSE 0
+          END
+        ) AS enabled_bots,
 
-          COALESCE(
-            SUM(total_win),
-            0
-          ) AS total_bot_win
+        SUM(
+          wallet_balance
+        ) AS total_balance
 
-        FROM table_bots
-      `);
+      FROM teen_patti_bots
+
+      UNION ALL
+
+      SELECT
+        COUNT(*) AS total_bots,
+
+        SUM(
+          CASE
+            WHEN status = 'active'
+            THEN 1
+            ELSE 0
+          END
+        ) AS enabled_bots,
+
+        SUM(
+          wallet_balance
+        ) AS total_balance
+
+      FROM poker_bots
+
+      UNION ALL
+
+      SELECT
+        COUNT(*) AS total_bots,
+
+        SUM(
+          CASE
+            WHEN status = 'active'
+            THEN 1
+            ELSE 0
+          END
+        ) AS enabled_bots,
+
+        SUM(
+          wallet_balance
+        ) AS total_balance
+
+      FROM ludo_bots
+
+    ) AS bot_group
+  `);
+
+   const [botActivityRows] =
+  await connection.query(`
+    SELECT
+      COALESCE(
+        SUM(activity.bot_games),
+        0
+      ) AS bot_games,
+
+      COALESCE(
+        SUM(activity.bot_wins),
+        0
+      ) AS bot_wins,
+
+      COALESCE(
+        SUM(activity.bot_revenue),
+        0
+      ) AS bot_revenue,
+
+      COALESCE(
+        SUM(activity.bot_loss),
+        0
+      ) AS bot_loss
+
+    FROM (
+
+      SELECT
+        COUNT(
+          DISTINCT thp.hand_id
+        ) AS bot_games,
+
+        SUM(
+          CASE
+            WHEN thp.player_status =
+                 'winner'
+            THEN 1
+            ELSE 0
+          END
+        ) AS bot_wins,
+
+        SUM(
+          thp.prize_amount
+        ) AS bot_revenue,
+
+        SUM(
+          thp.total_contribution
+        ) AS bot_loss
+
+      FROM teen_patti_hand_players thp
+
+      INNER JOIN teen_patti_hands th
+        ON th.id = thp.hand_id
+
+      WHERE thp.player_type = 'bot'
+        AND th.hand_status = 'completed'
+        AND th.settlement_completed = 1
+
+      UNION ALL
+
+      SELECT
+        COUNT(
+          DISTINCT php.hand_id
+        ) AS bot_games,
+
+        SUM(
+          CASE
+            WHEN php.prize_amount > 0
+            THEN 1
+            ELSE 0
+          END
+        ) AS bot_wins,
+
+        SUM(
+          php.prize_amount
+        ) AS bot_revenue,
+
+        SUM(
+          php.total_contribution
+        ) AS bot_loss
+
+      FROM poker_hand_players php
+
+      INNER JOIN poker_hands ph
+        ON ph.id = php.hand_id
+
+      INNER JOIN poker_table_players ptp
+        ON ptp.id =
+           php.table_player_id
+
+      WHERE ptp.is_bot = 1
+        AND ph.hand_status = 'completed'
+        AND ph.settlement_completed = 1
+
+      UNION ALL
+
+      SELECT
+        COUNT(
+          DISTINCT lmp.match_id
+        ) AS bot_games,
+
+        SUM(
+          CASE
+            WHEN lmp.finish_position = 1
+            THEN 1
+            ELSE 0
+          END
+        ) AS bot_wins,
+
+        SUM(
+          lmp.prize_amount
+        ) AS bot_revenue,
+
+        SUM(
+          CASE
+            WHEN lmp.entry_debited = 1
+            THEN lmp.entry_amount
+            ELSE 0
+          END
+        ) AS bot_loss
+
+      FROM ludo_match_players lmp
+
+      INNER JOIN ludo_matches lm
+        ON lm.id = lmp.match_id
+
+      WHERE lmp.is_bot = 1
+        AND lm.match_status = 'completed'
+        AND lm.settlement_completed = 1
+
+    ) AS activity
+  `);
 
     /* =========================
        SERVICE CHARGE
@@ -569,7 +733,8 @@ async function getDashboardStats() {
 
     const botStats = botRows[0] || {};
 
-    const activeBotStats = activeBotRows[0] || {};
+    const botActivityStats =
+  botActivityRows[0] || {};
 
     const chargeStats = chargeRows[0] || {};
 
@@ -681,26 +846,50 @@ async function getDashboardStats() {
       },
 
       bots: {
-        total: Number(botStats.total_bots || 0),
+  total: Number(
+    botStats.total_bots || 0
+  ),
 
-        enabled: Number(botStats.enabled_bots || 0),
+  enabled: Number(
+    botStats.enabled_bots || 0
+  ),
 
-        active: Number(activeBotStats.active_bots || 0),
+  active: Number(
+    botStats.enabled_bots || 0
+  ),
 
-        totalBalance: Number(botStats.total_bot_balance || 0),
+  totalBalance: Number(
+    botStats.total_bot_balance || 0
+  ),
 
-        gamesPlayed: Number(revenueStats.total_rounds || 0),
+  gamesPlayed: Number(
+    botActivityStats.bot_games || 0
+  ),
 
-        winRounds: Number(revenueStats.bot_win_rounds || 0),
+  winRounds: Number(
+    botActivityStats.bot_wins || 0
+  ),
 
-        revenue: Number(revenueStats.bot_revenue || 0),
+  revenue: Number(
+    botActivityStats.bot_revenue || 0
+  ),
 
-        totalWin: Number(activeBotStats.total_bot_win || 0),
+  totalWin: Number(
+    botActivityStats.bot_revenue || 0
+  ),
 
-        loss: 0,
+  loss: Number(
+    botActivityStats.bot_loss || 0
+  ),
 
-        netResult: Number(activeBotStats.total_bot_win || 0),
-      },
+  netResult:
+    Number(
+      botActivityStats.bot_revenue || 0
+    ) -
+    Number(
+      botActivityStats.bot_loss || 0
+    )
+},
 
       serviceCharges: {
         teenPatti: Number(chargeStats.teen_patti_charge || 5),
