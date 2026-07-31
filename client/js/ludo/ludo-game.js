@@ -658,202 +658,148 @@ const LUDO_LIVE = {
     }
   },
 
-renderPlayers() {
-  const me = this.getMe();
+  renderPlayers() {
+    const me = this.getMe();
 
-  const perspectiveSlots = [
-    "view-bottom-left",
-    "view-top-left",
-    "view-top-right",
-    "view-bottom-right",
-  ];
+    const perspectiveSlots = [
+      "view-bottom-left",
+      "view-top-left",
+      "view-top-right",
+      "view-bottom-right",
+    ];
 
-  const localColorIndex =
-    this.colors.indexOf(
+    const localColorIndex = this.colors.indexOf(
       String(me?.color || "").toLowerCase(),
     );
 
-  this.colors.forEach((color) => {
-    const suffix =
-      color.charAt(0).toUpperCase() +
-      color.slice(1);
-
-    const panel =
-      this.getElement(
-        `playerPanel${suffix}`,
-      );
-
-    const name =
-      this.getElement(
-        `playerName${suffix}`,
-      );
-
-    const balance =
-      this.getElement(
-        `playerBalance${suffix}`,
-      );
-
-    const avatar =
-      this.getElement(
-        `playerAvatar${suffix}`,
-      );
-
-    const player =
-      this.state.players.find(
-        (item) => item.color === color,
-      );
-
-    panel?.classList.remove(
-      ...perspectiveSlots,
-      "is-local-player",
-      "is-bot-player",
+    const playerMode = Number(
+      this.state?.match?.playerMode ||
+        this.state?.match?.requestedPlayerMode ||
+        this.state?.match?.requiredPlayers ||
+        2,
     );
 
-    panel?.classList.toggle(
-      "is-empty",
-      !player,
-    );
+    const isFourPlayerMode = playerMode === 4;
 
-    panel?.classList.toggle(
-      "is-online",
-      Boolean(player),
-    );
+    const useLocalPerspective = playerMode === 2;
 
-    if (!player) {
+    const gameStage = document.querySelector(".game-stage");
+
+    gameStage?.classList.toggle("is-four-player-mode", isFourPlayerMode);
+
+    gameStage?.classList.toggle("is-two-player-mode", useLocalPerspective);
+
+    this.colors.forEach((color) => {
+      const suffix = color.charAt(0).toUpperCase() + color.slice(1);
+
+      const panel = this.getElement(`playerPanel${suffix}`);
+
+      const name = this.getElement(`playerName${suffix}`);
+
+      const balance = this.getElement(`playerBalance${suffix}`);
+
+      const avatar = this.getElement(`playerAvatar${suffix}`);
+
+      const player = this.state.players.find((item) => item.color === color);
+
+      panel?.classList.remove(
+        ...perspectiveSlots,
+        "is-local-player",
+        "is-bot-player",
+      );
+
+      panel?.classList.toggle("is-empty", !player);
+
+      panel?.classList.toggle("is-online", Boolean(player));
+
+      if (!player) {
+        if (name) {
+          name.textContent = "Waiting…";
+        }
+
+        if (balance) {
+          balance.hidden = false;
+          balance.textContent = "৳0";
+        }
+
+        return;
+      }
+
+      /*
+       * প্রত্যেক user-এর নিজের profile
+       * তার screen-এর নিচে থাকবে।
+       */
+      if (panel && useLocalPerspective && localColorIndex >= 0) {
+        const playerColorIndex = this.colors.indexOf(color);
+
+        const relativePosition =
+          (playerColorIndex - localColorIndex + this.colors.length) %
+          this.colors.length;
+
+        panel.classList.add(perspectiveSlots[relativePosition]);
+      }
+
+      const isLocalPlayer = Number(player.id) === Number(me?.id);
+
+      panel?.classList.toggle("is-local-player", isLocalPlayer);
+
+      panel?.classList.toggle("is-bot-player", Boolean(player.isBot));
+
       if (name) {
-        name.textContent = "Waiting…";
+        /*
+         * Bot-এর আসল নাম থাকবে।
+         * কোনো fallback-এও Bot লেখা হবে না।
+         */
+        name.textContent =
+          player.fullName || player.username || `Player ${player.seatNo}`;
       }
 
       if (balance) {
-        balance.hidden = false;
-        balance.textContent = "৳0";
+        /*
+         * Bot profile-এ BOT লেখা এবং
+         * balance line দুটোই hide হবে।
+         */
+        balance.hidden = Boolean(player.isBot);
+
+        balance.textContent = player.isBot
+          ? ""
+          : this.formatMoney(player.walletBalance);
       }
 
-      return;
-    }
+      if (avatar && player.avatarUrl) {
+        const rawUrl = String(player.avatarUrl);
 
-    /*
-     * প্রত্যেক user-এর নিজের profile
-     * তার screen-এর নিচে থাকবে।
-     */
-    if (panel && localColorIndex >= 0) {
-      const playerColorIndex =
-        this.colors.indexOf(color);
+        let avatarUrl = rawUrl;
 
-      const relativePosition =
-        (
-          playerColorIndex -
-          localColorIndex +
-          this.colors.length
-        ) % this.colors.length;
-
-      panel.classList.add(
-        perspectiveSlots[
-          relativePosition
-        ],
-      );
-    }
-
-    const isLocalPlayer =
-      Number(player.id) ===
-      Number(me?.id);
-
-    panel?.classList.toggle(
-      "is-local-player",
-      isLocalPlayer,
-    );
-
-    panel?.classList.toggle(
-      "is-bot-player",
-      Boolean(player.isBot),
-    );
-
-    if (name) {
-      /*
-       * Bot-এর আসল নাম থাকবে।
-       * কোনো fallback-এও Bot লেখা হবে না।
-       */
-      name.textContent =
-        player.fullName ||
-        player.username ||
-        `Player ${player.seatNo}`;
-    }
-
-    if (balance) {
-      /*
-       * Bot profile-এ BOT লেখা এবং
-       * balance line দুটোই hide হবে।
-       */
-      balance.hidden =
-        Boolean(player.isBot);
-
-      balance.textContent =
-        player.isBot
-          ? ""
-          : this.formatMoney(
-              player.walletBalance,
-            );
-    }
-
-    if (avatar && player.avatarUrl) {
-      const rawUrl =
-        String(player.avatarUrl);
-
-      let avatarUrl = rawUrl;
-
-      if (
-        !/^https?:\/\//i.test(rawUrl) &&
-        !rawUrl.startsWith("/")
-      ) {
-        avatarUrl =
-          rawUrl.startsWith("assets/")
+        if (!/^https?:\/\//i.test(rawUrl) && !rawUrl.startsWith("/")) {
+          avatarUrl = rawUrl.startsWith("assets/")
             ? `../${rawUrl}`
             : `../assets/images/avatars/${rawUrl}`;
-      }
+        }
 
-      if (
-        avatar.dataset.failedSrc !==
-        avatarUrl
-      ) {
-        avatar.onerror = () => {
-          avatar.dataset.failedSrc =
-            avatarUrl;
+        if (avatar.dataset.failedSrc !== avatarUrl) {
+          avatar.onerror = () => {
+            avatar.dataset.failedSrc = avatarUrl;
 
-          avatar.hidden = true;
+            avatar.hidden = true;
 
-          const wrapper =
-            avatar.closest(
-              ".player-avatar",
-            );
+            const wrapper = avatar.closest(".player-avatar");
 
-          wrapper?.classList.add(
-            "has-fallback-avatar",
-          );
+            wrapper?.classList.add("has-fallback-avatar");
 
-          wrapper.dataset.letter =
-            (
-              player.fullName ||
-              player.username ||
-              "P"
-            )
+            wrapper.dataset.letter = (player.fullName || player.username || "P")
               .charAt(0)
               .toUpperCase();
-        };
+          };
 
-        if (
-          avatar.src !==
-          new URL(
-            avatarUrl,
-            window.location.href,
-          ).href
-        ) {
-          avatar.hidden = false;
-          avatar.src = avatarUrl;
+          if (avatar.src !== new URL(avatarUrl, window.location.href).href) {
+            avatar.hidden = false;
+            avatar.src = avatarUrl;
+          }
         }
       }
-    }
-  });
-},
+    });
+  },
 
   renderMatchmaking() {
     const match = this.state.match;
@@ -1105,54 +1051,40 @@ renderPlayers() {
   },
 
   showDice(value) {
-  const face =
-    this.getElement("diceFace");
+    const face = this.getElement("diceFace");
 
-  if (!face) {
-    return;
-  }
+    if (!face) {
+      return;
+    }
 
-  const pipMap = {
-    1: [5],
-    2: [1, 9],
-    3: [1, 5, 9],
-    4: [1, 3, 7, 9],
-    5: [1, 3, 5, 7, 9],
-    6: [1, 3, 4, 6, 7, 9],
-  };
+    const pipMap = {
+      1: [5],
+      2: [1, 9],
+      3: [1, 5, 9],
+      4: [1, 3, 7, 9],
+      5: [1, 3, 5, 7, 9],
+      6: [1, 3, 4, 6, 7, 9],
+    };
 
-  const diceValue =
-    Number(value) >= 1 &&
-    Number(value) <= 6
-      ? Number(value)
-      : 1;
+    const diceValue =
+      Number(value) >= 1 && Number(value) <= 6 ? Number(value) : 1;
 
-  const activePips =
-    new Set(pipMap[diceValue]);
+    const activePips = new Set(pipMap[diceValue]);
 
-  face.replaceChildren();
+    face.replaceChildren();
 
-  for (
-    let position = 1;
-    position <= 9;
-    position += 1
-  ) {
-    const pip =
-      document.createElement("span");
+    for (let position = 1; position <= 9; position += 1) {
+      const pip = document.createElement("span");
 
-    pip.className = "dice-pip";
+      pip.className = "dice-pip";
 
-    pip.classList.toggle(
-      "is-visible",
-      activePips.has(position),
-    );
+      pip.classList.toggle("is-visible", activePips.has(position));
 
-    face.appendChild(pip);
-  }
+      face.appendChild(pip);
+    }
 
-  face.dataset.value =
-    String(diceValue);
-},
+    face.dataset.value = String(diceValue);
+  },
 
   rollDice() {
     if (this.rolling || !this.socket?.connected) {
@@ -1226,7 +1158,7 @@ renderPlayers() {
           return dice === 6;
         }
 
-       return Number(pawn.totalSteps) + dice <= 56;
+        return Number(pawn.totalSteps) + dice <= 56;
       })
       .map((pawn) => Number(pawn.pawnNo));
 
@@ -1501,19 +1433,13 @@ const initializeLudoGame = () => {
 
   LUDO_LIVE.initialize();
 
-  console.log(
-    "✅ PMS ADDA glossy Ludo table loaded",
-  );
+  console.log("✅ PMS ADDA glossy Ludo table loaded");
 };
 
 if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    initializeLudoGame,
-    {
-      once: true,
-    },
-  );
+  document.addEventListener("DOMContentLoaded", initializeLudoGame, {
+    once: true,
+  });
 } else {
   initializeLudoGame();
 }

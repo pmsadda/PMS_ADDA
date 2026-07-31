@@ -2315,3 +2315,54 @@ button {
   }
 }
 
+/* =========================================================
+   LUDO 4-PLAYER — BOARD COLOR PANEL MAPPING
+========================================================= */
+
+@media (orientation: portrait) {
+
+  /*
+   * RED — board-এর উপরে বাঁ পাশে।
+   */
+  .game-stage.is-four-player-mode
+  .player-panel.player-red {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+
+    justify-self: stretch !important;
+  }
+
+  /*
+   * GREEN — board-এর উপরে ডান পাশে।
+   */
+  .game-stage.is-four-player-mode
+  .player-panel.player-green {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    justify-self: stretch !important;
+  }
+
+  /*
+   * BLUE — board-এর নিচে বাঁ পাশে।
+   */
+  .game-stage.is-four-player-mode
+  .player-panel.player-blue {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+
+    justify-self: stretch !important;
+  }
+
+  /*
+   * YELLOW — board-এর নিচে ডান পাশে।
+   */
+  .game-stage.is-four-player-mode
+  .player-panel.player-yellow {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+
+    justify-self: stretch !important;
+  }
+}
+
