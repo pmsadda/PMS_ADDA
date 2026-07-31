@@ -313,6 +313,8 @@ const LUDO_LIVE = {
   diceAnimationTimer: null,
   countdownInterval: null,
   turnTimerInterval: null,
+  singlePawnAutoMoveTimer: null,
+  singlePawnAutoMoveKey: null,
 
   diceFaces: {
     1: "⚀",
@@ -562,7 +564,17 @@ const LUDO_LIVE = {
     this.socket.on("match:error", (error) => {
       console.error("Ludo match error:", error);
 
+      clearTimeout(this.singlePawnAutoMoveTimer);
+
+      this.singlePawnAutoMoveTimer = null;
+
+      this.rolling = false;
+      this.moving = false;
+
       this.setMessage(error?.message || "Ludo match error.");
+
+      this.renderPawns();
+      this.updateDiceButton();
     });
 
     this.socket.on("match:player-disconnected", () => {
@@ -624,6 +636,7 @@ const LUDO_LIVE = {
     this.renderTurn();
     this.renderDice();
     this.showWinner();
+    this.scheduleSinglePawnAutoMove();
   },
 
   renderMatchHeader() {
@@ -988,11 +1001,15 @@ const LUDO_LIVE = {
     }
 
     if (hint) {
+      const movablePawnCount = this.getMovablePawnNumbers().size;
+
       hint.textContent = canRoll
         ? "TAP TO ROLL"
-        : isMyTurn && gameState?.diceRolled
-          ? "SELECT PAWN"
-          : "WAIT";
+        : isMyTurn && gameState?.diceRolled && movablePawnCount === 1
+          ? "AUTO MOVE"
+          : isMyTurn && gameState?.diceRolled
+            ? "SELECT PAWN"
+            : "WAIT";
     }
   },
 
@@ -1163,6 +1180,119 @@ const LUDO_LIVE = {
       .map((pawn) => Number(pawn.pawnNo));
 
     return new Set(numbers);
+  },
+
+  scheduleSinglePawnAutoMove() {
+    clearTimeout(this.singlePawnAutoMoveTimer);
+
+    this.singlePawnAutoMoveTimer = null;
+
+    const gameState = this.state?.gameState;
+
+    const currentPlayer = this.getCurrentTurnPlayer();
+
+    const isMyTurn = Number(currentPlayer?.id) === Number(this.matchPlayerId);
+
+    const canAutoMove =
+      this.socket?.connected &&
+      this.state?.match?.status === "playing" &&
+      gameState?.status === "playing" &&
+      gameState?.diceRolled &&
+      isMyTurn &&
+      !this.moving;
+
+    if (!canAutoMove) {
+      this.singlePawnAutoMoveKey = null;
+
+      return;
+    }
+
+    const movablePawnNumbers = [...this.getMovablePawnNumbers()];
+
+    /*
+     * একটির বেশি legal pawn থাকলে
+     * player নিজে pawn নির্বাচন করবে।
+     */
+    if (movablePawnNumbers.length !== 1) {
+      this.singlePawnAutoMoveKey = null;
+
+      return;
+    }
+
+    const pawnNo = Number(movablePawnNumbers[0]);
+
+    const stateVersion = Number(gameState.stateVersion || 0);
+
+    const autoMoveKey = [
+      this.matchId,
+      stateVersion,
+      gameState.currentTurnPlayerId,
+      gameState.diceValue,
+      pawnNo,
+    ].join(":");
+
+    /*
+     * একই dice state থেকে duplicate
+     * auto-move request আটকাবে।
+     */
+    if (this.singlePawnAutoMoveKey === autoMoveKey) {
+      return;
+    }
+
+    this.singlePawnAutoMoveKey = autoMoveKey;
+
+    const attemptAutoMove = () => {
+      this.singlePawnAutoMoveTimer = null;
+
+      /*
+       * Dice animation শেষ না হওয়া পর্যন্ত
+       * pawn movement অপেক্ষা করবে।
+       */
+      if (this.diceAnimating) {
+        this.singlePawnAutoMoveTimer = setTimeout(attemptAutoMove, 100);
+
+        return;
+      }
+
+      const latestGameState = this.state?.gameState;
+
+      const latestCurrentPlayer = this.getCurrentTurnPlayer();
+
+      const latestMovablePawns = [...this.getMovablePawnNumbers()];
+
+      const latestKey = [
+        this.matchId,
+        Number(latestGameState?.stateVersion || 0),
+        latestGameState?.currentTurnPlayerId,
+        latestGameState?.diceValue,
+        pawnNo,
+      ].join(":");
+
+      const stateStillValid =
+        this.socket?.connected &&
+        this.state?.match?.status === "playing" &&
+        latestGameState?.status === "playing" &&
+        latestGameState?.diceRolled &&
+        Number(latestCurrentPlayer?.id) === Number(this.matchPlayerId) &&
+        latestMovablePawns.length === 1 &&
+        Number(latestMovablePawns[0]) === pawnNo &&
+        latestKey === autoMoveKey &&
+        this.singlePawnAutoMoveKey === autoMoveKey &&
+        !this.moving;
+
+      if (!stateStillValid) {
+        return;
+      }
+
+      this.setMessage("Moving the only available pawn…");
+
+      this.movePawn(pawnNo);
+    };
+
+    /*
+     * Dice result দেখার জন্য অল্প delay।
+     */
+    this.singlePawnAutoMoveTimer = setTimeout(attemptAutoMove, 850);
   },
 
   getPawnPosition(pawn) {

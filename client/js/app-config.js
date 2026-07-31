@@ -78,6 +78,12 @@
 (function initializeAuthSession() {
   const ACCESS_TOKEN_KEY = "access_token";
 
+    const LOBBY_SESSION_DURATION_MS =
+    30 * 60 * 1000;
+
+  const LOBBY_SESSION_STARTED_KEY =
+    "pms_lobby_session_started_at";
+
   const AUTH_STORAGE_KEYS = [
     "access_token",
     "current_user",
@@ -96,6 +102,51 @@
       pathname.endsWith("/login.html") ||
       pathname.endsWith("/register.html")
     );
+  }
+
+    function isLobbyPage() {
+    const pathname =
+      String(
+        window.location.pathname,
+      ).toLowerCase();
+
+    return pathname.endsWith(
+      "/lobby.html",
+    );
+  }
+
+  function clearLobbySession() {
+    sessionStorage.removeItem(
+      LOBBY_SESSION_STARTED_KEY,
+    );
+  }
+
+  function getOrCreateLobbyStartedAt() {
+    const now = Date.now();
+
+    const storedStartedAt = Number(
+      sessionStorage.getItem(
+        LOBBY_SESSION_STARTED_KEY,
+      ),
+    );
+
+    const isValidStoredTime =
+      Number.isFinite(storedStartedAt) &&
+      storedStartedAt > 0 &&
+      storedStartedAt <= now &&
+      now - storedStartedAt <
+        LOBBY_SESSION_DURATION_MS;
+
+    if (isValidStoredTime) {
+      return storedStartedAt;
+    }
+
+    sessionStorage.setItem(
+      LOBBY_SESSION_STARTED_KEY,
+      String(now),
+    );
+
+    return now;
   }
 
   function getLoginPageUrl() {
@@ -200,73 +251,115 @@
 
     activeToken = null;
 
-    clearAuthStorage();
+       clearAuthStorage();
+    clearLobbySession();
 
     if (
       showMessage &&
       !isPublicAuthPage()
     ) {
       window.alert(
-        "আপনার ৩০ মিনিটের login session শেষ হয়েছে। আবার login করুন।",
+        "Lobby-তে ৩০ মিনিট সম্পূর্ণ হয়েছে। আবার login করুন।",
       );
     }
 
     redirectToLogin();
   }
 
-  function startSessionTimer() {
+    function startSessionTimer() {
     if (logoutTimer) {
-      window.clearTimeout(logoutTimer);
+      window.clearTimeout(
+        logoutTimer,
+      );
+
       logoutTimer = null;
     }
 
     logoutStarted = false;
 
-    const token = localStorage.getItem(
-      ACCESS_TOKEN_KEY,
-    );
+    const token =
+      localStorage.getItem(
+        ACCESS_TOKEN_KEY,
+      );
 
     activeToken = token;
 
-    /*
-     * Token না থাকলে existing page auth guard
-     * প্রয়োজন অনুযায়ী login page-এ পাঠাবে।
-     */
     if (!token) {
+      clearLobbySession();
+
       return;
     }
 
-    const expirationTime =
+    /*
+     * Game, room, wallet, profile ও admin
+     * page-এ ৩০ মিনিটের timer চলবে না।
+     */
+    if (!isLobbyPage()) {
+      clearLobbySession();
+
+      console.log(
+        "Lobby auto logout disabled on this page.",
+      );
+
+      return;
+    }
+
+    const tokenExpirationTime =
       getTokenExpirationTime(token);
 
-    if (!expirationTime) {
+    if (
+      !tokenExpirationTime ||
+      tokenExpirationTime <= Date.now()
+    ) {
       logoutSession(false);
+
       return;
     }
+
+    const lobbyStartedAt =
+      getOrCreateLobbyStartedAt();
+
+    const lobbyExpirationTime =
+      lobbyStartedAt +
+      LOBBY_SESSION_DURATION_MS;
+
+    /*
+     * Lobby timer অথবা server token—
+     * যেটি আগে শেষ হবে সেটিই কার্যকর।
+     */
+    const expirationTime = Math.min(
+      lobbyExpirationTime,
+      tokenExpirationTime,
+    );
 
     const remainingTime =
       expirationTime - Date.now();
 
     if (remainingTime <= 0) {
       logoutSession(true);
+
       return;
     }
 
-    logoutTimer = window.setTimeout(() => {
-      logoutSession(true);
-    }, remainingTime);
+    logoutTimer =
+      window.setTimeout(() => {
+        logoutSession(true);
+      }, remainingTime);
 
     console.log(
-      "Login session remaining:",
-      Math.ceil(remainingTime / 1000),
+      "Lobby session remaining:",
+      Math.ceil(
+        remainingTime / 1000,
+      ),
       "seconds",
     );
   }
 
-  function verifyCurrentSession() {
-    const token = localStorage.getItem(
-      ACCESS_TOKEN_KEY,
-    );
+    function verifyCurrentSession() {
+    const token =
+      localStorage.getItem(
+        ACCESS_TOKEN_KEY,
+      );
 
     if (!token) {
       if (activeToken) {
@@ -276,21 +369,47 @@
       return;
     }
 
-    const expirationTime =
-      getTokenExpirationTime(token);
+    if (token !== activeToken) {
+      startSessionTimer();
 
-    if (
-      !expirationTime ||
-      Date.now() >= expirationTime
-    ) {
-      logoutSession(true);
       return;
     }
 
-    if (token !== activeToken) {
-      startSessionTimer();
+    /*
+     * Game page-এ focus/visibility change
+     * হলেও auto logout check হবে না।
+     */
+    if (!isLobbyPage()) {
+      return;
+    }
+
+    const tokenExpirationTime =
+      getTokenExpirationTime(token);
+
+    const lobbyStartedAt = Number(
+      sessionStorage.getItem(
+        LOBBY_SESSION_STARTED_KEY,
+      ),
+    );
+
+    const lobbyExpirationTime =
+      lobbyStartedAt +
+      LOBBY_SESSION_DURATION_MS;
+
+    const sessionExpired =
+      !tokenExpirationTime ||
+      tokenExpirationTime <= Date.now() ||
+      !Number.isFinite(
+        lobbyStartedAt,
+      ) ||
+      lobbyStartedAt <= 0 ||
+      lobbyExpirationTime <= Date.now();
+
+    if (sessionExpired) {
+      logoutSession(true);
     }
   }
+
 
   window.addEventListener(
     "focus",
