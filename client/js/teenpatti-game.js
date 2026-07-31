@@ -522,49 +522,118 @@
     return image;
   }
 
-  function renderCards(container, cards, shouldReveal, cardCount = 3) {
-    if (!container) {
-      return;
-    }
+  function renderCards(
+  container,
+  cards,
+  shouldReveal,
+  cardCount = 3,
+) {
+  if (!container) {
+    return;
+  }
 
-    container.replaceChildren();
+  const safeCards =
+    Array.isArray(cards)
+      ? cards
+      : [];
 
-    const safeCards = Array.isArray(cards) ? cards : [];
+  const totalCards = Math.max(
+    0,
+    Math.min(
+      3,
+      Number(cardCount) ||
+        safeCards.length ||
+        0,
+    ),
+  );
 
-    const totalCards = Math.max(
-      0,
-      Math.min(3, Number(cardCount) || safeCards.length || 0),
+  const dealtCardCount =
+    STATE.cardDistributionActive === true
+      ? Math.max(
+          0,
+          Number(
+            STATE.cardDistributionProgress.get(
+              container,
+            ) || 0,
+          ),
+        )
+      : totalCards;
+
+  /*
+   * প্রয়োজনের অতিরিক্ত card শুধু তখনই remove হবে।
+   * প্রতিটি state update-এ সব card আর recreate হবে না।
+   */
+  while (
+    container.children.length >
+    totalCards
+  ) {
+    container.lastElementChild?.remove();
+  }
+
+  /*
+   * Missing card element শুধু প্রয়োজন হলে তৈরি হবে।
+   */
+  while (
+    container.children.length <
+    totalCards
+  ) {
+    container.appendChild(
+      createCardImage(
+        CARD_BACK_PATH,
+        "Hidden card",
+      ),
     );
+  }
 
-    const dealtCardCount =
-      STATE.cardDistributionActive === true
-        ? Math.max(
-            0,
-            Number(STATE.cardDistributionProgress.get(container) || 0),
-          )
-        : totalCards;
+  Array.from(
+    container.children,
+  ).forEach(
+    (cardImage, index) => {
+      const card =
+        safeCards[index];
 
-    for (let index = 0; index < totalCards; index += 1) {
-      const card = safeCards[index];
+      const canShowCard =
+        Boolean(shouldReveal) &&
+        Boolean(card);
 
-      const canShowCard = Boolean(shouldReveal) && Boolean(card);
+      const desiredSource =
+        canShowCard
+          ? getCardAssetPath(card)
+          : CARD_BACK_PATH;
 
-      const cardImage = createCardImage(
-        canShowCard ? getCardAssetPath(card) : CARD_BACK_PATH,
-
-        canShowCard ? `${card.rank}${card.suit}` : "Hidden card",
-      );
+      const desiredAlt =
+        canShowCard
+          ? `${card.rank}${card.suit}`
+          : "Hidden card";
 
       /*
-       * Distribution শেষ না হওয়া card hidden থাকবে।
+       * Source সত্যিই পরিবর্তন হলেই browser image
+       * update করবে। একই action state-এ reload হবে না।
        */
-      if (index >= dealtCardCount) {
-        cardImage.classList.remove("card-arrived");
+      if (
+        cardImage.dataset.cardSource !==
+        desiredSource
+      ) {
+        cardImage.src =
+          desiredSource;
+
+        cardImage.dataset.cardSource =
+          desiredSource;
       }
 
-      container.appendChild(cardImage);
-    }
-  }
+      cardImage.alt =
+        desiredAlt;
+
+      cardImage.draggable =
+        false;
+
+      cardImage.classList.toggle(
+        "card-arrived",
+        index < dealtCardCount,
+      );
+    },
+  );
+}
 
   /* =========================================================
      PLAYER HELPERS
@@ -668,48 +737,100 @@
     return source;
   }
 
-  function renderPlayerAvatar(avatarElement, playerName, avatarUrl) {
-    if (!avatarElement) {
-      return;
+  function renderPlayerAvatar(
+  avatarElement,
+  playerName,
+  avatarUrl,
+) {
+  if (!avatarElement) {
+    return;
+  }
+
+  const initial =
+    getPlayerInitial(playerName);
+
+  const resolvedAvatar =
+    resolveAvatarUrl(avatarUrl);
+
+  if (!resolvedAvatar) {
+    const currentImage =
+      avatarElement.querySelector("img");
+
+    if (
+      currentImage ||
+      avatarElement.textContent.trim() !==
+        initial
+    ) {
+      avatarElement.replaceChildren();
+      avatarElement.textContent =
+        initial;
     }
 
-    const initial = getPlayerInitial(playerName);
+    return;
+  }
 
-    const resolvedAvatar = resolveAvatarUrl(avatarUrl);
+  let image =
+    avatarElement.querySelector("img");
 
-    avatarElement.replaceChildren();
+  /*
+   * Existing image থাকলে সেটিই reuse হবে।
+   */
+  if (!image) {
+    image =
+      document.createElement("img");
 
-    if (!resolvedAvatar) {
-      avatarElement.textContent = initial;
-
-      return;
-    }
-
-    const image = document.createElement("img");
-
-    image.src = resolvedAvatar;
-    image.alt = playerName;
     image.draggable = false;
 
-    Object.assign(image.style, {
-      width: "100%",
-      height: "100%",
-      display: "block",
-      objectFit: "cover",
-      borderRadius: "50%",
-    });
+    Object.assign(
+      image.style,
+      {
+        width: "100%",
+        height: "100%",
+        display: "block",
+        objectFit: "cover",
+        borderRadius: "50%",
+      },
+    );
 
     image.addEventListener(
       "error",
       () => {
+        const fallbackInitial =
+          image.dataset.fallbackInitial ||
+          "P";
+
         avatarElement.replaceChildren();
-        avatarElement.textContent = initial;
+
+        avatarElement.textContent =
+          fallbackInitial;
       },
-      { once: true },
+      {
+        once: true,
+      },
     );
 
-    avatarElement.appendChild(image);
+    avatarElement.replaceChildren(
+      image,
+    );
   }
+
+  image.alt =
+    playerName;
+
+  image.dataset.fallbackInitial =
+    initial;
+
+  if (
+    image.dataset.avatarSource !==
+    resolvedAvatar
+  ) {
+    image.src =
+      resolvedAvatar;
+
+    image.dataset.avatarSource =
+      resolvedAvatar;
+  }
+}
 
   function renderSeat(seat, player, visualSeatNumber, localSeat = false) {
     if (!seat || !player) {

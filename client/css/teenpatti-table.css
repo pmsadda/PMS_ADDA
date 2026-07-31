@@ -3430,3 +3430,148 @@ strong {
 .player.is-packed .cards {
   opacity: 0.55;
 }
+
+/* =========================================================
+   TEEN PATTI — MOBILE LANDSCAPE FINAL TUNING
+========================================================= */
+
+@media (
+  orientation: landscape
+) and (
+  max-height: 520px
+) {
+
+  /*
+   * Mobile-এ table বড় এবং নিচের দিকে থাকবে।
+   */
+  .tp-stage .table-area {
+    top: 56% !important;
+
+    width:
+      min(
+        74vw,
+        680px
+      ) !important;
+  }
+
+  /*
+   * Local player table-এর নিচের edge-এর কাছে থাকবে।
+   */
+  .tp-stage #currentPlayer {
+    bottom: 6% !important;
+  }
+
+  /*
+   * সব player-এর cards বড়।
+   */
+  .tp-player .cards,
+  .player .cards {
+    bottom: 46px !important;
+
+    width: 118px !important;
+    height: 68px !important;
+
+    scale: 1 !important;
+  }
+
+  .tp-player .cards img,
+  .player .cards img {
+    width: 45px !important;
+    height: 63px !important;
+
+    margin-left: -10px !important;
+
+    border-radius: 5px;
+  }
+
+  .tp-player .cards img:first-child,
+  .player .cards img:first-child {
+    margin-left: 0 !important;
+  }
+
+  /*
+   * নিজের cards অন্য player-এর card থেকে
+   * সামান্য বড় থাকবে।
+   */
+  .tp-stage #currentPlayerCards {
+    bottom:
+      calc(
+        100% - 6px
+      ) !important;
+
+    width: 136px !important;
+    height: 78px !important;
+
+    scale: 1 !important;
+  }
+
+  .tp-stage
+  #currentPlayerCards
+  img {
+    width: 52px !important;
+    height: 73px !important;
+
+    margin-left: -10px !important;
+  }
+
+  .tp-stage
+  #currentPlayerCards
+  img:first-child {
+    margin-left: 0 !important;
+  }
+
+  /*
+   * Active turn steady highlight হবে।
+   * Infinite brightness blink থাকবে না।
+   */
+  .player.active-turn
+  .tp-player-profile,
+  .player.current-turn
+  .tp-player-profile {
+    animation: none !important;
+    filter: none !important;
+
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  /*
+   * State refresh-এর সময় player opacity flash বন্ধ।
+   */
+  .tp-player.occupied:not(
+    .is-resolved-seat
+  ),
+  .player.occupied:not(
+    .is-resolved-seat
+  ) {
+    transition:
+      opacity 120ms ease,
+      filter 160ms ease !important;
+  }
+}
+
+/*
+ * খুব কম-height mobile-এ footer overlap ঠেকাবে।
+ */
+@media (
+  orientation: landscape
+) and (
+  max-height: 380px
+) {
+
+  .tp-stage .table-area {
+    top: 55% !important;
+
+    width:
+      min(
+        70vw,
+        620px
+      ) !important;
+  }
+
+  .tp-stage #currentPlayer {
+    bottom: 7% !important;
+  }
+}
