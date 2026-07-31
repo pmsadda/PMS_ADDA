@@ -53,6 +53,18 @@ async function submitDepositRequest(req, res, next) {
       });
     }
 
+    /* Clean Data */
+
+    const cleanedMethod = String(method).trim().toLowerCase();
+
+    const cleanedSenderNumber = String(senderNumber).trim();
+
+    const cleanedTransactionNumber = String(transactionNumber)
+      .trim()
+      .toUpperCase();
+
+    const cleanedAmount = Number(amount);
+
     /* Active Payment Method Validation */
 
     const activePaymentMethods = await getActivePaymentMethods();
@@ -77,17 +89,7 @@ async function submitDepositRequest(req, res, next) {
       });
     }
 
-    /* Clean Data */
-
-    const cleanedMethod = String(method).trim().toLowerCase();
-
-    const cleanedSenderNumber = String(senderNumber).trim();
-
-    const cleanedTransactionNumber = String(transactionNumber)
-      .trim()
-      .toUpperCase();
-
-    const cleanedAmount = Number(amount);
+    
 
     /* Method Validation */
 
