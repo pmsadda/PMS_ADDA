@@ -1838,6 +1838,16 @@ async function buildMatchState(matchId, connection = pool) {
           updated_at
         FROM ludo_pawns
         WHERE match_id = ?
+          AND EXISTS (
+            SELECT 1
+            FROM ludo_match_players lmp
+            WHERE lmp.id =
+                  ludo_pawns.match_player_id
+              AND lmp.match_id =
+                  ludo_pawns.match_id
+              AND lmp.player_status !=
+                  'left'
+          )
         ORDER BY
           seat_no ASC,
           pawn_no ASC
@@ -2728,6 +2738,16 @@ async function movePawnForPlayer(matchId, matchPlayerId, pawnNo) {
               AND board_coordinate = ?
               AND pawn_status = 'active'
               AND match_player_id != ?
+              AND EXISTS (
+                SELECT 1
+                FROM ludo_match_players lmp
+                WHERE lmp.id =
+                      ludo_pawns.match_player_id
+                  AND lmp.match_id =
+                      ludo_pawns.match_id
+                  AND lmp.player_status =
+                      'playing'
+              )
             FOR UPDATE
           `,
         [validMatchId, coordinate, validMatchPlayerId],
@@ -2906,8 +2926,15 @@ async function movePawnForPlayer(matchId, matchPlayerId, pawnNo) {
             UPDATE ludo_game_states
             SET
               game_status = 'completed',
+              current_turn_player_id = NULL,
+              current_turn_user_id = NULL,
+              current_turn_seat_no = NULL,
+              current_turn_color = NULL,
+              turn_started_at = NULL,
+              turn_expires_at = NULL,
               dice_value = NULL,
               dice_rolled = 0,
+              consecutive_sixes = 0,
               last_action_type =
                 'game_completed',
               last_action_user_id = ?,
@@ -3203,7 +3230,6 @@ async function creditBotPlayerPrize(player, prizeAmount, isWinner, connection) {
             total_wins + ?
 
         WHERE id = ?
-          AND status = 'active'
       `,
     [prizeAmount, prizeAmount, isWinner ? 1 : 0, botId],
   );
@@ -3349,6 +3375,24 @@ async function settleMatchPrizes(matchId, connection, options = {}) {
     connection,
   );
 
+  /*
+   * 4-player match-এ runner-up prize-ও
+   * একই transaction-এর মধ্যে credit হবে।
+   */
+  if (
+    playerMode === 4 &&
+    runnerUp &&
+    Number(match.second_prize) > 0
+  ) {
+    await creditMatchPlayerPrize(
+      match,
+      runnerUp,
+      Number(match.second_prize),
+      false,
+      connection,
+    );
+  }
+
   const winnerUserId = winner.user_id ? Number(winner.user_id) : null;
 
   const secondUserId = runnerUp?.user_id ? Number(runnerUp.user_id) : null;
@@ -3416,7 +3460,10 @@ async function settleMatchPrizes(matchId, connection, options = {}) {
 
     firstPrize: Number(match.first_prize),
 
-    secondPrize: playerMode === 4 ? Number(match.second_prize) : 0,
+    secondPrize:
+      playerMode === 4 && runnerUp
+        ? Number(match.second_prize)
+        : 0,
   };
 }
 
@@ -3617,6 +3664,74 @@ async function handleTurnTimeout(matchId, expectedStateVersion = null) {
 /* ==========================================
    Real Player Forfeit / Exit
 ========================================== */
+
+async function getRankedActiveBotPlayers(matchId, connection) {
+  const [rows] = await connection.query(
+    `
+      SELECT
+        lmp.id,
+        lmp.user_id,
+        lmp.bot_id,
+        lmp.is_bot,
+        lmp.bot_level,
+        lmp.seat_no,
+        lmp.player_color,
+        lmp.player_status,
+
+        COALESCE(
+          SUM(
+            CASE
+              WHEN lp.pawn_status =
+                   'finished'
+              THEN 1
+              ELSE 0
+            END
+          ),
+          0
+        ) AS finished_pawns,
+
+        COALESCE(
+          SUM(lp.total_steps),
+          0
+        ) AS total_progress,
+
+        COALESCE(
+          MAX(lp.total_steps),
+          0
+        ) AS furthest_pawn
+
+      FROM ludo_match_players lmp
+
+      LEFT JOIN ludo_pawns lp
+        ON lp.match_id = lmp.match_id
+       AND lp.match_player_id = lmp.id
+
+      WHERE lmp.match_id = ?
+        AND lmp.is_bot = 1
+        AND lmp.player_status =
+            'playing'
+
+      GROUP BY
+        lmp.id,
+        lmp.user_id,
+        lmp.bot_id,
+        lmp.is_bot,
+        lmp.bot_level,
+        lmp.seat_no,
+        lmp.player_color,
+        lmp.player_status
+
+      ORDER BY
+        finished_pawns DESC,
+        total_progress DESC,
+        furthest_pawn DESC,
+        lmp.seat_no ASC
+    `,
+    [matchId],
+  );
+
+  return rows;
+}
 
 async function forfeitPlayer(matchId, userId) {
   const validMatchId = parsePositiveInteger(matchId);
@@ -3835,6 +3950,147 @@ async function forfeitPlayer(matchId, userId) {
               (item) => Number(item.finish_position) === 1,
             ) || null;
 
+          const secondFinisher =
+            finishedPlayers.find(
+              (item) => Number(item.finish_position) === 2,
+            ) || null;
+
+          const activeRealPlayers =
+            activePlayers.filter(
+              (item) => !Boolean(item.is_bot),
+            );
+
+          const shouldCompleteBotOnlyMatch =
+            Number(match.player_mode) === 4 &&
+            activePlayers.length > 0 &&
+            activeRealPlayers.length === 0;
+
+          /*
+           * 4-player match-এর শেষ real player
+           * Exit করলে bots আর autoplay করবে না।
+           *
+           * Pawn progress অনুযায়ী leading bot
+           * 1st এবং পরের bot 2nd হবে। আগে কোনো
+           * finisher থাকলে শুধু খালি position
+           * progress-ranked bot দিয়ে পূরণ হবে।
+           */
+          if (shouldCompleteBotOnlyMatch) {
+            const rankedBots =
+              await getRankedActiveBotPlayers(
+                validMatchId,
+                connection,
+              );
+
+            const openFinishPositions = [];
+
+            if (!firstFinisher) {
+              openFinishPositions.push(1);
+            }
+
+            if (!secondFinisher) {
+              openFinishPositions.push(2);
+            }
+
+            for (
+              let index = 0;
+              index < openFinishPositions.length &&
+              index < rankedBots.length;
+              index += 1
+            ) {
+              const bot = rankedBots[index];
+              const finishPosition =
+                openFinishPositions[index];
+
+              const [finishResult] =
+                await connection.query(
+                  `
+                    UPDATE ludo_match_players
+                    SET
+                      player_status =
+                        'finished',
+                      finish_position = ?,
+                      finished_at = NOW()
+                    WHERE id = ?
+                      AND match_id = ?
+                      AND is_bot = 1
+                      AND player_status =
+                          'playing'
+                      AND finish_position
+                          IS NULL
+                  `,
+                  [
+                    finishPosition,
+                    Number(bot.id),
+                    validMatchId,
+                  ],
+                );
+
+              if (
+                Number(finishResult.affectedRows) !== 1
+              ) {
+                throw createServiceError(
+                  "Unable to rank the remaining Ludo bot.",
+                  409,
+                );
+              }
+
+              if (finishPosition === 1) {
+                winnerPlayerId = Number(bot.id);
+              }
+            }
+
+            if (!winnerPlayerId && firstFinisher) {
+              winnerPlayerId = Number(firstFinisher.id);
+            }
+
+            await settleMatchPrizes(
+              validMatchId,
+              connection,
+              {
+                allowMissingRunnerUp: true,
+              },
+            );
+
+            if (gameState) {
+              await connection.query(
+                `
+                  UPDATE ludo_game_states
+                  SET
+                    game_status =
+                      'completed',
+                    current_turn_player_id =
+                      NULL,
+                    current_turn_user_id =
+                      NULL,
+                    current_turn_seat_no =
+                      NULL,
+                    current_turn_color =
+                      NULL,
+                    turn_started_at = NULL,
+                    turn_expires_at = NULL,
+                    dice_value = NULL,
+                    dice_rolled = 0,
+                    consecutive_sixes = 0,
+                    last_action_type =
+                      'game_completed',
+                    last_action_user_id = ?,
+                    last_action_player_id = ?,
+                    last_action_at = NOW(),
+                    state_version =
+                      state_version + 1
+                  WHERE id = ?
+                    AND game_status =
+                        'playing'
+                `,
+                [
+                  validUserId,
+                  forfeitedPlayerId,
+                  Number(gameState.id),
+                ],
+              );
+            }
+
+            completed = true;
           /*
            * একজন active player বাকি থাকলে
            * match শেষ হবে।
@@ -3842,7 +4098,7 @@ async function forfeitPlayer(matchId, userId) {
            * আগে winner থাকলে remaining
            * player হবে runner-up।
            */
-          if (activePlayers.length <= 1) {
+          } else if (activePlayers.length <= 1) {
             const remainingPlayer = activePlayers[0] || null;
 
             if (remainingPlayer && !firstFinisher) {
@@ -3898,8 +4154,19 @@ async function forfeitPlayer(matchId, userId) {
                   SET
                     game_status =
                       'completed',
+                    current_turn_player_id =
+                      NULL,
+                    current_turn_user_id =
+                      NULL,
+                    current_turn_seat_no =
+                      NULL,
+                    current_turn_color =
+                      NULL,
+                    turn_started_at = NULL,
+                    turn_expires_at = NULL,
                     dice_value = NULL,
                     dice_rolled = 0,
+                    consecutive_sixes = 0,
                     last_action_type =
                       'game_completed',
                     last_action_user_id =
