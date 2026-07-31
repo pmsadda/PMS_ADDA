@@ -522,118 +522,71 @@
     return image;
   }
 
-  function renderCards(
-  container,
-  cards,
-  shouldReveal,
-  cardCount = 3,
-) {
-  if (!container) {
-    return;
-  }
+  function renderCards(container, cards, shouldReveal, cardCount = 3) {
+    if (!container) {
+      return;
+    }
 
-  const safeCards =
-    Array.isArray(cards)
-      ? cards
-      : [];
+    const safeCards = Array.isArray(cards) ? cards : [];
 
-  const totalCards = Math.max(
-    0,
-    Math.min(
-      3,
-      Number(cardCount) ||
-        safeCards.length ||
-        0,
-    ),
-  );
-
-  const dealtCardCount =
-    STATE.cardDistributionActive === true
-      ? Math.max(
-          0,
-          Number(
-            STATE.cardDistributionProgress.get(
-              container,
-            ) || 0,
-          ),
-        )
-      : totalCards;
-
-  /*
-   * প্রয়োজনের অতিরিক্ত card শুধু তখনই remove হবে।
-   * প্রতিটি state update-এ সব card আর recreate হবে না।
-   */
-  while (
-    container.children.length >
-    totalCards
-  ) {
-    container.lastElementChild?.remove();
-  }
-
-  /*
-   * Missing card element শুধু প্রয়োজন হলে তৈরি হবে।
-   */
-  while (
-    container.children.length <
-    totalCards
-  ) {
-    container.appendChild(
-      createCardImage(
-        CARD_BACK_PATH,
-        "Hidden card",
-      ),
+    const totalCards = Math.max(
+      0,
+      Math.min(3, Number(cardCount) || safeCards.length || 0),
     );
-  }
 
-  Array.from(
-    container.children,
-  ).forEach(
-    (cardImage, index) => {
-      const card =
-        safeCards[index];
+    const dealtCardCount =
+      STATE.cardDistributionActive === true
+        ? Math.max(
+            0,
+            Number(STATE.cardDistributionProgress.get(container) || 0),
+          )
+        : totalCards;
 
-      const canShowCard =
-        Boolean(shouldReveal) &&
-        Boolean(card);
+    /*
+     * প্রয়োজনের অতিরিক্ত card শুধু তখনই remove হবে।
+     * প্রতিটি state update-এ সব card আর recreate হবে না।
+     */
+    while (container.children.length > totalCards) {
+      container.lastElementChild?.remove();
+    }
 
-      const desiredSource =
-        canShowCard
-          ? getCardAssetPath(card)
-          : CARD_BACK_PATH;
+    /*
+     * Missing card element শুধু প্রয়োজন হলে তৈরি হবে।
+     */
+    while (container.children.length < totalCards) {
+      container.appendChild(createCardImage(CARD_BACK_PATH, "Hidden card"));
+    }
 
-      const desiredAlt =
-        canShowCard
-          ? `${card.rank}${card.suit}`
-          : "Hidden card";
+    Array.from(container.children).forEach((cardImage, index) => {
+      const card = safeCards[index];
+
+      const canShowCard = Boolean(shouldReveal) && Boolean(card);
+
+      const desiredSource = canShowCard
+        ? getCardAssetPath(card)
+        : CARD_BACK_PATH;
+
+      const desiredAlt = canShowCard
+        ? `${card.rank}${card.suit}`
+        : "Hidden card";
 
       /*
        * Source সত্যিই পরিবর্তন হলেই browser image
        * update করবে। একই action state-এ reload হবে না।
        */
-      if (
-        cardImage.dataset.cardSource !==
-        desiredSource
-      ) {
-        cardImage.src =
-          desiredSource;
+      if (cardImage.dataset.cardSource !== desiredSource) {
+        cardImage.src = desiredSource;
 
-        cardImage.dataset.cardSource =
-          desiredSource;
+        cardImage.dataset.cardSource = desiredSource;
       }
 
-      cardImage.alt =
-        desiredAlt;
+      cardImage.alt = desiredAlt;
 
-      cardImage.draggable =
-        false;
+      cardImage.draggable = false;
 
-      cardImage.classList.toggle(
-        "card-arrived",
-        index < dealtCardCount,
-      );
-    },
-  );
-}
+      cardImage.classList.toggle("card-arrived", index < dealtCardCount);
+    });
+  }
 
   /* =========================================================
      PLAYER HELPERS
@@ -737,100 +690,71 @@
     return source;
   }
 
-  function renderPlayerAvatar(
-  avatarElement,
-  playerName,
-  avatarUrl,
-) {
-  if (!avatarElement) {
-    return;
-  }
-
-  const initial =
-    getPlayerInitial(playerName);
-
-  const resolvedAvatar =
-    resolveAvatarUrl(avatarUrl);
-
-  if (!resolvedAvatar) {
-    const currentImage =
-      avatarElement.querySelector("img");
-
-    if (
-      currentImage ||
-      avatarElement.textContent.trim() !==
-        initial
-    ) {
-      avatarElement.replaceChildren();
-      avatarElement.textContent =
-        initial;
+  function renderPlayerAvatar(avatarElement, playerName, avatarUrl) {
+    if (!avatarElement) {
+      return;
     }
 
-    return;
-  }
+    const initial = getPlayerInitial(playerName);
 
-  let image =
-    avatarElement.querySelector("img");
+    const resolvedAvatar = resolveAvatarUrl(avatarUrl);
 
-  /*
-   * Existing image থাকলে সেটিই reuse হবে।
-   */
-  if (!image) {
-    image =
-      document.createElement("img");
+    if (!resolvedAvatar) {
+      const currentImage = avatarElement.querySelector("img");
 
-    image.draggable = false;
+      if (currentImage || avatarElement.textContent.trim() !== initial) {
+        avatarElement.replaceChildren();
+        avatarElement.textContent = initial;
+      }
 
-    Object.assign(
-      image.style,
-      {
+      return;
+    }
+
+    let image = avatarElement.querySelector("img");
+
+    /*
+     * Existing image থাকলে সেটিই reuse হবে।
+     */
+    if (!image) {
+      image = document.createElement("img");
+
+      image.draggable = false;
+
+      Object.assign(image.style, {
         width: "100%",
         height: "100%",
         display: "block",
         objectFit: "cover",
         borderRadius: "50%",
-      },
-    );
+      });
 
-    image.addEventListener(
-      "error",
-      () => {
-        const fallbackInitial =
-          image.dataset.fallbackInitial ||
-          "P";
+      image.addEventListener(
+        "error",
+        () => {
+          const fallbackInitial = image.dataset.fallbackInitial || "P";
 
-        avatarElement.replaceChildren();
+          avatarElement.replaceChildren();
 
-        avatarElement.textContent =
-          fallbackInitial;
-      },
-      {
-        once: true,
-      },
-    );
+          avatarElement.textContent = fallbackInitial;
+        },
+        {
+          once: true,
+        },
+      );
 
-    avatarElement.replaceChildren(
-      image,
-    );
+      avatarElement.replaceChildren(image);
+    }
+
+    image.alt = playerName;
+
+    image.dataset.fallbackInitial = initial;
+
+    if (image.dataset.avatarSource !== resolvedAvatar) {
+      image.src = resolvedAvatar;
+
+      image.dataset.avatarSource = resolvedAvatar;
+    }
   }
-
-  image.alt =
-    playerName;
-
-  image.dataset.fallbackInitial =
-    initial;
-
-  if (
-    image.dataset.avatarSource !==
-    resolvedAvatar
-  ) {
-    image.src =
-      resolvedAvatar;
-
-    image.dataset.avatarSource =
-      resolvedAvatar;
-  }
-}
 
   function renderSeat(seat, player, visualSeatNumber, localSeat = false) {
     if (!seat || !player) {
@@ -859,7 +783,13 @@
       seat.status.textContent = getPlayerStatus(player);
     }
 
-    const playerStatus = normalizeString(player.status || player.playerStatus);
+    const playerStatus =
+      normalizeString(player.status || player.playerStatus) ||
+      (player.isPacked === true
+        ? "packed"
+        : player.isActive === false
+          ? "left"
+          : "active");
 
     /*
      * Table-এ শুধু active এবং winner player দেখা যাবে।
@@ -882,7 +812,7 @@
 
       seat.root.classList.toggle(
         "is-packed",
-        ["packed", "timeout",].includes(playerStatus),
+        ["packed", "timeout"].includes(playerStatus),
       );
 
       seat.root.classList.toggle("is-winner", playerStatus === "winner");
@@ -1256,6 +1186,85 @@
     renderMatchmakingOverlay();
   }
 
+  function mergePublicTablePlayers(publicPlayers) {
+    if (!Array.isArray(publicPlayers)) {
+      return STATE.players;
+    }
+
+    return publicPlayers.map((publicPlayer) => {
+      const existingPlayer =
+        STATE.players.find((candidate) => {
+          const sameRealPlayer =
+            publicPlayer.tablePlayerId &&
+            candidate.tablePlayerId &&
+            Number(publicPlayer.tablePlayerId) ===
+              Number(candidate.tablePlayerId);
+
+          const sameBot =
+            publicPlayer.tableBotId &&
+            candidate.tableBotId &&
+            Number(publicPlayer.tableBotId) === Number(candidate.tableBotId);
+
+          const sameUser =
+            publicPlayer.userId &&
+            candidate.userId &&
+            Number(publicPlayer.userId) === Number(candidate.userId);
+
+          const sameBotAccount =
+            publicPlayer.botId &&
+            candidate.botId &&
+            Number(publicPlayer.botId) === Number(candidate.botId);
+
+          return sameRealPlayer || sameBot || sameUser || sameBotAccount;
+        }) || null;
+
+      const fallbackStatus =
+        publicPlayer.isPacked === true
+          ? "packed"
+          : publicPlayer.isActive === false
+            ? "left"
+            : "active";
+
+      if (!existingPlayer) {
+        return {
+          ...publicPlayer,
+
+          status:
+            publicPlayer.status || publicPlayer.playerStatus || fallbackStatus,
+        };
+      }
+
+      /*
+       * Public table information update হবে,
+       * কিন্তু private hand fields হারাবে না।
+       */
+      return {
+        ...publicPlayer,
+        ...existingPlayer,
+
+        name: publicPlayer.name ?? existingPlayer.name,
+
+        avatarUrl: publicPlayer.avatarUrl ?? existingPlayer.avatarUrl,
+
+        isDealer: publicPlayer.isDealer ?? existingPlayer.isDealer,
+
+        isActive: publicPlayer.isActive ?? existingPlayer.isActive,
+
+        isSeen: publicPlayer.isSeen ?? existingPlayer.isSeen,
+
+        isPacked: publicPlayer.isPacked ?? existingPlayer.isPacked,
+
+        walletBalance:
+          publicPlayer.walletBalance ?? existingPlayer.walletBalance,
+
+        status:
+          existingPlayer.status ||
+          existingPlayer.playerStatus ||
+          fallbackStatus,
+      };
+    });
+  }
+
   function applyTableState(payload) {
     const tableState = unwrapSocketData(payload);
 
@@ -1272,7 +1281,7 @@
      * কিছু response-এ tableState.players থাকবে।
      */
     if (Array.isArray(tableState.players)) {
-      STATE.players = tableState.players;
+      STATE.players = mergePublicTablePlayers(tableState.players);
     }
 
     console.log("🎴 Teen Patti public table state:", tableState);
