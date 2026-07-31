@@ -3187,13 +3187,17 @@ input {
   /*
    * সম্পূর্ণ Poker table উপরে উঠবে।
    */
-  .poker-table {
-    width: var(--table-width) !important;
-    min-width: 0 !important;
+ /*
+ * Teen Patti-এর মতো Poker table
+ * mobile screen-এর নিচের দিকে থাকবে।
+ */
+.poker-table {
+  width: var(--table-width) !important;
+  min-width: 0 !important;
 
-    transform:
-      translateY(-13%) !important;
-  }
+  transform:
+    translateY(2%) !important;
+}
 
   /*
    * Pot table-এর উপরের দিকে থাকবে,
