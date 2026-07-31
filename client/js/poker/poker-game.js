@@ -100,6 +100,72 @@ const POKER_GAME = {
     );
   },
 
+  getLocalServerSeatNo() {
+    const localPlayer =
+      this.getMe() ||
+      this.state?.players?.find(
+        (player) =>
+          !player.isBot && Number(player.id) === Number(this.tablePlayerId),
+      ) ||
+      null;
+
+    const seatNo = Number(localPlayer?.seatNo);
+
+    return Number.isInteger(seatNo) && seatNo >= 1 && seatNo <= 5
+      ? seatNo
+      : null;
+  },
+
+  getVisualSeatNo(serverSeatNo) {
+    const validServerSeatNo = Number(serverSeatNo);
+
+    if (
+      !Number.isInteger(validServerSeatNo) ||
+      validServerSeatNo < 1 ||
+      validServerSeatNo > 5
+    ) {
+      return null;
+    }
+
+    const localServerSeatNo = this.getLocalServerSeatNo();
+
+    if (!localServerSeatNo) {
+      return validServerSeatNo;
+    }
+
+    /*
+     * Local real player সবসময় visual seat 1।
+     * অন্য seatগুলো clockwiseভাবে ঘুরবে।
+     */
+    return ((validServerSeatNo - localServerSeatNo + 5) % 5) + 1;
+  },
+
+  getServerSeatNoForVisualSeat(visualSeatNo) {
+    const validVisualSeatNo = Number(visualSeatNo);
+
+    if (
+      !Number.isInteger(validVisualSeatNo) ||
+      validVisualSeatNo < 1 ||
+      validVisualSeatNo > 5
+    ) {
+      return null;
+    }
+
+    const localServerSeatNo = this.getLocalServerSeatNo();
+
+    if (!localServerSeatNo) {
+      return validVisualSeatNo;
+    }
+
+    return ((localServerSeatNo + validVisualSeatNo - 2) % 5) + 1;
+  },
+
+  getSeatElementByServerSeat(serverSeatNo) {
+    const visualSeatNo = this.getVisualSeatNo(serverSeatNo);
+
+    return visualSeatNo ? this.getElement(`playerSeat${visualSeatNo}`) : null;
+  },
+
   initializeSounds() {
     this.sounds = {
       cardDeal: new Audio("../assets/sounds/card-deal.mp3"),
@@ -474,14 +540,16 @@ const POKER_GAME = {
           : "";
       });
 
-    for (let seatNo = 1; seatNo <= 5; seatNo += 1) {
-      const seat = this.getElement(`playerSeat${seatNo}`);
+    for (let visualSeatNo = 1; visualSeatNo <= 5; visualSeatNo += 1) {
+      const seat = this.getElement(`playerSeat${visualSeatNo}`);
 
       if (!seat) {
         continue;
       }
 
-      const handPlayer = this.getHandPlayerBySeat(seatNo);
+      const serverSeatNo = this.getServerSeatNoForVisualSeat(visualSeatNo);
+
+      const handPlayer = this.getHandPlayerBySeat(serverSeatNo);
 
       seat.classList.remove(
         "is-current-turn",
@@ -744,7 +812,7 @@ const POKER_GAME = {
     );
 
     const seat = handPlayer
-      ? this.getElement(`playerSeat${handPlayer.seatNo}`)
+      ? this.getSeatElementByServerSeat(handPlayer.seatNo)
       : null;
 
     const timerElement = seat?.querySelector(".turn-timer");
@@ -947,7 +1015,7 @@ const POKER_GAME = {
 
     const pot = this.getElement("potAmount");
 
-    const seat = this.getElement(`playerSeat${winner.seatNo}`);
+    const seat = this.getSeatElementByServerSeat(winner.seatNo);
 
     if (!table || !pot || !seat) {
       return;
@@ -1148,16 +1216,20 @@ const POKER_GAME = {
   },
 
   renderPlayers() {
-    for (let seatNo = 1; seatNo <= 5; seatNo += 1) {
-      const seat = this.getElement(`playerSeat${seatNo}`);
+    for (let visualSeatNo = 1; visualSeatNo <= 5; visualSeatNo += 1) {
+      const seat = this.getElement(`playerSeat${visualSeatNo}`);
 
       if (!seat) {
         continue;
       }
 
+      const serverSeatNo = this.getServerSeatNoForVisualSeat(visualSeatNo);
+
       const player = this.state.players.find(
-        (item) => Number(item.seatNo) === seatNo,
+        (item) => Number(item.seatNo) === Number(serverSeatNo),
       );
+
+      seat.dataset.serverSeatNo = String(serverSeatNo || "");
 
       if (!player) {
         this.resetSeat(seat);
@@ -1177,7 +1249,8 @@ const POKER_GAME = {
 
       if (name) {
         name.textContent =
-          player.name || (player.isBot ? "Poker Bot" : `Player ${seatNo}`);
+          player.name ||
+          (player.isBot ? "Poker Bot" : `Player ${serverSeatNo}`);
       }
 
       if (stack) {
@@ -1357,19 +1430,13 @@ window.POKER_GAME = POKER_GAME;
 const initializePokerGame = () => {
   POKER_GAME.initialize();
 
-  console.log(
-    "✅ PMS ADDA glossy Poker table loaded",
-  );
+  console.log("✅ PMS ADDA glossy Poker table loaded");
 };
 
 if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    initializePokerGame,
-    {
-      once: true,
-    },
-  );
+  document.addEventListener("DOMContentLoaded", initializePokerGame, {
+    once: true,
+  });
 } else {
   initializePokerGame();
 }
