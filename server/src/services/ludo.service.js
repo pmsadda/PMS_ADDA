@@ -110,23 +110,15 @@ function createWalletTransactionId() {
   return `LTX${Date.now()}${random}`;
 }
 
-async function validateEntryAmount(
-  value,
-  connection = pool,
-) {
-  const amount =
-    parsePositiveInteger(value);
+async function validateEntryAmount(value, connection = pool) {
+  const amount = parsePositiveInteger(value);
 
   if (!amount) {
-    throw createServiceError(
-      "Please select a valid Ludo entry amount.",
-      400,
-    );
+    throw createServiceError("Please select a valid Ludo entry amount.", 400);
   }
 
-  const [rows] =
-    await connection.query(
-      `
+  const [rows] = await connection.query(
+    `
         SELECT id
         FROM game_rooms
         WHERE game_type = 'ludo'
@@ -137,23 +129,19 @@ async function validateEntryAmount(
           )
         LIMIT 1
       `,
-      [amount],
-    );
+    [amount],
+  );
 
   if (!rows[0]) {
-    throw createServiceError(
-      "This Ludo room is currently unavailable.",
-      409,
-    );
+    throw createServiceError("This Ludo room is currently unavailable.", 409);
   }
 
   return amount;
 }
- 
+
 async function getAvailableRooms() {
-  const [rows] =
-    await pool.query(
-      `
+  const [rows] = await pool.query(
+    `
         SELECT
           id,
           room_code,
@@ -174,35 +162,22 @@ async function getAvailableRooms() {
           boot_amount ASC,
           id ASC
       `,
-    );
+  );
 
   return rows.map((room) => ({
-    id:
-      Number(room.id),
+    id: Number(room.id),
 
-    roomCode:
-      room.room_code,
+    roomCode: room.room_code,
 
-    roomName:
-      room.room_name,
+    roomName: room.room_name,
 
-    maxPlayers:
-      Number(
-        room.max_players ||
-        4,
-      ),
+    maxPlayers: Number(room.max_players || 4),
 
-    entryAmount:
-      Number(
-        room.boot_amount ||
-        0,
-      ),
+    entryAmount: Number(room.boot_amount || 0),
 
-    status:
-      room.status,
+    status: room.status,
   }));
 }
-
 
 function validatePlayerMode(value) {
   const mode = parsePositiveInteger(value);
@@ -227,58 +202,35 @@ function calculateMatchFinance(
 ) {
   const amount = Number(entryAmount);
 
-  const playerMode =
-    Number(finalPlayerMode);
+  const playerMode = Number(finalPlayerMode);
 
-  const totalPot =
-    amount * playerMode;
+  const totalPot = amount * playerMode;
 
-  const parsedServiceCharge =
-    Number(configuredServiceCharge);
+  const parsedServiceCharge = Number(configuredServiceCharge);
 
   const serviceChargePercent =
-    Number.isFinite(
-      parsedServiceCharge,
-    ) &&
+    Number.isFinite(parsedServiceCharge) &&
     parsedServiceCharge >= 0 &&
     parsedServiceCharge <= 20
-      ? Number(
-          parsedServiceCharge.toFixed(2),
-        )
+      ? Number(parsedServiceCharge.toFixed(2))
       : 10;
 
-  const serviceChargeAmount =
-    Number(
-      (
-        totalPot *
-        (serviceChargePercent / 100)
-      ).toFixed(2),
-    );
+  const serviceChargeAmount = Number(
+    (totalPot * (serviceChargePercent / 100)).toFixed(2),
+  );
 
-  const distributableAmount =
-    Number(
-      (
-        totalPot -
-        serviceChargeAmount
-      ).toFixed(2),
-    );
+  const distributableAmount = Number(
+    (totalPot - serviceChargeAmount).toFixed(2),
+  );
 
-  let firstPrize =
-    distributableAmount;
+  let firstPrize = distributableAmount;
 
   let secondPrize = 0;
 
   if (playerMode === 4) {
-    secondPrize = Number(
-      (amount * 0.5).toFixed(2),
-    );
+    secondPrize = Number((amount * 0.5).toFixed(2));
 
-    firstPrize = Number(
-      (
-        distributableAmount -
-        secondPrize
-      ).toFixed(2),
-    );
+    firstPrize = Number((distributableAmount - secondPrize).toFixed(2));
 
     if (firstPrize <= secondPrize) {
       throw createServiceError(
@@ -298,22 +250,18 @@ function calculateMatchFinance(
   };
 }
 
-async function getConfiguredLudoServiceCharge(
-  connection,
-) {
- const [rows] = await connection.query(
-  `
+async function getConfiguredLudoServiceCharge(connection) {
+  const [rows] = await connection.query(
+    `
     SELECT
       service_charge
     FROM game_settings
     WHERE game_type = 'ludo'
     LIMIT 1
   `,
-);
-
-  const configuredCharge = Number(
-    rows[0]?.service_charge,
   );
+
+  const configuredCharge = Number(rows[0]?.service_charge);
 
   return Number.isFinite(configuredCharge) &&
     configuredCharge >= 0 &&
@@ -464,16 +412,13 @@ async function createWaitingMatch(
 ) {
   const matchCode = createMatchCode();
 
-  const serviceChargePercent =
-  await getConfiguredLudoServiceCharge(
-    connection,
-  );
+  const serviceChargePercent = await getConfiguredLudoServiceCharge(connection);
 
-const finance = calculateMatchFinance(
-  entryAmount,
-  requestedPlayerMode,
-  serviceChargePercent,
-);
+  const finance = calculateMatchFinance(
+    entryAmount,
+    requestedPlayerMode,
+    serviceChargePercent,
+  );
 
   const waitSeconds = getMatchmakingWaitSeconds(requestedPlayerMode);
   const [result] = await connection.query(
@@ -532,15 +477,14 @@ const finance = calculateMatchFinance(
     ],
   );
 
- return {
-  id: Number(result.insertId),
-  matchCode,
-  entryAmount,
-  requestedPlayerMode,
+  return {
+    id: Number(result.insertId),
+    matchCode,
+    entryAmount,
+    requestedPlayerMode,
 
-  service_charge_percent:
-    serviceChargePercent,
- };
+    service_charge_percent: serviceChargePercent,
+  };
 }
 
 /* ==========================================
@@ -800,7 +744,7 @@ async function countRealPlayers(matchId, connection) {
    Apply Final Player Mode
 ========================================== */
 
- async function applyFinalPlayerMode(
+async function applyFinalPlayerMode(
   matchId,
   entryAmount,
   finalPlayerMode,
@@ -979,12 +923,12 @@ async function finalizeMatchmaking(matchId) {
     }
 
     await applyFinalPlayerMode(
-   validMatchId,
-   Number(match.entry_amount),
-   finalPlayerMode,
-   Number(match.service_charge_percent),
-   connection,
-   );
+      validMatchId,
+      Number(match.entry_amount),
+      finalPlayerMode,
+      Number(match.service_charge_percent),
+      connection,
+    );
 
     await startMatchIfReady(validMatchId, connection);
 
@@ -1011,8 +955,6 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
     throw createServiceError("Invalid user ID.", 400);
   }
 
-  
-
   const requestedPlayerMode = validatePlayerMode(playerMode);
 
   const connection = await pool.getConnection();
@@ -1022,16 +964,12 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
   let alreadyJoined = false;
   let newMatchCreated = false;
 
- try {
-  await connection.beginTransaction();
+  try {
+    await connection.beginTransaction();
 
-  const validEntryAmount =
-    await validateEntryAmount(
-      entryAmount,
-      connection,
-    );
+    const validEntryAmount = await validateEntryAmount(entryAmount, connection);
 
-  const user = await getLockedUser(validUserId, connection);
+    const user = await getLockedUser(validUserId, connection);
 
     validateUserForLudo(user, validEntryAmount);
 
@@ -1079,15 +1017,14 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
     );
 
     if (!match) {
-  match =
-    await createWaitingMatch(
-      validEntryAmount,
-      requestedPlayerMode,
-      connection,
-    );
+      match = await createWaitingMatch(
+        validEntryAmount,
+        requestedPlayerMode,
+        connection,
+      );
 
-  newMatchCreated = true;
-}
+      newMatchCreated = true;
+    }
 
     matchId = Number(match.id);
 
@@ -1130,16 +1067,13 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
      * timeout-এর আগেই match start।
      */
     if (currentPlayers === requestedPlayerMode) {
-
       await applyFinalPlayerMode(
-       matchId,
+        matchId,
         validEntryAmount,
-         requestedPlayerMode,
-        Number(
-         match.service_charge_percent,
-        ),
+        requestedPlayerMode,
+        Number(match.service_charge_percent),
         connection,
-        );
+      );
 
       await startMatchIfReady(matchId, connection);
     }
@@ -3395,7 +3329,15 @@ async function settleMatchPrizes(matchId, connection, options = {}) {
       ? finishers.find((player) => Number(player.finish_position) === 2) || null
       : null;
 
-  if (playerMode === 4 && !runnerUp) {
+  /*
+   * Normal 4-player settlement-এ runner-up
+   * প্রয়োজন।
+   *
+   * কিন্তু সব real player Exit করে শুধু একটি
+   * active bot বাকি থাকলে runner-up ছাড়াই
+   * match complete করা যাবে।
+   */
+  if (playerMode === 4 && !runnerUp && !allowMissingRunnerUp) {
     throw createServiceError("Ludo runner-up was not found.", 409);
   }
 
@@ -3406,10 +3348,6 @@ async function settleMatchPrizes(matchId, connection, options = {}) {
     true,
     connection,
   );
-
-  if (playerMode === 4 && !runnerUp && !allowMissingRunnerUp) {
-    throw createServiceError("Ludo runner-up was not found.", 409);
-  }
 
   const winnerUserId = winner.user_id ? Number(winner.user_id) : null;
 
@@ -4352,7 +4290,7 @@ async function runBotTurn(matchId) {
 ========================================== */
 
 module.exports = {
-   getAvailableRooms,
+  getAvailableRooms,
   joinMatchmaking,
   finalizeMatchmaking,
 
