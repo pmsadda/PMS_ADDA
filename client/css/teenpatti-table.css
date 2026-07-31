@@ -3575,3 +3575,49 @@ strong {
     bottom: 7% !important;
   }
 }
+
+/* =========================================================
+   TEEN PATTI MOBILE — FINAL VERTICAL POSITION
+========================================================= */
+
+@media (
+  orientation: landscape
+) and (
+  max-height: 520px
+) {
+
+  /*
+   * Turn timer table-এর উপরের দিকে।
+   */
+  .tp-stage
+  .table-area
+  .tp-turn-control {
+    top: 32% !important;
+  }
+
+  /*
+   * Local profile ও তার cards একসঙ্গে উপরে।
+   */
+  .tp-stage
+  #currentPlayer {
+    bottom: 13% !important;
+  }
+}
+
+@media (
+  orientation: landscape
+) and (
+  max-height: 380px
+) {
+
+  .tp-stage
+  .table-area
+  .tp-turn-control {
+    top: 30% !important;
+  }
+
+  .tp-stage
+  #currentPlayer {
+    bottom: 14% !important;
+  }
+}
