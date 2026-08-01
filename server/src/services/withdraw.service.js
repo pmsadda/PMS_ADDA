@@ -5,9 +5,7 @@ const MINIMUM_WITHDRAW_AMOUNT = 500;
 function generateWalletTransactionId() {
   const timestamp = Date.now();
 
-  const randomNumber = Math.floor(
-    100000 + Math.random() * 900000
-  );
+  const randomNumber = Math.floor(100000 + Math.random() * 900000);
 
   return `WDR-TX-${timestamp}-${randomNumber}`;
 }
@@ -17,111 +15,85 @@ function generateWalletTransactionId() {
 ========================== */
 
 async function createWithdrawRequest(userId, data) {
-  const method = String(
-    data?.method || ""
-  )
+  const method = String(data?.method || "")
     .trim()
     .toLowerCase();
 
-  const accountNumber = String(
-    data?.accountNumber || ""
-  ).trim();
+  const accountNumber = String(data?.accountNumber || "").trim();
 
-  const lastFourDigits = String(
-    data?.lastFourDigits || ""
-  ).trim();
+  const lastFourDigits = String(data?.lastFourDigits || "").trim();
 
   const numericAmount = Number(data?.amount);
 
-  const withdrawAmount =
-    Number.isFinite(numericAmount)
-      ? Number(numericAmount.toFixed(2))
-      : 0;
+  const withdrawAmount = Number.isFinite(numericAmount)
+    ? Number(numericAmount.toFixed(2))
+    : 0;
 
-  const allowedMethods = [
-    "bkash",
-    "nagad",
-    "rocket"
-  ];
+  const allowedMethods = ["bkash", "nagad", "rocket"];
 
   if (!allowedMethods.includes(method)) {
-    const error = new Error(
-      "Invalid payment method."
-    );
+    const error = new Error("Invalid payment method.");
 
     error.statusCode = 400;
     throw error;
   }
 
   if (!/^01\d{9}$/.test(accountNumber)) {
-    const error = new Error(
-      "A valid 11-digit account number is required."
-    );
+    const error = new Error("A valid 11-digit account number is required.");
 
     error.statusCode = 400;
     throw error;
   }
 
   if (!/^\d{4}$/.test(lastFourDigits)) {
+    const error = new Error("Last four digits must be exactly 4 numbers.");
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (accountNumber.slice(-4) !== lastFourDigits) {
     const error = new Error(
-      "Last four digits must be exactly 4 numbers."
+      "Last four digits do not match the account number.",
     );
 
     error.statusCode = 400;
     throw error;
   }
 
-  if (
-    accountNumber.slice(-4) !==
-    lastFourDigits
-  ) {
+  if (withdrawAmount < MINIMUM_WITHDRAW_AMOUNT) {
     const error = new Error(
-      "Last four digits do not match the account number."
+      `Minimum withdrawal amount is ${MINIMUM_WITHDRAW_AMOUNT}.`,
     );
 
     error.statusCode = 400;
     throw error;
   }
 
-  if (
-    withdrawAmount <
-    MINIMUM_WITHDRAW_AMOUNT
-  ) {
-    const error = new Error(
-      `Minimum withdrawal amount is ${MINIMUM_WITHDRAW_AMOUNT}.`
-    );
-
-    error.statusCode = 400;
-    throw error;
-  }
-
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const [users] =
-      await connection.execute(
-        `
+    const [users] = await connection.execute(
+      `
         SELECT
           id,
           wallet_balance,
           total_deposit,
-          turnover_amount,
+           turnover_amount,
+          turnover_required,
           account_status
         FROM users
         WHERE id = ?
         LIMIT 1
         FOR UPDATE
         `,
-        [userId]
-      );
+      [userId],
+    );
 
     if (!users.length) {
-      const error = new Error(
-        "User not found."
-      );
+      const error = new Error("User not found.");
 
       error.statusCode = 404;
       throw error;
@@ -130,87 +102,81 @@ async function createWithdrawRequest(userId, data) {
     const user = users[0];
 
     if (user.account_status !== "active") {
-      const error = new Error(
-        "Your account is not active."
-      );
+      const error = new Error("Your account is not active.");
 
       error.statusCode = 403;
       throw error;
     }
 
-    const currentBalance =
-      Number(user.wallet_balance);
+    const currentBalance = Number(user.wallet_balance);
 
-    const totalDeposit =
-      Number(user.total_deposit || 0);
+    const totalDeposit = Number(user.total_deposit || 0);
 
-    const turnoverAmount =
-      Number(user.turnover_amount || 0);
+    const turnoverAmount = Number(user.turnover_amount || 0);
+
+    const turnoverRequired = Number(user.turnover_required || 0);
 
     if (
       !Number.isFinite(currentBalance) ||
       !Number.isFinite(totalDeposit) ||
-      !Number.isFinite(turnoverAmount)
+      !Number.isFinite(turnoverAmount) ||
+      !Number.isFinite(turnoverRequired)
     ) {
-      const error = new Error(
-        "Invalid wallet account values."
-      );
+      const error = new Error("Invalid wallet account values.");
 
       error.statusCode = 500;
       throw error;
     }
 
-    if (turnoverAmount < totalDeposit) {
-      const remainingTurnover = Math.max(
-        0,
-        totalDeposit - turnoverAmount
-      );
+    if (turnoverAmount < turnoverRequired) {
+      const remainingTurnover = Math.max(0, turnoverRequired - turnoverAmount);
 
       const error = new Error(
         `Complete ৳${remainingTurnover.toFixed(
-          2
-        )} more turnover before withdrawing.`
+          2,
+        )} more turnover before withdrawing.`,
       );
 
       error.statusCode = 400;
-      error.code =
-        "WITHDRAW_TURNOVER_INCOMPLETE";
+      error.code = "WITHDRAW_TURNOVER_INCOMPLETE";
+
+      error.turnover = {
+        completed: turnoverAmount,
+
+        required: turnoverRequired,
+
+        remaining: remainingTurnover,
+      };
 
       throw error;
     }
 
     if (withdrawAmount > currentBalance) {
-      const error = new Error(
-        "Insufficient wallet balance."
-      );
+      const error = new Error("Insufficient wallet balance.");
 
       error.statusCode = 400;
       throw error;
     }
 
-    const [pendingRequests] =
-      await connection.execute(
-        `
+    const [pendingRequests] = await connection.execute(
+      `
         SELECT id
         FROM withdraw_requests
         WHERE user_id = ?
           AND status = 'pending'
         LIMIT 1
         `,
-        [userId]
-      );
+      [userId],
+    );
 
     if (pendingRequests.length) {
-      const error = new Error(
-        "You already have a pending withdrawal request."
-      );
+      const error = new Error("You already have a pending withdrawal request.");
 
       error.statusCode = 400;
       throw error;
     }
 
-    const remainingBalance =
-      currentBalance - withdrawAmount;
+    const remainingBalance = currentBalance - withdrawAmount;
 
     await connection.execute(
       `
@@ -218,20 +184,15 @@ async function createWithdrawRequest(userId, data) {
       SET wallet_balance = ?
       WHERE id = ?
       `,
-      [
-        remainingBalance,
-        userId
-      ]
+      [remainingBalance, userId],
     );
 
-    const withdrawId =
-      `WDR-${Date.now()}-${Math.floor(
-        100000 + Math.random() * 900000
-      )}`;
+    const withdrawId = `WDR-${Date.now()}-${Math.floor(
+      100000 + Math.random() * 900000,
+    )}`;
 
-    const [withdrawResult] =
-      await connection.execute(
-        `
+    const [withdrawResult] = await connection.execute(
+      `
         INSERT INTO withdraw_requests (
           withdraw_id,
           user_id,
@@ -241,38 +202,39 @@ async function createWithdrawRequest(userId, data) {
           last_four_digits,
           total_deposit_at_request,
           turnover_at_request,
+          turnover_required_at_request,
           status
         )
         VALUES (
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          'pending'
-        )
-        `,
-        [
-          withdrawId,
-          userId,
-          method,
-          accountNumber,
-          withdrawAmount,
-          lastFourDigits,
-          totalDeposit,
-          turnoverAmount
-        ]
-      );
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  'pending'
+)
+`,
+      [
+        withdrawId,
+        userId,
+        method,
+        accountNumber,
+        withdrawAmount,
+        lastFourDigits,
+        totalDeposit,
+        turnoverAmount,
+        turnoverRequired,
+      ],
+    );
 
-    const walletTransactionId =
-      generateWalletTransactionId();
+    const walletTransactionId = generateWalletTransactionId();
 
-    const [transactionResult] =
-      await connection.execute(
-        `
+    const [transactionResult] = await connection.execute(
+      `
         INSERT INTO wallet_transactions (
           transaction_id,
           user_id,
@@ -302,23 +264,19 @@ async function createWithdrawRequest(userId, data) {
           NULL
         )
         `,
-        [
-          walletTransactionId,
-          userId,
-          withdrawAmount,
-          currentBalance,
-          remainingBalance,
-          withdrawId,
-          `Withdrawal requested: ${withdrawId}`
-        ]
-      );
+      [
+        walletTransactionId,
+        userId,
+        withdrawAmount,
+        currentBalance,
+        remainingBalance,
+        withdrawId,
+        `Withdrawal requested: ${withdrawId}`,
+      ],
+    );
 
-    if (
-      transactionResult.affectedRows !== 1
-    ) {
-      throw new Error(
-        "Wallet transaction creation failed."
-      );
+    if (transactionResult.affectedRows !== 1) {
+      throw new Error("Wallet transaction creation failed.");
     }
 
     await connection.commit();
@@ -331,12 +289,15 @@ async function createWithdrawRequest(userId, data) {
       amount: withdrawAmount,
       lastFourDigits,
       status: "pending",
-      totalDepositAtRequest:
-        totalDeposit,
-      turnoverAtRequest:
-        turnoverAmount,
+      totalDepositAtRequest: totalDeposit,
+      turnoverAtRequest: turnoverAmount,
+
+      turnoverRequiredAtRequest: turnoverRequired,
+
+      remainingTurnover: Math.max(0, turnoverRequired - turnoverAmount),
+
       remainingBalance,
-      walletTransactionId
+      walletTransactionId,
     };
   } catch (error) {
     await connection.rollback();
@@ -351,9 +312,8 @@ async function createWithdrawRequest(userId, data) {
 ========================== */
 
 async function getMyWithdrawHistory(userId) {
-  const [rows] =
-    await pool.execute(
-      `
+  const [rows] = await pool.execute(
+    `
       SELECT
         id,
         withdraw_id,
@@ -369,42 +329,33 @@ async function getMyWithdrawHistory(userId) {
       WHERE user_id = ?
       ORDER BY id DESC
       `,
-      [userId]
-    );
+    [userId],
+  );
 
   return rows.map((item) => ({
     id: item.id,
 
-    withdrawId:
-      item.withdraw_id,
+    withdrawId: item.withdraw_id,
 
-    method:
-      item.method,
+    method: item.method,
 
-    accountNumber:
-      item.account_number,
+    accountNumber: item.account_number,
 
-    amount:
-      Number(item.amount),
+    amount: Number(item.amount),
 
-    lastFourDigits:
-      item.last_four_digits,
+    lastFourDigits: item.last_four_digits,
 
-    status:
-      item.status,
+    status: item.status,
 
-    adminNote:
-      item.admin_note,
+    adminNote: item.admin_note,
 
-    createdAt:
-      item.created_at,
+    createdAt: item.created_at,
 
-    updatedAt:
-      item.updated_at
+    updatedAt: item.updated_at,
   }));
 }
 
 module.exports = {
   createWithdrawRequest,
-  getMyWithdrawHistory
+  getMyWithdrawHistory,
 };

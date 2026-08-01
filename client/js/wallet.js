@@ -696,9 +696,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   DOM.viewAllButton?.addEventListener("click", loadMoreTransactions);
 
-  DOM.bonusButton?.addEventListener("click", () => {
-    showToast("Bonus feature coming soon.", "info");
-  });
+DOM.bonusButton?.addEventListener(
+  "click",
+  () => {
+    showToast(
+      "First deposit-এ 50% bonus, সর্বোচ্চ ৳2,000। Turnover-এ deposit ও bonus দুটোই অন্তর্ভুক্ত হবে।",
+      "info",
+    );
+  },
+);
 
   /* =========================================================
      BOTTOM NAVIGATION

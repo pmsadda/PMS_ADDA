@@ -107,7 +107,8 @@ async function getWalletSummary(req, res, next) {
             account_status,
             wallet_balance,
             turnover_amount,
-            total_deposit,
+turnover_required,
+total_deposit,
             total_withdraw,
             updated_at
           FROM users
@@ -238,6 +239,14 @@ async function getWalletSummary(req, res, next) {
 
     const transactions = transactionRows.map(mapTransactionRow);
 
+    const turnoverAmount = parseMoney(user.turnover_amount);
+
+    const turnoverRequired = parseMoney(user.turnover_required);
+
+    const remainingTurnover = parseMoney(
+      Math.max(0, turnoverRequired - turnoverAmount),
+    );
+
     return res.status(200).json({
       success: true,
 
@@ -258,7 +267,13 @@ async function getWalletSummary(req, res, next) {
         wallet: {
           balance: parseMoney(user.wallet_balance),
 
-          turnoverAmount: parseMoney(user.turnover_amount),
+          turnoverAmount,
+
+          turnoverRequired,
+
+          remainingTurnover,
+
+          turnoverCompleted: remainingTurnover <= 0,
 
           totalDeposit: parseMoney(user.total_deposit),
 

@@ -1,36 +1,26 @@
 const {
-    getAllDepositRequests,
-    approveDepositRequest,
-    rejectDepositRequest
+  getAllDepositRequests,
+  approveDepositRequest,
+  rejectDepositRequest,
 } = require("../services/admin-deposit.service");
 
-
 const {
-    getAdminPaymentSettings,
-    updatePaymentSettings
-} = require(
-    "../services/deposit-payment.service"
-);
-
+  getAdminPaymentSettings,
+  updatePaymentSettings,
+} = require("../services/deposit-payment.service");
 
 /* ==========================
    Get Payment Settings
 ========================== */
 
-async function getPaymentSettings(
-  req,
-  res,
-  next,
-) {
+async function getPaymentSettings(req, res, next) {
   try {
-    const paymentMethods =
-      await getAdminPaymentSettings();
+    const paymentMethods = await getAdminPaymentSettings();
 
     return res.status(200).json({
       success: true,
 
-      message:
-        "Deposit payment settings loaded successfully.",
+      message: "Deposit payment settings loaded successfully.",
 
       data: {
         paymentMethods,
@@ -45,30 +35,22 @@ async function getPaymentSettings(
    Update Payment Settings
 ========================== */
 
-async function savePaymentSettings(
-  req,
-  res,
-  next,
-) {
+async function savePaymentSettings(req, res, next) {
   try {
-    const paymentMethods =
-      req.body?.paymentMethods;
+    const paymentMethods = req.body?.paymentMethods;
 
-    const updatedMethods =
-      await updatePaymentSettings(
-        req.user.id,
-        paymentMethods,
-      );
+    const updatedMethods = await updatePaymentSettings(
+      req.user.id,
+      paymentMethods,
+    );
 
     return res.status(200).json({
       success: true,
 
-      message:
-        "Deposit payment settings updated successfully.",
+      message: "Deposit payment settings updated successfully.",
 
       data: {
-        paymentMethods:
-          updatedMethods,
+        paymentMethods: updatedMethods,
       },
     });
   } catch (error) {
@@ -76,244 +58,199 @@ async function savePaymentSettings(
   }
 }
 
-
 /* ==========================
    Get All Deposit Requests
 ========================== */
 
-async function getDepositRequests(
-    req,
-    res,
-    next
-) {
-    try {
-        const status =
-            String(
-                req.query.status || "all"
-            )
-                .trim()
-                .toLowerCase();
+async function getDepositRequests(req, res, next) {
+  try {
+    const status = String(req.query.status || "all")
+      .trim()
+      .toLowerCase();
 
-        const method =
-            String(
-                req.query.method || "all"
-            )
-                .trim()
-                .toLowerCase();
+    const method = String(req.query.method || "all")
+      .trim()
+      .toLowerCase();
 
-        const search =
-            String(
-                req.query.search || ""
-            ).trim();
+    const search = String(req.query.search || "").trim();
 
-        const allowedStatuses = [
-            "all",
-            "pending",
-            "approved",
-            "rejected"
-        ];
+    const allowedStatuses = ["all", "pending", "approved", "rejected"];
 
-        const allowedMethods = [
-            "all",
-            "bkash",
-            "nagad",
-            "rocket"
-        ];
+    const allowedMethods = ["all", "bkash", "nagad", "rocket"];
 
-        if (!allowedStatuses.includes(status)) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Invalid deposit status filter."
-            });
-        }
-
-        if (!allowedMethods.includes(method)) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Invalid payment method filter."
-            });
-        }
-
-        const deposits =
-            await getAllDepositRequests({
-                status,
-                method,
-                search
-            });
-
-        const summary = deposits.reduce(
-            (result, deposit) => {
-                if (deposit.status === "pending") {
-                    result.pending += 1;
-                }
-
-                if (deposit.status === "approved") {
-                    result.approved += 1;
-                    result.approvedAmount +=
-                        deposit.amount;
-                }
-
-                if (deposit.status === "rejected") {
-                    result.rejected += 1;
-                }
-
-                return result;
-            },
-            {
-                total: deposits.length,
-                pending: 0,
-                approved: 0,
-                rejected: 0,
-                approvedAmount: 0
-            }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message:
-                "Deposit requests loaded successfully.",
-
-            data: {
-                summary,
-                deposits
-            }
-        });
-    } catch (error) {
-        next(error);
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid deposit status filter.",
+      });
     }
+
+    if (!allowedMethods.includes(method)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method filter.",
+      });
+    }
+
+    const deposits = await getAllDepositRequests({
+      status,
+      method,
+      search,
+    });
+
+    const summary = deposits.reduce(
+      (result, deposit) => {
+        if (deposit.status === "pending") {
+          result.pending += 1;
+        }
+
+        if (deposit.status === "approved") {
+          result.approved += 1;
+
+          result.approvedAmount += deposit.amount;
+
+          result.bonusAmount += deposit.bonusAmount;
+
+          result.creditedAmount += deposit.creditedAmount;
+        }
+
+        if (deposit.status === "rejected") {
+          result.rejected += 1;
+        }
+
+        return result;
+      },
+      {
+        total: deposits.length,
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+
+        /*
+         * approvedAmount শুধু real deposit।
+         * Bonus revenue হিসেবে গণনা হবে না।
+         */
+        approvedAmount: 0,
+        bonusAmount: 0,
+        creditedAmount: 0,
+      },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Deposit requests loaded successfully.",
+
+      data: {
+        summary,
+        deposits,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 }
-
-
-
 
 /* ==========================
    Approve Deposit Request
 ========================== */
 
-async function approveDeposit(
-    req,
-    res,
-    next
-) {
-    try {
-        const depositId =
-            String(
-                req.params.depositId || ""
-            )
-                .trim()
-                .toUpperCase();
+async function approveDeposit(req, res, next) {
+  try {
+    const depositId = String(req.params.depositId || "")
+      .trim()
+      .toUpperCase();
 
-        if (!depositId) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Deposit ID is required."
-            });
-        }
-
-        const result =
-            await approveDepositRequest({
-                depositId,
-                adminId: req.user.id
-            });
-
-        return res.status(200).json({
-            success: true,
-            message:
-                "Deposit approved successfully.",
-
-            data: {
-                deposit: result
-            }
-        });
-    } catch (error) {
-        next(error);
+    if (!depositId) {
+      return res.status(400).json({
+        success: false,
+        message: "Deposit ID is required.",
+      });
     }
+
+    const result = await approveDepositRequest({
+      depositId,
+      adminId: req.user.id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: result.isFirstDepositBonus
+        ? `Deposit approved with ` +
+          `৳${result.bonusAmount.toFixed(2)} first deposit bonus.`
+        : "Deposit approved successfully.",
+
+      data: {
+        deposit: result,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 /* ==========================
    Reject Deposit Request
 ========================== */
 
-async function rejectDeposit(
-    req,
-    res,
-    next
-) {
-    try {
-        const depositId =
-            String(
-                req.params.depositId || ""
-            )
-                .trim()
-                .toUpperCase();
+async function rejectDeposit(req, res, next) {
+  try {
+    const depositId = String(req.params.depositId || "")
+      .trim()
+      .toUpperCase();
 
-        const reason =
-            String(
-                req.body.reason || ""
-            )
-                .trim()
-                .toLowerCase();
+    const reason = String(req.body.reason || "")
+      .trim()
+      .toLowerCase();
 
-        const note =
-            String(
-                req.body.note || ""
-            ).trim();
+    const note = String(req.body.note || "").trim();
 
-        const allowedReasons = [
-            "transaction_not_found",
-            "wrong_amount",
-            "duplicate_transaction",
-            "wrong_sender",
-            "other"
-        ];
+    const allowedReasons = [
+      "transaction_not_found",
+      "wrong_amount",
+      "duplicate_transaction",
+      "wrong_sender",
+      "other",
+    ];
 
-        if (!depositId) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Deposit ID is required."
-            });
-        }
-
-        if (!allowedReasons.includes(reason)) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Please select a valid reject reason."
-            });
-        }
-
-        if (note.length > 255) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Admin note cannot exceed 255 characters."
-            });
-        }
-
-        const result =
-            await rejectDepositRequest({
-                depositId,
-                adminId: req.user.id,
-                reason,
-                note
-            });
-
-        return res.status(200).json({
-            success: true,
-            message:
-                "Deposit rejected successfully.",
-
-            data: {
-                deposit: result
-            }
-        });
-    } catch (error) {
-        next(error);
+    if (!depositId) {
+      return res.status(400).json({
+        success: false,
+        message: "Deposit ID is required.",
+      });
     }
+
+    if (!allowedReasons.includes(reason)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select a valid reject reason.",
+      });
+    }
+
+    if (note.length > 255) {
+      return res.status(400).json({
+        success: false,
+        message: "Admin note cannot exceed 255 characters.",
+      });
+    }
+
+    const result = await rejectDepositRequest({
+      depositId,
+      adminId: req.user.id,
+      reason,
+      note,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Deposit rejected successfully.",
+
+      data: {
+        deposit: result,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 module.exports = {

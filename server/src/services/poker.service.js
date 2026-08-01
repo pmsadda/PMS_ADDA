@@ -356,15 +356,14 @@ async function debitPokerBuyIn(user, tableId, buyInAmount, connection) {
 
   const [walletResult] = await connection.query(
     `
-        UPDATE users
-        SET
-          wallet_balance = ?,
-          turnover_amount =
-            turnover_amount + ?
-        WHERE id = ?
-          AND wallet_balance >= ?
-      `,
-    [balanceAfter, buyInAmount, Number(user.id), buyInAmount],
+      UPDATE users
+      SET
+        wallet_balance = ?
+      WHERE id = ?
+        AND account_status = 'active'
+        AND wallet_balance >= ?
+    `,
+    [balanceAfter, Number(user.id), buyInAmount],
   );
 
   if (Number(walletResult.affectedRows) !== 1) {
@@ -417,6 +416,37 @@ async function debitPokerBuyIn(user, tableId, buyInAmount, connection) {
     balanceBefore,
     balanceAfter,
   };
+}
+
+async function addPokerTurnover(userId, contributionAmount, connection) {
+  const validUserId = parsePositiveInteger(userId);
+
+  const validContribution = Number(Number(contributionAmount || 0).toFixed(2));
+
+  if (
+    !validUserId ||
+    !Number.isFinite(validContribution) ||
+    validContribution <= 0
+  ) {
+    return;
+  }
+
+  const [result] = await connection.query(
+    `
+        UPDATE users
+        SET
+          turnover_amount =
+            turnover_amount + ?
+        WHERE id = ?
+          AND account_status =
+              'active'
+      `,
+    [validContribution, validUserId],
+  );
+
+  if (Number(result.affectedRows) !== 1) {
+    throw createServiceError("Unable to update Poker turnover.", 409);
+  }
 }
 
 /* ==========================================
@@ -1099,6 +1129,10 @@ async function postBlind(
     throw createServiceError("Unable to debit Poker blind.", 409);
   }
 
+  if (contribution > 0 && Number(tablePlayer.is_bot) === 0) {
+    await addPokerTurnover(tablePlayer.user_id, contribution, connection);
+  }
+
   const [handPlayerResult] = await connection.query(
     `
         UPDATE poker_hand_players
@@ -1544,25 +1578,17 @@ async function startPokerHandInTransaction(tableId, connection) {
   };
 }
 
-async function preparePokerPlayersForNextHand(
-  table,
-  connection,
-) {
-  const tableId =
-    Number(table.id);
+async function preparePokerPlayersForNextHand(table, connection) {
+  const tableId = Number(table.id);
 
-  const minimumBuyIn =
-    Number(
-      table.minimum_buy_in,
-    );
+  const minimumBuyIn = Number(table.minimum_buy_in);
 
   /* ========================================
      REAL PLAYER AUTO REBUY
   ======================================== */
 
-  const [bustedRealRows] =
-    await connection.query(
-      `
+  const [bustedRealRows] = await connection.query(
+    `
         SELECT
           ptp.id,
           ptp.user_id,
@@ -1587,45 +1613,24 @@ async function preparePokerPlayersForNextHand(
         ORDER BY ptp.id
         FOR UPDATE
       `,
-      [tableId],
-    );
+    [tableId],
+  );
 
-  const autoRebuyUserIds =
-    [];
+  const autoRebuyUserIds = [];
 
-  for (
-    const bustedPlayer of
-      bustedRealRows
-  ) {
-    const walletBalance =
-      Number(
-        bustedPlayer
-          .wallet_balance ||
-        0,
-      );
+  for (const bustedPlayer of bustedRealRows) {
+    const walletBalance = Number(bustedPlayer.wallet_balance || 0);
 
-    if (
-      walletBalance >=
-      minimumBuyIn
-    ) {
-      const lockedUser =
-        await getLockedUser(
-          Number(
-            bustedPlayer.user_id,
-          ),
-          connection,
-        );
-
-      await debitPokerBuyIn(
-        lockedUser,
-        tableId,
-        minimumBuyIn,
+    if (walletBalance >= minimumBuyIn) {
+      const lockedUser = await getLockedUser(
+        Number(bustedPlayer.user_id),
         connection,
       );
 
-      const [rebuyResult] =
-        await connection.query(
-          `
+      await debitPokerBuyIn(lockedUser, tableId, minimumBuyIn, connection);
+
+      const [rebuyResult] = await connection.query(
+        `
             UPDATE poker_table_players
             SET
               player_status =
@@ -1642,31 +1647,17 @@ async function preparePokerPlayersForNextHand(
               AND stack_amount <= 0
               AND cash_out_credited = 0
           `,
-          [
-            minimumBuyIn,
-            minimumBuyIn,
-            Number(
-              bustedPlayer.id,
-            ),
-          ],
-        );
+        [minimumBuyIn, minimumBuyIn, Number(bustedPlayer.id)],
+      );
 
-      if (
-        Number(
-          rebuyResult.affectedRows,
-        ) !== 1
-      ) {
+      if (Number(rebuyResult.affectedRows) !== 1) {
         throw createServiceError(
           "Poker real-player auto rebuy state changed.",
           409,
         );
       }
 
-      autoRebuyUserIds.push(
-        Number(
-          bustedPlayer.user_id,
-        ),
-      );
+      autoRebuyUserIds.push(Number(bustedPlayer.user_id));
     } else {
       await connection.query(
         `
@@ -1678,11 +1669,7 @@ async function preparePokerPlayersForNextHand(
             AND stack_amount <= 0
             AND cash_out_credited = 0
         `,
-        [
-          Number(
-            bustedPlayer.id,
-          ),
-        ],
+        [Number(bustedPlayer.id)],
       );
     }
   }
@@ -1691,9 +1678,8 @@ async function preparePokerPlayersForNextHand(
      FUNDED REAL PLAYER COUNT
   ======================================== */
 
-  const [fundedRealRows] =
-    await connection.query(
-      `
+  const [fundedRealRows] = await connection.query(
+    `
         SELECT COUNT(*) AS total
         FROM poker_table_players
         WHERE table_id = ?
@@ -1703,22 +1689,17 @@ async function preparePokerPlayersForNextHand(
           AND stack_amount > 0
         FOR UPDATE
       `,
-      [tableId],
-    );
+    [tableId],
+  );
 
-  const fundedRealPlayers =
-    Number(
-      fundedRealRows[0]?.total ||
-      0,
-    );
+  const fundedRealPlayers = Number(fundedRealRows[0]?.total || 0);
 
   /* ========================================
      SAME BOT AUTO REBUY
   ======================================== */
 
-  const [bustedBotRows] =
-    await connection.query(
-      `
+  const [bustedBotRows] = await connection.query(
+    `
         SELECT
           ptp.id,
           ptp.bot_id,
@@ -1745,29 +1726,18 @@ async function preparePokerPlayersForNextHand(
         ORDER BY ptp.id
         FOR UPDATE
       `,
-      [tableId],
-    );
+    [tableId],
+  );
 
-  const autoRebuyBotIds =
-    [];
+  const autoRebuyBotIds = [];
 
-  for (
-    const bustedBot of
-      bustedBotRows
-  ) {
-    const botWalletBalance =
-      Number(
-        bustedBot
-          .wallet_balance ||
-        0,
-      );
+  for (const bustedBot of bustedBotRows) {
+    const botWalletBalance = Number(bustedBot.wallet_balance || 0);
 
     const botCanRebuy =
       fundedRealPlayers > 0 &&
-      bustedBot.status ===
-        "active" &&
-      botWalletBalance >=
-        minimumBuyIn;
+      bustedBot.status === "active" &&
+      botWalletBalance >= minimumBuyIn;
 
     if (!botCanRebuy) {
       await connection.query(
@@ -1780,19 +1750,14 @@ async function preparePokerPlayersForNextHand(
             AND stack_amount <= 0
             AND cash_out_credited = 0
         `,
-        [
-          Number(
-            bustedBot.id,
-          ),
-        ],
+        [Number(bustedBot.id)],
       );
 
       continue;
     }
 
-    const [botWalletResult] =
-      await connection.query(
-        `
+    const [botWalletResult] = await connection.query(
+      `
           UPDATE poker_bots
           SET
             wallet_balance =
@@ -1806,25 +1771,11 @@ async function preparePokerPlayersForNextHand(
                 'active'
             AND wallet_balance >= ?
         `,
-        [
-          minimumBuyIn,
-          minimumBuyIn,
-          Number(
-            bustedBot.bot_id,
-          ),
-          minimumBuyIn,
-        ],
-      );
+      [minimumBuyIn, minimumBuyIn, Number(bustedBot.bot_id), minimumBuyIn],
+    );
 
-    if (
-      Number(
-        botWalletResult.affectedRows,
-      ) !== 1
-    ) {
-      throw createServiceError(
-        "Unable to debit Poker bot auto rebuy.",
-        409,
-      );
+    if (Number(botWalletResult.affectedRows) !== 1) {
+      throw createServiceError("Unable to debit Poker bot auto rebuy.", 409);
     }
 
     /*
@@ -1832,9 +1783,8 @@ async function preparePokerPlayersForNextHand(
      * একই bot একই table-player row এবং
      * একই seat-এ rebuy করবে।
      */
-    const [botRebuyResult] =
-      await connection.query(
-        `
+    const [botRebuyResult] = await connection.query(
+      `
           UPDATE poker_table_players
           SET
             player_status =
@@ -1852,54 +1802,32 @@ async function preparePokerPlayersForNextHand(
             AND stack_amount <= 0
             AND cash_out_credited = 0
         `,
-        [
-          minimumBuyIn,
-          minimumBuyIn,
-          Number(
-            bustedBot.id,
-          ),
-        ],
-      );
+      [minimumBuyIn, minimumBuyIn, Number(bustedBot.id)],
+    );
 
-    if (
-      Number(
-        botRebuyResult.affectedRows,
-      ) !== 1
-    ) {
-      throw createServiceError(
-        "Poker bot auto rebuy state changed.",
-        409,
-      );
+    if (Number(botRebuyResult.affectedRows) !== 1) {
+      throw createServiceError("Poker bot auto rebuy state changed.", 409);
     }
 
-    autoRebuyBotIds.push(
-      Number(
-        bustedBot.bot_id,
-      ),
-    );
+    autoRebuyBotIds.push(Number(bustedBot.bot_id));
   }
 
   /* ========================================
      TABLE PLAYER COUNT
   ======================================== */
 
-  const [countRows] =
-    await connection.query(
-      `
+  const [countRows] = await connection.query(
+    `
         SELECT COUNT(*) AS total
         FROM poker_table_players
         WHERE table_id = ?
           AND player_status !=
               'left'
       `,
-      [tableId],
-    );
+    [tableId],
+  );
 
-  const totalPlayers =
-    Number(
-      countRows[0]?.total ||
-      0,
-    );
+  const totalPlayers = Number(countRows[0]?.total || 0);
 
   await connection.query(
     `
@@ -1912,10 +1840,7 @@ async function preparePokerPlayersForNextHand(
 
       WHERE id = ?
     `,
-    [
-      totalPlayers,
-      tableId,
-    ],
+    [totalPlayers, tableId],
   );
 
   return {
@@ -2496,6 +2421,17 @@ async function performPlayerAction({
         409,
       );
     }
+
+    if (
+  contribution > 0 &&
+  Number(actor.is_bot) === 0
+) {
+  await addPokerTurnover(
+    actor.user_id,
+    contribution,
+    connection,
+  );
+}
 
     if (raisedBet) {
       await connection.query(

@@ -77,9 +77,12 @@ async function getWithdrawRequests(status = "all") {
         AS totalDepositAtRequest,
 
       wr.turnover_at_request
-        AS turnoverAtRequest,
+  AS turnoverAtRequest,
 
-      wr.status,
+wr.turnover_required_at_request
+  AS turnoverRequiredAtRequest,
+
+wr.status,
 
       wr.admin_payment_reference
         AS adminPaymentReference,
@@ -395,7 +398,7 @@ async function rejectWithdraw(withdrawId, adminNote = null, adminId = null) {
     }
 
     await connection.execute(
-  `
+      `
   UPDATE wallet_transactions
   SET
     status = 'failed',
@@ -407,18 +410,12 @@ async function rejectWithdraw(withdrawId, adminNote = null, adminId = null) {
     AND reference_id = ?
     AND status = 'pending'
   `,
-  [
-    `Withdrawal rejected: ${String(
-      withdraw.withdraw_id ||
-      withdraw.id
-    )}`,
-    withdraw.user_id,
-    String(
-      withdraw.withdraw_id ||
-      withdraw.id
-    )
-  ]
-);
+      [
+        `Withdrawal rejected: ${String(withdraw.withdraw_id || withdraw.id)}`,
+        withdraw.user_id,
+        String(withdraw.withdraw_id || withdraw.id),
+      ],
+    );
 
     /* Generate wallet transaction ID */
 

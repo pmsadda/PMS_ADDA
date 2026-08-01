@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentBalance = 0;
 
-  let totalDeposit = 0;
+  let turnoverRequired = 0;
 
   let turnoverAmount = 0;
 
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderWithdrawStatus() {
-    const remainingTurnover = Math.max(0, totalDeposit - turnoverAmount);
+    const remainingTurnover = Math.max(0, turnoverRequired - turnoverAmount);
 
     if (currentPendingWithdraw) {
       setWithdrawStatus(
@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       currentBalance = Number(wallet.balance || 0);
 
-      totalDeposit = Number(wallet.totalDeposit || 0);
+      turnoverRequired = Number(wallet.turnoverRequired || 0);
 
       turnoverAmount = Number(wallet.turnoverAmount || 0);
 
