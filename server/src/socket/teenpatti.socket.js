@@ -1420,6 +1420,25 @@ function initializeTeenPattiSocket(io) {
         return;
       }
 
+            /*
+       * একই user-এর অন্য active socket থাকলে
+       * পুরোনো socket disconnect ignore হবে।
+       */
+      if (
+        hasAnotherConnectedUserSocket(
+          namespace,
+          tableId,
+          userId,
+          socket.id,
+        )
+      ) {
+        console.log(
+          `Teen Patti old socket ignored: user=${userId}, table=${tableId}`,
+        );
+
+        return;
+      }
+
       console.log(
         `Teen Patti socket disconnected: user=${userId}, table=${tableId}, reason=${reason}`,
       );
@@ -1539,19 +1558,6 @@ function initializeTeenPattiSocket(io) {
       }
     });
   }); // namespace connection বন্ধ
-
-  /*
-   * একই user-এর অন্য active socket থাকলে
-   * এই পুরোনো socket disconnect-এর কারণে
-   * player disconnected/forfeit হবে না।
-   */
-  if (hasAnotherConnectedUserSocket(namespace, tableId, userId, socket.id)) {
-    console.log(
-      `Teen Patti old socket ignored: user=${userId}, table=${tableId}`,
-    );
-
-    return;
-  }
 
   console.log("✅ New Teen Patti Socket.IO initialized");
 }
