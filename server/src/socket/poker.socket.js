@@ -305,7 +305,6 @@ function initializePokerSocket(io) {
       pokerTurnTimers.delete(validTableId);
     }
   }
-
   function clearNextHandTimer(tableId) {
     const validTableId = parsePositiveInteger(tableId);
 
@@ -313,49 +312,69 @@ function initializePokerSocket(io) {
       return;
     }
 
-    const timer = nextHandTimers.get(validTableId);
+    const timerEntry = nextHandTimers.get(validTableId);
 
-    if (timer) {
-      clearTimeout(timer);
-
-      nextHandTimers.delete(validTableId);
-    }
-  }
-
-  function scheduleNextPokerHand(
-    tableId,
-    delay = NEXT_HAND_COUNTDOWN_SECONDS * 1000,
-  ) {
-    const validTableId = parsePositiveInteger(tableId);
-
-    if (!validTableId) {
+    if (!timerEntry) {
       return;
     }
 
     /*
-     * State refresh বা reconnect-এর কারণে
-     * চলমান countdown restart হবে না।
+     * পুরোনো raw Timeout entry-ও support।
      */
-    if (nextHandTimers.has(validTableId)) {
+    if (timerEntry.handTimer || timerEntry.countdownTimer) {
+      if (timerEntry.countdownTimer) {
+        clearTimeout(timerEntry.countdownTimer);
+      }
+
+      if (timerEntry.handTimer) {
+        clearTimeout(timerEntry.handTimer);
+      }
+    } else {
+      clearTimeout(timerEntry);
+    }
+
+    nextHandTimers.delete(validTableId);
+  }
+  function scheduleNextPokerHand(
+    tableId,
+    countdownDelay = 5000,
+    overlayDelay = 0,
+  ) {
+    const validTableId = parsePositiveInteger(tableId);
+
+    if (!validTableId || nextHandTimers.has(validTableId)) {
       return;
     }
 
-    const delayMilliseconds = Math.max(
-      Number(delay) || NEXT_HAND_COUNTDOWN_SECONDS * 1000,
-      1000,
-    );
+    const validCountdownDelay = Math.max(Number(countdownDelay) || 5000, 1000);
 
-    const startsAt = new Date(Date.now() + delayMilliseconds).toISOString();
+    const validOverlayDelay = Math.max(Number(overlayDelay) || 0, 0);
 
-    namespace.to(getRoomName(validTableId)).emit("hand:countdown", {
-      tableId: validTableId,
+    const roomName = getRoomName(validTableId);
 
-      seconds: Math.max(1, Math.ceil(delayMilliseconds / 1000)),
+    const emitCountdown = () => {
+      namespace.to(roomName).emit("hand:countdown", {
+        tableId: validTableId,
 
-      startsAt,
-    });
+        seconds: Math.ceil(validCountdownDelay / 1000),
 
-    const timer = setTimeout(async () => {
+        startsAt: new Date(Date.now() + validCountdownDelay).toISOString(),
+      });
+    };
+
+    let countdownTimer = null;
+
+    /*
+     * Winner overlay শেষ হওয়ার পর
+     * countdown event যাবে।
+     */
+    if (validOverlayDelay > 0) {
+      countdownTimer = setTimeout(emitCountdown, validOverlayDelay);
+    } else {
+      emitCountdown();
+    }
+
+    const handTimer = setTimeout(async () => {
       nextHandTimers.delete(validTableId);
 
       try {
@@ -387,11 +406,11 @@ function initializePokerSocket(io) {
           potAmount: handResult.potAmount,
 
           currentBet: handResult.currentBet,
+
+          preparation: handResult.preparation || null,
         };
 
-        namespace
-          .to(getRoomName(validTableId))
-          .emit("hand:started", handStartedEvent);
+        namespace.to(roomName).emit("hand:started", handStartedEvent);
 
         await emitPersonalizedTableState(validTableId);
 
@@ -399,15 +418,18 @@ function initializePokerSocket(io) {
       } catch (error) {
         console.error("POKER NEXT HAND ERROR:", error);
 
-        namespace.to(getRoomName(validTableId)).emit("table:error", {
+        namespace.to(roomName).emit("table:error", {
           statusCode: getErrorStatus(error),
 
           message: error.message || "Unable to start the next Poker hand.",
         });
       }
-    }, delayMilliseconds);
+    }, validOverlayDelay + validCountdownDelay);
 
-    nextHandTimers.set(validTableId, timer);
+    nextHandTimers.set(validTableId, {
+      countdownTimer,
+      handTimer,
+    });
   }
 
   function createPublicAction(actionResult) {
@@ -536,7 +558,21 @@ function initializePokerSocket(io) {
      * schedule করার প্রয়োজন নেই।
      */
     if (Number(orphanCleanup.remainingRealPlayers) > 0) {
-      scheduleNextPokerHand(tableId, 5000);
+      scheduleNextPokerHand(
+        tableId,
+
+        /*
+         * Countdown:
+         * 5 seconds
+         */
+        5000,
+
+        /*
+         * Winner overlay:
+         * 2 seconds
+         */
+        2000,
+      );
     }
 
     return publicSettlement;

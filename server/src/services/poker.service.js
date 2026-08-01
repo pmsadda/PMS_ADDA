@@ -1554,20 +1554,149 @@ async function preparePokerPlayersForNextHand(table, connection) {
    * User Exit করলে cash-out process
    * idempotently শেষ হবে।
    */
+  const minimumBuyIn =
+  Number(
+    table.minimum_buy_in,
+  );
+
+const [bustedRealRows] =
   await connection.query(
     `
-      UPDATE poker_table_players
-      SET
-        player_status =
+      SELECT
+        ptp.id,
+        ptp.user_id,
+        ptp.player_status,
+        ptp.stack_amount,
+
+        u.wallet_balance
+
+      FROM poker_table_players ptp
+
+      INNER JOIN users u
+        ON u.id =
+           ptp.user_id
+
+      WHERE ptp.table_id = ?
+        AND ptp.is_bot = 0
+        AND ptp.player_status IN (
+          'active',
           'sitting_out'
-      WHERE table_id = ?
-        AND is_bot = 0
-        AND player_status =
-          'active'
-        AND stack_amount <= 0
+        )
+        AND ptp.stack_amount <= 0
+        AND ptp.cash_out_credited = 0
+
+      ORDER BY ptp.id
+      FOR UPDATE
     `,
     [tableId],
   );
+
+const autoRebuyUserIds = [];
+
+for (
+  const bustedPlayer of
+    bustedRealRows
+) {
+  const walletBalance =
+    Number(
+      bustedPlayer
+        .wallet_balance ||
+      0,
+    );
+
+  /*
+   * Wallet-এ minimum buy-in থাকলে
+   * server-authoritative auto rebuy।
+   */
+  if (
+    walletBalance >=
+    minimumBuyIn
+  ) {
+    const lockedUser =
+      await getLockedUser(
+        Number(
+          bustedPlayer.user_id,
+        ),
+        connection,
+      );
+
+    await debitPokerBuyIn(
+      lockedUser,
+      tableId,
+      minimumBuyIn,
+      connection,
+    );
+
+    const [rebuyResult] =
+      await connection.query(
+        `
+          UPDATE poker_table_players
+          SET
+            player_status =
+              'active',
+
+            stack_amount = ?,
+
+            total_buy_in =
+              total_buy_in + ?,
+
+            wallet_debited =
+              1
+
+          WHERE id = ?
+            AND stack_amount <= 0
+            AND cash_out_credited =
+                0
+        `,
+        [
+          minimumBuyIn,
+          minimumBuyIn,
+          Number(
+            bustedPlayer.id,
+          ),
+        ],
+      );
+
+    if (
+      Number(
+        rebuyResult.affectedRows,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Poker auto rebuy state changed.",
+        409,
+      );
+    }
+
+    autoRebuyUserIds.push(
+      Number(
+        bustedPlayer.user_id,
+      ),
+    );
+  } else {
+    /*
+     * Wallet insufficient হলে কোনো
+     * automatic debit হবে না।
+     */
+    await connection.query(
+      `
+        UPDATE poker_table_players
+        SET
+          player_status =
+            'sitting_out'
+        WHERE id = ?
+          AND stack_amount <= 0
+          AND cash_out_credited =
+              0
+      `,
+      [
+        Number(
+          bustedPlayer.id,
+        ),
+      ],
+    );
+  }
+}
 
   /*
    * Busted bot সরিয়ে seat খালি করা।
@@ -1803,6 +1932,7 @@ async function preparePokerPlayersForNextHand(table, connection) {
     botJoined,
     joinedBotId,
     totalPlayers,
+    autoRebuyUserIds,
   };
 }
 

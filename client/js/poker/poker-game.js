@@ -16,6 +16,7 @@ const POKER_GAME = {
   matchmakingTimer: null,
   turnTimer: null,
   nextHandCountdownTimer: null,
+  winnerOverlayTimer: null,
   actionPending: false,
   exitPending: false,
 
@@ -422,6 +423,9 @@ const POKER_GAME = {
     });
 
     this.socket.on("hand:started", (hand) => {
+      clearTimeout(this.winnerOverlayTimer);
+
+      this.winnerOverlayTimer = null;
       this.clearNextHandCountdown();
       console.log("🃏 New Poker hand started:", hand);
 
@@ -1034,6 +1038,11 @@ const POKER_GAME = {
   },
 
   startNextHandCountdown(payload = {}) {
+    clearTimeout(this.winnerOverlayTimer);
+
+    this.winnerOverlayTimer = null;
+
+    this.getElement("winnerOverlay")?.setAttribute("hidden", "");
     this.clearNextHandCountdown();
 
     const button = this.getElement("continueButton");
@@ -1093,9 +1102,15 @@ const POKER_GAME = {
       this.animatePotToWinner(winner);
     });
 
-    window.setTimeout(() => {
-      this.showWinnerOverlay(settlement, winners);
-    }, 1100);
+    clearTimeout(this.winnerOverlayTimer);
+
+    this.showWinnerOverlay(settlement, winners);
+
+    this.winnerOverlayTimer = window.setTimeout(() => {
+      this.getElement("winnerOverlay")?.setAttribute("hidden", "");
+
+      this.winnerOverlayTimer = null;
+    }, 2000);
   },
 
   revealWinnerCards(winner) {
@@ -1509,7 +1524,7 @@ const POKER_GAME = {
     const update = () => {
       const seconds = Number.isFinite(expiresAt)
         ? Math.max(Math.ceil((expiresAt - Date.now()) / 1000), 0)
-        : 10;
+        : 20;
 
       if (timer) {
         timer.textContent = String(seconds);
