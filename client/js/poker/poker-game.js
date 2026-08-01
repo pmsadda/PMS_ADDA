@@ -15,6 +15,7 @@ const POKER_GAME = {
 
   matchmakingTimer: null,
   turnTimer: null,
+  nextHandCountdownTimer: null,
   actionPending: false,
   exitPending: false,
 
@@ -332,16 +333,6 @@ const POKER_GAME = {
         amount.textContent = `৳${this.formatMoney(event.target.value)}`;
       }
     });
-
-    this.getElement("continueButton")?.addEventListener("click", () => {
-      this.getElement("winnerOverlay")?.setAttribute("hidden", "");
-
-      document.querySelectorAll(".player-seat").forEach((seat) => {
-        seat.classList.remove("is-winner");
-      });
-
-      this.requestLatestState();
-    });
   },
 
   connectSocket(token) {
@@ -401,7 +392,15 @@ const POKER_GAME = {
     });
 
     this.socket.on("table:player-disconnected", () => {
-      this.setConnection("Player reconnecting…", true);
+      this.setRoundStatus("A player lost connection");
+    });
+
+    this.socket.on("table:player-reconnected", () => {
+      this.setConnection("Connected", true);
+
+      this.setRoundStatus("Player reconnected");
+
+      this.requestLatestState();
     });
 
     this.socket.on("hand:action", (action) => {
@@ -412,6 +411,10 @@ const POKER_GAME = {
       this.animateDealtStreets(action.dealtStreets);
     });
 
+    this.socket.on("hand:countdown", (payload = {}) => {
+      this.startNextHandCountdown(payload);
+    });
+
     this.socket.on("hand:completed", (settlement) => {
       console.log("🏆 Poker hand completed:", settlement);
 
@@ -419,6 +422,7 @@ const POKER_GAME = {
     });
 
     this.socket.on("hand:started", (hand) => {
+      this.clearNextHandCountdown();
       console.log("🃏 New Poker hand started:", hand);
 
       this.getElement("winnerOverlay")?.setAttribute("hidden", "");
@@ -507,6 +511,30 @@ const POKER_GAME = {
     return safeCode ? `../assets/cards/${safeCode}.png` : null;
   },
 
+  renderCardFace(cardElement, cardCode) {
+    if (!cardElement) {
+      return;
+    }
+
+    const normalizedCode = String(cardCode || "")
+      .trim()
+      .toUpperCase();
+
+    const previousCode = cardElement.dataset.cardCode || "";
+
+    cardElement.classList.toggle("has-card", Boolean(normalizedCode));
+
+    if (previousCode === normalizedCode) {
+      return;
+    }
+
+    cardElement.dataset.cardCode = normalizedCode;
+
+    cardElement.style.backgroundImage = normalizedCode
+      ? `url("${this.getCardImagePath(normalizedCode)}")`
+      : "";
+  },
+
   getHandPlayerBySeat(seatNo) {
     return (
       this.state?.handPlayers?.find(
@@ -533,11 +561,7 @@ const POKER_GAME = {
       .forEach((cardElement, index) => {
         const cardCode = communityCards[index];
 
-        cardElement.classList.toggle("has-card", Boolean(cardCode));
-
-        cardElement.style.backgroundImage = cardCode
-          ? `url("${this.getCardImagePath(cardCode)}")`
-          : "";
+        this.renderCardFace(cardElement, cardCode);
       });
 
     for (let visualSeatNo = 1; visualSeatNo <= 5; visualSeatNo += 1) {
@@ -561,9 +585,7 @@ const POKER_GAME = {
 
       if (!handPlayer) {
         seat.querySelectorAll(".hole-card").forEach((card) => {
-          card.classList.remove("has-card");
-
-          card.style.backgroundImage = "";
+          this.renderCardFace(card, null);
         });
 
         continue;
@@ -619,11 +641,7 @@ const POKER_GAME = {
       holeCards.forEach((cardElement, cardIndex) => {
         const cardCode = visibleCards[cardIndex];
 
-        cardElement.classList.toggle("has-card", Boolean(cardCode));
-
-        cardElement.style.backgroundImage = cardCode
-          ? `url("${this.getCardImagePath(cardCode)}")`
-          : "";
+        this.renderCardFace(cardElement, cardCode);
       });
     }
 
@@ -714,14 +732,45 @@ const POKER_GAME = {
     }
   },
 
-  exitPokerTable() {
-    if (this.exitPending) {
-      return;
+  completePokerExit(response) {
+    console.log("✅ Poker cash-out:", response?.data);
+
+    localStorage.removeItem("current_poker_table");
+
+    window.location.replace("poker-rooms.html");
+  },
+
+  async exitPokerTableViaHttp() {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      throw new Error("Authentication token is missing.");
     }
 
-    if (!this.socket?.connected) {
-      this.setRoundStatus("Please wait for the server connection.");
+    const response = await fetch(
+      `${this.getServerUrl()}/api/poker/table/${this.tableId}/exit`,
+      {
+        method: "POST",
 
+        headers: {
+          Authorization: `Bearer ${token}`,
+
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok || !result?.success) {
+      throw new Error(result?.message || "Unable to exit Poker table.");
+    }
+
+    return result;
+  },
+
+  async exitPokerTable() {
+    if (this.exitPending) {
       return;
     }
 
@@ -731,31 +780,53 @@ const POKER_GAME = {
 
     this.setRoundStatus("Cash-out in progress…");
 
-    this.socket.emit(
-      "table:exit",
-      {
-        tableId: this.tableId,
-      },
-      (response) => {
-        if (!response?.success) {
-          this.exitPending = false;
+    /*
+     * Socket connected থাকলে existing
+     * real-time Exit flow ব্যবহার হবে।
+     */
+    if (this.socket?.connected) {
+      this.socket.emit(
+        "table:exit",
+        {
+          tableId: this.tableId,
+        },
+        (response) => {
+          if (!response?.success) {
+            this.exitPending = false;
 
-          this.setRoundStatus(
-            response?.message || "Unable to exit Poker table.",
-          );
+            this.setRoundStatus(
+              response?.message || "Unable to exit Poker table.",
+            );
 
-          this.renderActionControls();
+            this.renderActionControls();
 
-          return;
-        }
+            return;
+          }
 
-        console.log("✅ Poker cash-out:", response.data);
+          this.completePokerExit(response);
+        },
+      );
 
-        localStorage.removeItem("current_poker_table");
+      return;
+    }
 
-        window.location.replace("poker-rooms.html");
-      },
-    );
+    /*
+     * Socket disconnected হলেও HTTP দিয়ে
+     * server-side fold + cash-out হবে।
+     */
+    try {
+      const response = await this.exitPokerTableViaHttp();
+
+      this.completePokerExit(response);
+    } catch (error) {
+      console.error("POKER HTTP EXIT ERROR:", error);
+
+      this.exitPending = false;
+
+      this.setRoundStatus(error.message || "Unable to exit Poker table.");
+
+      this.renderActionControls();
+    }
   },
 
   submitAction(action, amount = null) {
@@ -954,6 +1025,53 @@ const POKER_GAME = {
         );
       });
     });
+  },
+
+  clearNextHandCountdown() {
+    clearInterval(this.nextHandCountdownTimer);
+
+    this.nextHandCountdownTimer = null;
+  },
+
+  startNextHandCountdown(payload = {}) {
+    this.clearNextHandCountdown();
+
+    const button = this.getElement("continueButton");
+
+    if (button) {
+      button.disabled = true;
+    }
+
+    const providedStartsAt = new Date(payload.startsAt).getTime();
+
+    const fallbackSeconds = Math.max(1, Number(payload.seconds) || 5);
+
+    const startsAt = Number.isFinite(providedStartsAt)
+      ? providedStartsAt
+      : Date.now() + fallbackSeconds * 1000;
+
+    const updateCountdown = () => {
+      const seconds = Math.max(0, Math.ceil((startsAt - Date.now()) / 1000));
+
+      if (button) {
+        button.textContent =
+          seconds > 0 ? `Next Hand in ${seconds}` : "Dealing Cards…";
+      }
+
+      this.setRoundStatus(
+        seconds > 0
+          ? `Next hand starts in ${seconds} seconds`
+          : "Dealing new Poker cards…",
+      );
+
+      if (seconds <= 0) {
+        this.clearNextHandCountdown();
+      }
+    };
+
+    updateCountdown();
+
+    this.nextHandCountdownTimer = window.setInterval(updateCountdown, 200);
   },
 
   handleHandCompleted(settlement) {
@@ -1276,32 +1394,57 @@ const POKER_GAME = {
 
     const fallbackPath = "../assets/images/default-avatar.png";
 
-    if (!player.avatarUrl) {
-      avatar.src = fallbackPath;
+    const rawUrl = String(player.avatarUrl || "").trim();
 
+    let avatarUrl = fallbackPath;
+
+    if (rawUrl) {
+      if (/^https?:\/\//i.test(rawUrl) || rawUrl.startsWith("/")) {
+        avatarUrl = rawUrl;
+      } else {
+        avatarUrl = rawUrl.startsWith("assets/")
+          ? `../${rawUrl}`
+          : `../assets/images/avatars/${rawUrl}`;
+      }
+    }
+
+    /*
+     * একই image প্রত্যেক state update-এ
+     * আবার load করা হবে না।
+     */
+    if (avatar.dataset.avatarSource === avatarUrl) {
       return;
     }
 
-    const rawUrl = String(player.avatarUrl);
-
-    let avatarUrl = rawUrl;
-
-    if (!/^https?:\/\//i.test(rawUrl) && !rawUrl.startsWith("/")) {
-      avatarUrl = rawUrl.startsWith("assets/")
-        ? `../${rawUrl}`
-        : `../assets/images/avatars/${rawUrl}`;
-    }
+    avatar.dataset.avatarSource = avatarUrl;
 
     avatar.onerror = () => {
       avatar.onerror = null;
-      avatar.src = fallbackPath;
+
+      avatar.dataset.avatarSource = fallbackPath;
+
+      if (avatar.getAttribute("src") !== fallbackPath) {
+        avatar.setAttribute("src", fallbackPath);
+      }
     };
 
-    avatar.src = avatarUrl;
+    avatar.setAttribute("src", avatarUrl);
   },
 
   renderTableStatus() {
     const status = this.state.table.status;
+
+    const me = this.getMe();
+
+    if (me?.status === "sitting_out" && Number(me.stackAmount || 0) <= 0) {
+      this.setRoundStatus(
+        "Your Poker chips are finished • Exit and select a new buy-in",
+      );
+
+      this.disableActions();
+
+      return;
+    }
 
     if (status === "waiting") {
       this.setRoundStatus("Waiting for Poker players…");

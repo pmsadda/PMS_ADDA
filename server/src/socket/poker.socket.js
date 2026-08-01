@@ -1,8 +1,25 @@
 "use strict";
 
+const crypto = require("crypto");
+
 const jwt = require("jsonwebtoken");
 
 const pokerService = require("../services/poker.service");
+
+let publishHttpPokerExit = null;
+
+async function publishPokerExitFromHttp(tableId, exitResult) {
+  if (typeof publishHttpPokerExit !== "function") {
+    return {
+      skipped: true,
+      reason: "poker_socket_not_ready",
+    };
+  }
+
+  return publishHttpPokerExit(tableId, exitResult);
+}
+
+const NEXT_HAND_COUNTDOWN_SECONDS = 5;
 
 function authenticateSocket(socket, next) {
   try {
@@ -73,6 +90,85 @@ function initializePokerSocket(io) {
   const matchmakingTimers = new Map();
   const pokerTurnTimers = new Map();
   const nextHandTimers = new Map();
+  const disconnectGraceTimers = new Map();
+
+  const DISCONNECT_GRACE_MS = 10000;
+
+  function getDisconnectGraceKey(tableId, userId) {
+    return `${Number(tableId)}:` + `${Number(userId)}`;
+  }
+
+  function clearDisconnectGrace(tableId, userId) {
+    const key = getDisconnectGraceKey(tableId, userId);
+
+    const timer = disconnectGraceTimers.get(key);
+
+    if (!timer) {
+      return false;
+    }
+
+    clearTimeout(timer);
+
+    disconnectGraceTimers.delete(key);
+
+    return true;
+  }
+
+  async function hasAnotherConnectedUserSocket(
+    roomName,
+    userId,
+    excludedSocketId = null,
+  ) {
+    const connectedSockets = await namespace.in(roomName).fetchSockets();
+
+    return connectedSockets.some(
+      (connectedSocket) =>
+        connectedSocket.id !== excludedSocketId &&
+        Number(connectedSocket.user?.id) === Number(userId),
+    );
+  }
+
+  function scheduleDisconnectGrace({
+    tableId,
+    userId,
+    roomName,
+    socketId,
+    reason,
+  }) {
+    clearDisconnectGrace(tableId, userId);
+
+    const key = getDisconnectGraceKey(tableId, userId);
+
+    const timer = setTimeout(async () => {
+      disconnectGraceTimers.delete(key);
+
+      try {
+        const stillConnected = await hasAnotherConnectedUserSocket(
+          roomName,
+          userId,
+          socketId,
+        );
+
+        if (stillConnected) {
+          return;
+        }
+
+        namespace.to(roomName).emit("table:player-disconnected", {
+          tableId: Number(tableId),
+
+          userId: Number(userId),
+
+          graceExpired: true,
+
+          reason,
+        });
+      } catch (error) {
+        console.error("POKER DISCONNECT GRACE ERROR:", error);
+      }
+    }, DISCONNECT_GRACE_MS);
+
+    disconnectGraceTimers.set(key, timer);
+  }
 
   function validatePlayer(state, userId) {
     const player = state.players.find(
@@ -226,70 +322,90 @@ function initializePokerSocket(io) {
     }
   }
 
-  function scheduleNextPokerHand(tableId, delay = 5000) {
+  function scheduleNextPokerHand(
+    tableId,
+    delay = NEXT_HAND_COUNTDOWN_SECONDS * 1000,
+  ) {
     const validTableId = parsePositiveInteger(tableId);
 
     if (!validTableId) {
       return;
     }
 
-    clearNextHandTimer(validTableId);
+    /*
+     * State refresh বা reconnect-এর কারণে
+     * চলমান countdown restart হবে না।
+     */
+    if (nextHandTimers.has(validTableId)) {
+      return;
+    }
 
-    const timer = setTimeout(
-      async () => {
-        nextHandTimers.delete(validTableId);
+    const delayMilliseconds = Math.max(
+      Number(delay) || NEXT_HAND_COUNTDOWN_SECONDS * 1000,
+      1000,
+    );
 
-        try {
-          const handResult =
-            await pokerService.startNextPokerHand(validTableId);
+    const startsAt = new Date(Date.now() + delayMilliseconds).toISOString();
 
-          if (handResult?.skipped) {
-            console.log(`🃏 Next Poker hand skipped: ${handResult.reason}`);
+    namespace.to(getRoomName(validTableId)).emit("hand:countdown", {
+      tableId: validTableId,
 
-            await emitPersonalizedTableState(validTableId);
+      seconds: Math.max(1, Math.ceil(delayMilliseconds / 1000)),
 
-            return;
-          }
+      startsAt,
+    });
 
-          const handStartedEvent = {
-            tableId: validTableId,
+    const timer = setTimeout(async () => {
+      nextHandTimers.delete(validTableId);
 
-            handId: handResult.handId,
+      try {
+        const handResult = await pokerService.startNextPokerHand(validTableId);
 
-            handNumber: handResult.handNumber,
-
-            dealerPlayerId: handResult.dealerPlayerId,
-
-            smallBlindPlayerId: handResult.smallBlindPlayerId,
-
-            bigBlindPlayerId: handResult.bigBlindPlayerId,
-
-            currentTurnPlayerId: handResult.currentTurnPlayerId,
-
-            potAmount: handResult.potAmount,
-
-            currentBet: handResult.currentBet,
-          };
-
-          namespace
-            .to(getRoomName(validTableId))
-            .emit("hand:started", handStartedEvent);
+        if (handResult?.skipped) {
+          console.log(`🃏 Next Poker hand skipped: ${handResult.reason}`);
 
           await emitPersonalizedTableState(validTableId);
 
-          await schedulePokerTurn(validTableId);
-        } catch (error) {
-          console.error("POKER NEXT HAND ERROR:", error);
-
-          namespace.to(getRoomName(validTableId)).emit("table:error", {
-            statusCode: getErrorStatus(error),
-
-            message: error.message || "Unable to start the next Poker hand.",
-          });
+          return;
         }
-      },
-      Math.max(Number(delay) || 5000, 1000),
-    );
+
+        const handStartedEvent = {
+          tableId: validTableId,
+
+          handId: handResult.handId,
+
+          handNumber: handResult.handNumber,
+
+          dealerPlayerId: handResult.dealerPlayerId,
+
+          smallBlindPlayerId: handResult.smallBlindPlayerId,
+
+          bigBlindPlayerId: handResult.bigBlindPlayerId,
+
+          currentTurnPlayerId: handResult.currentTurnPlayerId,
+
+          potAmount: handResult.potAmount,
+
+          currentBet: handResult.currentBet,
+        };
+
+        namespace
+          .to(getRoomName(validTableId))
+          .emit("hand:started", handStartedEvent);
+
+        await emitPersonalizedTableState(validTableId);
+
+        await schedulePokerTurn(validTableId);
+      } catch (error) {
+        console.error("POKER NEXT HAND ERROR:", error);
+
+        namespace.to(getRoomName(validTableId)).emit("table:error", {
+          statusCode: getErrorStatus(error),
+
+          message: error.message || "Unable to start the next Poker hand.",
+        });
+      }
+    }, delayMilliseconds);
 
     nextHandTimers.set(validTableId, timer);
   }
@@ -448,7 +564,7 @@ function initializePokerSocket(io) {
        * Bot যেন instant action না নেয়।
        * Natural 1.2–2 second delay।
        */
-      delay = 1200 + Math.floor(Math.random() * 801);
+      delay = crypto.randomInt(1200, 2001);
     } else {
       const expiresAt = new Date(turn.actionExpiresAt).getTime();
 
@@ -494,6 +610,53 @@ function initializePokerSocket(io) {
     pokerTurnTimers.set(validTableId, timer);
   }
 
+  publishHttpPokerExit = async (tableId, exitResult) => {
+    const validTableId = parsePositiveInteger(tableId);
+
+    if (!validTableId || !exitResult) {
+      return {
+        skipped: true,
+        reason: "invalid_http_exit",
+      };
+    }
+
+    /*
+     * পুরোনো human/bot turn timer
+     * stale action চালাতে পারবে না।
+     */
+    clearPokerTurnTimer(validTableId);
+
+    if (exitResult.exitAction) {
+      /*
+       * Exit fold publish হবে।
+       * শেষ contender হলে settlement ও
+       * next-hand countdown-ও এখানেই হবে।
+       */
+      await publishPokerAction(validTableId, exitResult.exitAction);
+    } else {
+      await emitPersonalizedTableState(validTableId);
+    }
+
+    namespace.to(getRoomName(validTableId)).emit("table:player-left", {
+      tableId: validTableId,
+
+      tablePlayerId: exitResult.tablePlayerId,
+
+      remainingPlayers: exitResult.remainingPlayers,
+    });
+
+    if (
+      !exitResult.handNeedsShowdown &&
+      Number(exitResult.remainingPlayers) >= 2
+    ) {
+      await schedulePokerTurn(validTableId);
+    }
+
+    return {
+      success: true,
+    };
+  };
+
   namespace.on("connection", (socket) => {
     console.log(`🃏 Poker connected: User ${socket.user.id}`);
 
@@ -532,6 +695,16 @@ function initializePokerSocket(io) {
         const player = validatePlayer(state, socket.user.id);
 
         const roomName = getRoomName(tableId);
+        const reconnectedDuringGrace = clearDisconnectGrace(
+          tableId,
+          socket.user.id,
+        );
+
+        const alreadyConnectedElsewhere = await hasAnotherConnectedUserSocket(
+          roomName,
+          socket.user.id,
+          socket.id,
+        );
 
         if (socket.data.roomName && socket.data.roomName !== roomName) {
           await socket.leave(socket.data.roomName);
@@ -547,13 +720,20 @@ function initializePokerSocket(io) {
 
         socket.emit("table:state", state);
 
-        socket.to(roomName).emit("table:player-joined", {
-          tableId,
+        socket
+          .to(roomName)
+          .emit(
+            reconnectedDuringGrace || alreadyConnectedElsewhere
+              ? "table:player-reconnected"
+              : "table:player-joined",
+            {
+              tableId,
 
-          userId: socket.user.id,
+              userId: socket.user.id,
 
-          tablePlayerId: Number(player.id),
-        });
+              tablePlayerId: Number(player.id),
+            },
+          );
 
         sendCallback(callback, {
           success: true,
@@ -716,7 +896,7 @@ function initializePokerSocket(io) {
 
         clearPokerTurnTimer(tableId);
 
-        clearNextHandTimer(tableId);
+        clearDisconnectGrace(tableId, socket.user.id);
 
         const exitResult = await pokerService.exitPokerTable(
           tableId,
@@ -788,15 +968,15 @@ function initializePokerSocket(io) {
           });
         }
 
-        if (state?.hand?.status === "completed") {
-          scheduleNextPokerHand(tableId, 5000);
-        }
-
         let state = await pokerService.getTableState(tableId);
 
         state = await recoverStartingHand(state);
 
         state = await pokerService.getTableGameState(tableId, socket.user.id);
+
+        if (state?.hand?.status === "completed") {
+          scheduleNextPokerHand(tableId, 5000);
+        }
 
         validatePlayer(state, socket.user.id);
 
@@ -823,13 +1003,25 @@ function initializePokerSocket(io) {
     socket.on("disconnect", (reason) => {
       console.log(`🔌 Poker disconnected: User ${socket.user.id}; ${reason}`);
 
-      if (socket.data.roomName && socket.data.tableId) {
-        socket.to(socket.data.roomName).emit("table:player-disconnected", {
-          tableId: socket.data.tableId,
+      const tableId = parsePositiveInteger(socket.data.tableId);
 
-          userId: socket.user.id,
-        });
+      const roomName = socket.data.roomName;
+
+      if (!tableId || !roomName) {
+        return;
       }
+
+      scheduleDisconnectGrace({
+        tableId,
+
+        userId: socket.user.id,
+
+        roomName,
+
+        socketId: socket.id,
+
+        reason,
+      });
     });
   });
 
@@ -838,4 +1030,5 @@ function initializePokerSocket(io) {
 
 module.exports = {
   initializePokerSocket,
+  publishPokerExitFromHttp,
 };

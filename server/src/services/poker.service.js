@@ -5,6 +5,8 @@ const crypto = require("crypto");
 const { pool } = require("../config/database");
 
 const {
+  createDeck,
+  shuffleDeck,
   createShuffledDeck,
   dealHoleCards,
   dealCommunityStreet,
@@ -930,6 +932,23 @@ async function getTableGameState(tableId, userId, connection = pool) {
     (Number(hand.current_bet) + Number(hand.minimum_raise)).toFixed(2),
   );
 
+  const raiseReopened = myHandPlayer
+    ? await isPokerRaiseReopened(
+        {
+          handId: Number(hand.id),
+
+          handStatus: hand.hand_status,
+
+          handPlayerId: Number(myHandPlayer.id),
+
+          currentBet: Number(hand.current_bet),
+
+          minimumRaise: Number(hand.minimum_raise),
+        },
+        connection,
+      )
+    : false;
+
   const allowedActions = [];
 
   if (isMyTurn) {
@@ -941,11 +960,21 @@ async function getTableGameState(tableId, userId, connection = pool) {
       allowedActions.push("call");
     }
 
-    if (maximumRaiseTo > Number(hand.current_bet)) {
+    if (raiseReopened && maximumRaiseTo > Number(hand.current_bet)) {
       allowedActions.push("raise");
     }
 
-    if (stackAmount > 0) {
+    /*
+     * All-in দিয়ে শুধু call করা হলে
+     * Raise reopen হওয়ার প্রয়োজন নেই।
+     *
+     * Current bet-এর ওপরে গেলে সেটি Raise,
+     * তখন betting reopen থাকতে হবে।
+     */
+    if (
+      stackAmount > 0 &&
+      (maximumRaiseTo <= Number(hand.current_bet) || raiseReopened)
+    ) {
       allowedActions.push("all_in");
     }
   }
@@ -1003,6 +1032,7 @@ async function getTableGameState(tableId, userId, connection = pool) {
       minimumRaiseTo,
 
       maximumRaiseTo,
+      raiseReopened: Boolean(raiseReopened),
 
       allowedActions,
     },
@@ -1474,6 +1504,29 @@ async function startPokerHandInTransaction(tableId, connection) {
     [tableId],
   );
 
+  /*
+   * এই hand-এ অংশ নেওয়া bot-এর
+   * lifetime hand count update।
+   */
+  await connection.query(
+    `
+    UPDATE poker_bots pb
+
+    INNER JOIN poker_table_players ptp
+      ON ptp.bot_id = pb.id
+      AND ptp.is_bot = 1
+
+    INNER JOIN poker_hand_players php
+      ON php.table_player_id = ptp.id
+      AND php.hand_id = ?
+
+    SET
+      pb.total_hands =
+        pb.total_hands + 1
+  `,
+    [handId],
+  );
+
   return {
     handId,
     handNumber,
@@ -1491,6 +1544,268 @@ async function startPokerHandInTransaction(tableId, connection) {
   };
 }
 
+async function preparePokerPlayersForNextHand(table, connection) {
+  const tableId = Number(table.id);
+
+  /*
+   * Zero-stack real player table-এ থাকবে,
+   * কিন্তু নতুন hand খেলবে না।
+   *
+   * User Exit করলে cash-out process
+   * idempotently শেষ হবে।
+   */
+  await connection.query(
+    `
+      UPDATE poker_table_players
+      SET
+        player_status =
+          'sitting_out'
+      WHERE table_id = ?
+        AND is_bot = 0
+        AND player_status =
+          'active'
+        AND stack_amount <= 0
+    `,
+    [tableId],
+  );
+
+  /*
+   * Busted bot সরিয়ে seat খালি করা।
+   * Stack zero হওয়ায় wallet refund নেই।
+   */
+  await connection.query(
+    `
+      UPDATE poker_table_players
+      SET
+        player_status =
+          'left',
+
+        stack_amount =
+          0.00,
+
+        cash_out_credited =
+          1,
+
+        left_at =
+          COALESCE(
+            left_at,
+            NOW()
+          )
+
+      WHERE table_id = ?
+        AND is_bot = 1
+        AND player_status !=
+            'left'
+        AND stack_amount <= 0
+    `,
+    [tableId],
+  );
+
+  const [countRows] = await connection.query(
+    `
+        SELECT
+          COALESCE(
+            SUM(
+              CASE
+                WHEN is_bot = 0
+                  AND player_status !=
+                      'left'
+                THEN 1
+                ELSE 0
+              END
+            ),
+            0
+          ) AS real_players,
+
+          COALESCE(
+            SUM(
+              CASE
+                WHEN is_bot = 0
+                  AND player_status =
+                      'active'
+                  AND stack_amount > 0
+                THEN 1
+                ELSE 0
+              END
+            ),
+            0
+          ) AS funded_real_players,
+
+          COALESCE(
+            SUM(
+              CASE
+                WHEN is_bot = 1
+                  AND player_status =
+                      'active'
+                  AND stack_amount > 0
+                THEN 1
+                ELSE 0
+              END
+            ),
+            0
+          ) AS funded_bots,
+
+          COALESCE(
+            SUM(
+              CASE
+                WHEN player_status !=
+                    'left'
+                THEN 1
+                ELSE 0
+              END
+            ),
+            0
+          ) AS total_players
+
+        FROM poker_table_players
+        WHERE table_id = ?
+        FOR UPDATE
+      `,
+    [tableId],
+  );
+
+  const counts = countRows[0] || {};
+
+  const realPlayers = Number(counts.real_players || 0);
+
+  const fundedRealPlayers = Number(counts.funded_real_players || 0);
+
+  const fundedBots = Number(counts.funded_bots || 0);
+
+  let totalPlayers = Number(counts.total_players || 0);
+
+  let botJoined = false;
+  let joinedBotId = null;
+
+  /*
+   * অন্তত একজন funded real থাকলে এবং
+   * table-এ funded bot না থাকলে একটি
+   * replacement bot বসবে।
+   *
+   * 5 real player হলে bot প্রয়োজন নেই।
+   */
+  if (
+    fundedRealPlayers > 0 &&
+    realPlayers < MAX_PLAYERS &&
+    fundedBots === 0 &&
+    totalPlayers < MAX_PLAYERS
+  ) {
+    const botBuyIn = Number(table.minimum_buy_in);
+
+    const bot = await getAvailablePokerBot(botBuyIn, connection);
+
+    if (bot) {
+      const seatNo = await getAvailableSeat(tableId, connection);
+
+      if (!seatNo) {
+        throw createServiceError(
+          "No seat is available for the replacement Poker bot.",
+          409,
+        );
+      }
+
+      const [walletResult] = await connection.query(
+        `
+            UPDATE poker_bots
+            SET
+              wallet_balance =
+                wallet_balance - ?,
+
+              total_wagered =
+                total_wagered + ?
+
+            WHERE id = ?
+              AND status =
+                  'active'
+              AND wallet_balance >= ?
+          `,
+        [botBuyIn, botBuyIn, Number(bot.id), botBuyIn],
+      );
+
+      if (Number(walletResult.affectedRows) !== 1) {
+        throw createServiceError(
+          "Unable to debit replacement Poker bot buy-in.",
+          409,
+        );
+      }
+
+      const [insertResult] = await connection.query(
+        `
+            INSERT INTO poker_table_players (
+              table_id,
+              user_id,
+              bot_id,
+              is_bot,
+              seat_no,
+              player_status,
+              stack_amount,
+              initial_buy_in,
+              total_buy_in,
+              wallet_debited
+            )
+            VALUES (
+              ?,
+              NULL,
+              ?,
+              1,
+              ?,
+              'active',
+              ?,
+              ?,
+              ?,
+              1
+            )
+          `,
+        [tableId, Number(bot.id), seatNo, botBuyIn, botBuyIn, botBuyIn],
+      );
+
+      botJoined = true;
+
+      joinedBotId = Number(insertResult.insertId);
+
+      totalPlayers += 1;
+    }
+  }
+
+  /*
+   * sitting_out player-সহ table-এর
+   * বর্তমান occupied seat count।
+   */
+  const [latestCountRows] = await connection.query(
+    `
+        SELECT
+          COUNT(*) AS total
+        FROM poker_table_players
+        WHERE table_id = ?
+          AND player_status !=
+              'left'
+      `,
+    [tableId],
+  );
+
+  totalPlayers = Number(latestCountRows[0]?.total || 0);
+
+  await connection.query(
+    `
+      UPDATE poker_tables
+      SET
+        current_players = ?,
+
+        state_version =
+          state_version + 1
+
+      WHERE id = ?
+    `,
+    [totalPlayers, tableId],
+  );
+
+  return {
+    botJoined,
+    joinedBotId,
+    totalPlayers,
+  };
+}
+
 async function startNextPokerHand(tableId) {
   const validTableId = parsePositiveInteger(tableId);
 
@@ -1505,10 +1820,13 @@ async function startNextPokerHand(tableId) {
 
     const [tableRows] = await connection.query(
       `
-          SELECT
-            id,
-            table_status,
-            current_hand_number
+         SELECT
+          id,
+          room_id,
+          table_status,
+          current_hand_number,
+          max_players,
+          minimum_buy_in
           FROM poker_tables
           WHERE id = ?
           LIMIT 1
@@ -1563,6 +1881,8 @@ async function startNextPokerHand(tableId) {
       };
     }
 
+    const preparation = await preparePokerPlayersForNextHand(table, connection);
+
     const [fundedRows] = await connection.query(
       `
           SELECT COUNT(*) AS total
@@ -1598,6 +1918,7 @@ async function startNextPokerHand(tableId) {
       return {
         skipped: true,
         reason: "not_enough_funded_players",
+        preparation,
       };
     }
 
@@ -1611,6 +1932,7 @@ async function startNextPokerHand(tableId) {
     return {
       success: true,
       skipped: false,
+      preparation,
       ...handResult,
     };
   } catch (error) {
@@ -1677,6 +1999,55 @@ function findNextActiveHandPlayer(players, currentSeatNo) {
       (player) => Number(player.seat_no) > Number(currentSeatNo),
     ) || activePlayers[0]
   );
+}
+
+async function isPokerRaiseReopened(
+  { handId, handStatus, handPlayerId, currentBet, minimumRaise },
+  connection,
+) {
+  const [rows] = await connection.query(
+    `
+        SELECT
+          current_bet_after
+        FROM poker_hand_actions
+        WHERE hand_id = ?
+          AND hand_player_id = ?
+          AND betting_round = ?
+          AND action_type IN (
+            'fold',
+            'check',
+            'call',
+            'raise',
+            'all_in'
+          )
+        ORDER BY action_sequence DESC
+        LIMIT 1
+      `,
+    [Number(handId), Number(handPlayerId), handStatus],
+  );
+
+  const previousAction = rows[0] || null;
+
+  /*
+   * এই street-এ এখনো voluntary action
+   * না করলে Raise সবসময় available।
+   */
+  if (!previousAction) {
+    return true;
+  }
+
+  const betIncreaseSinceAction = Number(
+    (
+      Number(currentBet) - Number(previousAction.current_bet_after || 0)
+    ).toFixed(2),
+  );
+
+  /*
+   * এক বা একাধিক short all-in-এর
+   * cumulative increase যদি full minimum
+   * raise-এর সমান হয়, betting reopen হবে।
+   */
+  return betIncreaseSinceAction >= Number(minimumRaise);
 }
 
 async function getNextActionSequence(handId, connection) {
@@ -1849,6 +2220,21 @@ async function performPlayerAction({
       Math.max(currentBetBefore - roundBetBefore, 0).toFixed(2),
     );
 
+    const raiseReopened = await isPokerRaiseReopened(
+      {
+        handId: Number(hand.id),
+
+        handStatus: hand.hand_status,
+
+        handPlayerId: Number(actor.hand_player_id),
+
+        currentBet: currentBetBefore,
+
+        minimumRaise: Number(hand.minimum_raise),
+      },
+      connection,
+    );
+
     let contribution = 0;
     let newCurrentBet = currentBetBefore;
     let newMinimumRaise = Number(hand.minimum_raise);
@@ -1883,6 +2269,9 @@ async function performPlayerAction({
     }
 
     if (action === "raise") {
+      if (!raiseReopened) {
+        throw createServiceError("A short all-in did not reopen raising.", 409);
+      }
       const raiseTo = parsePositiveMoney(amount);
 
       const maximumRaiseTo = Number((roundBetBefore + stackBefore).toFixed(2));
@@ -1941,6 +2330,10 @@ async function performPlayerAction({
       playerStatus = "all_in";
 
       const allInBet = Number((roundBetBefore + contribution).toFixed(2));
+
+      if (allInBet > currentBetBefore && !raiseReopened) {
+        throw createServiceError("A short all-in did not reopen raising.", 409);
+      }
 
       if (allInBet > currentBetBefore) {
         const raiseSize = Number((allInBet - currentBetBefore).toFixed(2));
@@ -2348,6 +2741,25 @@ async function getCurrentPokerTurn(tableId) {
           ph.minimum_raise,
           ph.action_expires_at,
 
+          ph.community_cards,
+          ph.pot_amount,
+
+          php.hole_cards,
+
+          pb.difficulty,
+          pb.playing_style,
+
+         (
+  SELECT COUNT(*)
+  FROM poker_hand_players contender
+  WHERE contender.hand_id =
+      ph.id
+    AND contender.player_status IN (
+      'active',
+      'all_in'
+    )
+) AS contender_count,
+
           php.id AS hand_player_id,
           php.table_player_id,
           php.player_status,
@@ -2370,6 +2782,10 @@ async function getCurrentPokerTurn(tableId) {
         INNER JOIN poker_table_players ptp
           ON ptp.id =
              php.table_player_id
+
+             LEFT JOIN poker_bots pb
+              ON pb.id = ptp.bot_id
+              AND ptp.is_bot = 1
 
         WHERE ph.table_id = ?
           AND ph.hand_status IN (
@@ -2405,6 +2821,21 @@ async function getCurrentPokerTurn(tableId) {
     (currentBet + Number(turn.minimum_raise)).toFixed(2),
   );
 
+  const raiseReopened = await isPokerRaiseReopened(
+    {
+      handId: Number(turn.hand_id),
+
+      handStatus: turn.hand_status,
+
+      handPlayerId: Number(turn.hand_player_id),
+
+      currentBet,
+
+      minimumRaise: Number(turn.minimum_raise),
+    },
+    pool,
+  );
+
   return {
     tableId: validTableId,
 
@@ -2435,6 +2866,20 @@ async function getCurrentPokerTurn(tableId) {
     maximumRaiseTo,
 
     actionExpiresAt: turn.action_expires_at,
+
+    potAmount: Number(turn.pot_amount || 0),
+
+    holeCards: parseJsonArray(turn.hole_cards),
+
+    communityCards: parseJsonArray(turn.community_cards),
+
+    contenderCount: Math.max(Number(turn.contender_count || 2), 2),
+
+    difficulty: String(turn.difficulty || "normal"),
+
+    playingStyle: String(turn.playing_style || "balanced"),
+
+    raiseReopened: Boolean(raiseReopened),
   };
 }
 
@@ -2926,6 +3371,8 @@ async function settlePokerHand(tableId) {
 
             isBot: Boolean(winner.is_bot),
 
+            botId: winner.bot_id ? Number(winner.bot_id) : null,
+
             handRankName: evaluation?.name || "Won by Fold",
 
             holeCards: parseJsonArray(winner.hole_cards),
@@ -2958,6 +3405,36 @@ async function settlePokerHand(tableId) {
         ),
       ),
     ];
+
+    /*
+     * Refund bot win হিসেবে গণনা হবে না।
+     * একই hand-এ একাধিক pot জিতলেও
+     * total_wins শুধু একবার বাড়বে।
+     */
+    const winnerBotIds = [
+      ...new Set(
+        [...winnerSummary.values()]
+          .filter((winner) => winner.isBot && winner.botId)
+          .map((winner) => Number(winner.botId)),
+      ),
+    ];
+
+    if (winnerBotIds.length > 0) {
+      const placeholders = winnerBotIds.map(() => "?").join(",");
+
+      await connection.query(
+        `
+      UPDATE poker_bots
+      SET
+        total_wins =
+          total_wins + 1
+      WHERE id IN (
+        ${placeholders}
+      )
+    `,
+        winnerBotIds,
+      );
+    }
 
     if (winnerTablePlayerIds.length > 0) {
       const placeholders = winnerTablePlayerIds.map(() => "?").join(",");
@@ -3581,6 +4058,273 @@ async function exitPokerTable(tableId, userId) {
   }
 }
 
+function clampPokerNumber(value, minimum, maximum) {
+  return Math.min(Math.max(Number(value), Number(minimum)), Number(maximum));
+}
+
+function getPokerBotSamples(difficulty) {
+  switch (String(difficulty || "").toLowerCase()) {
+    case "hard":
+      return 80;
+
+    case "easy":
+      return 28;
+
+    default:
+      return 52;
+  }
+}
+
+function getPokerBotStyleAdjustment(playingStyle) {
+  switch (String(playingStyle || "").toLowerCase()) {
+    case "aggressive":
+      return 0.055;
+
+    case "tight":
+    case "defensive":
+      return -0.045;
+
+    default:
+      return 0;
+  }
+}
+
+function getSecureRandomFraction() {
+  return crypto.randomInt(0, 1000000) / 1000000;
+}
+
+function estimatePokerBotEquity({
+  holeCards,
+  communityCards,
+  contenderCount,
+  difficulty,
+}) {
+  if (!Array.isArray(holeCards) || holeCards.length !== 2) {
+    return 0.5;
+  }
+
+  const board = Array.isArray(communityCards) ? [...communityCards] : [];
+
+  if (board.length > 5) {
+    return 0.5;
+  }
+
+  const knownCards = new Set([...holeCards, ...board]);
+
+  const availableCards = createDeck().filter((card) => !knownCards.has(card));
+
+  const opponentCount = clampPokerNumber(Number(contenderCount || 2) - 1, 1, 4);
+
+  const samples = getPokerBotSamples(difficulty);
+
+  let equityTotal = 0;
+
+  for (let sample = 0; sample < samples; sample += 1) {
+    const simulatedDeck = shuffleDeck(availableCards);
+
+    let cursor = 0;
+
+    const simulatedBoard = [...board];
+
+    while (simulatedBoard.length < 5) {
+      simulatedBoard.push(simulatedDeck[cursor]);
+
+      cursor += 1;
+    }
+
+    const botEvaluation = evaluateHoldemHand(holeCards, simulatedBoard);
+
+    let strongerOpponent = false;
+
+    let tiedOpponents = 0;
+
+    for (
+      let opponentIndex = 0;
+      opponentIndex < opponentCount;
+      opponentIndex += 1
+    ) {
+      const opponentCards = [simulatedDeck[cursor], simulatedDeck[cursor + 1]];
+
+      cursor += 2;
+
+      const opponentEvaluation = evaluateHoldemHand(
+        opponentCards,
+        simulatedBoard,
+      );
+
+      if (opponentEvaluation.score > botEvaluation.score) {
+        strongerOpponent = true;
+
+        break;
+      }
+
+      if (opponentEvaluation.score === botEvaluation.score) {
+        tiedOpponents += 1;
+      }
+    }
+
+    if (!strongerOpponent) {
+      equityTotal += 1 / (tiedOpponents + 1);
+    }
+  }
+
+  return clampPokerNumber(equityTotal / samples, 0, 1);
+}
+
+function decidePokerBotAction(turn) {
+  const equity = estimatePokerBotEquity({
+    holeCards: turn.holeCards,
+
+    communityCards: turn.communityCards,
+
+    contenderCount: turn.contenderCount,
+
+    difficulty: turn.difficulty,
+  });
+
+  const difficulty = String(turn.difficulty || "normal").toLowerCase();
+
+  const playingStyle = String(turn.playingStyle || "balanced").toLowerCase();
+
+  const noiseRange =
+    difficulty === "hard" ? 0.035 : difficulty === "easy" ? 0.16 : 0.085;
+
+  const randomNoise = (getSecureRandomFraction() - 0.5) * noiseRange;
+
+  const decisionStrength = clampPokerNumber(
+    equity + getPokerBotStyleAdjustment(playingStyle) + randomNoise,
+    0,
+    1,
+  );
+
+  const potAmount = Math.max(Number(turn.potAmount || 0), 0);
+
+  const callAmount = Math.max(Number(turn.callAmount || 0), 0);
+
+  const stackAmount = Math.max(Number(turn.stackAmount || 0), 0);
+
+  const potOdds =
+    callAmount > 0
+      ? callAmount / Math.max(potAmount + callAmount, callAmount)
+      : 0;
+
+  const canRaise =
+    Boolean(turn.raiseReopened) &&
+    Number(turn.maximumRaiseTo) >= Number(turn.minimumRaiseTo);
+
+  const raiseThreshold =
+    playingStyle === "aggressive"
+      ? 0.54
+      : playingStyle === "tight" || playingStyle === "defensive"
+        ? 0.69
+        : 0.61;
+
+  /*
+   * Check available:
+   * কখনো invalid fold করবে না।
+   */
+  if (callAmount === 0) {
+    if (
+      canRaise &&
+      decisionStrength >= raiseThreshold &&
+      getSecureRandomFraction() < 0.58
+    ) {
+      return {
+        actionType: "raise",
+
+        amount: Number(turn.minimumRaiseTo),
+
+        equity,
+        potOdds,
+      };
+    }
+
+    return {
+      actionType: "check",
+
+      amount: null,
+      equity,
+      potOdds,
+    };
+  }
+
+  /*
+   * Call করলে সম্পূর্ণ stack চলে যাবে।
+   */
+  if (callAmount >= stackAmount) {
+    const requiredStrength = Math.max(
+      potOdds - 0.035,
+      playingStyle === "aggressive" ? 0.34 : 0.4,
+    );
+
+    return {
+      actionType: decisionStrength >= requiredStrength ? "call" : "fold",
+
+      amount: null,
+      equity,
+      potOdds,
+    };
+  }
+
+  /*
+   * Pot odds-এর তুলনায় hand দুর্বল।
+   */
+  const foldBuffer =
+    difficulty === "hard" ? 0.015 : difficulty === "easy" ? 0.075 : 0.04;
+
+  if (decisionStrength + foldBuffer < potOdds) {
+    return {
+      actionType: "fold",
+
+      amount: null,
+      equity,
+      potOdds,
+    };
+  }
+
+  /*
+   * খুব শক্ত hand এবং stack ছোট হলে
+   * সীমিত chance-এ all-in।
+   */
+  if (
+    canRaise &&
+    decisionStrength >= 0.88 &&
+    stackAmount <= Math.max(potAmount * 1.25, callAmount * 3) &&
+    getSecureRandomFraction() < 0.24
+  ) {
+    return {
+      actionType: "all_in",
+
+      amount: null,
+      equity,
+      potOdds,
+    };
+  }
+
+  if (
+    canRaise &&
+    decisionStrength >= raiseThreshold &&
+    getSecureRandomFraction() < (playingStyle === "aggressive" ? 0.55 : 0.34)
+  ) {
+    return {
+      actionType: "raise",
+
+      amount: Number(turn.minimumRaiseTo),
+
+      equity,
+      potOdds,
+    };
+  }
+
+  return {
+    actionType: "call",
+
+    amount: null,
+    equity,
+    potOdds,
+  };
+}
+
 async function performAutomaticTurn(
   tableId,
   {
@@ -3637,40 +4381,27 @@ async function performAutomaticTurn(
      */
     actionType = turn.callAmount === 0 ? "check" : "fold";
   } else {
-    /*
-     * Fair bot:
-     * Server-এর দেওয়া নিজের পরিস্থিতি
-     * অনুযায়ী decision নেয়।
-     * Winner/card manipulation নেই।
-     */
-    const random = crypto.randomInt(0, 100);
+    const decision = decidePokerBotAction(turn);
 
-    const canRaise = turn.maximumRaiseTo >= turn.minimumRaiseTo;
+    actionType = decision.actionType;
 
-    if (turn.callAmount === 0) {
-      if (canRaise && random < 18) {
-        actionType = "raise";
+    amount = decision.amount;
 
-        amount = turn.minimumRaiseTo;
-      } else {
-        actionType = "check";
-      }
-    } else {
-      const callRatio =
-        turn.stackAmount > 0 ? turn.callAmount / turn.stackAmount : 1;
+    console.log("POKER BOT DECISION:", {
+      tableId: turn.tableId,
 
-      if (canRaise && callRatio <= 0.15 && random < 12) {
-        actionType = "raise";
+      handId: turn.handId,
 
-        amount = turn.minimumRaiseTo;
-      } else if (callRatio <= 0.35 && random < 82) {
-        actionType = "call";
-      } else if (turn.callAmount >= turn.stackAmount && random < 55) {
-        actionType = "all_in";
-      } else {
-        actionType = "fold";
-      }
-    }
+      botId: turn.botId,
+
+      street: turn.handStatus,
+
+      action: actionType,
+
+      equity: Number(decision.equity.toFixed(3)),
+
+      potOdds: Number(decision.potOdds.toFixed(3)),
+    });
   }
 
   const result = await performPlayerAction({
@@ -3738,9 +4469,9 @@ async function getAvailablePokerBot(minimumBalance, connection) {
               )
           )
 
-        ORDER BY
-          pb.total_hands ASC,
-          pb.id ASC
+      ORDER BY
+  pb.total_hands ASC,
+  RAND()
 
         LIMIT 1
         FOR UPDATE

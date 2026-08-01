@@ -29,4 +29,10 @@ router.get(
   controller.getTableState,
 );
 
+router.post(
+  "/table/:tableId/exit",
+  requireAuth,
+  controller.exitTable,
+);
+
 module.exports = router;
