@@ -6,6 +6,12 @@ const {
   getUserReferralSummary,
 } = require("../services/auth.service");
 
+const {
+  requestPasswordResetOtp,
+  verifyPasswordResetOtp,
+  resetPasswordWithToken,
+} = require("../services/password-reset.service");
+
 /* ==========================
    Create JWT Token
 ========================== */
@@ -231,27 +237,184 @@ async function me(req, res, next) {
   }
 }
 
-async function referralSummary(
+async function referralSummary(req, res, next) {
+  try {
+    const summary = await getUserReferralSummary(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+
+      message: "Referral summary loaded successfully.",
+
+      data: {
+        referral: summary,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+/* ==========================
+   Request Password Reset OTP
+========================== */
+
+async function requestForgotPasswordOtp(
   req,
   res,
-  next
+  next,
 ) {
   try {
-    const summary =
-      await getUserReferralSummary(
-        req.user.id
+    const email = String(
+      req.body.email || "",
+    )
+      .trim()
+      .toLowerCase();
+
+    const result =
+      await requestPasswordResetOtp(
+        email,
       );
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store",
+    );
 
     return res.status(200).json({
       success: true,
 
       message:
-        "Referral summary loaded successfully.",
+        "Emailটি registered হলে password reset OTP পাঠানো হয়েছে।",
 
       data: {
-        referral:
-          summary
-      }
+        requestId:
+          result.requestId,
+
+        maskedEmail:
+          result.maskedEmail,
+
+        expiresInSeconds:
+          result.expiresInSeconds,
+
+        resendAfterSeconds:
+          result.resendAfterSeconds,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
+   Verify Password Reset OTP
+========================== */
+
+async function verifyForgotPasswordOtp(
+  req,
+  res,
+  next,
+) {
+  try {
+    const result =
+      await verifyPasswordResetOtp({
+        requestId:
+          req.body.requestId,
+
+        otp:
+          req.body.otp,
+      });
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store",
+    );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "OTP verified successfully.",
+
+      data: {
+        requestId:
+          result.requestId,
+
+        resetToken:
+          result.resetToken,
+
+        expiresInSeconds:
+          result.expiresInSeconds,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
+   Reset Password
+========================== */
+
+async function resetForgottenPassword(
+  req,
+  res,
+  next,
+) {
+  try {
+    const newPassword = String(
+      req.body.newPassword || "",
+    );
+
+    const confirmPassword = String(
+      req.body.confirmPassword || "",
+    );
+
+    if (
+      !newPassword ||
+      !confirmPassword
+    ) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          "নতুন password এবং confirm password দিন।",
+      });
+    }
+
+    if (
+      newPassword !==
+      confirmPassword
+    ) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          "নতুন password দুটি মিলছে না।",
+      });
+    }
+
+    await resetPasswordWithToken({
+      requestId:
+        req.body.requestId,
+
+      resetToken:
+        req.body.resetToken,
+
+      newPassword,
+    });
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store",
+    );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Password reset successful. নতুন password দিয়ে login করুন।",
     });
   } catch (error) {
     next(error);
@@ -262,5 +425,8 @@ module.exports = {
   registerUser,
   login,
   me,
-  referralSummary
+  referralSummary,
+  requestForgotPasswordOtp,
+  verifyForgotPasswordOtp,
+  resetForgottenPassword,
 };

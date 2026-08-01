@@ -1,207 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
+    <head>
+        <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
 
-    <title>PMS ADDA | Login</title>
+        <title>PMS ADDA | Login</title>
 
-    <script src="../js/app-config.js"></script>
+        <script src="../js/app-config.js"></script>
 
-    <script src="../js/auth-guard.js"></script>
+        <script src="../js/auth-guard.js"></script>
 
-    <link
-        rel="stylesheet"
-        href="../css/common.css"
-    >
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/login.css"
-    >
-</head>
+        <link
+            rel="stylesheet"
+            href="../css/login.css">
+    </head>
 
-<body>
+    <body>
 
-    <div class="background-overlay"></div>
+        <div class="background-overlay"></div>
 
-    <main class="login-container">
+        <main class="login-container">
 
-        <!-- Left Panel -->
+            <!-- Left Panel -->
 
-        <section class="left-panel">
+            <section class="left-panel">
 
-            <img
-                src="../assets/logo/logo.png"
-                class="logo"
-                alt="PMS ADDA Logo"
-            >
+                <img
+                    src="../assets/logo/logo.png"
+                    class="logo"
+                    alt="PMS ADDA Logo">
 
-            <h1>PMS ADDA</h1>
+                <h1>PMS ADDA</h1>
 
-            <p>Premium Card Gaming Platform</p>
+                <p>Premium Card Gaming Platform</p>
 
-        </section>
+            </section>
 
-        <!-- Right Panel -->
+            <!-- Right Panel -->
 
-        <section class="right-panel">
+            <section class="right-panel">
 
-            <h2>Welcome Back</h2>
+                <h2>Welcome Back</h2>
 
-            <!-- Error Message -->
+                <!-- Error Message -->
 
-            <div
-                id="errorBox"
-                class="error-box"
-                role="alert"
-            ></div>
+                <div
+                    id="errorBox"
+                    class="error-box"
+                    role="alert"></div>
 
-            <!-- Login Form -->
+                <!-- Login Form -->
 
-            <form
-                id="loginForm"
-                novalidate
-            >
+                <form
+                    id="loginForm"
+                    novalidate>
 
-                <!-- Identity -->
+                    <!-- Identity -->
 
-                <div class="input-group">
+                    <div class="input-group">
 
-                    <label for="identity">
-                        Username, Email or Phone
-                    </label>
-
-                    <input
-                        type="text"
-                        id="identity"
-                        name="identity"
-                        placeholder="Enter username, email or phone"
-                        autocomplete="username"
-                        required
-                    >
-
-                </div>
-
-                <!-- Password -->
-
-                <div class="input-group">
-
-                    <label for="password">
-                        Password
-                    </label>
-
-                    <div class="password-box">
+                        <label for="identity">
+                            Username, Email or Phone
+                        </label>
 
                         <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="Enter password"
-                            autocomplete="current-password"
-                            required
-                        >
-
-                        <button
-                            type="button"
-                            id="togglePassword"
-                            aria-label="Show password"
-                        >
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
+                            type="text"
+                            id="identity"
+                            name="identity"
+                            placeholder="Enter username, email or phone"
+                            autocomplete="username"
+                            required>
 
                     </div>
 
+                    <!-- Password -->
+
+                    <div class="input-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <div class="password-box">
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Enter password"
+                                autocomplete="current-password"
+                                required>
+
+                            <button
+                                type="button"
+                                id="togglePassword"
+                                aria-label="Show password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Remember Me -->
+
+                    <div class="row">
+
+                        <label class="remember">
+
+                            <input
+                                type="checkbox"
+                                id="rememberMe">
+
+                            Remember Me
+
+                        </label>
+
+                        <a
+                            href="#"
+                            id="forgotPasswordLink"
+                            class="forgot-link">
+                            Forgot Password?
+                        </a>
+
+                    </div>
+
+                    <!-- Login Button -->
+
+                    <button
+                        type="submit"
+                        id="loginButton"
+                        class="login-btn">
+                        LOGIN
+                    </button>
+
+                </form>
+
+                <!-- Divider -->
+
+                <div class="divider">
+                    <span>OR</span>
                 </div>
 
-                <!-- Remember Me -->
-
-                <div class="row">
-
-                    <label class="remember">
-
-                        <input
-                            type="checkbox"
-                            id="rememberMe"
-                        >
-
-                        Remember Me
-
-                    </label>
-
-                    <a
-                        href="#"
-                        class="forgot-link"
-                    >
-                        Forgot Password?
-                    </a>
-
-                </div>
-
-                <!-- Login Button -->
+                <!-- Register Button -->
 
                 <button
-                    type="submit"
-                    id="loginButton"
-                    class="login-btn"
-                >
-                    LOGIN
+                    type="button"
+                    class="register-btn"
+                    id="registerButton">
+                    CREATE NEW ACCOUNT
                 </button>
 
-            </form>
+                <div class="login-footer">
+                    <p>© 2026 PMS ADDA</p>
+                </div>
 
-            <!-- Divider -->
+            </section>
 
-            <div class="divider">
-                <span>OR</span>
-            </div>
+        </main>
 
-            <!-- Register Button -->
+        <!-- Forgot Password Modal -->
 
+        <div
+            id="forgotPasswordModal"
+            class="password-reset-modal"
+            aria-hidden="true"
+            hidden>
             <button
                 type="button"
-                class="register-btn"
-                id="registerButton"
-            >
-                CREATE NEW ACCOUNT
-            </button>
+                class="password-reset-backdrop"
+                data-close-password-reset
+                aria-label="Close password reset"></button>
 
-            <div class="login-footer">
-                <p>© 2026 PMS ADDA</p>
-            </div>
+            <section
+                class="password-reset-panel"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="passwordResetTitle">
+                <button
+                    type="button"
+                    id="closePasswordReset"
+                    class="password-reset-close"
+                    aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
 
-        </section>
+                <div class="password-reset-brand">
+                    <div class="password-reset-icon">
+                        <i class="fa-solid fa-key"></i>
+                    </div>
 
-    </main>
+                    <div>
+                        <span>PMS ADDA SECURITY</span>
 
-    <!-- Toast -->
+                        <h2 id="passwordResetTitle">
+                            Reset Password
+                        </h2>
+                    </div>
+                </div>
 
-    <div
-        id="toast"
-        class="toast"
-        role="status"
-        aria-live="polite"
-    >
-        <span id="toastMessage"></span>
-    </div>
+                <!-- Step 1: Request OTP -->
 
-    <!-- Font Awesome -->
+                <div
+                    id="forgotRequestStep"
+                    class="password-reset-step is-active">
+                    <p class="password-reset-copy">
+                        আপনার registered email দিন।
+                        আমরা ৬ সংখ্যার OTP পাঠাব।
+                    </p>
 
-    <script
-        src="https://kit.fontawesome.com/a076d05399.js"
-        crossorigin="anonymous"
-    ></script>
+                    <form
+                        id="forgotRequestForm"
+                        novalidate>
+                        <div class="input-group">
+                            <label for="forgotEmail">
+                                Registered Email
+                            </label>
 
-    <!-- Login JavaScript -->
+                            <input
+                                type="email"
+                                id="forgotEmail"
+                                name="email"
+                                placeholder="Enter registered email"
+                                autocomplete="email"
+                                required>
+                        </div>
 
-    <script src="../js/login.js"></script>
+                        <button
+                            type="submit"
+                            id="forgotRequestButton"
+                            class="password-reset-submit">
+                            SEND OTP
+                        </button>
+                    </form>
+                </div>
 
-    <script>
+                <!-- Step 2: Verify OTP -->
+
+                <div
+                    id="forgotOtpStep"
+                    class="password-reset-step"
+                    hidden>
+                    <p class="password-reset-copy">
+                        OTP পাঠানো হয়েছে:
+
+                        <strong id="forgotMaskedEmail">
+                            your registered email
+                        </strong>
+                    </p>
+
+                    <form
+                        id="forgotOtpForm"
+                        novalidate>
+                        <div class="input-group">
+                            <label for="forgotOtp">
+                                6-digit OTP
+                            </label>
+
+                            <input
+                                type="text"
+                                id="forgotOtp"
+                                name="otp"
+                                class="password-reset-otp"
+                                placeholder="000000"
+                                inputmode="numeric"
+                                autocomplete="one-time-code"
+                                maxlength="6"
+                                required>
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="forgotVerifyButton"
+                            class="password-reset-submit">
+                            VERIFY OTP
+                        </button>
+                    </form>
+
+                    <div class="password-reset-resend">
+                        <span id="forgotOtpTimer">
+                            OTP expires in 10:00
+                        </span>
+
+                        <button
+                            type="button"
+                            id="forgotResendButton"
+                            disabled>
+                            Resend OTP
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: New Password -->
+
+                <div
+                    id="forgotResetStep"
+                    class="password-reset-step"
+                    hidden>
+                    <p class="password-reset-copy">
+                        নতুন password কমপক্ষে ৮ অক্ষরের দিন।
+                    </p>
+
+                    <form
+                        id="forgotResetForm"
+                        novalidate>
+                        <div class="input-group">
+                            <label for="forgotNewPassword">
+                                New Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="forgotNewPassword"
+                                name="newPassword"
+                                placeholder="Enter new password"
+                                autocomplete="new-password"
+                                minlength="8"
+                                maxlength="72"
+                                required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="forgotConfirmPassword">
+                                Confirm Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="forgotConfirmPassword"
+                                name="confirmPassword"
+                                placeholder="Confirm new password"
+                                autocomplete="new-password"
+                                minlength="8"
+                                maxlength="72"
+                                required>
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="forgotResetButton"
+                            class="password-reset-submit">
+                            RESET PASSWORD
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <!-- Toast -->
+
+        <div
+            id="toast"
+            class="toast"
+            role="status"
+            aria-live="polite">
+            <span id="toastMessage"></span>
+        </div>
+
+        <!-- Font Awesome -->
+
+        <script
+            src="https://kit.fontawesome.com/a076d05399.js"
+            crossorigin="anonymous"></script>
+
+        <!-- Login JavaScript -->
+
+        <script src="../js/login.js"></script>
+
+        <script>
         document
             .getElementById("registerButton")
             .addEventListener("click", () => {
@@ -209,6 +383,6 @@
             });
     </script>
 
-</body>
+    </body>
 
 </html>
