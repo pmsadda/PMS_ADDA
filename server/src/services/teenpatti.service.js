@@ -364,6 +364,8 @@ async function getTableMembers(connection, tableId, options = {}) {
         u.uid,
         u.full_name,
         u.username,
+        u.account_status,
+        NULL AS bot_status,
         NULL AS bot_code,
         NULL AS bot_name,
         NULL AS avatar_url,
@@ -407,6 +409,8 @@ async function getTableMembers(connection, tableId, options = {}) {
         NULL AS uid,
         NULL AS full_name,
         NULL AS username,
+        NULL AS account_status,
+        b.status AS bot_status,
         b.bot_code,
         b.bot_name,
         b.avatar_url,
@@ -464,6 +468,10 @@ async function getTableMembers(connection, tableId, options = {}) {
           : row.full_name || row.username || row.uid || "Player",
 
       avatarUrl: row.avatar_url || null,
+
+      accountStatus: row.account_status || null,
+
+      botStatus: row.bot_status || null,
 
       walletBalance: parseMoney(row.wallet_balance),
     }))
@@ -3507,7 +3515,6 @@ async function debitTeenPattiActionAmount(
             wallet_balance - ?
 
         WHERE id = ?
-          AND status = 'active'
           AND wallet_balance >= ?
         `,
       [validAmount, botId, validAmount],
@@ -4187,14 +4194,16 @@ async function creditTeenPattiWinner(
       `
         UPDATE users
 
-        SET
-          wallet_balance =
-            wallet_balance + ?
+           SET
+        wallet_balance =
+          wallet_balance + ?
 
-        WHERE id = ?
-          AND account_status = 'active'
-        `,
-      [validPrizeAmount, winner.userId],
+      WHERE id = ?
+      `,
+      [
+        validPrizeAmount,
+        winner.userId,
+      ],
     );
 
     assertCondition(
@@ -5883,6 +5892,104 @@ function decideTeenPattiBotAction(bot, hand, activePlayerCount) {
   };
 }
 
+function shouldBotRequestShow(
+  bot,
+  hand,
+  activePlayerCount,
+  decision,
+) {
+  if (
+    Number(activePlayerCount) !== 2 ||
+    bot.isSeen !== true ||
+    decision.actionType ===
+      ACTION_TYPE.PACK
+  ) {
+    return false;
+  }
+
+  const evaluation =
+    decision.evaluation ||
+    evaluateHand(bot.cards);
+
+  const bootAmount =
+    Math.max(
+      0.01,
+      parseMoney(
+        hand.boot_amount,
+      ),
+    );
+
+  const potAmount =
+    parseMoney(
+      hand.pot_amount,
+    );
+
+  const potBootRatio =
+    potAmount / bootAmount;
+
+  /*
+   * Round অযথা দীর্ঘ হবে না।
+   * Pot boot-এর 12 গুণ হলে bot Show করবে।
+   */
+  if (potBootRatio >= 12) {
+    return true;
+  }
+
+  const showChanceByCategory = {
+    1: 18,
+    2: 42,
+    3: 55,
+    4: 70,
+    5: 85,
+    6: 95,
+  };
+
+  let showChance =
+    showChanceByCategory[
+      Number(
+        evaluation.category,
+      )
+    ] || 18;
+
+  /*
+   * Pot বাড়ার সঙ্গে Show chance বাড়বে।
+   */
+  showChance += Math.min(
+    25,
+    Math.floor(
+      potBootRatio * 2,
+    ),
+  );
+
+  if (
+    bot.playingStyle ===
+    "aggressive"
+  ) {
+    showChance += 5;
+  }
+
+  if (
+    bot.playingStyle ===
+    "defensive"
+  ) {
+    showChance -= 5;
+  }
+
+  showChance =
+    Math.min(
+      98,
+      Math.max(
+        10,
+        showChance,
+      ),
+    );
+
+  return (
+    createSecurePercentage() <
+    showChance
+  );
+}
+
 /* =========================================================
    SERVER BOT ACTION EXECUTION
 ========================================================= */
@@ -6041,6 +6148,292 @@ async function performTeenPattiBotAction(
 
       bot.isSeen = true;
     }
+
+    /*
+ * =====================================
+ * BOT AUTOMATIC SHOW
+ * =====================================
+ *
+ * Bot অন্য player-এর card দেখে
+ * decision নেয় না। শুধু নিজের hand,
+ * pot size এবং secure randomness ব্যবহার করে।
+ */
+if (
+  shouldBotRequestShow(
+    bot,
+    hand,
+    activePlayers.length,
+    decision,
+  )
+) {
+  const currentTableBet =
+    parseMoney(
+      hand.current_bet,
+    );
+
+  const requestedShowAmount =
+    parseMoney(
+      currentTableBet * 2,
+    );
+
+  const potRule =
+    getPotLimitedContribution(
+      hand,
+      requestedShowAmount,
+    );
+
+  assertCondition(
+    potRule.contributionAmount > 0,
+    "Teen Patti pot limit has already been reached.",
+    409,
+    "POT_LIMIT_REACHED",
+  );
+
+  const showAmount =
+    potRule.contributionAmount;
+
+  const balanceBefore =
+    parseMoney(
+      bot.endingBalance,
+    );
+
+  /*
+   * Show amount দিতে না পারলে bot
+   * নিচের normal Pack flow ব্যবহার করবে।
+   */
+  if (
+    balanceBefore >=
+    showAmount
+  ) {
+    const balanceAfter =
+      await debitTeenPattiActionAmount(
+        connection,
+        {
+          playerType:
+            PLAYER_TYPE.BOT,
+
+          userId: null,
+          botId: bot.botId,
+
+          amount:
+            showAmount,
+
+          balanceBefore,
+
+          tableId:
+            validTableId,
+
+          handId:
+            Number(hand.id),
+
+          roundNumber:
+            Number(
+              hand.round_number,
+            ),
+
+          actionType:
+            ACTION_TYPE.SHOW,
+        },
+      );
+
+    const potAfter =
+      parseMoney(
+        parseMoney(
+          hand.pot_amount,
+        ) + showAmount,
+      );
+
+    const totalContributionAfter =
+      parseMoney(
+        bot.totalContribution +
+        showAmount,
+      );
+
+    await connection.query(
+      `
+        UPDATE teen_patti_hand_players
+
+        SET
+          is_seen = 1,
+          ending_balance = ?,
+          current_bet = ?,
+          total_contribution = ?,
+          last_action = 'show'
+
+        WHERE id = ?
+          AND hand_id = ?
+          AND player_status = 'active'
+      `,
+      [
+        balanceAfter,
+        showAmount,
+        totalContributionAfter,
+
+        bot.handPlayerId,
+        hand.id,
+      ],
+    );
+
+    await connection.query(
+      `
+        UPDATE table_bots
+
+        SET
+          is_seen = 1,
+          current_bet = ?
+
+        WHERE id = ?
+          AND table_id = ?
+          AND is_active = 1
+      `,
+      [
+        showAmount,
+        bot.tableBotId,
+        validTableId,
+      ],
+    );
+
+    const nextSequence =
+      await getNextActionSequence(
+        connection,
+        Number(hand.id),
+      );
+
+    await connection.query(
+      `
+        INSERT INTO teen_patti_hand_actions (
+          hand_id,
+          hand_player_id,
+          action_sequence,
+          action_type,
+          requested_amount,
+          contribution_amount,
+          balance_before,
+          balance_after,
+          current_bet_after,
+          pot_after,
+          is_automatic
+        )
+        VALUES (
+          ?,
+          ?,
+          ?,
+          'show',
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          1
+        )
+      `,
+      [
+        hand.id,
+        bot.handPlayerId,
+        nextSequence,
+
+        requestedShowAmount,
+        showAmount,
+
+        balanceBefore,
+        balanceAfter,
+
+        currentTableBet,
+        potAfter,
+      ],
+    );
+
+    await connection.query(
+      `
+        UPDATE teen_patti_hands
+
+        SET
+          hand_status = 'showdown',
+          current_turn_hand_player_id =
+            NULL,
+          pot_amount = ?,
+          action_started_at = NULL,
+          action_expires_at = NULL,
+          state_version =
+            state_version + 1
+
+        WHERE id = ?
+          AND hand_status = 'playing'
+      `,
+      [
+        potAfter,
+        hand.id,
+      ],
+    );
+
+    await connection.query(
+      `
+        UPDATE game_tables
+
+        SET
+          pot_amount = ?
+
+        WHERE id = ?
+          AND game_status = 'playing'
+      `,
+      [
+        potAfter,
+        validTableId,
+      ],
+    );
+
+    const settlement =
+      await settleTeenPattiHandWithinTransaction(
+        connection,
+        validTableId,
+        {
+          reason:
+            "showdown",
+        },
+      );
+
+    return {
+      ignored: false,
+
+      tableId:
+        validTableId,
+
+      handId:
+        Number(hand.id),
+
+      handPlayerId:
+        bot.handPlayerId,
+
+      playerType:
+        PLAYER_TYPE.BOT,
+
+      actionType:
+        ACTION_TYPE.SHOW,
+
+      decisionReason:
+        "fair_automatic_show",
+
+      contributionAmount:
+        showAmount,
+
+      balanceBefore,
+      balanceAfter,
+
+      potAfter,
+
+      potLimit:
+        potRule.potLimit,
+
+      handCompleted: true,
+
+      nextTurnHandPlayerId:
+        null,
+
+      settlement,
+    };
+  }
+}
 
     /*
      * =====================================
@@ -6684,7 +7077,25 @@ async function requestTeenPattiSideShow(tableId, requestingUserId) {
 
     const currentTableBet = parseMoney(hand.current_bet);
 
-    const sideShowAmount = parseMoney(currentTableBet * 2);
+    const requestedSideShowAmount = parseMoney(currentTableBet * 2);
+
+    const potRule = getPotLimitedContribution(hand, requestedSideShowAmount);
+
+    assertCondition(
+      potRule.potLimit > 0,
+      "Teen Patti pot limit is invalid.",
+      500,
+      "INVALID_POT_LIMIT",
+    );
+
+    assertCondition(
+      potRule.contributionAmount > 0,
+      "Teen Patti pot limit has already been reached.",
+      409,
+      "POT_LIMIT_REACHED",
+    );
+
+    const sideShowAmount = potRule.contributionAmount;
 
     const balanceBefore = parseMoney(requester.endingBalance);
 
@@ -6787,12 +7198,13 @@ async function requestTeenPattiSideShow(tableId, requestingUserId) {
             0
           )
           `,
+
       [
         hand.id,
         requester.handPlayerId,
         nextSequence,
 
-        sideShowAmount,
+        requestedSideShowAmount,
         sideShowAmount,
 
         balanceBefore,
@@ -6804,6 +7216,75 @@ async function requestTeenPattiSideShow(tableId, requestingUserId) {
     );
 
     const expiresAt = createDateAfterSeconds(SIDE_SHOW_SECONDS);
+
+    /*
+     * Side Show contribution দিয়েই pot limit
+     * পূর্ণ হলে request pending রাখা হবে না।
+     * সব active card compare করে match settle হবে।
+     */
+    if (potRule.reachesPotLimit) {
+      await connection.query(
+        `
+      UPDATE teen_patti_hands
+
+      SET
+        hand_status = 'showdown',
+        current_turn_hand_player_id = NULL,
+        pot_amount = ?,
+        action_started_at = NULL,
+        action_expires_at = NULL,
+        state_version =
+          state_version + 1
+
+      WHERE id = ?
+        AND hand_status = 'playing'
+    `,
+        [potAfter, hand.id],
+      );
+
+      await connection.query(
+        `
+      UPDATE game_tables
+
+      SET
+        pot_amount = ?
+
+      WHERE id = ?
+        AND game_status = 'playing'
+    `,
+        [potAfter, validTableId],
+      );
+
+      const settlement = await settleTeenPattiHandWithinTransaction(
+        connection,
+        validTableId,
+        {
+          reason: "showdown",
+        },
+      );
+
+      return {
+        tableId: validTableId,
+
+        handId: Number(hand.id),
+
+        requesterHandPlayerId: requester.handPlayerId,
+
+        contributionAmount: sideShowAmount,
+
+        balanceBefore,
+        balanceAfter,
+
+        potAfter,
+        potLimit: potRule.potLimit,
+
+        handCompleted: true,
+
+        requestStatus: "not_created",
+
+        settlement,
+      };
+    }
 
     const [insertResult] = await connection.query(
       `
@@ -6887,6 +7368,12 @@ async function requestTeenPattiSideShow(tableId, requestingUserId) {
       responseSeconds: SIDE_SHOW_SECONDS,
 
       requestStatus: "pending",
+
+      handCompleted: false,
+
+      potLimit: potRule.potLimit,
+
+      settlement: null,
     };
   });
 
@@ -6895,9 +7382,18 @@ async function requestTeenPattiSideShow(tableId, requestingUserId) {
   return {
     success: true,
 
-    message: "Side Show request sent successfully.",
+    message:
+      requestResult.handCompleted === true
+        ? "Pot limit reached. Showdown completed."
+        : "Side Show request sent successfully.",
 
-    sideShow: requestResult,
+    handCompleted: requestResult.handCompleted === true,
+
+    potLimit: requestResult.potLimit || null,
+
+    settlement: requestResult.settlement || null,
+
+    sideShow: requestResult.handCompleted === true ? null : requestResult,
 
     handState,
   };
@@ -8018,96 +8514,242 @@ async function prepareNextTeenPattiHand(tableId, expectedCompletedHandId) {
       [latestHand.id],
     );
 
-    const members = await getActiveTableMembers(connection, validTableId, {
+    let members = await getActiveTableMembers(connection, validTableId, {
       lock: true,
     });
 
-    const counts = countMemberTypes(members);
-
-    if (counts.total < MIN_PLAYERS) {
-      return {
-        ready: false,
-        ignored: false,
-
-        reason: "not_enough_players",
-
-        counts,
-      };
-    }
-
-    if (counts.total > MAX_PLAYERS) {
-      return {
-        ready: false,
-        ignored: false,
-
-        reason: "too_many_players",
-
-        counts,
-      };
-    }
-
-    if (counts.real < 1) {
-      return {
-        ready: false,
-        ignored: false,
-
-        reason: "real_player_required",
-
-        counts,
-      };
-    }
-
-    const expectedBotCount = counts.real < MAX_PLAYERS ? 1 : 0;
-
-    if (counts.bots !== expectedBotCount) {
-      return {
-        ready: false,
-        ignored: false,
-
-        reason: "invalid_bot_count",
-
-        counts,
-        expectedBotCount,
-      };
-    }
-
     const bootAmount = parseMoney(table.boot_amount);
 
-    const insufficientPlayers = members
-      .filter((member) => parseMoney(member.walletBalance) < bootAmount)
-      .map((member) => ({
-        playerType: member.playerType,
+    /*
+     * Balance কম, blocked real player এবং
+     * disabled bot নতুন hand-এ থাকবে না।
+     */
+    const ineligibleMembers = members.filter((member) => {
+      const hasEnoughBalance = parseMoney(member.walletBalance) >= bootAmount;
 
-        userId: member.userId,
+      if (member.playerType === PLAYER_TYPE.REAL) {
+        return member.accountStatus !== "active" || !hasEnoughBalance;
+      }
 
-        botId: member.botId,
+      return member.botStatus !== "active" || !hasEnoughBalance;
+    });
 
-        seatNo: member.seatNo,
+    for (const member of ineligibleMembers) {
+      if (member.playerType === PLAYER_TYPE.REAL) {
+        await connection.query(
+          `
+        UPDATE table_players
 
-        name: member.name,
+        SET
+          seat_no = NULL,
+          is_dealer = 0,
+          is_active = 0,
+          is_seen = 0,
+          is_packed = 1,
+          cards = NULL,
+          current_bet = 0.00,
+          disconnected_at = NULL,
+          left_at = COALESCE(
+            left_at,
+            NOW()
+          )
 
-        walletBalance: parseMoney(member.walletBalance),
+        WHERE id = ?
+          AND table_id = ?
+          AND is_active = 1
+      `,
+          [member.tablePlayerId, validTableId],
+        );
+      } else {
+        await connection.query(
+          `
+        UPDATE table_bots
 
-        requiredBalance: bootAmount,
-      }));
+        SET
+          seat_no = NULL,
+          is_dealer = 0,
+          is_active = 0,
+          is_seen = 0,
+          is_packed = 1,
+          cards = NULL,
+          current_bet = 0.00
+
+        WHERE id = ?
+          AND table_id = ?
+          AND is_active = 1
+      `,
+          [member.tableBotId, validTableId],
+        );
+      }
+    }
+
+    members = await getActiveTableMembers(connection, validTableId, {
+      lock: true,
+    });
+
+    let counts = countMemberTypes(members);
 
     /*
-     * Balance কম player-এর membership
-     * delete/deactivate করা হচ্ছে না।
-     * এতে পুরোনো hand history এবং seat
-     * identity নিরাপদ থাকবে।
+     * কোনো eligible real player না থাকলে
+     * bot-only table বন্ধ হবে।
      */
-    if (insufficientPlayers.length > 0) {
+    if (counts.real === 0) {
       await connection.query(
         `
-            UPDATE game_tables
+      UPDATE table_bots
 
-            SET
-              game_status = 'waiting',
-              pot_amount = 0.00
+      SET
+        seat_no = NULL,
+        is_dealer = 0,
+        is_active = 0,
+        is_seen = 0,
+        is_packed = 1,
+        cards = NULL,
+        current_bet = 0.00
 
-            WHERE id = ?
-            `,
+      WHERE table_id = ?
+        AND is_active = 1
+    `,
+        [validTableId],
+      );
+
+      await connection.query(
+        `
+      UPDATE game_tables
+
+      SET
+        game_status = 'finished',
+        pot_amount = 0.00
+
+      WHERE id = ?
+    `,
+        [validTableId],
+      );
+
+      await updateRoomPlayerCount(connection, Number(table.room_id));
+
+      return {
+        ready: false,
+        ignored: false,
+
+        reason: "no_eligible_real_player",
+
+        bootAmount,
+
+        removedMembers: ineligibleMembers,
+      };
+    }
+
+    /*
+     * ৫ real player হলে bot থাকবে না।
+     */
+    if (counts.real === MAX_PLAYERS && counts.bots > 0) {
+      await connection.query(
+        `
+      UPDATE table_bots
+
+      SET
+        seat_no = NULL,
+        is_dealer = 0,
+        is_active = 0,
+        is_seen = 0,
+        is_packed = 1,
+        cards = NULL,
+        current_bet = 0.00
+
+      WHERE table_id = ?
+        AND is_active = 1
+    `,
+        [validTableId],
+      );
+
+      members = await getActiveTableMembers(connection, validTableId, {
+        lock: true,
+      });
+
+      counts = countMemberTypes(members);
+    }
+
+    /*
+     * Defensive cleanup:
+     * ১–৪ real-এর সঙ্গে সর্বোচ্চ একটি bot।
+     */
+    if (counts.real < MAX_PLAYERS && counts.bots > 1) {
+      const extraBots = members
+        .filter((member) => member.playerType === PLAYER_TYPE.BOT)
+        .slice(1);
+
+      for (const extraBot of extraBots) {
+        await connection.query(
+          `
+        UPDATE table_bots
+
+        SET
+          seat_no = NULL,
+          is_dealer = 0,
+          is_active = 0,
+          is_seen = 0,
+          is_packed = 1,
+          cards = NULL,
+          current_bet = 0.00
+
+        WHERE id = ?
+          AND table_id = ?
+          AND is_active = 1
+      `,
+          [extraBot.tableBotId, validTableId],
+        );
+      }
+
+      members = await getActiveTableMembers(connection, validTableId, {
+        lock: true,
+      });
+
+      counts = countMemberTypes(members);
+    }
+
+    /*
+     * ১–৪ real player থাকলে একটি funded
+     * active bot যোগ হবে।
+     */
+    if (counts.real < MAX_PLAYERS && counts.bots === 0) {
+      const availableBot = await selectAvailableBot(
+        connection,
+        validTableId,
+        bootAmount,
+      );
+
+      if (availableBot) {
+        await addSingleBotToTable(connection, table, members);
+
+        members = await getActiveTableMembers(connection, validTableId, {
+          lock: true,
+        });
+
+        counts = countMemberTypes(members);
+      }
+    }
+
+    await updateRoomPlayerCount(connection, Number(table.room_id));
+
+    /*
+     * Funded bot না পাওয়া গেলে table waiting
+     * থাকবে; invalid hand শুরু হবে না।
+     */
+    if (
+      counts.total < MIN_PLAYERS ||
+      (counts.real < MAX_PLAYERS && counts.bots !== 1)
+    ) {
+      await connection.query(
+        `
+      UPDATE game_tables
+
+      SET
+        game_status = 'waiting',
+        pot_amount = 0.00
+
+      WHERE id = ?
+    `,
         [validTableId],
       );
 
@@ -8115,13 +8757,28 @@ async function prepareNextTeenPattiHand(tableId, expectedCompletedHandId) {
         ready: false,
         ignored: false,
 
-        reason: "insufficient_player_balance",
+        reason: "waiting_for_eligible_players",
 
         bootAmount,
+        counts,
 
-        insufficientPlayers,
+        removedMembers: ineligibleMembers,
       };
     }
+
+    assertCondition(
+      counts.total <= MAX_PLAYERS,
+      "Teen Patti table exceeds the five-player limit.",
+      409,
+      "TABLE_PLAYER_LIMIT_EXCEEDED",
+    );
+
+    assertCondition(
+      counts.real === MAX_PLAYERS ? counts.bots === 0 : counts.bots === 1,
+      "Teen Patti bot count is invalid.",
+      409,
+      "INVALID_FINAL_BOT_COUNT",
+    );
 
     const requestingPlayer = members.find(
       (member) => member.playerType === PLAYER_TYPE.REAL,
@@ -8133,7 +8790,6 @@ async function prepareNextTeenPattiHand(tableId, expectedCompletedHandId) {
       409,
       "REAL_PLAYER_REQUIRED",
     );
-
     await connection.query(
       `
           UPDATE table_players

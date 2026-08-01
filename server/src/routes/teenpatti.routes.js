@@ -34,4 +34,10 @@ router.get(
   teenPattiController.getTableState,
 );
 
+router.post(
+  "/table/:tableId/leave",
+  requireAuth,
+  teenPattiController.leaveTable,
+);
+
 module.exports = router;

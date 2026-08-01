@@ -109,4 +109,5 @@ async function leaveTable(request, response) {
 module.exports = {
   joinMatchmaking,
   getTableState,
+  leaveTable,
 };

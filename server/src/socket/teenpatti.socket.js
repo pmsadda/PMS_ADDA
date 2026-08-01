@@ -98,6 +98,43 @@ function getTableRoomName(tableId) {
   return `teenpatti:table:${tableId}`;
 }
 
+function hasAnotherConnectedUserSocket(
+  namespace,
+  tableId,
+  userId,
+  disconnectedSocketId,
+) {
+  const roomName = getTableRoomName(tableId);
+
+  const socketIds = namespace.adapter.rooms.get(roomName);
+
+  if (!socketIds) {
+    return false;
+  }
+
+  for (const socketId of socketIds) {
+    if (socketId === disconnectedSocketId) {
+      continue;
+    }
+
+    const activeSocket = namespace.sockets.get(socketId);
+
+    if (!activeSocket) {
+      continue;
+    }
+
+    const sameUser = Number(activeSocket.user?.id) === Number(userId);
+
+    const sameTable = Number(activeSocket.data?.tableId) === Number(tableId);
+
+    if (sameUser && sameTable) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function getErrorPayload(error) {
   return {
     success: false,
@@ -1260,8 +1297,8 @@ function initializeTeenPattiSocket(io) {
 
         const result = await teenPattiService.respondTeenPattiSideShow(
           tableId,
-          socket.user.id,
           requestId,
+          socket.user.id,
           decision,
         );
 
@@ -1410,7 +1447,7 @@ function initializeTeenPattiSocket(io) {
 
         const graceSeconds = Math.max(
           1,
-          Number(result?.reconnectGraceSeconds) || 20,
+          Number(result?.graceSeconds || result?.reconnectGraceSeconds) || 20,
         );
 
         const disconnectTimerKey = `${tableId}:${userId}`;
@@ -1502,6 +1539,19 @@ function initializeTeenPattiSocket(io) {
       }
     });
   }); // namespace connection বন্ধ
+
+  /*
+   * একই user-এর অন্য active socket থাকলে
+   * এই পুরোনো socket disconnect-এর কারণে
+   * player disconnected/forfeit হবে না।
+   */
+  if (hasAnotherConnectedUserSocket(namespace, tableId, userId, socket.id)) {
+    console.log(
+      `Teen Patti old socket ignored: user=${userId}, table=${tableId}`,
+    );
+
+    return;
+  }
 
   console.log("✅ New Teen Patti Socket.IO initialized");
 }

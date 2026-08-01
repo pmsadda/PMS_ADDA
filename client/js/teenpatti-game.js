@@ -1302,7 +1302,8 @@
 
     STATE.myCards = Array.isArray(handState.myCards) ? handState.myCards : [];
 
-    STATE.pendingSideShow = handState.pendingSideShow || null;
+    STATE.pendingSideShow =
+      handState.sideShow || handState.pendingSideShow || null;
 
     const newHandId =
       Number(STATE.hand?.id) || Number(STATE.hand?.handId) || null;
@@ -1566,6 +1567,24 @@
 
       STATE.pendingSideShow = null;
       hideSideShowModal();
+
+      await requestLatestHandState();
+    });
+
+    STATE.socket.on("side-show:resolved", async () => {
+      STATE.pendingSideShow = null;
+
+      hideSideShowModal();
+
+      await requestLatestHandState();
+    });
+
+    STATE.socket.on("side-show:expired", async () => {
+      STATE.pendingSideShow = null;
+
+      hideSideShowModal();
+
+      showToast("Side Show request expired.", "info");
 
       await requestLatestHandState();
     });
@@ -2636,8 +2655,14 @@
       return;
     }
 
-    if (response.data?.pendingSideShow) {
-      STATE.pendingSideShow = response.data.pendingSideShow;
+    const pendingSideShow =
+      response.data?.sideShow ||
+      response.data?.pendingSideShow ||
+      response.data?.handState?.sideShow ||
+      null;
+
+    if (pendingSideShow && pendingSideShow.requestStatus === "pending") {
+      STATE.pendingSideShow = pendingSideShow;
     }
 
     renderActionButtons();
