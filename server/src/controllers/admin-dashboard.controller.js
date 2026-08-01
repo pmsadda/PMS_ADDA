@@ -41,7 +41,29 @@ async function updateServiceCharges(req, res, next) {
   }
 }
 
+async function updateReferralSettings(req, res, next) {
+  try {
+    const referralSettings = await adminDashboardService.updateReferralSettings(
+      req.body,
+      req.user?.id || null,
+    );
+
+    return res.status(200).json({
+      success: true,
+
+      message: "Referral settings updated successfully.",
+
+      data: {
+        referralSettings,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getDashboardStats,
   updateServiceCharges,
+  updateReferralSettings
 };

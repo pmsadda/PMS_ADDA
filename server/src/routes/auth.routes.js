@@ -1,13 +1,19 @@
 const express = require("express");
+
 const {
     registerUser,
     login,
-    me
-} = require("../controllers/auth.controller");
+    me,
+    referralSummary
+} = require(
+    "../controllers/auth.controller"
+);
 
 const {
     requireAuth
-} = require("../middleware/auth.middleware");
+} = require(
+    "../middleware/auth.middleware"
+);
 
 const router = express.Router();
 
@@ -25,10 +31,20 @@ router.post(
     login
 );
 
+/* Current User */
+
 router.get(
     "/me",
     requireAuth,
     me
+);
+
+/* Referral Summary */
+
+router.get(
+    "/referral-summary",
+    requireAuth,
+    referralSummary
 );
 
 module.exports = router;

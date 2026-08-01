@@ -426,8 +426,7 @@ async function getDashboardStats() {
        ROOM STATISTICS
     ========================= */
 
-    const [roomRows] =
-  await connection.query(`
+    const [roomRows] = await connection.query(`
     SELECT
       COALESCE(
         SUM(room_group.total_tables),
@@ -516,8 +515,7 @@ async function getDashboardStats() {
        BOT STATISTICS
     ========================= */
 
-    const [botRows] =
-  await connection.query(`
+    const [botRows] = await connection.query(`
     SELECT
       COALESCE(
         SUM(bot_group.total_bots),
@@ -593,8 +591,7 @@ async function getDashboardStats() {
     ) AS bot_group
   `);
 
-   const [botActivityRows] =
-  await connection.query(`
+    const [botActivityRows] = await connection.query(`
     SELECT
       COALESCE(
         SUM(activity.bot_games),
@@ -763,6 +760,72 @@ async function getDashboardStats() {
     FROM game_settings
   `);
 
+    const [referralSettingRows] = await connection.query(
+      `
+    SELECT
+      is_enabled,
+      referrer_bonus,
+      referred_user_bonus,
+      minimum_first_deposit,
+      updated_at
+    FROM referral_settings
+    WHERE id = 1
+    LIMIT 1
+    `,
+    );
+
+    const [referralStatsRows] = await connection.query(
+      `
+    SELECT
+      COUNT(*) AS total_referrals,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN status = 'pending'
+            THEN 1
+            ELSE 0
+          END
+        ),
+        0
+      ) AS pending_referrals,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN status = 'rewarded'
+            THEN 1
+            ELSE 0
+          END
+        ),
+        0
+      ) AS rewarded_referrals,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN status = 'cancelled'
+            THEN 1
+            ELSE 0
+          END
+        ),
+        0
+      ) AS cancelled_referrals,
+
+      COALESCE(
+        SUM(referrer_bonus_amount),
+        0
+      ) AS total_referrer_bonus,
+
+      COALESCE(
+        SUM(referred_bonus_amount),
+        0
+      ) AS total_referred_bonus
+
+    FROM user_referrals
+    `,
+    );
+
     const userStats = userRows[0] || {};
 
     const depositStats = depositRows[0] || {};
@@ -794,10 +857,13 @@ async function getDashboardStats() {
 
     const botStats = botRows[0] || {};
 
-    const botActivityStats =
-  botActivityRows[0] || {};
+    const botActivityStats = botActivityRows[0] || {};
 
     const chargeStats = chargeRows[0] || {};
+
+    const referralSettings = referralSettingRows[0] || {};
+
+    const referralStats = referralStatsRows[0] || {};
 
     return {
       users: {
@@ -907,50 +973,28 @@ async function getDashboardStats() {
       },
 
       bots: {
-  total: Number(
-    botStats.total_bots || 0
-  ),
+        total: Number(botStats.total_bots || 0),
 
-  enabled: Number(
-    botStats.enabled_bots || 0
-  ),
+        enabled: Number(botStats.enabled_bots || 0),
 
-  active: Number(
-    botStats.enabled_bots || 0
-  ),
+        active: Number(botStats.enabled_bots || 0),
 
-  totalBalance: Number(
-    botStats.total_bot_balance || 0
-  ),
+        totalBalance: Number(botStats.total_bot_balance || 0),
 
-  gamesPlayed: Number(
-    botActivityStats.bot_games || 0
-  ),
+        gamesPlayed: Number(botActivityStats.bot_games || 0),
 
-  winRounds: Number(
-    botActivityStats.bot_wins || 0
-  ),
+        winRounds: Number(botActivityStats.bot_wins || 0),
 
-  revenue: Number(
-    botActivityStats.bot_revenue || 0
-  ),
+        revenue: Number(botActivityStats.bot_revenue || 0),
 
-  totalWin: Number(
-    botActivityStats.bot_revenue || 0
-  ),
+        totalWin: Number(botActivityStats.bot_revenue || 0),
 
-  loss: Number(
-    botActivityStats.bot_loss || 0
-  ),
+        loss: Number(botActivityStats.bot_loss || 0),
 
-  netResult:
-    Number(
-      botActivityStats.bot_revenue || 0
-    ) -
-    Number(
-      botActivityStats.bot_loss || 0
-    )
-},
+        netResult:
+          Number(botActivityStats.bot_revenue || 0) -
+          Number(botActivityStats.bot_loss || 0),
+      },
 
       serviceCharges: {
         teenPatti: Number(chargeStats.teen_patti_charge || 5),
@@ -958,6 +1002,34 @@ async function getDashboardStats() {
         poker: Number(chargeStats.poker_charge || 5),
 
         ludo: Number(chargeStats.ludo_charge || 10),
+      },
+
+      referralSettings: {
+        isEnabled: Boolean(referralSettings.is_enabled),
+
+        referrerBonus: Number(referralSettings.referrer_bonus || 0),
+
+        referredUserBonus: Number(referralSettings.referred_user_bonus || 0),
+
+        minimumFirstDeposit: Number(
+          referralSettings.minimum_first_deposit || 0,
+        ),
+
+        updatedAt: referralSettings.updated_at || null,
+      },
+
+      referrals: {
+        total: Number(referralStats.total_referrals || 0),
+
+        pending: Number(referralStats.pending_referrals || 0),
+
+        rewarded: Number(referralStats.rewarded_referrals || 0),
+
+        cancelled: Number(referralStats.cancelled_referrals || 0),
+
+        totalReferrerBonus: Number(referralStats.total_referrer_bonus || 0),
+
+        totalReferredBonus: Number(referralStats.total_referred_bonus || 0),
       },
 
       recentDeposits: recentDepositRows.map((request) => ({
@@ -1074,7 +1146,98 @@ async function updateServiceCharges(serviceCharges, adminId = null) {
   }
 }
 
+function validateReferralMoney(value, fieldName) {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount) || amount < 0 || amount > 1000000) {
+    const error = new Error(`${fieldName} must be between 0 and 1000000.`);
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return Number(amount.toFixed(2));
+}
+
+function normalizeReferralEnabled(value) {
+  return (
+    value === true ||
+    value === 1 ||
+    value === "1" ||
+    String(value).toLowerCase() === "true"
+  );
+}
+
+async function updateReferralSettings(settings, adminId = null) {
+  const values = {
+    isEnabled: normalizeReferralEnabled(settings?.isEnabled),
+
+    referrerBonus: validateReferralMoney(
+      settings?.referrerBonus,
+      "Referrer bonus",
+    ),
+
+    referredUserBonus: validateReferralMoney(
+      settings?.referredUserBonus,
+      "Referred user bonus",
+    ),
+
+    minimumFirstDeposit: validateReferralMoney(
+      settings?.minimumFirstDeposit,
+      "Minimum first deposit",
+    ),
+  };
+
+  await pool.query(
+    `
+    INSERT INTO referral_settings (
+      id,
+      is_enabled,
+      referrer_bonus,
+      referred_user_bonus,
+      minimum_first_deposit,
+      updated_by
+    )
+    VALUES (
+      1,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?
+    )
+    ON DUPLICATE KEY UPDATE
+      is_enabled =
+        VALUES(is_enabled),
+
+      referrer_bonus =
+        VALUES(referrer_bonus),
+
+      referred_user_bonus =
+        VALUES(referred_user_bonus),
+
+      minimum_first_deposit =
+        VALUES(
+          minimum_first_deposit
+        ),
+
+      updated_by =
+        VALUES(updated_by)
+    `,
+    [
+      values.isEnabled ? 1 : 0,
+      values.referrerBonus,
+      values.referredUserBonus,
+      values.minimumFirstDeposit,
+      adminId,
+    ],
+  );
+
+  return values;
+}
+
 module.exports = {
   getDashboardStats,
   updateServiceCharges,
+  updateReferralSettings
 };

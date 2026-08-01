@@ -146,40 +146,263 @@ function calculateFirstDepositBonus(depositAmount) {
   );
 }
 
+async function getReferralRewardContext({
+  referredUserId,
+  depositRequestId,
+  depositAmount,
+  connection
+}) {
+  const [relationRows] =
+    await connection.execute(
+      `
+      SELECT
+        id,
+        referrer_user_id,
+        referred_user_id,
+        status
+      FROM user_referrals
+      WHERE referred_user_id = ?
+        AND status = 'pending'
+      LIMIT 1
+      FOR UPDATE
+      `,
+      [referredUserId]
+    );
+
+  const relation =
+    relationRows[0] || null;
+
+  if (!relation) {
+    return null;
+  }
+
+  const [settingRows] =
+    await connection.execute(
+      `
+      SELECT
+        is_enabled,
+        referrer_bonus,
+        referred_user_bonus,
+        minimum_first_deposit
+      FROM referral_settings
+      WHERE id = 1
+      LIMIT 1
+      FOR UPDATE
+      `
+    );
+
+  const settings =
+    settingRows[0] || null;
+
+  if (!settings) {
+    const error = new Error(
+      "Referral settings were not found."
+    );
+
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const isEnabled =
+    Boolean(settings.is_enabled);
+
+  const minimumDeposit =
+    roundDepositMoney(
+      settings.minimum_first_deposit
+    );
+
+  if (
+    !isEnabled ||
+    depositAmount < minimumDeposit
+  ) {
+    await connection.execute(
+      `
+      UPDATE user_referrals
+      SET
+        status = 'cancelled',
+        updated_at = NOW()
+      WHERE id = ?
+        AND status = 'pending'
+      `,
+      [relation.id]
+    );
+
+    return null;
+  }
+
+  const [referrerRows] =
+    await connection.execute(
+      `
+      SELECT
+        id,
+        wallet_balance,
+        turnover_required,
+        role,
+        account_status
+      FROM users
+      WHERE id = ?
+      LIMIT 1
+      FOR UPDATE
+      `,
+      [relation.referrer_user_id]
+    );
+
+  const referrer =
+    referrerRows[0] || null;
+
+  if (
+    !referrer ||
+    referrer.role !== "user" ||
+    referrer.account_status !==
+      "active"
+  ) {
+    await connection.execute(
+      `
+      UPDATE user_referrals
+      SET
+        status = 'cancelled',
+        updated_at = NOW()
+      WHERE id = ?
+        AND status = 'pending'
+      `,
+      [relation.id]
+    );
+
+    return null;
+  }
+
+  return {
+    relationId:
+      Number(relation.id),
+
+    depositRequestId:
+      Number(depositRequestId),
+
+    referrerUserId:
+      Number(referrer.id),
+
+    referrerWalletBalance:
+      roundDepositMoney(
+        referrer.wallet_balance
+      ),
+
+    referrerTurnoverRequired:
+      roundDepositMoney(
+        referrer.turnover_required
+      ),
+
+    referrerBonusAmount:
+      roundDepositMoney(
+        settings.referrer_bonus
+      ),
+
+    referredBonusAmount:
+      roundDepositMoney(
+        settings.referred_user_bonus
+      )
+  };
+}
+
+async function insertReferralBonusTransaction({
+  userId,
+  bonusAmount,
+  balanceBefore,
+  balanceAfter,
+  referralId,
+  description,
+  adminId,
+  connection
+}) {
+  if (bonusAmount <= 0) {
+    return null;
+  }
+
+  const transactionId =
+    generateWalletTransactionId();
+
+  await connection.execute(
+    `
+    INSERT INTO wallet_transactions (
+      transaction_id,
+      user_id,
+      transaction_type,
+      direction,
+      amount,
+      balance_before,
+      balance_after,
+      status,
+      reference_type,
+      reference_id,
+      description,
+      created_by
+    )
+    VALUES (
+      ?,
+      ?,
+      'referral_bonus',
+      'credit',
+      ?,
+      ?,
+      ?,
+      'completed',
+      'user_referral',
+      ?,
+      ?,
+      ?
+    )
+    `,
+    [
+      transactionId,
+      userId,
+      bonusAmount,
+      balanceBefore,
+      balanceAfter,
+      String(referralId),
+      description,
+      adminId
+    ]
+  );
+
+  return transactionId;
+}
+
 /* ==========================
    Approve Deposit
 ========================== */
-
-async function approveDepositRequest({ depositId, adminId }) {
-  const connection = await pool.getConnection();
+async function approveDepositRequest({
+  depositId,
+  adminId
+}) {
+  const connection =
+    await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    /*
-     * Deposit request lock:
-     * একই request দুইবার approve হবে না।
-     */
-    const [depositRows] = await connection.execute(
-      `
-                SELECT
-                    id,
-                    deposit_id,
-                    user_id,
-                    amount,
-                    status
-                FROM deposit_requests
-                WHERE deposit_id = ?
-                LIMIT 1
-                FOR UPDATE
-                `,
-      [depositId],
-    );
+    const [depositRows] =
+      await connection.execute(
+        `
+        SELECT
+          id,
+          deposit_id,
+          user_id,
+          amount,
+          status
+        FROM deposit_requests
+        WHERE deposit_id = ?
+        LIMIT 1
+        FOR UPDATE
+        `,
+        [depositId]
+      );
 
-    const deposit = depositRows[0];
+    const deposit =
+      depositRows[0] || null;
 
     if (!deposit) {
-      const error = new Error("Deposit request not found.");
+      const error = new Error(
+        "Deposit request not found."
+      );
 
       error.statusCode = 404;
       throw error;
@@ -187,207 +410,440 @@ async function approveDepositRequest({ depositId, adminId }) {
 
     if (deposit.status !== "pending") {
       const error = new Error(
-        "This deposit request has already been processed.",
+        "This deposit request has already been processed."
       );
 
       error.statusCode = 409;
       throw error;
     }
 
-    /*
-     * User row lock:
-     * একই user-এর দুইটি pending deposit
-     * একসঙ্গে approve হলেও শুধু প্রথমটি
-     * bonus পাবে।
-     */
-    const [userRows] = await connection.execute(
-      `
-                SELECT
-                    id,
-                    wallet_balance,
-                    total_deposit,
-                    turnover_required
-                FROM users
-                WHERE id = ?
-                LIMIT 1
-                FOR UPDATE
-                `,
-      [deposit.user_id],
-    );
+    const [userRows] =
+      await connection.execute(
+        `
+        SELECT
+          id,
+          wallet_balance,
+          total_deposit,
+          turnover_required
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+        FOR UPDATE
+        `,
+        [deposit.user_id]
+      );
 
-    const user = userRows[0];
+    const user =
+      userRows[0] || null;
 
     if (!user) {
-      const error = new Error("Deposit user not found.");
+      const error = new Error(
+        "Deposit user not found."
+      );
 
       error.statusCode = 404;
       throw error;
     }
 
-    /*
-     * Locking read ব্যবহার করা হচ্ছে।
-     * আগে কোনো approved deposit থাকলে
-     * এটি first deposit নয়।
-     */
-    const [previousDepositRows] = await connection.execute(
-      `
-                SELECT id
-                FROM deposit_requests
-                WHERE user_id = ?
-                  AND status = 'approved'
-                  AND id != ?
-                ORDER BY id ASC
-                LIMIT 1
-                FOR UPDATE
-                `,
-      [deposit.user_id, deposit.id],
-    );
+    const [previousDepositRows] =
+      await connection.execute(
+        `
+        SELECT id
+        FROM deposit_requests
+        WHERE user_id = ?
+          AND status = 'approved'
+          AND id != ?
+        ORDER BY id ASC
+        LIMIT 1
+        FOR UPDATE
+        `,
+        [
+          deposit.user_id,
+          deposit.id
+        ]
+      );
 
-    const isFirstDeposit = previousDepositRows.length === 0;
+    const isFirstDeposit =
+      previousDepositRows.length === 0;
 
-    const amount = roundDepositMoney(deposit.amount);
+    const amount =
+      roundDepositMoney(
+        deposit.amount
+      );
 
-    if (!Number.isFinite(amount) || amount <= 0) {
-      const error = new Error("Invalid deposit amount.");
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
+      const error = new Error(
+        "Invalid deposit amount."
+      );
 
       error.statusCode = 400;
       throw error;
     }
 
-    const bonusAmount = isFirstDeposit ? calculateFirstDepositBonus(amount) : 0;
+    const firstDepositBonus =
+      isFirstDeposit
+        ? calculateFirstDepositBonus(
+            amount
+          )
+        : 0;
 
-    const creditedAmount = roundDepositMoney(amount + bonusAmount);
+    const referralReward =
+      isFirstDeposit
+        ? await getReferralRewardContext({
+            referredUserId:
+              Number(deposit.user_id),
 
-    const balanceBefore = roundDepositMoney(user.wallet_balance);
+            depositRequestId:
+              Number(deposit.id),
 
-    const balanceAfter = roundDepositMoney(balanceBefore + creditedAmount);
+            depositAmount:
+              amount,
+
+            connection
+          })
+        : null;
+
+    const referredReferralBonus =
+      roundDepositMoney(
+        referralReward
+          ?.referredBonusAmount || 0
+      );
 
     /*
-     * total_deposit:
-     * শুধু real deposited money।
-     *
-     * turnover_required:
-     * deposit + applicable bonus।
+     * Deposit transaction-এর credit:
+     * actual deposit + 50% first bonus।
      */
-    const totalDepositAfter = roundDepositMoney(
-      Number(user.total_deposit || 0) + amount,
-    );
+    const depositCreditAmount =
+      roundDepositMoney(
+        amount +
+          firstDepositBonus
+      );
 
-    const turnoverRequiredAfter = roundDepositMoney(
-      Number(user.turnover_required || 0) + creditedAmount,
-    );
+    /*
+     * Deposit request-এর credited amount:
+     * user wallet-এ মোট যত credit হলো।
+     */
+    const creditedAmount =
+      roundDepositMoney(
+        depositCreditAmount +
+          referredReferralBonus
+      );
+
+    const balanceBefore =
+      roundDepositMoney(
+        user.wallet_balance
+      );
+
+    const depositBalanceAfter =
+      roundDepositMoney(
+        balanceBefore +
+          depositCreditAmount
+      );
+
+    const balanceAfter =
+      roundDepositMoney(
+        depositBalanceAfter +
+          referredReferralBonus
+      );
+
+    const totalDepositAfter =
+      roundDepositMoney(
+        Number(
+          user.total_deposit || 0
+        ) + amount
+      );
+
+    /*
+     * New user-এর turnover:
+     * deposit + first bonus +
+     * referral bonus।
+     */
+    const turnoverRequiredAfter =
+      roundDepositMoney(
+        Number(
+          user.turnover_required || 0
+        ) + creditedAmount
+      );
 
     await connection.execute(
       `
-            UPDATE users
-            SET
-                wallet_balance = ?,
-                total_deposit = ?,
-                turnover_required = ?
-            WHERE id = ?
-            `,
-      [balanceAfter, totalDepositAfter, turnoverRequiredAfter, deposit.user_id],
-    );
-
-    /*
-     * Deposit audit:
-     * actual amount, bonus এবং মোট credit
-     * আলাদাভাবে সংরক্ষণ হবে।
-     */
-    await connection.execute(
-      `
-            UPDATE deposit_requests
-            SET
-                status = 'approved',
-                bonus_amount = ?,
-                credited_amount = ?,
-                is_first_deposit_bonus = ?,
-                approved_by = ?,
-                approved_at = NOW(),
-                admin_note = NULL
-            WHERE id = ?
-            `,
+      UPDATE users
+      SET
+        wallet_balance = ?,
+        total_deposit = ?,
+        turnover_required = ?
+      WHERE id = ?
+      `,
       [
-        bonusAmount,
+        balanceAfter,
+        totalDepositAfter,
+        turnoverRequiredAfter,
+        deposit.user_id
+      ]
+    );
+
+    await connection.execute(
+      `
+      UPDATE deposit_requests
+      SET
+        status = 'approved',
+        bonus_amount = ?,
+        credited_amount = ?,
+        is_first_deposit_bonus = ?,
+        approved_by = ?,
+        approved_at = NOW(),
+        admin_note = NULL
+      WHERE id = ?
+      `,
+      [
+        firstDepositBonus,
         creditedAmount,
         isFirstDeposit ? 1 : 0,
         adminId,
-        deposit.id,
-      ],
+        deposit.id
+      ]
     );
 
     /*
-     * একটি wallet transaction রাখা হচ্ছে।
-     * Transaction amount wallet balance-এর
-     * আসল credit-এর সমান থাকবে।
+     * Deposit wallet transaction।
      */
-    const walletTransactionId = generateWalletTransactionId();
+    const walletTransactionId =
+      generateWalletTransactionId();
 
-    const description =
-      bonusAmount > 0
-        ? `First deposit approved: ` +
-          `${deposit.deposit_id}; ` +
-          `deposit ৳${amount.toFixed(2)}, ` +
-          `bonus ৳${bonusAmount.toFixed(2)}`
-        : `Deposit approved: ` + deposit.deposit_id;
+    const depositDescription =
+      firstDepositBonus > 0
+        ? (
+            `First deposit approved: ` +
+            `${deposit.deposit_id}; ` +
+            `deposit ৳${amount.toFixed(
+              2
+            )}, bonus ৳${firstDepositBonus.toFixed(
+              2
+            )}`
+          )
+        : (
+            `Deposit approved: ` +
+            deposit.deposit_id
+          );
 
     await connection.execute(
       `
-            INSERT INTO wallet_transactions (
-                transaction_id,
-                user_id,
-                transaction_type,
-                direction,
-                amount,
-                balance_before,
-                balance_after,
-                status,
-                reference_type,
-                reference_id,
-                description,
-                created_by
-            )
-            VALUES (
-                ?,
-                ?,
-                'deposit',
-                'credit',
-                ?,
-                ?,
-                ?,
-                'completed',
-                'deposit_request',
-                ?,
-                ?,
-                ?
-            )
-            `,
+      INSERT INTO wallet_transactions (
+        transaction_id,
+        user_id,
+        transaction_type,
+        direction,
+        amount,
+        balance_before,
+        balance_after,
+        status,
+        reference_type,
+        reference_id,
+        description,
+        created_by
+      )
+      VALUES (
+        ?,
+        ?,
+        'deposit',
+        'credit',
+        ?,
+        ?,
+        ?,
+        'completed',
+        'deposit_request',
+        ?,
+        ?,
+        ?
+      )
+      `,
       [
         walletTransactionId,
         deposit.user_id,
-        creditedAmount,
+        depositCreditAmount,
         balanceBefore,
-        balanceAfter,
+        depositBalanceAfter,
         deposit.deposit_id,
-        description,
-        adminId,
-      ],
+        depositDescription,
+        adminId
+      ]
     );
+
+    let referredBonusTransactionId =
+      null;
+
+    let referrerBonusTransactionId =
+      null;
+
+    if (referralReward) {
+      /*
+       * Referred/new user ৳100।
+       */
+      referredBonusTransactionId =
+        await insertReferralBonusTransaction({
+          userId:
+            Number(deposit.user_id),
+
+          bonusAmount:
+            referredReferralBonus,
+
+          balanceBefore:
+            depositBalanceAfter,
+
+          balanceAfter,
+
+          referralId:
+            referralReward.relationId,
+
+          description:
+            "Referral bonus received after first deposit.",
+
+          adminId,
+
+          connection
+        });
+
+      /*
+       * Referrer ৳200 এবং তার required
+       * turnover-এও ৳200 যোগ হবে।
+       */
+      const referrerBalanceBefore =
+        referralReward
+          .referrerWalletBalance;
+
+      const referrerBalanceAfter =
+        roundDepositMoney(
+          referrerBalanceBefore +
+            referralReward
+              .referrerBonusAmount
+        );
+
+      const referrerTurnoverAfter =
+        roundDepositMoney(
+          referralReward
+            .referrerTurnoverRequired +
+            referralReward
+              .referrerBonusAmount
+        );
+
+      await connection.execute(
+        `
+        UPDATE users
+        SET
+          wallet_balance = ?,
+          turnover_required = ?
+        WHERE id = ?
+        `,
+        [
+          referrerBalanceAfter,
+          referrerTurnoverAfter,
+          referralReward
+            .referrerUserId
+        ]
+      );
+
+      referrerBonusTransactionId =
+        await insertReferralBonusTransaction({
+          userId:
+            referralReward
+              .referrerUserId,
+
+          bonusAmount:
+            referralReward
+              .referrerBonusAmount,
+
+          balanceBefore:
+            referrerBalanceBefore,
+
+          balanceAfter:
+            referrerBalanceAfter,
+
+          referralId:
+            referralReward.relationId,
+
+          description:
+            "Referral reward received after referred user's first deposit.",
+
+          adminId,
+
+          connection
+        });
+
+      /*
+       * Reward audit final করা হচ্ছে।
+       * status condition duplicate payout
+       * বন্ধ রাখবে।
+       */
+      const [rewardUpdateResult] =
+        await connection.execute(
+          `
+          UPDATE user_referrals
+          SET
+            status = 'rewarded',
+            qualifying_deposit_id = ?,
+            referrer_bonus_amount = ?,
+            referred_bonus_amount = ?,
+            rewarded_at = NOW(),
+            updated_at = NOW()
+          WHERE id = ?
+            AND status = 'pending'
+          `,
+          [
+            deposit.id,
+            referralReward
+              .referrerBonusAmount,
+            referredReferralBonus,
+            referralReward.relationId
+          ]
+        );
+
+      if (
+        Number(
+          rewardUpdateResult
+            .affectedRows
+        ) !== 1
+      ) {
+        const error = new Error(
+          "Referral reward was already processed."
+        );
+
+        error.statusCode = 409;
+        throw error;
+      }
+    }
 
     await connection.commit();
 
     return {
-      depositId: deposit.deposit_id,
+      depositId:
+        deposit.deposit_id,
 
-      status: "approved",
+      status:
+        "approved",
 
       amount,
 
-      bonusAmount,
+      bonusAmount:
+        firstDepositBonus,
+
+      referralBonusAmount:
+        referredReferralBonus,
 
       creditedAmount,
 
-      isFirstDepositBonus: isFirstDeposit && bonusAmount > 0,
+      isFirstDepositBonus:
+        isFirstDeposit &&
+        firstDepositBonus > 0,
+
+      referralRewarded:
+        Boolean(referralReward),
+
+      referrerBonusAmount:
+        referralReward
+          ?.referrerBonusAmount || 0,
 
       balanceBefore,
 
@@ -398,6 +854,10 @@ async function approveDepositRequest({ depositId, adminId }) {
       turnoverRequiredAfter,
 
       walletTransactionId,
+
+      referredBonusTransactionId,
+
+      referrerBonusTransactionId
     };
   } catch (error) {
     await connection.rollback();

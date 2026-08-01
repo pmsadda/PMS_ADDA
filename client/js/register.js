@@ -1,441 +1,377 @@
 document.addEventListener("DOMContentLoaded", () => {
-    "use strict";
+  "use strict";
 
-    const registerForm =
-        document.getElementById("registerForm");
+  const registerForm = document.getElementById("registerForm");
 
-    const fullNameInput =
-        document.getElementById("fullName");
+  const fullNameInput = document.getElementById("fullName");
 
-    const usernameInput =
-        document.getElementById("username");
+  const usernameInput = document.getElementById("username");
 
-    const phoneInput =
-        document.getElementById("phone");
+  const referralCodeInput = document.getElementById("referralCode");
 
-    const emailInput =
-        document.getElementById("email");
+  const referralHint = document.getElementById("referralHint");
 
-    const passwordInput =
-        document.getElementById("password");
+  const phoneInput = document.getElementById("phone");
 
-    const confirmPasswordInput =
-        document.getElementById("confirmPassword");
+  const emailInput = document.getElementById("email");
 
-    const agreeTerms =
-        document.getElementById("agreeTerms");
+  const passwordInput = document.getElementById("password");
 
-    const registerBtn =
-        document.getElementById("registerBtn");
+  const confirmPasswordInput = document.getElementById("confirmPassword");
 
-    const togglePassword =
-        document.getElementById("togglePassword");
+  const agreeTerms = document.getElementById("agreeTerms");
 
-    const toggleConfirmPassword =
-        document.getElementById(
-            "toggleConfirmPassword"
-        );
+  const registerBtn = document.getElementById("registerBtn");
 
-    const choosePhoto =
-        document.getElementById("choosePhoto");
+  const togglePassword = document.getElementById("togglePassword");
 
-    const profileImage =
-        document.getElementById("profileImage");
+  const toggleConfirmPassword = document.getElementById(
+    "toggleConfirmPassword",
+  );
 
-    const profilePreview =
-        document.getElementById("profilePreview");
+  const choosePhoto = document.getElementById("choosePhoto");
 
-    const strengthBar =
-        document.getElementById("strengthBar");
+  const profileImage = document.getElementById("profileImage");
 
-    const strengthText =
-        document.getElementById("strengthText");
+  const profilePreview = document.getElementById("profilePreview");
 
-    const loaderOverlay =
-        document.getElementById("loaderOverlay");
+  const strengthBar = document.getElementById("strengthBar");
 
-    const toast =
-        document.getElementById("toast");
+  const strengthText = document.getElementById("strengthText");
 
-    const toastMessage =
-        document.getElementById("toastMessage");
+  const loaderOverlay = document.getElementById("loaderOverlay");
 
-    const errorBox =
-        document.getElementById("errorBox");
+  const toast = document.getElementById("toast");
 
-    const API_BASE_URL =
-    APP_CONFIG.API_URL;
+  const toastMessage = document.getElementById("toastMessage");
 
-    let toastTimer;
+  const errorBox = document.getElementById("errorBox");
 
-    function showLoader() {
-        if (loaderOverlay) {
-            loaderOverlay.style.display = "flex";
-        }
+  const API_BASE_URL = APP_CONFIG.API_URL;
 
-        if (registerBtn) {
-            registerBtn.disabled = true;
-        }
+  let toastTimer;
+
+  function normalizeReferralCode(value) {
+    return String(value || "")
+      .trim()
+      .toUpperCase();
+  }
+
+  function initializeReferralCode() {
+    if (!referralCodeInput) {
+      return;
     }
 
-    function hideLoader() {
-        if (loaderOverlay) {
-            loaderOverlay.style.display = "none";
-        }
+    const params = new URLSearchParams(window.location.search);
 
-        if (registerBtn) {
-            registerBtn.disabled = false;
-        }
+    const referralFromUrl = normalizeReferralCode(params.get("ref"));
+
+    if (!referralFromUrl) {
+      return;
     }
 
-    function showToast(message) {
-        if (!toast || !toastMessage) {
-            alert(message);
-            return;
-        }
+    referralCodeInput.value = referralFromUrl;
 
-        window.clearTimeout(toastTimer);
+    if (referralHint) {
+      referralHint.textContent =
+        "Referral link detected. প্রথম deposit approve হলে referral bonus পাবেন।";
+    }
+  }
 
-        toastMessage.textContent = message;
-        toast.style.display = "block";
+  referralCodeInput?.addEventListener("input", () => {
+    referralCodeInput.value = normalizeReferralCode(referralCodeInput.value);
+  });
 
-        toastTimer = window.setTimeout(() => {
-            toast.style.display = "none";
-        }, 2600);
+  initializeReferralCode();
+
+  function showLoader() {
+    if (loaderOverlay) {
+      loaderOverlay.style.display = "flex";
     }
 
-    function showError(message) {
-        if (!errorBox) {
-            showToast(message);
-            return;
-        }
+    if (registerBtn) {
+      registerBtn.disabled = true;
+    }
+  }
 
-        errorBox.textContent = message;
-        errorBox.style.display = "block";
+  function hideLoader() {
+    if (loaderOverlay) {
+      loaderOverlay.style.display = "none";
     }
 
-    function clearError() {
-        if (!errorBox) {
-            return;
-        }
+    if (registerBtn) {
+      registerBtn.disabled = false;
+    }
+  }
 
-        errorBox.textContent = "";
-        errorBox.style.display = "none";
+  function showToast(message) {
+    if (!toast || !toastMessage) {
+      alert(message);
+      return;
     }
 
-    function togglePasswordField(
-        input,
-        button
-    ) {
-        const showPassword =
-            input.type === "password";
+    window.clearTimeout(toastTimer);
 
-        input.type =
-            showPassword ? "text" : "password";
+    toastMessage.textContent = message;
+    toast.style.display = "block";
 
-        const icon =
-            button.querySelector("i");
+    toastTimer = window.setTimeout(() => {
+      toast.style.display = "none";
+    }, 2600);
+  }
 
-        if (icon) {
-            icon.className = showPassword
-                ? "fa-solid fa-eye-slash"
-                : "fa-solid fa-eye";
-        }
+  function showError(message) {
+    if (!errorBox) {
+      showToast(message);
+      return;
     }
 
-    togglePassword?.addEventListener(
-        "click",
-        () => {
-            togglePasswordField(
-                passwordInput,
-                togglePassword
-            );
-        }
-    );
+    errorBox.textContent = message;
+    errorBox.style.display = "block";
+  }
 
-    toggleConfirmPassword?.addEventListener(
-        "click",
-        () => {
-            togglePasswordField(
-                confirmPasswordInput,
-                toggleConfirmPassword
-            );
-        }
-    );
-
-    choosePhoto?.addEventListener(
-        "click",
-        () => {
-            profileImage?.click();
-        }
-    );
-
-    profileImage?.addEventListener(
-        "change",
-        () => {
-            const file =
-                profileImage.files?.[0];
-
-            if (!file) {
-                return;
-            }
-
-            if (!file.type.startsWith("image/")) {
-                showToast(
-                    "শুধু image file নির্বাচন করুন।"
-                );
-                return;
-            }
-
-            if (file.size > 2 * 1024 * 1024) {
-                showToast(
-                    "ছবির size সর্বোচ্চ 2MB হতে পারবে।"
-                );
-                return;
-            }
-
-            profilePreview.src =
-                URL.createObjectURL(file);
-        }
-    );
-
-    function updatePasswordStrength() {
-        const password =
-            passwordInput.value;
-
-        let score = 0;
-
-        if (password.length >= 8) {
-            score += 1;
-        }
-
-        if (/[A-Z]/.test(password)) {
-            score += 1;
-        }
-
-        if (/[a-z]/.test(password)) {
-            score += 1;
-        }
-
-        if (/\d/.test(password)) {
-            score += 1;
-        }
-
-        if (/[^A-Za-z0-9]/.test(password)) {
-            score += 1;
-        }
-
-        const levels = [
-            {
-                width: "0%",
-                text: "Password Strength"
-            },
-            {
-                width: "20%",
-                text: "Very Weak"
-            },
-            {
-                width: "40%",
-                text: "Weak"
-            },
-            {
-                width: "60%",
-                text: "Medium"
-            },
-            {
-                width: "80%",
-                text: "Strong"
-            },
-            {
-                width: "100%",
-                text: "Very Strong"
-            }
-        ];
-
-        if (strengthBar) {
-            strengthBar.style.width =
-                levels[score].width;
-        }
-
-        if (strengthText) {
-            strengthText.textContent =
-                levels[score].text;
-        }
+  function clearError() {
+    if (!errorBox) {
+      return;
     }
 
-    passwordInput?.addEventListener(
-        "input",
-        updatePasswordStrength
-    );
+    errorBox.textContent = "";
+    errorBox.style.display = "none";
+  }
 
-    registerForm?.addEventListener(
-        "submit",
-        async (event) => {
-            event.preventDefault();
+  function togglePasswordField(input, button) {
+    const showPassword = input.type === "password";
 
-            clearError();
+    input.type = showPassword ? "text" : "password";
 
-            const fullName =
-                fullNameInput.value.trim();
+    const icon = button.querySelector("i");
 
-            const username =
-                usernameInput.value
-                    .trim()
-                    .toLowerCase();
+    if (icon) {
+      icon.className = showPassword
+        ? "fa-solid fa-eye-slash"
+        : "fa-solid fa-eye";
+    }
+  }
 
-            const phone =
-                phoneInput.value.trim();
+  togglePassword?.addEventListener("click", () => {
+    togglePasswordField(passwordInput, togglePassword);
+  });
 
-            const email =
-                emailInput.value
-                    .trim()
-                    .toLowerCase();
+  toggleConfirmPassword?.addEventListener("click", () => {
+    togglePasswordField(confirmPasswordInput, toggleConfirmPassword);
+  });
 
-            const password =
-                passwordInput.value;
+  choosePhoto?.addEventListener("click", () => {
+    profileImage?.click();
+  });
 
-            const confirmPassword =
-                confirmPasswordInput.value;
+  profileImage?.addEventListener("change", () => {
+    const file = profileImage.files?.[0];
 
-            if (fullName.length < 3) {
-                showError(
-                    "Full name কমপক্ষে ৩ অক্ষরের হতে হবে।"
-                );
+    if (!file) {
+      return;
+    }
 
-                fullNameInput.focus();
-                return;
-            }
+    if (!file.type.startsWith("image/")) {
+      showToast("শুধু image file নির্বাচন করুন।");
+      return;
+    }
 
-            if (
-                !/^[a-z0-9_]{4,30}$/.test(
-                    username
-                )
-            ) {
-                showError(
-                    "Username ৪–৩০ অক্ষরের হতে হবে। শুধু ছোট হাতের ইংরেজি অক্ষর, সংখ্যা ও underscore ব্যবহার করুন।"
-                );
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("ছবির size সর্বোচ্চ 2MB হতে পারবে।");
+      return;
+    }
 
-                usernameInput.focus();
-                return;
-            }
+    profilePreview.src = URL.createObjectURL(file);
+  });
 
-            if (!/^01[3-9]\d{8}$/.test(phone)) {
-                showError(
-                    "সঠিক ১১ ডিজিটের বাংলাদেশি মোবাইল নম্বর দিন।"
-                );
+  function updatePasswordStrength() {
+    const password = passwordInput.value;
 
-                phoneInput.focus();
-                return;
-            }
+    let score = 0;
 
-            if (
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                    .test(email)
-            ) {
-                showError(
-                    "সঠিক Email Address দিন।"
-                );
+    if (password.length >= 8) {
+      score += 1;
+    }
 
-                emailInput.focus();
-                return;
-            }
+    if (/[A-Z]/.test(password)) {
+      score += 1;
+    }
 
-            if (password.length < 8) {
-                showError(
-                    "Password কমপক্ষে ৮ অক্ষরের হতে হবে।"
-                );
+    if (/[a-z]/.test(password)) {
+      score += 1;
+    }
 
-                passwordInput.focus();
-                return;
-            }
+    if (/\d/.test(password)) {
+      score += 1;
+    }
 
-            if (password !== confirmPassword) {
-                showError(
-                    "Password এবং Confirm Password মিলছে না।"
-                );
+    if (/[^A-Za-z0-9]/.test(password)) {
+      score += 1;
+    }
 
-                confirmPasswordInput.focus();
-                return;
-            }
+    const levels = [
+      {
+        width: "0%",
+        text: "Password Strength",
+      },
+      {
+        width: "20%",
+        text: "Very Weak",
+      },
+      {
+        width: "40%",
+        text: "Weak",
+      },
+      {
+        width: "60%",
+        text: "Medium",
+      },
+      {
+        width: "80%",
+        text: "Strong",
+      },
+      {
+        width: "100%",
+        text: "Very Strong",
+      },
+    ];
 
-            if (!agreeTerms.checked) {
-                showError(
-                    "Terms & Conditions গ্রহণ করুন।"
-                );
+    if (strengthBar) {
+      strengthBar.style.width = levels[score].width;
+    }
 
-                agreeTerms.focus();
-                return;
-            }
+    if (strengthText) {
+      strengthText.textContent = levels[score].text;
+    }
+  }
 
-            showLoader();
+  passwordInput?.addEventListener("input", updatePasswordStrength);
 
-            try {
-                const response = await fetch(
-                    `${API_BASE_URL}/auth/register`,
-                    {
-                        method: "POST",
+  registerForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+    clearError();
 
-                        body: JSON.stringify({
-                            fullName,
-                            username,
-                            phone,
-                            email,
-                            password
-                        })
-                    }
-                );
+    const fullName = fullNameInput.value.trim();
 
-                const result =
-                    await response.json();
+    const username = usernameInput.value.trim().toLowerCase();
 
-                if (!response.ok || !result.success) {
-                    throw new Error(
-                        result.message ||
-                        "Registration failed."
-                    );
-                }
+    const phone = phoneInput.value.trim();
 
-                const {
-                    token,
-                    user
-                } = result.data;
+    const email = emailInput.value.trim().toLowerCase();
 
-                localStorage.setItem(
-                    "access_token",
-                    token
-                );
+    const referralCode = normalizeReferralCode(referralCodeInput?.value);
 
-                localStorage.setItem(
-                    "current_user",
-                    JSON.stringify(user)
-                );
+    const password = passwordInput.value;
 
-                showToast(
-                    "Registration successful."
-                );
+    const confirmPassword = confirmPasswordInput.value;
 
-                window.setTimeout(() => {
-                    window.location.href =
-                        "lobby.html";
-                }, 700);
-            } catch (error) {
-                console.error(
-                    "Registration error:",
-                    error
-                );
+    if (fullName.length < 3) {
+      showError("Full name কমপক্ষে ৩ অক্ষরের হতে হবে।");
 
-                showError(
-                    error.message ||
-                    "Server-এর সঙ্গে সংযোগ করা যায়নি।"
-                );
-            } finally {
-                hideLoader();
-            }
-        }
-    );
+      fullNameInput.focus();
+      return;
+    }
+
+    if (!/^[a-z0-9_]{4,30}$/.test(username)) {
+      showError(
+        "Username ৪–৩০ অক্ষরের হতে হবে। শুধু ছোট হাতের ইংরেজি অক্ষর, সংখ্যা ও underscore ব্যবহার করুন।",
+      );
+
+      usernameInput.focus();
+      return;
+    }
+
+    if (!/^01[3-9]\d{8}$/.test(phone)) {
+      showError("সঠিক ১১ ডিজিটের বাংলাদেশি মোবাইল নম্বর দিন।");
+
+      phoneInput.focus();
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError("সঠিক Email Address দিন।");
+
+      emailInput.focus();
+      return;
+    }
+
+    if (password.length < 8) {
+      showError("Password কমপক্ষে ৮ অক্ষরের হতে হবে।");
+
+      passwordInput.focus();
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showError("Password এবং Confirm Password মিলছে না।");
+
+      confirmPasswordInput.focus();
+      return;
+    }
+
+    if (referralCode && !/^PMS[A-Z0-9]{6,17}$/.test(referralCode)) {
+      showError("Referral code সঠিক নয়।");
+
+      referralCodeInput?.focus();
+      return;
+    }
+
+    if (!agreeTerms.checked) {
+      showError("Terms & Conditions গ্রহণ করুন।");
+
+      agreeTerms.focus();
+      return;
+    }
+
+    showLoader();
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          fullName,
+          username,
+          phone,
+          email,
+          password,
+          referralCode,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Registration failed.");
+      }
+
+      const { token, user } = result.data;
+
+      localStorage.setItem("access_token", token);
+
+      localStorage.setItem("current_user", JSON.stringify(user));
+
+      showToast(
+        user.referralApplied
+          ? "Registration successful. Referral code applied."
+          : "Registration successful.",
+      );
+
+      window.setTimeout(() => {
+        window.location.href = "lobby.html";
+      }, 700);
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      showError(error.message || "Server-এর সঙ্গে সংযোগ করা যায়নি।");
+    } finally {
+      hideLoader();
+    }
+  });
 });

@@ -296,6 +296,10 @@ function renderDashboardStats(data) {
 
   updateServiceChargeValues(data.serviceCharges || data.serviceCharge || {});
 
+  updateReferralSettingsValues(data.referralSettings || {});
+
+  updateReferralStats(data.referrals || {});
+
   renderRecentDeposits(data.recentDeposits || []);
 
   renderRecentWithdrawals(data.recentWithdrawals || []);
@@ -354,61 +358,37 @@ function openChargeConfirmModal() {
   const charges = getChargeValues();
 
   if (!validateChargeValues(charges)) {
-    showToast(
-      "Service charge must be between 0 and 20.",
-      "error",
-    );
+    showToast("Service charge must be between 0 and 20.", "error");
 
     return;
   }
 
-  setText(
-    "confirmTeenPattiCharge",
-    charges.teenPatti,
-  );
+  setText("confirmTeenPattiCharge", charges.teenPatti);
 
-  setText(
-    "confirmPokerCharge",
-    charges.poker,
-  );
+  setText("confirmPokerCharge", charges.poker);
 
-  setText(
-    "confirmLudoCharge",
-    charges.ludo,
-  );
+  setText("confirmLudoCharge", charges.ludo);
 
-  const modal =
-    document.getElementById(
-      "chargeConfirmModal",
-    );
+  const modal = document.getElementById("chargeConfirmModal");
 
   if (modal) {
     modal.classList.add("show");
 
     modal.style.display = "flex";
 
-    modal.setAttribute(
-      "aria-hidden",
-      "false",
-    );
+    modal.setAttribute("aria-hidden", "false");
   }
 }
 
 function closeChargeConfirmModal() {
-  const modal =
-    document.getElementById(
-      "chargeConfirmModal",
-    );
+  const modal = document.getElementById("chargeConfirmModal");
 
   if (modal) {
     modal.classList.remove("show");
 
     modal.style.display = "none";
 
-    modal.setAttribute(
-      "aria-hidden",
-      "true",
-    );
+    modal.setAttribute("aria-hidden", "true");
   }
 }
 
@@ -416,10 +396,7 @@ async function confirmServiceChargeSave() {
   const charges = getChargeValues();
 
   if (!validateChargeValues(charges)) {
-    showToast(
-      "Service charge must be between 0 and 20.",
-      "error",
-    );
+    showToast("Service charge must be between 0 and 20.", "error");
 
     return;
   }
@@ -427,16 +404,12 @@ async function confirmServiceChargeSave() {
   const token = getAccessToken();
 
   if (!token) {
-    window.location.href =
-      "../pages/login.html";
+    window.location.href = "../pages/login.html";
 
     return;
   }
 
-  const confirmButton =
-    document.getElementById(
-      "confirmChargeSave",
-    );
+  const confirmButton = document.getElementById("confirmChargeSave");
 
   try {
     if (confirmButton) {
@@ -451,79 +424,44 @@ async function confirmServiceChargeSave() {
         method: "PATCH",
 
         headers: {
-          Authorization:
-            `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
 
-          Accept:
-            "application/json",
+          Accept: "application/json",
 
-          "Content-Type":
-            "application/json",
+          "Content-Type": "application/json",
         },
 
         body: JSON.stringify(charges),
       },
     );
 
-    const result =
-      await parseResponse(response);
+    const result = await parseResponse(response);
 
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-      localStorage.removeItem(
-        "access_token",
-      );
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("access_token");
 
-      throw new Error(
-        "Your admin session has expired.",
-      );
+      throw new Error("Your admin session has expired.");
     }
 
-    if (
-      !response.ok ||
-      !result.success
-    ) {
-      throw new Error(
-        result.message ||
-        "Service charge update failed.",
-      );
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Service charge update failed.");
     }
 
-    const savedCharges =
-      result.data?.serviceCharges ||
-      charges;
+    const savedCharges = result.data?.serviceCharges || charges;
 
-    updateServiceChargeValues(
-      savedCharges,
-    );
+    updateServiceChargeValues(savedCharges);
 
     closeChargeConfirmModal();
 
-    showToast(
-      result.message ||
-      "Service charges updated successfully.",
-    );
+    showToast(result.message || "Service charges updated successfully.");
   } catch (error) {
-    console.error(
-      "SERVICE CHARGE UPDATE ERROR:",
-      error,
-    );
+    console.error("SERVICE CHARGE UPDATE ERROR:", error);
 
-    showToast(
-      error.message ||
-      "Service charge update failed.",
-      "error",
-    );
+    showToast(error.message || "Service charge update failed.", "error");
 
-    if (
-      error.message ===
-      "Your admin session has expired."
-    ) {
+    if (error.message === "Your admin session has expired.") {
       window.setTimeout(() => {
-        window.location.href =
-          "../pages/login.html";
+        window.location.href = "../pages/login.html";
       }, 1200);
     }
   } finally {
@@ -535,7 +473,206 @@ async function confirmServiceChargeSave() {
   }
 }
 
+/* =========================
+   Referral Settings
+========================= */
 
+function updateReferralStatusLabel() {
+  const enabled = Boolean(document.getElementById("referralEnabled")?.checked);
+
+  setText("referralStatusLabel", enabled ? "Enabled" : "Disabled");
+}
+
+function updateReferralSettingsValues(settings) {
+  const enabledInput = document.getElementById("referralEnabled");
+
+  if (enabledInput) {
+    enabledInput.checked = Boolean(settings.isEnabled);
+  }
+
+  setInputValue("referrerBonus", Number(settings.referrerBonus ?? 200));
+
+  setInputValue("referredUserBonus", Number(settings.referredUserBonus ?? 100));
+
+  setInputValue(
+    "minimumFirstDeposit",
+    Number(settings.minimumFirstDeposit ?? 0),
+  );
+
+  updateReferralStatusLabel();
+}
+
+function updateReferralStats(stats) {
+  setText("totalReferrals", formatNumber(stats.total || 0));
+
+  setText("pendingReferrals", formatNumber(stats.pending || 0));
+
+  setText("rewardedReferrals", formatNumber(stats.rewarded || 0));
+
+  const totalBonus =
+    Number(stats.totalReferrerBonus || 0) +
+    Number(stats.totalReferredBonus || 0);
+
+  setText("totalReferralBonus", formatMoneyValue(totalBonus));
+}
+
+function getReferralSettingsValues() {
+  return {
+    isEnabled: Boolean(document.getElementById("referralEnabled")?.checked),
+
+    referrerBonus: Number(document.getElementById("referrerBonus")?.value),
+
+    referredUserBonus: Number(
+      document.getElementById("referredUserBonus")?.value,
+    ),
+
+    minimumFirstDeposit: Number(
+      document.getElementById("minimumFirstDeposit")?.value,
+    ),
+  };
+}
+
+function validateReferralSettings(settings) {
+  return [
+    settings.referrerBonus,
+    settings.referredUserBonus,
+    settings.minimumFirstDeposit,
+  ].every((value) => Number.isFinite(value) && value >= 0 && value <= 1000000);
+}
+
+function openReferralConfirmModal() {
+  const settings = getReferralSettingsValues();
+
+  if (!validateReferralSettings(settings)) {
+    showToast("Referral amounts must be between 0 and 1000000.", "error");
+
+    return;
+  }
+
+  setText("confirmReferralStatus", settings.isEnabled ? "Enabled" : "Disabled");
+
+  setText("confirmReferrerBonus", formatMoneyValue(settings.referrerBonus));
+
+  setText("confirmReferredBonus", formatMoneyValue(settings.referredUserBonus));
+
+  setText(
+    "confirmMinimumDeposit",
+    formatMoneyValue(settings.minimumFirstDeposit),
+  );
+
+  const modal = document.getElementById("referralConfirmModal");
+
+  if (modal) {
+    modal.classList.add("show");
+
+    modal.style.display = "flex";
+
+    modal.setAttribute("aria-hidden", "false");
+  }
+}
+
+function closeReferralConfirmModal() {
+  const modal = document.getElementById("referralConfirmModal");
+
+  if (modal) {
+    modal.classList.remove("show");
+
+    modal.style.display = "none";
+
+    modal.setAttribute("aria-hidden", "true");
+  }
+}
+
+async function confirmReferralSettingsSave() {
+  const settings = getReferralSettingsValues();
+
+  if (!validateReferralSettings(settings)) {
+    showToast("Invalid referral settings.", "error");
+
+    return;
+  }
+
+  const token = getAccessToken();
+
+  if (!token) {
+    window.location.href = "../pages/login.html";
+
+    return;
+  }
+
+  const confirmButton = document.getElementById("confirmReferralSave");
+
+  try {
+    if (confirmButton) {
+      confirmButton.disabled = true;
+
+      confirmButton.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Saving...
+      `;
+    }
+
+    showLoader();
+
+    const response = await fetch(
+      `${API_BASE_URL}/admin/dashboard/referral-settings`,
+      {
+        method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+
+          Accept: "application/json",
+
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(settings),
+      },
+    );
+
+    const result = await parseResponse(response);
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("access_token");
+
+      throw new Error("Your admin session has expired.");
+    }
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Referral settings update failed.");
+    }
+
+    const savedSettings = result.data?.referralSettings || settings;
+
+    updateReferralSettingsValues(savedSettings);
+
+    closeReferralConfirmModal();
+
+    showToast(result.message || "Referral settings updated successfully.");
+  } catch (error) {
+    console.error("REFERRAL SETTINGS UPDATE ERROR:", error);
+
+    showToast(error.message || "Referral settings update failed.", "error");
+
+    if (error.message === "Your admin session has expired.") {
+      window.setTimeout(() => {
+        window.location.href = "../pages/login.html";
+      }, 1200);
+    }
+  } finally {
+    if (confirmButton) {
+      confirmButton.disabled = false;
+
+      confirmButton.innerHTML = `
+        <i class="fa-solid fa-check"></i>
+        Confirm
+      `;
+    }
+
+    hideLoader();
+  }
+}
 
 /* =========================
    Recent request rendering
@@ -783,10 +920,43 @@ function bindDashboardEvents() {
       }
     });
 
+  document
+    .getElementById("referralEnabled")
+    ?.addEventListener("change", updateReferralStatusLabel);
+
+  document
+    .getElementById("referralSettingsForm")
+    ?.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      openReferralConfirmModal();
+    });
+
+  document
+    .getElementById("closeReferralModal")
+    ?.addEventListener("click", closeReferralConfirmModal);
+
+  document
+    .getElementById("cancelReferralSave")
+    ?.addEventListener("click", closeReferralConfirmModal);
+
+  document
+    .getElementById("confirmReferralSave")
+    ?.addEventListener("click", confirmReferralSettingsSave);
+
+  document
+    .getElementById("referralConfirmModal")
+    ?.addEventListener("click", (event) => {
+      if (event.target.id === "referralConfirmModal") {
+        closeReferralConfirmModal();
+      }
+    });
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeSidebar();
       closeChargeConfirmModal();
+      closeReferralConfirmModal();
     }
   });
 }
@@ -1320,7 +1490,6 @@ async function updateLobbyNoticeStatus(noticeId, status) {
     LOBBY_NOTICE_STATE.loading = false;
 
     await loadLobbyNotices();
-    
   } catch (error) {
     console.error("UPDATE NOTICE STATUS ERROR:", error);
 
@@ -1397,131 +1566,69 @@ const LOBBY_BANNER_STATE = {
   banner: null,
   selectedFile: null,
   previewObjectUrl: null,
-  loading: false
+  loading: false,
 };
 
 function getLobbyBannerElements() {
   return {
-    form:
-      document.getElementById(
-        "lobbyBannerForm"
-      ),
+    form: document.getElementById("lobbyBannerForm"),
 
-    preview:
-      document.getElementById(
-        "lobbyBannerPreview"
-      ),
+    preview: document.getElementById("lobbyBannerPreview"),
 
-    previewEmpty:
-      document.getElementById(
-        "lobbyBannerPreviewEmpty"
-      ),
+    previewEmpty: document.getElementById("lobbyBannerPreviewEmpty"),
 
-    fileInput:
-      document.getElementById(
-        "lobbyBannerFile"
-      ),
+    fileInput: document.getElementById("lobbyBannerFile"),
 
-    chooseFile:
-      document.getElementById(
-        "chooseLobbyBanner"
-      ),
+    chooseFile: document.getElementById("chooseLobbyBanner"),
 
-    fileName:
-      document.getElementById(
-        "lobbyBannerFileName"
-      ),
+    fileName: document.getElementById("lobbyBannerFileName"),
 
-    title:
-      document.getElementById(
-        "lobbyBannerTitle"
-      ),
+    title: document.getElementById("lobbyBannerTitle"),
 
-    targetUrl:
-      document.getElementById(
-        "lobbyBannerTargetUrl"
-      ),
+    targetUrl: document.getElementById("lobbyBannerTargetUrl"),
 
-    status:
-      document.getElementById(
-        "lobbyBannerStatus"
-      ),
+    status: document.getElementById("lobbyBannerStatus"),
 
-    statusBadge:
-      document.getElementById(
-        "lobbyBannerCurrentStatus"
-      ),
+    statusBadge: document.getElementById("lobbyBannerCurrentStatus"),
 
-    updatedText:
-      document.getElementById(
-        "lobbyBannerUpdatedText"
-      ),
+    updatedText: document.getElementById("lobbyBannerUpdatedText"),
 
-    refresh:
-      document.getElementById(
-        "refreshLobbyBanner"
-      ),
+    refresh: document.getElementById("refreshLobbyBanner"),
 
-    save:
-      document.getElementById(
-        "saveLobbyBanner"
-      )
+    save: document.getElementById("saveLobbyBanner"),
   };
 }
 
-function resolveLobbyBannerUrl(
-  imageUrl
-) {
+function resolveLobbyBannerUrl(imageUrl) {
   if (!imageUrl) {
     return null;
   }
 
-  if (
-    /^https?:\/\//i.test(
-      imageUrl
-    )
-  ) {
+  if (/^https?:\/\//i.test(imageUrl)) {
     return imageUrl;
   }
 
-  const apiOrigin =
-    new URL(
-      API_BASE_URL,
-      window.location.origin
-    ).origin;
+  const apiOrigin = new URL(API_BASE_URL, window.location.origin).origin;
 
-  return new URL(
-    imageUrl,
-    apiOrigin
-  ).href;
+  return new URL(imageUrl, apiOrigin).href;
 }
 
 function revokeLobbyBannerPreviewUrl() {
-  if (
-    LOBBY_BANNER_STATE
-      .previewObjectUrl
-  ) {
-    URL.revokeObjectURL(
-      LOBBY_BANNER_STATE
-        .previewObjectUrl
-    );
+  if (LOBBY_BANNER_STATE.previewObjectUrl) {
+    URL.revokeObjectURL(LOBBY_BANNER_STATE.previewObjectUrl);
 
-    LOBBY_BANNER_STATE
-      .previewObjectUrl = null;
+    LOBBY_BANNER_STATE.previewObjectUrl = null;
   }
 }
 
 function showLobbyBannerEmptyPreview() {
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
   revokeLobbyBannerPreviewUrl();
 
   if (elements.preview) {
     elements.preview.hidden = true;
-    elements.preview.removeAttribute(
-      "src"
-    );
+    elements.preview.removeAttribute("src");
   }
 
   if (elements.previewEmpty) {
@@ -1529,28 +1636,19 @@ function showLobbyBannerEmptyPreview() {
   }
 }
 
-function showLobbyBannerBlobPreview(
-  blob
-) {
-  const elements =
-    getLobbyBannerElements();
+function showLobbyBannerBlobPreview(blob) {
+  const elements = getLobbyBannerElements();
 
-  if (
-    !elements.preview ||
-    !blob
-  ) {
+  if (!elements.preview || !blob) {
     showLobbyBannerEmptyPreview();
     return;
   }
 
   revokeLobbyBannerPreviewUrl();
 
-  const objectUrl =
-    URL.createObjectURL(blob);
+  const objectUrl = URL.createObjectURL(blob);
 
-  LOBBY_BANNER_STATE
-    .previewObjectUrl =
-      objectUrl;
+  LOBBY_BANNER_STATE.previewObjectUrl = objectUrl;
 
   elements.preview.onload = () => {
     elements.preview.hidden = false;
@@ -1564,45 +1662,27 @@ function showLobbyBannerBlobPreview(
     showLobbyBannerEmptyPreview();
   };
 
-  elements.preview.src =
-    objectUrl;
+  elements.preview.src = objectUrl;
 }
 
-function updateLobbyBannerStatusBadge(
-  status
-) {
-  const badge =
-    getLobbyBannerElements()
-      .statusBadge;
+function updateLobbyBannerStatusBadge(status) {
+  const badge = getLobbyBannerElements().statusBadge;
 
   if (!badge) {
     return;
   }
 
-  const isActive =
-    status === "active";
+  const isActive = status === "active";
 
-  badge.textContent =
-    isActive
-      ? "Active"
-      : "Disabled";
+  badge.textContent = isActive ? "Active" : "Disabled";
 
-  badge.classList.toggle(
-    "is-active",
-    isActive
-  );
+  badge.classList.toggle("is-active", isActive);
 
-  badge.classList.toggle(
-    "is-disabled",
-    !isActive
-  );
+  badge.classList.toggle("is-disabled", !isActive);
 }
 
-function setLobbyBannerControlsDisabled(
-  disabled
-) {
-  const elements =
-    getLobbyBannerElements();
+function setLobbyBannerControlsDisabled(disabled) {
+  const elements = getLobbyBannerElements();
 
   [
     elements.fileInput,
@@ -1611,169 +1691,115 @@ function setLobbyBannerControlsDisabled(
     elements.targetUrl,
     elements.status,
     elements.refresh,
-    elements.save
+    elements.save,
   ].forEach((element) => {
     if (element) {
-      element.disabled =
-        disabled;
+      element.disabled = disabled;
     }
   });
 
   if (elements.save) {
-    elements.save.innerHTML =
-      disabled
-        ? `
+    elements.save.innerHTML = disabled
+      ? `
           <i class="fa-solid fa-spinner fa-spin"></i>
           Please Wait...
         `
-        : `
+      : `
           <i class="fa-solid fa-floppy-disk"></i>
           Save Lobby Banner
         `;
   }
 }
 
-function formatLobbyBannerUpdatedAt(
-  value
-) {
+function formatLobbyBannerUpdatedAt(value) {
   if (!value) {
     return "Not updated yet";
   }
 
-  const date =
-    new Date(value);
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return "Not updated yet";
   }
 
-  return date.toLocaleString(
-    "en-BD",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    }
-  );
+  return date.toLocaleString("en-BD", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
-async function loadAdminLobbyBannerImage(
-  imageUrl
-) {
-  const resolvedUrl =
-    resolveLobbyBannerUrl(
-      imageUrl
-    );
+async function loadAdminLobbyBannerImage(imageUrl) {
+  const resolvedUrl = resolveLobbyBannerUrl(imageUrl);
 
   if (!resolvedUrl) {
     showLobbyBannerEmptyPreview();
     return;
   }
 
-  const token =
-    getAccessToken();
+  const token = getAccessToken();
 
-  const response =
-    await fetch(
-      resolvedUrl,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`
-        },
+  const response = await fetch(resolvedUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
 
-        cache: "no-store"
-      }
-    );
+    cache: "no-store",
+  });
 
   if (!response.ok) {
-    throw new Error(
-      "Banner preview could not be loaded."
-    );
+    throw new Error("Banner preview could not be loaded.");
   }
 
-  const imageBlob =
-    await response.blob();
+  const imageBlob = await response.blob();
 
-  showLobbyBannerBlobPreview(
-    imageBlob
-  );
+  showLobbyBannerBlobPreview(imageBlob);
 }
 
-async function renderAdminLobbyBanner(
-  banner
-) {
-  const elements =
-    getLobbyBannerElements();
+async function renderAdminLobbyBanner(banner) {
+  const elements = getLobbyBannerElements();
 
-  LOBBY_BANNER_STATE.banner =
-    banner || null;
+  LOBBY_BANNER_STATE.banner = banner || null;
 
-  LOBBY_BANNER_STATE.selectedFile =
-    null;
+  LOBBY_BANNER_STATE.selectedFile = null;
 
   if (elements.fileInput) {
     elements.fileInput.value = "";
   }
 
   if (elements.title) {
-    elements.title.value =
-      banner?.title ||
-      "Lobby Banner";
+    elements.title.value = banner?.title || "Lobby Banner";
   }
 
   if (elements.targetUrl) {
-    elements.targetUrl.value =
-      banner?.targetUrl ||
-      "";
+    elements.targetUrl.value = banner?.targetUrl || "";
   }
 
   if (elements.status) {
-    elements.status.value =
-      banner?.status ||
-      "disabled";
+    elements.status.value = banner?.status || "disabled";
   }
 
-  updateLobbyBannerStatusBadge(
-    banner?.status ||
-    "disabled"
-  );
+  updateLobbyBannerStatusBadge(banner?.status || "disabled");
 
   if (elements.fileName) {
-    elements.fileName.textContent =
-      banner?.fileName
-        ? `Current image: ${banner.fileName}`
-        : "JPG, PNG or WebP · Maximum 3 MB";
+    elements.fileName.textContent = banner?.fileName
+      ? `Current image: ${banner.fileName}`
+      : "JPG, PNG or WebP · Maximum 3 MB";
   }
 
   if (elements.updatedText) {
-    elements.updatedText.textContent =
-      `Last updated: ${
-        formatLobbyBannerUpdatedAt(
-          banner?.updatedAt
-        )
-      }`;
+    elements.updatedText.textContent = `Last updated: ${formatLobbyBannerUpdatedAt(
+      banner?.updatedAt,
+    )}`;
   }
 
-  if (
-    banner?.hasImage &&
-    banner?.imageUrl
-  ) {
+  if (banner?.hasImage && banner?.imageUrl) {
     try {
-      await loadAdminLobbyBannerImage(
-        banner.imageUrl
-      );
+      await loadAdminLobbyBannerImage(banner.imageUrl);
     } catch (error) {
-      console.error(
-        "LOAD BANNER PREVIEW ERROR:",
-        error
-      );
+      console.error("LOAD BANNER PREVIEW ERROR:", error);
 
       showLobbyBannerEmptyPreview();
     }
@@ -1784,178 +1810,94 @@ async function renderAdminLobbyBanner(
   showLobbyBannerEmptyPreview();
 }
 
-async function requestAdminLobbyBanner(
-  options = {}
-) {
-  const token =
-    getAccessToken();
+async function requestAdminLobbyBanner(options = {}) {
+  const token = getAccessToken();
 
   if (!token) {
-    window.location.href =
-      "../pages/login.html";
+    window.location.href = "../pages/login.html";
 
-    throw new Error(
-      "Admin login is required."
-    );
+    throw new Error("Admin login is required.");
   }
 
-  const response =
-    await fetch(
-      `${API_BASE_URL}/admin/lobby-banner`,
-      {
-        method:
-          options.method ||
-          "GET",
+  const response = await fetch(`${API_BASE_URL}/admin/lobby-banner`, {
+    method: options.method || "GET",
 
-        headers: {
-          Accept:
-            "application/json",
+    headers: {
+      Accept: "application/json",
 
-          Authorization:
-            `Bearer ${token}`
-        },
+      Authorization: `Bearer ${token}`,
+    },
 
-        body:
-          options.body ||
-          undefined,
+    body: options.body || undefined,
 
-        cache:
-          "no-store"
-      }
-    );
+    cache: "no-store",
+  });
 
-  const result =
-    await parseResponse(
-      response
-    );
+  const result = await parseResponse(response);
 
-  if (
-    response.status === 401 ||
-    response.status === 403
-  ) {
-    throw new Error(
-      result.message ||
-      "Admin authorization failed."
-    );
+  if (response.status === 401 || response.status === 403) {
+    throw new Error(result.message || "Admin authorization failed.");
   }
 
-  if (
-    !response.ok ||
-    !result.success
-  ) {
-    throw new Error(
-      result.message ||
-      "Lobby banner request failed."
-    );
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Lobby banner request failed.");
   }
 
   return result;
 }
 
-async function loadLobbyBanner({
-  showSuccess = false
-} = {}) {
-  if (
-    LOBBY_BANNER_STATE.loading
-  ) {
+async function loadLobbyBanner({ showSuccess = false } = {}) {
+  if (LOBBY_BANNER_STATE.loading) {
     return;
   }
 
-  LOBBY_BANNER_STATE.loading =
-    true;
+  LOBBY_BANNER_STATE.loading = true;
 
-  setLobbyBannerControlsDisabled(
-    true
-  );
+  setLobbyBannerControlsDisabled(true);
 
-  const refreshIcon =
-    getLobbyBannerElements()
-      .refresh
-      ?.querySelector("i");
+  const refreshIcon = getLobbyBannerElements().refresh?.querySelector("i");
 
-  refreshIcon?.classList.add(
-    "fa-spin"
-  );
+  refreshIcon?.classList.add("fa-spin");
 
   try {
-    const result =
-      await requestAdminLobbyBanner();
+    const result = await requestAdminLobbyBanner();
 
-    await renderAdminLobbyBanner(
-      result.data?.banner ||
-      null
-    );
+    await renderAdminLobbyBanner(result.data?.banner || null);
 
     if (showSuccess) {
-      showToast(
-        "Lobby banner refreshed successfully."
-      );
+      showToast("Lobby banner refreshed successfully.");
     }
   } catch (error) {
-    console.error(
-      "LOAD LOBBY BANNER ERROR:",
-      error
-    );
+    console.error("LOAD LOBBY BANNER ERROR:", error);
 
     showLobbyBannerEmptyPreview();
 
-    showToast(
-      error.message ||
-      "Lobby banner load করা যায়নি।",
-      "error"
-    );
+    showToast(error.message || "Lobby banner load করা যায়নি।", "error");
   } finally {
-    LOBBY_BANNER_STATE.loading =
-      false;
+    LOBBY_BANNER_STATE.loading = false;
 
-    setLobbyBannerControlsDisabled(
-      false
-    );
+    setLobbyBannerControlsDisabled(false);
 
-    refreshIcon?.classList.remove(
-      "fa-spin"
-    );
+    refreshIcon?.classList.remove("fa-spin");
   }
 }
 
-function validateLobbyBannerFile(
-  file
-) {
-  const allowedTypes =
-    new Set([
-      "image/jpeg",
-      "image/png",
-      "image/webp"
-    ]);
+function validateLobbyBannerFile(file) {
+  const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-  if (
-    !allowedTypes.has(
-      file.type
-    )
-  ) {
-    throw new Error(
-      "শুধু JPG, PNG অথবা WebP image দিন।"
-    );
+  if (!allowedTypes.has(file.type)) {
+    throw new Error("শুধু JPG, PNG অথবা WebP image দিন।");
   }
 
-  const maximumSize =
-    3 * 1024 * 1024;
+  const maximumSize = 3 * 1024 * 1024;
 
-  if (
-    file.size >
-    maximumSize
-  ) {
-    throw new Error(
-      "Banner image সর্বোচ্চ 3 MB হতে পারবে।"
-    );
+  if (file.size > maximumSize) {
+    throw new Error("Banner image সর্বোচ্চ 3 MB হতে পারবে।");
   }
 }
 
-function validateLobbyBannerUrl(
-  value
-) {
-  const targetUrl =
-    String(value || "").trim();
+function validateLobbyBannerUrl(value) {
+  const targetUrl = String(value || "").trim();
 
   if (!targetUrl) {
     return "";
@@ -1964,284 +1906,163 @@ function validateLobbyBannerUrl(
   let parsedUrl;
 
   try {
-    parsedUrl =
-      new URL(targetUrl);
+    parsedUrl = new URL(targetUrl);
   } catch (error) {
-    throw new Error(
-      "সঠিক Banner Click Link দিন।"
-    );
+    throw new Error("সঠিক Banner Click Link দিন।");
   }
 
-  if (
-    parsedUrl.protocol !== "https:" &&
-    parsedUrl.protocol !== "http:"
-  ) {
-    throw new Error(
-      "Banner link অবশ্যই HTTP অথবা HTTPS হতে হবে।"
-    );
+  if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+    throw new Error("Banner link অবশ্যই HTTP অথবা HTTPS হতে হবে।");
   }
 
   return parsedUrl.toString();
 }
 
-function handleLobbyBannerFileSelection(
-  file
-) {
+function handleLobbyBannerFileSelection(file) {
   if (!file) {
     return;
   }
 
   try {
-    validateLobbyBannerFile(
-      file
-    );
+    validateLobbyBannerFile(file);
   } catch (error) {
-    const elements =
-      getLobbyBannerElements();
+    const elements = getLobbyBannerElements();
 
     if (elements.fileInput) {
-      elements.fileInput.value =
-        "";
+      elements.fileInput.value = "";
     }
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showToast(error.message, "error");
 
     return;
   }
 
-  LOBBY_BANNER_STATE.selectedFile =
-    file;
+  LOBBY_BANNER_STATE.selectedFile = file;
 
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
   if (elements.fileName) {
-    elements.fileName.textContent =
-      `Selected: ${file.name}`;
+    elements.fileName.textContent = `Selected: ${file.name}`;
   }
 
-  showLobbyBannerBlobPreview(
-    file
-  );
+  showLobbyBannerBlobPreview(file);
 }
 
 async function saveLobbyBannerSettings() {
-  if (
-    LOBBY_BANNER_STATE.loading
-  ) {
+  if (LOBBY_BANNER_STATE.loading) {
     return;
   }
 
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
-  const title =
-    String(
-      elements.title?.value ||
-      ""
-    ).trim();
+  const title = String(elements.title?.value || "").trim();
 
-  const status =
-    elements.status?.value ||
-    "disabled";
+  const status = elements.status?.value || "disabled";
 
   let targetUrl;
 
   try {
-    targetUrl =
-      validateLobbyBannerUrl(
-        elements.targetUrl?.value
-      );
+    targetUrl = validateLobbyBannerUrl(elements.targetUrl?.value);
   } catch (error) {
-    showToast(
-      error.message,
-      "error"
-    );
+    showToast(error.message, "error");
 
     elements.targetUrl?.focus();
 
     return;
   }
 
-  if (
-    !title ||
-    title.length > 100
-  ) {
-    showToast(
-      "Banner title 1–100 characters হতে হবে।",
-      "error"
-    );
+  if (!title || title.length > 100) {
+    showToast("Banner title 1–100 characters হতে হবে।", "error");
 
     elements.title?.focus();
 
     return;
   }
 
-  const hasImage =
-    Boolean(
-      LOBBY_BANNER_STATE
-        .selectedFile ||
-      LOBBY_BANNER_STATE
-        .banner?.hasImage
-    );
+  const hasImage = Boolean(
+    LOBBY_BANNER_STATE.selectedFile || LOBBY_BANNER_STATE.banner?.hasImage,
+  );
 
-  if (
-    status === "active" &&
-    !hasImage
-  ) {
-    showToast(
-      "Active করার আগে একটি banner image upload করুন।",
-      "error"
-    );
+  if (status === "active" && !hasImage) {
+    showToast("Active করার আগে একটি banner image upload করুন।", "error");
 
     return;
   }
 
-  const shouldSave =
-    window.confirm(
-      "Save this Lobby banner? Active banner will immediately appear in the user Lobby."
-    );
+  const shouldSave = window.confirm(
+    "Save this Lobby banner? Active banner will immediately appear in the user Lobby.",
+  );
 
   if (!shouldSave) {
     return;
   }
 
-  const formData =
-    new FormData();
+  const formData = new FormData();
 
-  formData.append(
-    "title",
-    title
-  );
+  formData.append("title", title);
 
-  formData.append(
-    "targetUrl",
-    targetUrl
-  );
+  formData.append("targetUrl", targetUrl);
 
-  formData.append(
-    "status",
-    status
-  );
+  formData.append("status", status);
 
-  if (
-    LOBBY_BANNER_STATE
-      .selectedFile
-  ) {
-    formData.append(
-      "bannerImage",
-      LOBBY_BANNER_STATE
-        .selectedFile
-    );
+  if (LOBBY_BANNER_STATE.selectedFile) {
+    formData.append("bannerImage", LOBBY_BANNER_STATE.selectedFile);
   }
 
-  LOBBY_BANNER_STATE.loading =
-    true;
+  LOBBY_BANNER_STATE.loading = true;
 
-  setLobbyBannerControlsDisabled(
-    true
-  );
+  setLobbyBannerControlsDisabled(true);
 
   try {
-    const result =
-      await requestAdminLobbyBanner({
-        method: "PATCH",
-        body: formData
-      });
+    const result = await requestAdminLobbyBanner({
+      method: "PATCH",
+      body: formData,
+    });
 
-    await renderAdminLobbyBanner(
-      result.data?.banner ||
-      null
-    );
+    await renderAdminLobbyBanner(result.data?.banner || null);
 
-    showToast(
-      result.message ||
-      "Lobby banner saved successfully."
-    );
+    showToast(result.message || "Lobby banner saved successfully.");
   } catch (error) {
-    console.error(
-      "SAVE LOBBY BANNER ERROR:",
-      error
-    );
+    console.error("SAVE LOBBY BANNER ERROR:", error);
 
-    showToast(
-      error.message ||
-      "Lobby banner save করা যায়নি।",
-      "error"
-    );
+    showToast(error.message || "Lobby banner save করা যায়নি।", "error");
   } finally {
-    LOBBY_BANNER_STATE.loading =
-      false;
+    LOBBY_BANNER_STATE.loading = false;
 
-    setLobbyBannerControlsDisabled(
-      false
-    );
+    setLobbyBannerControlsDisabled(false);
   }
 }
 
 function bindLobbyBannerEvents() {
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
-  elements.chooseFile
-    ?.addEventListener(
-      "click",
-      () => {
-        elements.fileInput?.click();
-      }
-    );
+  elements.chooseFile?.addEventListener("click", () => {
+    elements.fileInput?.click();
+  });
 
-  elements.fileInput
-    ?.addEventListener(
-      "change",
-      () => {
-        const file =
-          elements.fileInput
-            ?.files?.[0];
+  elements.fileInput?.addEventListener("change", () => {
+    const file = elements.fileInput?.files?.[0];
 
-        handleLobbyBannerFileSelection(
-          file
-        );
-      }
-    );
+    handleLobbyBannerFileSelection(file);
+  });
 
-  elements.status
-    ?.addEventListener(
-      "change",
-      () => {
-        updateLobbyBannerStatusBadge(
-          elements.status.value
-        );
-      }
-    );
+  elements.status?.addEventListener("change", () => {
+    updateLobbyBannerStatusBadge(elements.status.value);
+  });
 
-  elements.form
-    ?.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
+  elements.form?.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-        saveLobbyBannerSettings();
-      }
-    );
+    saveLobbyBannerSettings();
+  });
 
-  elements.refresh
-    ?.addEventListener(
-      "click",
-      () => {
-        loadLobbyBanner({
-          showSuccess: true
-        });
-      }
-    );
+  elements.refresh?.addEventListener("click", () => {
+    loadLobbyBanner({
+      showSuccess: true,
+    });
+  });
 
-  window.addEventListener(
-    "beforeunload",
-    revokeLobbyBannerPreviewUrl
-  );
+  window.addEventListener("beforeunload", revokeLobbyBannerPreviewUrl);
 }
 
 /* =========================

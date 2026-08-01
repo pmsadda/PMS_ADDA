@@ -19,4 +19,10 @@ router.patch(
         .updateServiceCharges
 );
 
+router.patch(
+  "/referral-settings",
+  adminDashboardController
+    .updateReferralSettings
+);
+
 module.exports = router;

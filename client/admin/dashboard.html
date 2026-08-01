@@ -587,6 +587,180 @@
                     </div>
 
                 </section>
+
+                <!-- =========================
+     Referral Program Control
+========================== -->
+
+                <section class="dashboard-section referral-admin-section">
+
+                    <div class="section-heading">
+
+                        <div>
+                            <h2>Referral Program Control</h2>
+
+                            <p>
+                                Control referral rewards applied
+                                after a referred user's first deposit
+                            </p>
+                        </div>
+
+                        <label class="referral-admin-switch">
+
+                            <input
+                                type="checkbox"
+                                id="referralEnabled"
+                                checked>
+
+                            <span class="referral-switch-track"></span>
+
+                            <strong id="referralStatusLabel">
+                                Enabled
+                            </strong>
+
+                        </label>
+
+                    </div>
+
+                    <div class="referral-admin-stats">
+
+                        <article>
+                            <span>Total Referrals</span>
+                            <strong id="totalReferrals">0</strong>
+                        </article>
+
+                        <article>
+                            <span>Pending</span>
+                            <strong id="pendingReferrals">0</strong>
+                        </article>
+
+                        <article>
+                            <span>Rewarded</span>
+                            <strong id="rewardedReferrals">0</strong>
+                        </article>
+
+                        <article>
+                            <span>Total Bonus Paid</span>
+
+                            <strong>
+                                ৳<span id="totalReferralBonus">0.00</span>
+                            </strong>
+                        </article>
+
+                    </div>
+
+                    <form
+                        id="referralSettingsForm"
+                        class="referral-settings-form"
+                        novalidate>
+
+                        <div class="referral-setting-field">
+
+                            <label for="referrerBonus">
+                                Referrer Bonus
+                            </label>
+
+                            <div class="referral-money-input">
+
+                                <span>৳</span>
+
+                                <input
+                                    type="number"
+                                    id="referrerBonus"
+                                    min="0"
+                                    max="1000000"
+                                    step="0.01"
+                                    value="200"
+                                    required>
+
+                            </div>
+
+                            <small>
+                                Existing user will receive this amount.
+                            </small>
+
+                        </div>
+
+                        <div class="referral-setting-field">
+
+                            <label for="referredUserBonus">
+                                New User Bonus
+                            </label>
+
+                            <div class="referral-money-input">
+
+                                <span>৳</span>
+
+                                <input
+                                    type="number"
+                                    id="referredUserBonus"
+                                    min="0"
+                                    max="1000000"
+                                    step="0.01"
+                                    value="100"
+                                    required>
+
+                            </div>
+
+                            <small>
+                                Referred user will receive this amount.
+                            </small>
+
+                        </div>
+
+                        <div class="referral-setting-field">
+
+                            <label for="minimumFirstDeposit">
+                                Minimum First Deposit
+                            </label>
+
+                            <div class="referral-money-input">
+
+                                <span>৳</span>
+
+                                <input
+                                    type="number"
+                                    id="minimumFirstDeposit"
+                                    min="0"
+                                    max="1000000"
+                                    step="0.01"
+                                    value="0"
+                                    required>
+
+                            </div>
+
+                            <small>
+                                Set 0 to allow any valid first deposit.
+                            </small>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="saveReferralSettings"
+                            class="save-referral-btn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+
+                            Save Referral Settings
+
+                        </button>
+
+                    </form>
+
+                    <div class="referral-admin-notice">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <p>
+                            Updated amounts apply only to future
+                            first-deposit referral rewards. Both
+                            referral bonuses add to turnover requirement.
+                        </p>
+
+                    </div>
+
+                </section>
                 <!-- =========================
              Bot Statistics
         ========================== -->
@@ -1089,226 +1263,227 @@
 
                 </section>
 
-                 <!-- =========================
+                <!-- =========================
      Lobby Banner Management
 ========================== -->
 
-<section
-    class="dashboard-section banner-management-section"
-    id="lobbyBannerManagement">
+                <section
+                    class="dashboard-section banner-management-section"
+                    id="lobbyBannerManagement">
 
-    <div class="banner-section-header">
+                    <div class="banner-section-header">
 
-        <div>
+                        <div>
 
-            <span class="banner-section-kicker">
-                LOBBY ADVERTISEMENT
-            </span>
+                            <span class="banner-section-kicker">
+                                LOBBY ADVERTISEMENT
+                            </span>
 
-            <h2>
-                <i class="fa-regular fa-image"></i>
-                Lobby Banner
-            </h2>
+                            <h2>
+                                <i class="fa-regular fa-image"></i>
+                                Lobby Banner
+                            </h2>
 
-            <p>
-                Upload and control the advertisement
-                banner shown in the user Lobby.
-            </p>
+                            <p>
+                                Upload and control the advertisement
+                                banner shown in the user Lobby.
+                            </p>
 
-        </div>
+                        </div>
 
-        <button
-            type="button"
-            class="banner-refresh-btn"
-            id="refreshLobbyBanner">
+                        <button
+                            type="button"
+                            class="banner-refresh-btn"
+                            id="refreshLobbyBanner">
 
-            <i class="fa-solid fa-rotate"></i>
+                            <i class="fa-solid fa-rotate"></i>
 
-            Refresh
+                            Refresh
 
-        </button>
-
-    </div>
-
-    <form
-        id="lobbyBannerForm"
-        class="banner-management-form"
-        enctype="multipart/form-data"
-        novalidate>
-
-        <div class="banner-management-grid">
-
-            <!-- Preview -->
-
-            <div class="banner-preview-card">
-
-                <div class="banner-preview-heading">
-
-                    <h3>Banner Preview</h3>
-
-                    <span id="lobbyBannerCurrentStatus">
-                        Disabled
-                    </span>
-
-                </div>
-
-                <div
-                    class="banner-preview-frame"
-                    id="lobbyBannerPreviewFrame">
-
-                    <img
-                        id="lobbyBannerPreview"
-                        alt="Lobby banner preview"
-                        hidden>
-
-                    <div
-                        class="banner-preview-empty"
-                        id="lobbyBannerPreviewEmpty">
-
-                        <i class="fa-regular fa-image"></i>
-
-                        <strong>
-                            No banner uploaded
-                        </strong>
-
-                        <span>
-                            Recommended size:
-                            1600 × 500 px
-                        </span>
+                        </button>
 
                     </div>
 
-                </div>
+                    <form
+                        id="lobbyBannerForm"
+                        class="banner-management-form"
+                        enctype="multipart/form-data"
+                        novalidate>
 
-                <input
-                    type="file"
-                    id="lobbyBannerFile"
-                    name="bannerImage"
-                    accept="image/jpeg,image/png,image/webp"
-                    hidden>
+                        <div class="banner-management-grid">
 
-                <button
-                    type="button"
-                    class="banner-file-button"
-                    id="chooseLobbyBanner">
+                            <!-- Preview -->
 
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <div class="banner-preview-card">
 
-                    Choose Banner Image
+                                <div class="banner-preview-heading">
 
-                </button>
+                                    <h3>Banner Preview</h3>
 
-                <p
-                    class="banner-file-name"
-                    id="lobbyBannerFileName">
+                                    <span id="lobbyBannerCurrentStatus">
+                                        Disabled
+                                    </span>
 
-                    JPG, PNG or WebP · Maximum 3 MB
+                                </div>
 
-                </p>
+                                <div
+                                    class="banner-preview-frame"
+                                    id="lobbyBannerPreviewFrame">
 
-            </div>
+                                    <img
+                                        id="lobbyBannerPreview"
+                                        alt="Lobby banner preview"
+                                        hidden>
 
-            <!-- Settings -->
+                                    <div
+                                        class="banner-preview-empty"
+                                        id="lobbyBannerPreviewEmpty">
 
-            <div class="banner-settings-card">
+                                        <i class="fa-regular fa-image"></i>
 
-                <div class="banner-field">
+                                        <strong>
+                                            No banner uploaded
+                                        </strong>
 
-                    <label for="lobbyBannerTitle">
-                        Banner Title
-                    </label>
+                                        <span>
+                                            Recommended size:
+                                            1600 × 500 px
+                                        </span>
 
-                    <input
-                        type="text"
-                        id="lobbyBannerTitle"
-                        maxlength="100"
-                        placeholder="Lobby Banner"
-                        value="Lobby Banner">
+                                    </div>
 
-                </div>
+                                </div>
 
-                <div class="banner-field">
+                                <input
+                                    type="file"
+                                    id="lobbyBannerFile"
+                                    name="bannerImage"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    hidden>
 
-                    <label for="lobbyBannerTargetUrl">
-                        Click Link
-                        <span>Optional</span>
-                    </label>
+                                <button
+                                    type="button"
+                                    class="banner-file-button"
+                                    id="chooseLobbyBanner">
 
-                    <input
-                        type="url"
-                        id="lobbyBannerTargetUrl"
-                        maxlength="500"
-                        placeholder="https://example.com">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
 
-                    <small>
-                        User banner-এ click করলে এই
-                        link নতুন tab-এ খুলবে।
-                    </small>
+                                    Choose Banner Image
 
-                </div>
+                                </button>
 
-                <div class="banner-field">
+                                <p
+                                    class="banner-file-name"
+                                    id="lobbyBannerFileName">
 
-                    <label for="lobbyBannerStatus">
-                        Banner Status
-                    </label>
+                                    JPG, PNG or WebP · Maximum 3 MB
 
-                    <select id="lobbyBannerStatus">
+                                </p>
 
-                        <option value="disabled">
-                            Disabled
-                        </option>
+                            </div>
 
-                        <option value="active">
-                            Active
-                        </option>
+                            <!-- Settings -->
 
-                    </select>
+                            <div class="banner-settings-card">
 
-                    <small>
-                        Active করলে banner User Lobby-তে
-                        দেখা যাবে।
-                    </small>
+                                <div class="banner-field">
 
-                </div>
+                                    <label for="lobbyBannerTitle">
+                                        Banner Title
+                                    </label>
 
-                <div class="banner-settings-note">
+                                    <input
+                                        type="text"
+                                        id="lobbyBannerTitle"
+                                        maxlength="100"
+                                        placeholder="Lobby Banner"
+                                        value="Lobby Banner">
 
-                    <i class="fa-solid fa-circle-info"></i>
+                                </div>
 
-                    <p>
-                        নতুন image নির্বাচন না করলে Save-এর
-                        সময় বর্তমান banner image অপরিবর্তিত থাকবে।
-                    </p>
+                                <div class="banner-field">
 
-                </div>
+                                    <label for="lobbyBannerTargetUrl">
+                                        Click Link
+                                        <span>Optional</span>
+                                    </label>
 
-                <div class="banner-form-footer">
+                                    <input
+                                        type="url"
+                                        id="lobbyBannerTargetUrl"
+                                        maxlength="500"
+                                        placeholder="https://example.com">
 
-                    <p id="lobbyBannerUpdatedText">
-                        Banner settings loading...
-                    </p>
+                                    <small>
+                                        User banner-এ click করলে এই
+                                        link নতুন tab-এ খুলবে।
+                                    </small>
 
-                    <button
-                        type="submit"
-                        class="save-banner-btn"
-                        id="saveLobbyBanner">
+                                </div>
 
-                        <i class="fa-solid fa-floppy-disk"></i>
+                                <div class="banner-field">
 
-                        Save Lobby Banner
+                                    <label for="lobbyBannerStatus">
+                                        Banner Status
+                                    </label>
 
-                    </button>
+                                    <select id="lobbyBannerStatus">
 
-                </div>
+                                        <option value="disabled">
+                                            Disabled
+                                        </option>
 
-            </div>
+                                        <option value="active">
+                                            Active
+                                        </option>
 
-        </div>
+                                    </select>
 
-    </form>
+                                    <small>
+                                        Active করলে banner User Lobby-তে
+                                        দেখা যাবে।
+                                    </small>
 
-</section>
+                                </div>
+
+                                <div class="banner-settings-note">
+
+                                    <i class="fa-solid fa-circle-info"></i>
+
+                                    <p>
+                                        নতুন image নির্বাচন না করলে Save-এর
+                                        সময় বর্তমান banner image অপরিবর্তিত
+                                        থাকবে।
+                                    </p>
+
+                                </div>
+
+                                <div class="banner-form-footer">
+
+                                    <p id="lobbyBannerUpdatedText">
+                                        Banner settings loading...
+                                    </p>
+
+                                    <button
+                                        type="submit"
+                                        class="save-banner-btn"
+                                        id="saveLobbyBanner">
+
+                                        <i class="fa-solid fa-floppy-disk"></i>
+
+                                        Save Lobby Banner
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </section>
 
                 <!-- =========================
              Revenue Calculation Note
@@ -1441,6 +1616,104 @@
                                 class="confirm-btn">
                                 <i class="fa-solid fa-check"></i>
                                 Confirm
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Referral Confirmation Modal -->
+
+                <div
+                    class="modal"
+                    id="referralConfirmModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>Confirm Referral Settings</h3>
+
+                            <button
+                                type="button"
+                                id="closeReferralModal"
+                                aria-label="Close">
+
+                                <i class="fa-solid fa-xmark"></i>
+
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <p>
+                                Confirm the referral settings that
+                                will apply to future qualifying
+                                first deposits.
+                            </p>
+
+                            <div class="confirm-charge-list">
+
+                                <div class="confirm-charge-row">
+                                    <span>Program Status</span>
+                                    <strong id="confirmReferralStatus">
+                                        Enabled
+                                    </strong>
+                                </div>
+
+                                <div class="confirm-charge-row">
+                                    <span>Referrer Bonus</span>
+
+                                    <strong>
+                                        ৳<span
+                                            id="confirmReferrerBonus">200.00</span>
+                                    </strong>
+                                </div>
+
+                                <div class="confirm-charge-row">
+                                    <span>New User Bonus</span>
+
+                                    <strong>
+                                        ৳<span
+                                            id="confirmReferredBonus">100.00</span>
+                                    </strong>
+                                </div>
+
+                                <div class="confirm-charge-row">
+                                    <span>Minimum First Deposit</span>
+
+                                    <strong>
+                                        ৳<span
+                                            id="confirmMinimumDeposit">0.00</span>
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-actions">
+
+                            <button
+                                type="button"
+                                id="cancelReferralSave"
+                                class="cancel-btn">
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                id="confirmReferralSave"
+                                class="confirm-btn">
+
+                                <i class="fa-solid fa-check"></i>
+
+                                Confirm
+
                             </button>
 
                         </div>

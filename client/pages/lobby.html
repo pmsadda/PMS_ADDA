@@ -112,38 +112,38 @@
      Dynamic Lobby Banner
 ========================== -->
 
-<section
-    class="lobby-banner"
-    id="lobbyBanner"
-    aria-label="Lobby advertisement"
-    hidden>
+            <section
+                class="lobby-banner"
+                id="lobbyBanner"
+                aria-label="Lobby advertisement"
+                hidden>
 
-    <a
-        class="lobby-banner-link"
-        id="lobbyBannerLink"
-        rel="noopener noreferrer"
-        aria-label="Open lobby advertisement">
+                <a
+                    class="lobby-banner-link"
+                    id="lobbyBannerLink"
+                    rel="noopener noreferrer"
+                    aria-label="Open lobby advertisement">
 
-        <img
-            class="lobby-banner-image"
-            id="lobbyBannerImage"
-            alt="PMS ADDA lobby advertisement">
+                    <img
+                        class="lobby-banner-image"
+                        id="lobbyBannerImage"
+                        alt="PMS ADDA lobby advertisement">
 
-        <div
-            class="lobby-banner-loading"
-            id="lobbyBannerLoading">
+                    <div
+                        class="lobby-banner-loading"
+                        id="lobbyBannerLoading">
 
-            <i class="fa-solid fa-spinner fa-spin"></i>
+                        <i class="fa-solid fa-spinner fa-spin"></i>
 
-            <span>
-                Loading advertisement...
-            </span>
+                        <span>
+                            Loading advertisement...
+                        </span>
 
-        </div>
+                    </div>
 
-    </a>
+                </a>
 
-</section>
+            </section>
 
             <section class="balance-card">
 
@@ -200,6 +200,19 @@
 
                         Withdraw
 
+                    </span>
+
+                </button>
+
+                <button
+                    type="button"
+                    id="referBtn"
+                    class="refer-quick-button">
+
+                    <i class="fa-solid fa-gift"></i>
+
+                    <span>
+                        Refer & Earn
                     </span>
 
                 </button>
@@ -429,6 +442,166 @@
                             <p>No notifications yet.</p>
 
                         </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Referral Modal -->
+
+            <div
+                class="modal"
+                id="referralModal">
+
+                <div class="modal-content referral-modal-content">
+
+                    <div class="modal-header">
+
+                        <h3>
+                            <i class="fa-solid fa-gift"></i>
+                            Refer & Earn
+                        </h3>
+
+                        <button
+                            type="button"
+                            id="closeReferralModal"
+                            aria-label="Close referral">
+
+                            <i class="fa-solid fa-xmark"></i>
+
+                        </button>
+
+                    </div>
+
+                    <div class="modal-body referral-modal-body">
+
+                        <div class="referral-offer-card">
+
+                            <span id="referralProgramStatus">
+                                Referral Program Active
+                            </span>
+
+                            <h4>
+                                Refer a friend and earn
+                                ৳<strong
+                                    id="referrerRewardAmount">200.00</strong>
+                            </h4>
+
+                            <p>
+                                Your friend will receive
+                                ৳<strong
+                                    id="referredRewardAmount">100.00</strong>
+                                after their qualifying first deposit.
+                            </p>
+
+                            <small id="referralMinimumText">
+                                Any valid first deposit qualifies.
+                            </small>
+
+                        </div>
+
+                        <div class="referral-copy-group">
+
+                            <label for="myReferralCode">
+                                Your Referral Code
+                            </label>
+
+                            <div class="referral-copy-row">
+
+                                <input
+                                    type="text"
+                                    id="myReferralCode"
+                                    readonly
+                                    value="Loading...">
+
+                                <button
+                                    type="button"
+                                    id="copyReferralCode">
+
+                                    <i class="fa-regular fa-copy"></i>
+                                    Copy
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <div class="referral-copy-group">
+
+                            <label for="myReferralLink">
+                                Your Referral Link
+                            </label>
+
+                            <div class="referral-copy-row">
+
+                                <input
+                                    type="text"
+                                    id="myReferralLink"
+                                    readonly
+                                    value="Loading...">
+
+                                <button
+                                    type="button"
+                                    id="copyReferralLink">
+
+                                    <i class="fa-regular fa-copy"></i>
+                                    Copy
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            id="shareReferralLink"
+                            class="share-referral-button">
+
+                            <i class="fa-solid fa-share-nodes"></i>
+
+                            Share Referral Link
+
+                        </button>
+
+                        <div class="referral-user-stats">
+
+                            <article>
+                                <span>Total Invited</span>
+                                <strong id="myTotalReferrals">0</strong>
+                            </article>
+
+                            <article>
+                                <span>Successful</span>
+                                <strong id="myRewardedReferrals">0</strong>
+                            </article>
+
+                            <article>
+                                <span>Pending</span>
+                                <strong id="myPendingReferrals">0</strong>
+                            </article>
+
+                            <article>
+                                <span>Bonus Earned</span>
+
+                                <strong>
+                                    ৳<span id="myReferralEarnings">0.00</span>
+                                </strong>
+                            </article>
+
+                        </div>
+
+                        <p class="referral-turnover-note">
+
+                            <i class="fa-solid fa-circle-info"></i>
+
+                            Referral bonus withdrawal করার আগে
+                            একই পরিমাণ turnover complete করতে হবে।
+
+                        </p>
 
                     </div>
 

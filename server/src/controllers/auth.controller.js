@@ -1,6 +1,10 @@
 const jwt = require("jsonwebtoken");
 
-const { createUser, loginUser } = require("../services/auth.service");
+const {
+  createUser,
+  loginUser,
+  getUserReferralSummary,
+} = require("../services/auth.service");
 
 /* ==========================
    Create JWT Token
@@ -26,7 +30,8 @@ function createAccessToken(user) {
 
 async function registerUser(req, res, next) {
   try {
-    const { fullName, username, phone, email, password } = req.body;
+    const { fullName, username, phone, email, password, referralCode } =
+      req.body;
 
     if (!fullName || !username || !phone || !email || !password) {
       return res.status(400).json({
@@ -45,6 +50,10 @@ async function registerUser(req, res, next) {
       email: String(email).trim().toLowerCase(),
 
       password: String(password),
+
+      referralCode: String(referralCode || "")
+        .trim()
+        .toUpperCase(),
     };
 
     if (cleanedData.fullName.length < 3) {
@@ -83,13 +92,25 @@ async function registerUser(req, res, next) {
       });
     }
 
+    if (
+      cleanedData.referralCode &&
+      !/^PMS[A-Z0-9]{6,17}$/.test(cleanedData.referralCode)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Referral code সঠিক নয়।",
+      });
+    }
+
     const user = await createUser(cleanedData);
 
     const token = createAccessToken(user);
 
     return res.status(201).json({
       success: true,
-      message: "Registration completed successfully.",
+      message: user.referralApplied
+        ? "Registration completed with referral code."
+        : "Registration completed successfully.",
 
       data: {
         token,
@@ -157,6 +178,7 @@ async function me(req, res, next) {
                 SELECT
                     id,
                     uid,
+                    referral_code,
                     full_name,
                     username,
                     phone,
@@ -189,6 +211,7 @@ async function me(req, res, next) {
         user: {
           id: user.id,
           uid: user.uid,
+          referralCode: user.referral_code,
           fullName: user.full_name,
           username: user.username,
           phone: user.phone,
@@ -208,8 +231,36 @@ async function me(req, res, next) {
   }
 }
 
+async function referralSummary(
+  req,
+  res,
+  next
+) {
+  try {
+    const summary =
+      await getUserReferralSummary(
+        req.user.id
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Referral summary loaded successfully.",
+
+      data: {
+        referral:
+          summary
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   registerUser,
   login,
   me,
+  referralSummary
 };

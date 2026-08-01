@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     totalDeposit: document.getElementById("totalDeposit"),
     totalWithdraw: document.getElementById("totalWithdraw"),
     totalWinning: document.getElementById("totalWinning"),
-    
+
     transactionList: document.getElementById("transactionList"),
     transactionHistory: document.getElementById("transactionHistory"),
 
@@ -308,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setMoney(DOM.totalWithdraw, wallet.totalWithdraw);
 
     setMoney(DOM.totalWinning, wallet.totalWinning);
-    
+
     if (DOM.lastUpdated) {
       DOM.lastUpdated.textContent = formatDate(wallet.updatedAt || new Date());
     }
@@ -374,6 +374,12 @@ document.addEventListener("DOMContentLoaded", () => {
         title: "Admin Debit",
         icon: "fa-solid fa-circle-minus",
         className: "admin_remove",
+      },
+
+      referral_bonus: {
+        title: "Referral Bonus",
+        icon: "fa-solid fa-gift",
+        className: "admin_add",
       },
 
       withdraw_refund: {
@@ -696,15 +702,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   DOM.viewAllButton?.addEventListener("click", loadMoreTransactions);
 
-DOM.bonusButton?.addEventListener(
-  "click",
-  () => {
+  DOM.bonusButton?.addEventListener("click", () => {
     showToast(
       "First deposit-এ 50% bonus, সর্বোচ্চ ৳2,000। Turnover-এ deposit ও bonus দুটোই অন্তর্ভুক্ত হবে।",
       "info",
     );
-  },
-);
+  });
 
   /* =========================================================
      BOTTOM NAVIGATION

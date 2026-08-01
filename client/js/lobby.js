@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     lobbyNotices: [],
     lobbyBanner: null,
     gameAvailability: {},
+    referral: null,
     loading: false,
     lastLoadedAt: 0,
     toastTimer: null,
@@ -73,6 +74,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     depositButton: document.getElementById("depositBtn"),
     withdrawButton: document.getElementById("withdrawBtn"),
+
+    referButton: document.getElementById("referBtn"),
+
+    referralModal: document.getElementById("referralModal"),
+
+    closeReferralModal: document.getElementById("closeReferralModal"),
+
+    referralProgramStatus: document.getElementById("referralProgramStatus"),
+
+    referrerRewardAmount: document.getElementById("referrerRewardAmount"),
+
+    referredRewardAmount: document.getElementById("referredRewardAmount"),
+
+    referralMinimumText: document.getElementById("referralMinimumText"),
+
+    referralCode: document.getElementById("myReferralCode"),
+
+    referralLink: document.getElementById("myReferralLink"),
+
+    copyReferralCode: document.getElementById("copyReferralCode"),
+
+    copyReferralLink: document.getElementById("copyReferralLink"),
+
+    shareReferralLink: document.getElementById("shareReferralLink"),
 
     teenPattiButton: document.getElementById("teenPattiBtn"),
     pokerButton: document.getElementById("pokerBtn"),
@@ -241,6 +266,160 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return result;
+  }
+
+  function extractReferral(result) {
+    return result?.data?.referral || result?.referral || null;
+  }
+
+  function buildReferralLink(referralCode) {
+    const url = new URL("./register.html", window.location.href);
+
+    url.search = "";
+    url.hash = "";
+
+    url.searchParams.set("ref", referralCode);
+
+    return url.toString();
+  }
+
+  async function copyReferralText(value, successMessage) {
+    const safeValue = String(value || "").trim();
+
+    if (!safeValue) {
+      showToast("Referral information পাওয়া যায়নি।", "error");
+
+      return;
+    }
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(safeValue);
+      } else {
+        const temporaryInput = document.createElement("textarea");
+
+        temporaryInput.value = safeValue;
+
+        temporaryInput.style.position = "fixed";
+
+        temporaryInput.style.opacity = "0";
+
+        document.body.appendChild(temporaryInput);
+
+        temporaryInput.select();
+
+        document.execCommand("copy");
+
+        temporaryInput.remove();
+      }
+
+      showToast(successMessage, "success");
+    } catch (error) {
+      console.error("REFERRAL COPY ERROR:", error);
+
+      showToast("Copy করা যায়নি।", "error");
+    }
+  }
+
+  function renderReferral() {
+    const referral = STATE.referral || {};
+
+    const settings = referral.settings || {};
+
+    const stats = referral.stats || {};
+
+    const referralCode = String(
+      referral.referralCode || STATE.user?.referralCode || "",
+    )
+      .trim()
+      .toUpperCase();
+
+    const enabled = Boolean(settings.isEnabled);
+
+    const referralLink = referralCode ? buildReferralLink(referralCode) : "";
+
+    if (DOM.referralCode) {
+      DOM.referralCode.value = referralCode || "Unavailable";
+    }
+
+    if (DOM.referralLink) {
+      DOM.referralLink.value = referralLink || "Unavailable";
+    }
+
+    if (DOM.referralProgramStatus) {
+      DOM.referralProgramStatus.classList.toggle("is-disabled", !enabled);
+
+      DOM.referralProgramStatus.textContent = enabled
+        ? "Referral Program Active"
+        : "Referral Program Disabled";
+    }
+
+    if (DOM.referrerRewardAmount) {
+      DOM.referrerRewardAmount.textContent = formatMoney(
+        settings.referrerBonus || 0,
+      );
+    }
+
+    if (DOM.referredRewardAmount) {
+      DOM.referredRewardAmount.textContent = formatMoney(
+        settings.referredUserBonus || 0,
+      );
+    }
+
+    const minimumDeposit = Number(settings.minimumFirstDeposit || 0);
+
+    if (DOM.referralMinimumText) {
+      DOM.referralMinimumText.textContent =
+        minimumDeposit > 0
+          ? `Minimum first deposit: ` + `৳${formatMoney(minimumDeposit)}`
+          : "Any valid first deposit qualifies.";
+    }
+
+    setReferralStat("myTotalReferrals", stats.total || 0);
+
+    setReferralStat("myRewardedReferrals", stats.rewarded || 0);
+
+    setReferralStat("myPendingReferrals", stats.pending || 0);
+
+    setReferralStat("myReferralEarnings", formatMoney(stats.earnedBonus || 0));
+
+    const actionsEnabled = enabled && Boolean(referralCode);
+
+    [DOM.copyReferralCode, DOM.copyReferralLink, DOM.shareReferralLink].forEach(
+      (button) => {
+        if (button) {
+          button.disabled = !actionsEnabled;
+        }
+      },
+    );
+  }
+
+  function setReferralStat(elementId, value) {
+    const element = document.getElementById(elementId);
+
+    if (element) {
+      element.textContent = String(value);
+    }
+  }
+
+  async function refreshReferralSummary() {
+    try {
+      const result = await requestAPI("/auth/referral-summary");
+
+      STATE.referral = extractReferral(result);
+
+      renderReferral();
+
+      return STATE.referral;
+    } catch (error) {
+      console.error("REFERRAL SUMMARY ERROR:", error);
+
+      STATE.referral = null;
+
+      renderReferral();
+
+      throw error;
+    }
   }
 
   function extractUser(result) {
@@ -838,6 +1017,7 @@ document.addEventListener("DOMContentLoaded", () => {
         noticeResult,
         bannerResult,
         gameResult,
+        referralResult,
       ] = await Promise.allSettled([
         requestAPI("/auth/me"),
         requestAPI("/deposits/my-history"),
@@ -845,6 +1025,7 @@ document.addEventListener("DOMContentLoaded", () => {
         requestAPI("/lobby-notices/public"),
         requestAPI("/lobby-banner"),
         requestAPI("/games/availability"),
+        requestAPI("/auth/referral-summary"),
       ]);
 
       if (userResult.status === "rejected") {
@@ -892,10 +1073,16 @@ document.addEventListener("DOMContentLoaded", () => {
           ? extractGameAvailability(gameResult.value)
           : {};
 
+      STATE.referral =
+        referralResult.status === "fulfilled"
+          ? extractReferral(referralResult.value)
+          : null;
+
       renderLobbyNotice();
       renderLobbyBanner();
 
       renderGameAvailability();
+      renderReferral();
 
       buildNotifications();
       renderUser();
@@ -930,6 +1117,61 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  DOM.referButton?.addEventListener("click", async () => {
+    openModal(DOM.referralModal);
+
+    renderReferral();
+
+    try {
+      await refreshReferralSummary();
+    } catch (error) {
+      showToast(error.message || "Referral data load করা যায়নি।", "error");
+    }
+  });
+
+  DOM.closeReferralModal?.addEventListener("click", () => {
+    closeModal(DOM.referralModal);
+  });
+
+  DOM.copyReferralCode?.addEventListener("click", () => {
+    copyReferralText(DOM.referralCode?.value, "Referral code copied.");
+  });
+
+  DOM.copyReferralLink?.addEventListener("click", () => {
+    copyReferralText(DOM.referralLink?.value, "Referral link copied.");
+  });
+
+  DOM.shareReferralLink?.addEventListener("click", async () => {
+    const link = DOM.referralLink?.value || "";
+
+    const settings = STATE.referral?.settings || {};
+
+    const shareText =
+      `PMS ADDA-তে account খুলুন। ` +
+      `প্রথম qualifying deposit-এ ` +
+      `৳${formatMoney(settings.referredUserBonus || 0)} referral bonus পাবেন।`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "PMS ADDA Referral",
+
+          text: shareText,
+
+          url: link,
+        });
+
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    await copyReferralText(link, "Referral link copied for sharing.");
+  });
+
   DOM.closeNotification?.addEventListener("click", () =>
     closeModal(DOM.notificationModal),
   );
@@ -954,15 +1196,27 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal(DOM.notificationModal);
     }
 
+    if (event.target === DOM.referralModal) {
+      closeModal(DOM.referralModal);
+    }
+
     if (event.target === DOM.logoutModal) {
       closeModal(DOM.logoutModal);
     }
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") {
-      return;
-    }
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      closeModal(DOM.notificationModal);
+
+      closeModal(DOM.referralModal);
+
+      closeModal(DOM.logoutModal);
+    });
 
     closeModal(DOM.notificationModal);
     closeModal(DOM.logoutModal);
