@@ -1037,19 +1037,89 @@ const POKER_GAME = {
     this.nextHandCountdownTimer = null;
   },
 
+  clearPokerCardsForCountdown() {
+    document.querySelectorAll(".community-card").forEach((cardElement) => {
+      cardElement.classList.remove("is-revealing");
+
+      this.renderCardFace(cardElement, null);
+    });
+
+    document.querySelectorAll(".player-seat").forEach((seat) => {
+      seat.classList.remove(
+        "is-winner",
+        "is-current-turn",
+        "is-folded",
+        "is-dealer",
+        "is-small-blind",
+        "is-big-blind",
+      );
+
+      seat.querySelectorAll(".hole-card").forEach((cardElement) => {
+        cardElement.classList.remove("is-revealing", "is-dealing");
+
+        this.renderCardFace(cardElement, null);
+      });
+
+      const betBox = seat.querySelector(".player-bet");
+
+      betBox?.classList.remove("has-bet");
+    });
+  },
+
   startNextHandCountdown(payload = {}) {
     clearTimeout(this.winnerOverlayTimer);
 
     this.winnerOverlayTimer = null;
 
-    this.getElement("winnerOverlay")?.setAttribute("hidden", "");
     this.clearNextHandCountdown();
 
+    this.clearPokerCardsForCountdown();
+
+    const overlay = this.getElement("winnerOverlay");
+
+    const winnerCard = overlay?.querySelector(".winner-card");
+
+    const crown = winnerCard?.querySelector(".winner-crown");
+
+    const label = winnerCard?.querySelector(":scope > span");
+
+    const winnerName = this.getElement("winnerName");
+
+    const winnerHand = this.getElement("winnerHand");
+
+    const winnerAmount = this.getElement("winnerAmount");
+
     const button = this.getElement("continueButton");
+
+    if (crown) {
+      crown.textContent = "⏳";
+    }
+
+    if (label) {
+      label.textContent = "NEW ROUND";
+    }
+
+    if (winnerName) {
+      winnerName.textContent = "Next Hand";
+    }
+
+    if (winnerHand) {
+      winnerHand.textContent = "Get Ready";
+    }
+
+    if (winnerAmount) {
+      winnerAmount.textContent = "";
+    }
 
     if (button) {
       button.disabled = true;
     }
+
+    /*
+     * Countdown button winner overlay-এর
+     * ভিতরে। তাই overlay visible রাখতে হবে।
+     */
+    overlay?.removeAttribute("hidden");
 
     const providedStartsAt = new Date(payload.startsAt).getTime();
 
@@ -1104,6 +1174,20 @@ const POKER_GAME = {
 
     clearTimeout(this.winnerOverlayTimer);
 
+    const overlay = this.getElement("winnerOverlay");
+
+    const crown = overlay?.querySelector(".winner-crown");
+
+    const label = overlay?.querySelector(".winner-card > span");
+
+    if (crown) {
+      crown.textContent = "👑";
+    }
+
+    if (label) {
+      label.textContent = "HAND WINNER";
+    }
+
     this.showWinnerOverlay(settlement, winners);
 
     this.winnerOverlayTimer = window.setTimeout(() => {
@@ -1120,7 +1204,7 @@ const POKER_GAME = {
       return;
     }
 
-    const seat = this.getElement(`playerSeat${winner.seatNo}`);
+    const seat = this.getSeatElementByServerSeat(winner.seatNo);
 
     if (!seat) {
       return;

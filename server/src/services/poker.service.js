@@ -1544,90 +1544,295 @@ async function startPokerHandInTransaction(tableId, connection) {
   };
 }
 
-async function preparePokerPlayersForNextHand(table, connection) {
-  const tableId = Number(table.id);
-
-  /*
-   * Zero-stack real player table-এ থাকবে,
-   * কিন্তু নতুন hand খেলবে না।
-   *
-   * User Exit করলে cash-out process
-   * idempotently শেষ হবে।
-   */
-  const minimumBuyIn =
-  Number(
-    table.minimum_buy_in,
-  );
-
-const [bustedRealRows] =
-  await connection.query(
-    `
-      SELECT
-        ptp.id,
-        ptp.user_id,
-        ptp.player_status,
-        ptp.stack_amount,
-
-        u.wallet_balance
-
-      FROM poker_table_players ptp
-
-      INNER JOIN users u
-        ON u.id =
-           ptp.user_id
-
-      WHERE ptp.table_id = ?
-        AND ptp.is_bot = 0
-        AND ptp.player_status IN (
-          'active',
-          'sitting_out'
-        )
-        AND ptp.stack_amount <= 0
-        AND ptp.cash_out_credited = 0
-
-      ORDER BY ptp.id
-      FOR UPDATE
-    `,
-    [tableId],
-  );
-
-const autoRebuyUserIds = [];
-
-for (
-  const bustedPlayer of
-    bustedRealRows
+async function preparePokerPlayersForNextHand(
+  table,
+  connection,
 ) {
-  const walletBalance =
+  const tableId =
+    Number(table.id);
+
+  const minimumBuyIn =
     Number(
-      bustedPlayer
-        .wallet_balance ||
-      0,
+      table.minimum_buy_in,
     );
 
-  /*
-   * Wallet-এ minimum buy-in থাকলে
-   * server-authoritative auto rebuy।
-   */
-  if (
-    walletBalance >=
-    minimumBuyIn
+  /* ========================================
+     REAL PLAYER AUTO REBUY
+  ======================================== */
+
+  const [bustedRealRows] =
+    await connection.query(
+      `
+        SELECT
+          ptp.id,
+          ptp.user_id,
+          ptp.stack_amount,
+          u.wallet_balance
+
+        FROM poker_table_players ptp
+
+        INNER JOIN users u
+          ON u.id =
+             ptp.user_id
+
+        WHERE ptp.table_id = ?
+          AND ptp.is_bot = 0
+          AND ptp.player_status IN (
+            'active',
+            'sitting_out'
+          )
+          AND ptp.stack_amount <= 0
+          AND ptp.cash_out_credited = 0
+
+        ORDER BY ptp.id
+        FOR UPDATE
+      `,
+      [tableId],
+    );
+
+  const autoRebuyUserIds =
+    [];
+
+  for (
+    const bustedPlayer of
+      bustedRealRows
   ) {
-    const lockedUser =
-      await getLockedUser(
-        Number(
-          bustedPlayer.user_id,
-        ),
+    const walletBalance =
+      Number(
+        bustedPlayer
+          .wallet_balance ||
+        0,
+      );
+
+    if (
+      walletBalance >=
+      minimumBuyIn
+    ) {
+      const lockedUser =
+        await getLockedUser(
+          Number(
+            bustedPlayer.user_id,
+          ),
+          connection,
+        );
+
+      await debitPokerBuyIn(
+        lockedUser,
+        tableId,
+        minimumBuyIn,
         connection,
       );
 
-    await debitPokerBuyIn(
-      lockedUser,
-      tableId,
-      minimumBuyIn,
-      connection,
+      const [rebuyResult] =
+        await connection.query(
+          `
+            UPDATE poker_table_players
+            SET
+              player_status =
+                'active',
+
+              stack_amount = ?,
+
+              total_buy_in =
+                total_buy_in + ?,
+
+              wallet_debited = 1
+
+            WHERE id = ?
+              AND stack_amount <= 0
+              AND cash_out_credited = 0
+          `,
+          [
+            minimumBuyIn,
+            minimumBuyIn,
+            Number(
+              bustedPlayer.id,
+            ),
+          ],
+        );
+
+      if (
+        Number(
+          rebuyResult.affectedRows,
+        ) !== 1
+      ) {
+        throw createServiceError(
+          "Poker real-player auto rebuy state changed.",
+          409,
+        );
+      }
+
+      autoRebuyUserIds.push(
+        Number(
+          bustedPlayer.user_id,
+        ),
+      );
+    } else {
+      await connection.query(
+        `
+          UPDATE poker_table_players
+          SET
+            player_status =
+              'sitting_out'
+          WHERE id = ?
+            AND stack_amount <= 0
+            AND cash_out_credited = 0
+        `,
+        [
+          Number(
+            bustedPlayer.id,
+          ),
+        ],
+      );
+    }
+  }
+
+  /* ========================================
+     FUNDED REAL PLAYER COUNT
+  ======================================== */
+
+  const [fundedRealRows] =
+    await connection.query(
+      `
+        SELECT COUNT(*) AS total
+        FROM poker_table_players
+        WHERE table_id = ?
+          AND is_bot = 0
+          AND player_status =
+              'active'
+          AND stack_amount > 0
+        FOR UPDATE
+      `,
+      [tableId],
     );
 
-    const [rebuyResult] =
+  const fundedRealPlayers =
+    Number(
+      fundedRealRows[0]?.total ||
+      0,
+    );
+
+  /* ========================================
+     SAME BOT AUTO REBUY
+  ======================================== */
+
+  const [bustedBotRows] =
+    await connection.query(
+      `
+        SELECT
+          ptp.id,
+          ptp.bot_id,
+          ptp.stack_amount,
+
+          pb.wallet_balance,
+          pb.status
+
+        FROM poker_table_players ptp
+
+        INNER JOIN poker_bots pb
+          ON pb.id =
+             ptp.bot_id
+
+        WHERE ptp.table_id = ?
+          AND ptp.is_bot = 1
+          AND ptp.player_status IN (
+            'active',
+            'sitting_out'
+          )
+          AND ptp.stack_amount <= 0
+          AND ptp.cash_out_credited = 0
+
+        ORDER BY ptp.id
+        FOR UPDATE
+      `,
+      [tableId],
+    );
+
+  const autoRebuyBotIds =
+    [];
+
+  for (
+    const bustedBot of
+      bustedBotRows
+  ) {
+    const botWalletBalance =
+      Number(
+        bustedBot
+          .wallet_balance ||
+        0,
+      );
+
+    const botCanRebuy =
+      fundedRealPlayers > 0 &&
+      bustedBot.status ===
+        "active" &&
+      botWalletBalance >=
+        minimumBuyIn;
+
+    if (!botCanRebuy) {
+      await connection.query(
+        `
+          UPDATE poker_table_players
+          SET
+            player_status =
+              'sitting_out'
+          WHERE id = ?
+            AND stack_amount <= 0
+            AND cash_out_credited = 0
+        `,
+        [
+          Number(
+            bustedBot.id,
+          ),
+        ],
+      );
+
+      continue;
+    }
+
+    const [botWalletResult] =
+      await connection.query(
+        `
+          UPDATE poker_bots
+          SET
+            wallet_balance =
+              wallet_balance - ?,
+
+            total_wagered =
+              total_wagered + ?
+
+          WHERE id = ?
+            AND status =
+                'active'
+            AND wallet_balance >= ?
+        `,
+        [
+          minimumBuyIn,
+          minimumBuyIn,
+          Number(
+            bustedBot.bot_id,
+          ),
+          minimumBuyIn,
+        ],
+      );
+
+    if (
+      Number(
+        botWalletResult.affectedRows,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Unable to debit Poker bot auto rebuy.",
+        409,
+      );
+    }
+
+    /*
+     * নতুন bot row INSERT নয়।
+     * একই bot একই table-player row এবং
+     * একই seat-এ rebuy করবে।
+     */
+    const [botRebuyResult] =
       await connection.query(
         `
           UPDATE poker_table_players
@@ -1640,279 +1845,61 @@ for (
             total_buy_in =
               total_buy_in + ?,
 
-            wallet_debited =
-              1
+            wallet_debited = 1
 
           WHERE id = ?
+            AND is_bot = 1
             AND stack_amount <= 0
-            AND cash_out_credited =
-                0
+            AND cash_out_credited = 0
         `,
         [
           minimumBuyIn,
           minimumBuyIn,
           Number(
-            bustedPlayer.id,
+            bustedBot.id,
           ),
         ],
       );
 
     if (
       Number(
-        rebuyResult.affectedRows,
+        botRebuyResult.affectedRows,
       ) !== 1
     ) {
       throw createServiceError(
-        "Poker auto rebuy state changed.",
+        "Poker bot auto rebuy state changed.",
         409,
       );
     }
 
-    autoRebuyUserIds.push(
+    autoRebuyBotIds.push(
       Number(
-        bustedPlayer.user_id,
+        bustedBot.bot_id,
       ),
     );
-  } else {
-    /*
-     * Wallet insufficient হলে কোনো
-     * automatic debit হবে না।
-     */
+  }
+
+  /* ========================================
+     TABLE PLAYER COUNT
+  ======================================== */
+
+  const [countRows] =
     await connection.query(
       `
-        UPDATE poker_table_players
-        SET
-          player_status =
-            'sitting_out'
-        WHERE id = ?
-          AND stack_amount <= 0
-          AND cash_out_credited =
-              0
-      `,
-      [
-        Number(
-          bustedPlayer.id,
-        ),
-      ],
-    );
-  }
-}
-
-  /*
-   * Busted bot সরিয়ে seat খালি করা।
-   * Stack zero হওয়ায় wallet refund নেই।
-   */
-  await connection.query(
-    `
-      UPDATE poker_table_players
-      SET
-        player_status =
-          'left',
-
-        stack_amount =
-          0.00,
-
-        cash_out_credited =
-          1,
-
-        left_at =
-          COALESCE(
-            left_at,
-            NOW()
-          )
-
-      WHERE table_id = ?
-        AND is_bot = 1
-        AND player_status !=
-            'left'
-        AND stack_amount <= 0
-    `,
-    [tableId],
-  );
-
-  const [countRows] = await connection.query(
-    `
-        SELECT
-          COALESCE(
-            SUM(
-              CASE
-                WHEN is_bot = 0
-                  AND player_status !=
-                      'left'
-                THEN 1
-                ELSE 0
-              END
-            ),
-            0
-          ) AS real_players,
-
-          COALESCE(
-            SUM(
-              CASE
-                WHEN is_bot = 0
-                  AND player_status =
-                      'active'
-                  AND stack_amount > 0
-                THEN 1
-                ELSE 0
-              END
-            ),
-            0
-          ) AS funded_real_players,
-
-          COALESCE(
-            SUM(
-              CASE
-                WHEN is_bot = 1
-                  AND player_status =
-                      'active'
-                  AND stack_amount > 0
-                THEN 1
-                ELSE 0
-              END
-            ),
-            0
-          ) AS funded_bots,
-
-          COALESCE(
-            SUM(
-              CASE
-                WHEN player_status !=
-                    'left'
-                THEN 1
-                ELSE 0
-              END
-            ),
-            0
-          ) AS total_players
-
-        FROM poker_table_players
-        WHERE table_id = ?
-        FOR UPDATE
-      `,
-    [tableId],
-  );
-
-  const counts = countRows[0] || {};
-
-  const realPlayers = Number(counts.real_players || 0);
-
-  const fundedRealPlayers = Number(counts.funded_real_players || 0);
-
-  const fundedBots = Number(counts.funded_bots || 0);
-
-  let totalPlayers = Number(counts.total_players || 0);
-
-  let botJoined = false;
-  let joinedBotId = null;
-
-  /*
-   * অন্তত একজন funded real থাকলে এবং
-   * table-এ funded bot না থাকলে একটি
-   * replacement bot বসবে।
-   *
-   * 5 real player হলে bot প্রয়োজন নেই।
-   */
-  if (
-    fundedRealPlayers > 0 &&
-    realPlayers < MAX_PLAYERS &&
-    fundedBots === 0 &&
-    totalPlayers < MAX_PLAYERS
-  ) {
-    const botBuyIn = Number(table.minimum_buy_in);
-
-    const bot = await getAvailablePokerBot(botBuyIn, connection);
-
-    if (bot) {
-      const seatNo = await getAvailableSeat(tableId, connection);
-
-      if (!seatNo) {
-        throw createServiceError(
-          "No seat is available for the replacement Poker bot.",
-          409,
-        );
-      }
-
-      const [walletResult] = await connection.query(
-        `
-            UPDATE poker_bots
-            SET
-              wallet_balance =
-                wallet_balance - ?,
-
-              total_wagered =
-                total_wagered + ?
-
-            WHERE id = ?
-              AND status =
-                  'active'
-              AND wallet_balance >= ?
-          `,
-        [botBuyIn, botBuyIn, Number(bot.id), botBuyIn],
-      );
-
-      if (Number(walletResult.affectedRows) !== 1) {
-        throw createServiceError(
-          "Unable to debit replacement Poker bot buy-in.",
-          409,
-        );
-      }
-
-      const [insertResult] = await connection.query(
-        `
-            INSERT INTO poker_table_players (
-              table_id,
-              user_id,
-              bot_id,
-              is_bot,
-              seat_no,
-              player_status,
-              stack_amount,
-              initial_buy_in,
-              total_buy_in,
-              wallet_debited
-            )
-            VALUES (
-              ?,
-              NULL,
-              ?,
-              1,
-              ?,
-              'active',
-              ?,
-              ?,
-              ?,
-              1
-            )
-          `,
-        [tableId, Number(bot.id), seatNo, botBuyIn, botBuyIn, botBuyIn],
-      );
-
-      botJoined = true;
-
-      joinedBotId = Number(insertResult.insertId);
-
-      totalPlayers += 1;
-    }
-  }
-
-  /*
-   * sitting_out player-সহ table-এর
-   * বর্তমান occupied seat count।
-   */
-  const [latestCountRows] = await connection.query(
-    `
-        SELECT
-          COUNT(*) AS total
+        SELECT COUNT(*) AS total
         FROM poker_table_players
         WHERE table_id = ?
           AND player_status !=
               'left'
       `,
-    [tableId],
-  );
+      [tableId],
+    );
 
-  totalPlayers = Number(latestCountRows[0]?.total || 0);
+  const totalPlayers =
+    Number(
+      countRows[0]?.total ||
+      0,
+    );
 
   await connection.query(
     `
@@ -1925,14 +1912,20 @@ for (
 
       WHERE id = ?
     `,
-    [totalPlayers, tableId],
+    [
+      totalPlayers,
+      tableId,
+    ],
   );
 
   return {
-    botJoined,
-    joinedBotId,
+    botJoined: false,
+    joinedBotId: null,
+
     totalPlayers,
+
     autoRebuyUserIds,
+    autoRebuyBotIds,
   };
 }
 
