@@ -475,8 +475,17 @@ function initializePokerSocket(io) {
 
     const settlement = await pokerService.settlePokerHand(tableId);
 
+    /*
+     * Settlement prize stack-এ যোগ হওয়ার
+     * পর orphan bots cash-out হবে।
+     */
+    const orphanCleanup = await pokerService.cashOutOrphanedPokerBots(tableId);
+
     if (settlement?.alreadySettled) {
-      return settlement;
+      return {
+        ...settlement,
+        orphanCleanup,
+      };
     }
 
     const publicSettlement = {
@@ -522,7 +531,13 @@ function initializePokerSocket(io) {
 
     namespace.to(getRoomName(tableId)).emit("hand:completed", publicSettlement);
 
-    scheduleNextPokerHand(tableId, 5000);
+    /*
+     * Real player না থাকলে নতুন hand
+     * schedule করার প্রয়োজন নেই।
+     */
+    if (Number(orphanCleanup.remainingRealPlayers) > 0) {
+      scheduleNextPokerHand(tableId, 5000);
+    }
 
     return publicSettlement;
   }

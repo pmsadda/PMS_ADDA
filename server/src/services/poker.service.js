@@ -3942,7 +3942,7 @@ async function exitPokerTable(tableId, userId) {
 
     const remainingRealPlayers = Number(remainingRealRows[0]?.total || 0);
 
-    if (remainingRealPlayers === 0) {
+    if (remainingRealPlayers === 0 && !handNeedsShowdown) {
       const [botRows] = await connection.query(
         `
         SELECT
@@ -4323,6 +4323,177 @@ function decidePokerBotAction(turn) {
     equity,
     potOdds,
   };
+}
+
+async function cashOutOrphanedPokerBots(tableId) {
+  const validTableId = parsePositiveInteger(tableId);
+
+  if (!validTableId) {
+    throw createServiceError("Invalid Poker table ID for bot cash-out.", 400);
+  }
+
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [realRows] = await connection.query(
+      `
+          SELECT COUNT(*) AS total
+          FROM poker_table_players
+          WHERE table_id = ?
+            AND is_bot = 0
+            AND player_status !=
+                'left'
+          FOR UPDATE
+        `,
+      [validTableId],
+    );
+
+    const remainingRealPlayers = Number(realRows[0]?.total || 0);
+
+    /*
+     * Real player থাকলে bot table-এই থাকবে।
+     */
+    if (remainingRealPlayers > 0) {
+      await connection.commit();
+
+      return {
+        success: true,
+        skipped: true,
+        reason: "real_players_remain",
+        remainingRealPlayers,
+        botsCashedOut: 0,
+      };
+    }
+
+    const [botRows] = await connection.query(
+      `
+          SELECT
+            id,
+            bot_id,
+            stack_amount
+          FROM poker_table_players
+          WHERE table_id = ?
+            AND is_bot = 1
+            AND player_status !=
+                'left'
+            AND cash_out_credited = 0
+          FOR UPDATE
+        `,
+      [validTableId],
+    );
+
+    let botsCashedOut = 0;
+
+    for (const botPlayer of botRows) {
+      const botCashOut = roundPokerMoney(botPlayer.stack_amount);
+
+      if (botCashOut > 0) {
+        const [walletResult] = await connection.query(
+          `
+              UPDATE poker_bots
+              SET
+                wallet_balance =
+                  wallet_balance + ?
+              WHERE id = ?
+            `,
+          [botCashOut, Number(botPlayer.bot_id)],
+        );
+
+        if (Number(walletResult.affectedRows) !== 1) {
+          throw createServiceError("Unable to credit Poker bot cash-out.", 409);
+        }
+      }
+
+      const [playerResult] = await connection.query(
+        `
+            UPDATE poker_table_players
+            SET
+              player_status =
+                'left',
+
+              total_cash_out =
+                total_cash_out + ?,
+
+              stack_amount =
+                0.00,
+
+              cash_out_credited =
+                1,
+
+              left_at =
+                COALESCE(
+                  left_at,
+                  NOW()
+                )
+
+            WHERE id = ?
+              AND player_status !=
+                  'left'
+              AND cash_out_credited =
+                  0
+          `,
+        [botCashOut, Number(botPlayer.id)],
+      );
+
+      if (Number(playerResult.affectedRows) !== 1) {
+        throw createServiceError("Poker bot cash-out state changed.", 409);
+      }
+
+      botsCashedOut += 1;
+    }
+
+    const [countRows] = await connection.query(
+      `
+          SELECT COUNT(*) AS total
+          FROM poker_table_players
+          WHERE table_id = ?
+            AND player_status !=
+                'left'
+        `,
+      [validTableId],
+    );
+
+    const remainingPlayers = Number(countRows[0]?.total || 0);
+
+    await connection.query(
+      `
+        UPDATE poker_tables
+        SET
+          current_players = ?,
+
+          table_status =
+            CASE
+              WHEN ? < 2
+              THEN 'paused'
+              ELSE table_status
+            END,
+
+          state_version =
+            state_version + 1
+
+        WHERE id = ?
+      `,
+      [remainingPlayers, remainingPlayers, validTableId],
+    );
+
+    await connection.commit();
+
+    return {
+      success: true,
+      skipped: false,
+      remainingRealPlayers: 0,
+      remainingPlayers,
+      botsCashedOut,
+    };
+  } catch (error) {
+    await connection.rollback();
+
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 async function performAutomaticTurn(
@@ -4820,6 +4991,7 @@ module.exports = {
   settlePokerHand,
   startNextPokerHand,
   exitPokerTable,
+  cashOutOrphanedPokerBots,
 
   MATCHMAKING_WAIT_SECONDS,
 };
