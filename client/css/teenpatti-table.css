@@ -23,19 +23,10 @@
   --header-height: 72px;
   --footer-height: 74px;
 
-  --table-width: min(
-    78vw,
-    1180px
-  );
+  --table-width: min(78vw, 1180px);
 
-  font-family:
-    Inter,
-    Poppins,
-    "Segoe UI",
-    Arial,
-    sans-serif;
+  font-family: Inter, Poppins, "Segoe UI", Arial, sans-serif;
 }
-
 
 /* =========================================================
    RESET
@@ -62,8 +53,7 @@ body {
 
   color: var(--white);
 
-  background:
-    var(--page-bg);
+  background: var(--page-bg);
 }
 
 button,
@@ -72,10 +62,8 @@ input {
 }
 
 button {
-  -webkit-tap-highlight-color:
-    transparent;
+  -webkit-tap-highlight-color: transparent;
 }
-
 
 /* =========================================================
    APPLICATION
@@ -108,13 +96,8 @@ button {
   z-index: -3;
 
   background:
-    linear-gradient(
-      rgba(0, 12, 8, 0.22),
-      rgba(0, 8, 5, 0.66)
-    ),
-    url("../assets/background/casino-bg.jpg")
-    center / cover
-    no-repeat;
+    linear-gradient(rgba(0, 12, 8, 0.22), rgba(0, 8, 5, 0.66)),
+    url("../assets/background/casino-bg.jpg") center / cover no-repeat;
 }
 
 .tp-app::before {
@@ -131,11 +114,7 @@ button {
       rgba(28, 255, 135, 0.09),
       transparent 37%
     ),
-    radial-gradient(
-      circle at 50% 50%,
-      transparent 47%,
-      rgba(0, 0, 0, 0.7)
-    );
+    radial-gradient(circle at 50% 50%, transparent 47%, rgba(0, 0, 0, 0.7));
 }
 
 .tp-app::after {
@@ -146,11 +125,8 @@ button {
   content: "";
   pointer-events: none;
 
-  box-shadow:
-    inset 0 0 140px
-    rgba(0, 0, 0, 0.76);
+  box-shadow: inset 0 0 140px rgba(0, 0, 0, 0.76);
 }
-
 
 /* =========================================================
    HEADER
@@ -174,24 +150,19 @@ button {
   padding: 7px 14px;
   gap: 13px;
 
-  border:
-    1px solid
-    var(--panel-border);
+  border: 1px solid var(--panel-border);
 
   border-radius: 23px;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(7, 35, 34, 0.97),
-      rgba(2, 15, 18, 0.98)
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(7, 35, 34, 0.97),
+    rgba(2, 15, 18, 0.98)
+  );
 
   box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.08),
-    0 12px 32px
-    rgba(0, 0, 0, 0.45);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 32px rgba(0, 0, 0, 0.45);
 
   backdrop-filter: blur(16px);
 }
@@ -206,13 +177,12 @@ button {
 
   content: "";
 
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 218, 74, 0.8),
-      transparent
-    );
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 218, 74, 0.8),
+    transparent
+  );
 }
 
 .tp-icon-button {
@@ -228,24 +198,19 @@ button {
 
   cursor: pointer;
 
-  border:
-    1px solid
-    rgba(255, 215, 71, 0.35);
+  border: 1px solid rgba(255, 215, 71, 0.35);
 
   border-radius: 14px;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(24, 62, 62, 0.98),
-      rgba(4, 21, 26, 0.99)
-    );
+  background: linear-gradient(
+    145deg,
+    rgba(24, 62, 62, 0.98),
+    rgba(4, 21, 26, 0.99)
+  );
 
   box-shadow:
-    inset 1px 1px 0
-    rgba(255, 255, 255, 0.09),
-    0 6px 15px
-    rgba(0, 0, 0, 0.32);
+    inset 1px 1px 0 rgba(255, 255, 255, 0.09),
+    0 6px 15px rgba(0, 0, 0, 0.32);
 
   transition:
     transform 150ms ease,
@@ -255,14 +220,11 @@ button {
 .tp-icon-button:hover {
   filter: brightness(1.15);
 
-  transform:
-    translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .tp-icon-button:active {
-  transform:
-    translateY(1px)
-    scale(0.96);
+  transform: translateY(1px) scale(0.96);
 }
 
 .tp-brand {
@@ -282,15 +244,11 @@ button {
 
   overflow: hidden;
 
-  border:
-    2px solid
-    rgba(255, 215, 70, 0.58);
+  border: 2px solid rgba(255, 215, 70, 0.58);
 
   border-radius: 14px;
 
-  box-shadow:
-    0 0 18px
-    rgba(255, 204, 48, 0.18);
+  box-shadow: 0 0 18px rgba(255, 204, 48, 0.18);
 }
 
 .tp-brand-logo img {
@@ -310,12 +268,7 @@ button {
   overflow: hidden;
 
   color: var(--gold);
-  font-size:
-    clamp(
-      17px,
-      2vw,
-      26px
-    );
+  font-size: clamp(17px, 2vw, 26px);
 
   font-weight: 900;
   line-height: 1.1;
@@ -365,14 +318,11 @@ button {
 
   padding: 6px 12px;
 
-  border:
-    1px solid
-    rgba(255, 213, 66, 0.22);
+  border: 1px solid rgba(255, 213, 66, 0.22);
 
   border-radius: 15px;
 
-  background:
-    rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .tp-wallet span {
@@ -389,7 +339,6 @@ button {
   color: var(--gold-light);
   font-size: 15px;
 }
-
 
 /* =========================================================
    STAGE
@@ -420,19 +369,16 @@ button {
 
   border-radius: 50%;
 
-  background:
-    radial-gradient(
-      ellipse,
-      rgba(255, 44, 75, 0.17),
-      transparent 68%
-    );
+  background: radial-gradient(
+    ellipse,
+    rgba(255, 44, 75, 0.17),
+    transparent 68%
+  );
 
   filter: blur(28px);
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 }
-
 
 /* =========================================================
    TABLE
@@ -444,8 +390,7 @@ button {
   width: var(--table-width);
   aspect-ratio: 16 / 9;
 
-  transform:
-    translateY(-1%);
+  transform: translateY(-1%);
 }
 
 .table-image {
@@ -462,17 +407,9 @@ button {
   user-select: none;
   pointer-events: none;
 
-  filter:
-    drop-shadow(
-      0 24px 24px
-      rgba(0, 0, 0, 0.65)
-    )
-    drop-shadow(
-      0 0 18px
-      rgba(255, 49, 75, 0.16)
-    );
+  filter: drop-shadow(0 24px 24px rgba(0, 0, 0, 0.65))
+    drop-shadow(0 0 18px rgba(255, 49, 75, 0.16));
 }
-
 
 /* =========================================================
    DECK
@@ -485,34 +422,23 @@ button {
 
   z-index: 25;
 
-  transform:
-    translate(-50%, -50%)
-    rotate(-5deg);
+  transform: translate(-50%, -50%) rotate(-5deg);
 }
 
 .tp-deck img {
   display: block;
 
-  width:
-    clamp(
-      32px,
-      4vw,
-      52px
-    );
+  width: clamp(32px, 4vw, 52px);
 
   height: auto;
 
   border-radius: 5px;
 
   box-shadow:
-    4px 4px 0
-    rgba(255, 255, 255, 0.16),
-    8px 8px 0
-    rgba(255, 255, 255, 0.07),
-    0 10px 18px
-    rgba(0, 0, 0, 0.58);
+    4px 4px 0 rgba(255, 255, 255, 0.16),
+    8px 8px 0 rgba(255, 255, 255, 0.07),
+    0 10px 18px rgba(0, 0, 0, 0.58);
 }
-
 
 /* =========================================================
    POT
@@ -537,27 +463,21 @@ button {
 
   color: #fff;
 
-  border:
-    1px solid
-    rgba(255, 215, 70, 0.72);
+  border: 1px solid rgba(255, 215, 70, 0.72);
 
   border-radius: 12px;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(72, 48, 8, 0.97),
-      rgba(22, 17, 7, 0.98)
-    );
+  background: linear-gradient(
+    145deg,
+    rgba(72, 48, 8, 0.97),
+    rgba(22, 17, 7, 0.98)
+  );
 
   box-shadow:
-    0 7px 16px
-    rgba(0, 0, 0, 0.58),
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.14);
+    0 7px 16px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 }
 
 .tp-pot img {
@@ -566,11 +486,7 @@ button {
 
   object-fit: contain;
 
-  filter:
-    drop-shadow(
-      0 3px 5px
-      rgba(0, 0, 0, 0.65)
-    );
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.65));
 }
 
 .tp-pot-copy {
@@ -594,26 +510,19 @@ button {
 }
 
 .pot-chip-bounce {
-  animation:
-    tpPotBounce
-    300ms ease;
+  animation: tpPotBounce 300ms ease;
 }
 
 @keyframes tpPotBounce {
   0%,
   100% {
-    transform:
-      translateX(-50%)
-      scale(1);
+    transform: translateX(-50%) scale(1);
   }
 
   50% {
-    transform:
-      translateX(-50%)
-      scale(1.14);
+    transform: translateX(-50%) scale(1.14);
   }
 }
-
 
 /* =========================================================
    CHIP ANIMATION
@@ -645,18 +554,10 @@ button {
 
   border-radius: 50%;
 
-  filter:
-    drop-shadow(
-      0 5px 7px
-      rgba(0, 0, 0, 0.68)
-    );
+  filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.68));
 
-  will-change:
-    left,
-    top,
-    transform;
+  will-change: left, top, transform;
 }
-
 
 /* =========================================================
    TURN
@@ -675,8 +576,7 @@ button {
 
   gap: 3px;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 }
 
 .tp-turn-control > span {
@@ -698,21 +598,15 @@ button {
   font-size: 18px;
   font-weight: 900;
 
-  border:
-    3px solid
-    rgba(255, 255, 255, 0.18);
+  border: 3px solid rgba(255, 255, 255, 0.18);
 
-  border-top-color:
-    var(--gold);
+  border-top-color: var(--gold);
 
   border-radius: 50%;
 
-  background:
-    rgba(0, 0, 0, 0.48);
+  background: rgba(0, 0, 0, 0.48);
 
-  box-shadow:
-    0 0 15px
-    rgba(255, 207, 48, 0.18);
+  box-shadow: 0 0 15px rgba(255, 207, 48, 0.18);
 }
 
 .tp-turn-progress {
@@ -723,8 +617,7 @@ button {
 
   border-radius: 5px;
 
-  background:
-    rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 #turnTimerProgress {
@@ -735,18 +628,10 @@ button {
 
   border-radius: inherit;
 
-  background:
-    linear-gradient(
-      90deg,
-      #40f49b,
-      #ffd64d,
-      #ff4257
-    );
+  background: linear-gradient(90deg, #40f49b, #ffd64d, #ff4257);
 
-  transition:
-    width 1s linear;
+  transition: width 1s linear;
 }
-
 
 /* =========================================================
    PLAYER
@@ -757,12 +642,7 @@ button {
   position: absolute;
   z-index: 40;
 
-  width:
-    clamp(
-      132px,
-      16vw,
-      205px
-    );
+  width: clamp(132px, 16vw, 205px);
 
   min-height: 62px;
 
@@ -790,24 +670,19 @@ button {
 
   overflow: hidden;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 
   border-radius: 17px;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(15, 43, 47, 0.97),
-      rgba(4, 18, 25, 0.98)
-    );
+  background: linear-gradient(
+    145deg,
+    rgba(15, 43, 47, 0.97),
+    rgba(4, 18, 25, 0.98)
+  );
 
   box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.08),
-    0 8px 17px
-    rgba(0, 0, 0, 0.42);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 17px rgba(0, 0, 0, 0.42);
 
   backdrop-filter: blur(11px);
 }
@@ -820,11 +695,7 @@ button {
 
   content: "";
 
-  background:
-    linear-gradient(
-      var(--red),
-      #a60922
-    );
+  background: linear-gradient(var(--red), #a60922);
 }
 
 .avatar {
@@ -843,22 +714,13 @@ button {
   font-size: 13px;
   font-weight: 900;
 
-  border:
-    2px solid
-    var(--gold);
+  border: 2px solid var(--gold);
 
   border-radius: 50%;
 
-  background:
-    linear-gradient(
-      145deg,
-      #425b67,
-      #12232b
-    );
+  background: linear-gradient(145deg, #425b67, #12232b);
 
-  box-shadow:
-    0 4px 9px
-    rgba(0, 0, 0, 0.55);
+  box-shadow: 0 4px 9px rgba(0, 0, 0, 0.55);
 }
 
 .avatar::after {
@@ -871,14 +733,11 @@ button {
 
   content: "";
 
-  border:
-    2px solid
-    #102027;
+  border: 2px solid #102027;
 
   border-radius: 50%;
 
-  background:
-    var(--green);
+  background: var(--green);
 }
 
 .name {
@@ -956,17 +815,13 @@ button {
   font-size: 10px;
   font-weight: 900;
 
-  border:
-    2px solid #ffffff;
+  border: 2px solid #ffffff;
 
   border-radius: 50%;
 
-  background:
-    var(--gold);
+  background: var(--gold);
 
-  box-shadow:
-    0 4px 8px
-    rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .player.is-dealer .dealer-chip,
@@ -974,7 +829,6 @@ button {
 .dealer-chip.show {
   display: grid;
 }
-
 
 /* =========================================================
    PLAYER CARDS
@@ -995,8 +849,7 @@ button {
 
   pointer-events: none;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 }
 
 .cards img {
@@ -1011,16 +864,13 @@ button {
 
   object-fit: fill;
 
-  border:
-    1px solid #ffffff;
+  border: 1px solid #ffffff;
 
   border-radius: 4px;
 
   background: #ffffff;
 
-  box-shadow:
-    0 5px 10px
-    rgba(0, 0, 0, 0.62);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.62);
 
   transition:
     opacity 180ms ease,
@@ -1030,22 +880,19 @@ button {
 .cards img:first-child {
   margin-left: 0;
 
-  transform:
-    rotate(-7deg);
+  transform: rotate(-7deg);
 }
 
 .cards img:nth-child(2) {
   z-index: 2;
 
-  transform:
-    translateY(-4px);
+  transform: translateY(-4px);
 }
 
 .cards img:nth-child(3) {
   z-index: 3;
 
-  transform:
-    rotate(7deg);
+  transform: rotate(7deg);
 }
 
 .cards img.card-arrived {
@@ -1069,7 +916,6 @@ button {
   border-width: 2px;
 }
 
-
 /* =========================================================
    PLAYER POSITIONS
 ========================================================= */
@@ -1079,8 +925,7 @@ button {
   top: 52%;
   left: 3%;
 
-  transform:
-    translateY(-50%);
+  transform: translateY(-50%);
 }
 
 .tp-seat-2,
@@ -1088,8 +933,7 @@ button {
   top: 8%;
   left: 22%;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 }
 
 .tp-seat-3,
@@ -1097,8 +941,7 @@ button {
   top: 8%;
   right: 22%;
 
-  transform:
-    translateX(50%);
+  transform: translateX(50%);
 }
 
 .tp-seat-4,
@@ -1106,8 +949,7 @@ button {
   top: 52%;
   right: 3%;
 
-  transform:
-    translateY(-50%);
+  transform: translateY(-50%);
 }
 
 .tp-seat-local,
@@ -1115,30 +957,20 @@ button {
   bottom: 3%;
   left: 50%;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 }
 
 .tp-local-player .tp-player-profile {
-  border-color:
-    rgba(62, 255, 169, 0.5);
+  border-color: rgba(62, 255, 169, 0.5);
 
   box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.1),
-    0 8px 18px
-    rgba(0, 0, 0, 0.48),
-    0 0 17px
-    rgba(52, 255, 162, 0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 18px rgba(0, 0, 0, 0.48),
+    0 0 17px rgba(52, 255, 162, 0.16);
 }
 
-.tp-local-player
-.tp-player-profile::before {
-  background:
-    linear-gradient(
-      #4dffb0,
-      #07885a
-    );
+.tp-local-player .tp-player-profile::before {
+  background: linear-gradient(#4dffb0, #07885a);
 }
 
 .you-label {
@@ -1155,10 +987,8 @@ button {
 
   border-radius: 8px;
 
-  background:
-    var(--green);
+  background: var(--green);
 }
-
 
 /* =========================================================
    PLAYER STATES
@@ -1169,36 +999,25 @@ button {
   z-index: 75;
 }
 
-.player.active-turn
-.tp-player-profile,
-.player.current-turn
-.tp-player-profile {
-  border-color:
-    var(--gold);
+.player.active-turn .tp-player-profile,
+.player.current-turn .tp-player-profile {
+  border-color: var(--gold);
 
   box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.13),
-    0 0 12px
-    rgba(255, 211, 66, 0.56),
-    0 0 26px
-    rgba(255, 173, 30, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    0 0 12px rgba(255, 211, 66, 0.56),
+    0 0 26px rgba(255, 173, 30, 0.28);
 
-  animation:
-    tpTurnGlow
-    900ms ease-in-out
-    infinite alternate;
+  animation: tpTurnGlow 900ms ease-in-out infinite alternate;
 }
 
 @keyframes tpTurnGlow {
   from {
-    filter:
-      brightness(1);
+    filter: brightness(1);
   }
 
   to {
-    filter:
-      brightness(1.12);
+    filter: brightness(1.12);
   }
 }
 
@@ -1206,22 +1025,16 @@ button {
 .player.packed {
   opacity: 0.28;
 
-  filter:
-    grayscale(0.9);
+  filter: grayscale(0.9);
 }
 
-.player.winner-glow
-.tp-player-profile {
-  border-color:
-    var(--green);
+.player.winner-glow .tp-player-profile {
+  border-color: var(--green);
 
   box-shadow:
-    0 0 18px
-    rgba(53, 255, 160, 0.72),
-    0 0 38px
-    rgba(53, 255, 160, 0.3);
+    0 0 18px rgba(53, 255, 160, 0.72),
+    0 0 38px rgba(53, 255, 160, 0.3);
 }
-
 
 /* =========================================================
    ACTION FOOTER
@@ -1246,24 +1059,19 @@ button {
   padding: 7px 11px;
   gap: 9px;
 
-  border:
-    1px solid
-    var(--panel-border);
+  border: 1px solid var(--panel-border);
 
   border-radius: 21px;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(7, 34, 32, 0.97),
-      rgba(2, 16, 20, 0.98)
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(7, 34, 32, 0.97),
+    rgba(2, 16, 20, 0.98)
+  );
 
   box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.07),
-    0 -9px 28px
-    rgba(0, 0, 0, 0.34);
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 -9px 28px rgba(0, 0, 0, 0.34);
 
   backdrop-filter: blur(15px);
 }
@@ -1287,27 +1095,19 @@ button {
 
   border-radius: 50%;
 
-  background:
-    #76888f;
+  background: #76888f;
 }
 
 .tp-connection-dot.is-connected {
-  background:
-    var(--green);
+  background: var(--green);
 
-  box-shadow:
-    0 0 10px
-    var(--green);
+  box-shadow: 0 0 10px var(--green);
 }
 
 .tp-actions {
   display: grid;
 
-  grid-template-columns:
-    repeat(
-      6,
-      minmax(68px, 1fr)
-    );
+  grid-template-columns: repeat(6, minmax(68px, 1fr));
 
   gap: 6px;
 }
@@ -1327,9 +1127,7 @@ button {
 
   cursor: pointer;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.16);
 
   border-radius: 13px;
 
@@ -1337,10 +1135,8 @@ button {
   white-space: nowrap;
 
   box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.12),
-    0 5px 12px
-    rgba(0, 0, 0, 0.33);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 5px 12px rgba(0, 0, 0, 0.33);
 
   transition:
     transform 140ms ease,
@@ -1350,18 +1146,14 @@ button {
 
 .tp-action-button:hover:not(:disabled),
 .tp-tool-button:hover {
-  filter:
-    brightness(1.15);
+  filter: brightness(1.15);
 
-  transform:
-    translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .tp-action-button:active:not(:disabled),
 .tp-tool-button:active {
-  transform:
-    translateY(1px)
-    scale(0.97);
+  transform: translateY(1px) scale(0.97);
 }
 
 .tp-action-button:disabled {
@@ -1369,64 +1161,33 @@ button {
 
   opacity: 0.36;
 
-  filter:
-    grayscale(0.5);
+  filter: grayscale(0.5);
 }
 
 .pack-button {
-  background:
-    linear-gradient(
-      145deg,
-      #a51d33,
-      #520914
-    );
+  background: linear-gradient(145deg, #a51d33, #520914);
 }
 
 .seen-button {
-  background:
-    linear-gradient(
-      145deg,
-      #217dcc,
-      #0c396c
-    );
+  background: linear-gradient(145deg, #217dcc, #0c396c);
 }
 
 .blind-button {
   color: #251800;
 
-  background:
-    linear-gradient(
-      145deg,
-      #ffe26c,
-      #bd7300
-    );
+  background: linear-gradient(145deg, #ffe26c, #bd7300);
 }
 
 .raise-button {
-  background:
-    linear-gradient(
-      145deg,
-      #d56e1f,
-      #7c2507
-    );
+  background: linear-gradient(145deg, #d56e1f, #7c2507);
 }
 
 .side-show-button {
-  background:
-    linear-gradient(
-      145deg,
-      #8b48cb,
-      #471a72
-    );
+  background: linear-gradient(145deg, #8b48cb, #471a72);
 }
 
 .show-button {
-  background:
-    linear-gradient(
-      145deg,
-      #21a66d,
-      #075238
-    );
+  background: linear-gradient(145deg, #21a66d, #075238);
 }
 
 .tp-footer-tools {
@@ -1439,28 +1200,16 @@ button {
 .tp-tool-button {
   min-height: 40px;
 
-  background:
-    linear-gradient(
-      145deg,
-      #16424a,
-      #061e25
-    );
+  background: linear-gradient(145deg, #16424a, #061e25);
 }
 
 .tp-exit-button {
   color: #ffd0d5;
 
-  border-color:
-    rgba(255, 62, 82, 0.35);
+  border-color: rgba(255, 62, 82, 0.35);
 
-  background:
-    linear-gradient(
-      145deg,
-      #661526,
-      #2d0810
-    );
+  background: linear-gradient(145deg, #661526, #2d0810);
 }
-
 
 /* =========================================================
    SIDE SHOW MODAL
@@ -1476,11 +1225,9 @@ button {
 
   padding: 16px;
 
-  background:
-    rgba(0, 8, 7, 0.78);
+  background: rgba(0, 8, 7, 0.78);
 
-  backdrop-filter:
-    blur(9px);
+  backdrop-filter: blur(9px);
 
   opacity: 0;
   visibility: hidden;
@@ -1498,32 +1245,23 @@ button {
 }
 
 .side-show-card {
-  width:
-    min(
-      92vw,
-      360px
-    );
+  width: min(92vw, 360px);
 
   padding: 25px;
 
   text-align: center;
 
-  border:
-    1px solid
-    rgba(255, 214, 66, 0.4);
+  border: 1px solid rgba(255, 214, 66, 0.4);
 
   border-radius: 22px;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(12, 52, 49, 0.99),
-      rgba(3, 17, 22, 0.99)
-    );
+  background: linear-gradient(
+    145deg,
+    rgba(12, 52, 49, 0.99),
+    rgba(3, 17, 22, 0.99)
+  );
 
-  box-shadow:
-    0 22px 58px
-    rgba(0, 0, 0, 0.68);
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.68);
 }
 
 .tp-modal-icon {
@@ -1547,8 +1285,7 @@ button {
 .side-show-buttons {
   display: grid;
 
-  grid-template-columns:
-    1fr 1fr;
+  grid-template-columns: 1fr 1fr;
 
   margin-top: 20px;
   gap: 9px;
@@ -1562,29 +1299,18 @@ button {
 
   cursor: pointer;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.16);
 
   border-radius: 12px;
 }
 
 .reject-side-show {
-  background:
-    linear-gradient(
-      #9a2435,
-      #4f0b16
-    );
+  background: linear-gradient(#9a2435, #4f0b16);
 }
 
 .accept-side-show {
-  background:
-    linear-gradient(
-      #24ab72,
-      #075137
-    );
+  background: linear-gradient(#24ab72, #075137);
 }
-
 
 /* =========================================================
    WINNER OVERLAY
@@ -1602,11 +1328,9 @@ button {
 
   overflow-y: auto;
 
-  background:
-    rgba(0, 8, 8, 0.84);
+  background: rgba(0, 8, 8, 0.84);
 
-  backdrop-filter:
-    blur(10px);
+  backdrop-filter: blur(10px);
 
   opacity: 0;
   visibility: hidden;
@@ -1624,16 +1348,9 @@ button {
 }
 
 .winner-card {
-  width:
-    min(
-      92vw,
-      390px
-    );
+  width: min(92vw, 390px);
 
-  max-height:
-    calc(
-      100dvh - 32px
-    );
+  max-height: calc(100dvh - 32px);
 
   padding: 24px;
 
@@ -1641,45 +1358,27 @@ button {
 
   text-align: center;
 
-  border:
-    1px solid
-    rgba(255, 215, 71, 0.42);
+  border: 1px solid rgba(255, 215, 71, 0.42);
 
   border-radius: 25px;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(13, 53, 51, 0.99),
-      rgba(3, 18, 23, 0.99)
-    );
+  background: linear-gradient(
+    145deg,
+    rgba(13, 53, 51, 0.99),
+    rgba(3, 18, 23, 0.99)
+  );
 
   box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.1),
-    0 25px 65px
-    rgba(0, 0, 0, 0.7);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 25px 65px rgba(0, 0, 0, 0.7);
 
-  animation:
-    tpWinnerEntry
-    340ms
-    cubic-bezier(
-      0.2,
-      0.82,
-      0.25,
-      1
-    )
-    both;
+  animation: tpWinnerEntry 340ms cubic-bezier(0.2, 0.82, 0.25, 1) both;
 }
 
 .winner-crown {
   font-size: 46px;
 
-  filter:
-    drop-shadow(
-      0 0 15px
-      rgba(255, 205, 45, 0.55)
-    );
+  filter: drop-shadow(0 0 15px rgba(255, 205, 45, 0.55));
 }
 
 .winner-kicker {
@@ -1711,14 +1410,11 @@ button {
   color: #c6d3dc;
   font-size: 11px;
 
-  border:
-    1px solid
-    rgba(255, 215, 71, 0.22);
+  border: 1px solid rgba(255, 215, 71, 0.22);
 
   border-radius: 18px;
 
-  background:
-    rgba(0, 0, 0, 0.23);
+  background: rgba(0, 0, 0, 0.23);
 }
 
 .winner-amount {
@@ -1730,9 +1426,7 @@ button {
   font-size: 29px;
   font-weight: 900;
 
-  text-shadow:
-    0 0 16px
-    rgba(45, 255, 141, 0.35);
+  text-shadow: 0 0 16px rgba(45, 255, 141, 0.35);
 }
 
 .winner-finance {
@@ -1740,14 +1434,11 @@ button {
 
   overflow: hidden;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.09);
 
   border-radius: 14px;
 
-  background:
-    rgba(0, 0, 0, 0.24);
+  background: rgba(0, 0, 0, 0.24);
 }
 
 .winner-finance-row {
@@ -1760,9 +1451,7 @@ button {
   color: #acbdc7;
   font-size: 10px;
 
-  border-bottom:
-    1px solid
-    rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .winner-finance-row:last-child {
@@ -1774,8 +1463,7 @@ button {
   font-size: 11px;
 }
 
-.winner-finance-row:nth-child(2)
-strong {
+.winner-finance-row:nth-child(2) strong {
   color: #ff9ca5;
 }
 
@@ -1797,20 +1485,15 @@ strong {
   from {
     opacity: 0;
 
-    transform:
-      translateY(20px)
-      scale(0.92);
+    transform: translateY(20px) scale(0.92);
   }
 
   to {
     opacity: 1;
 
-    transform:
-      translateY(0)
-      scale(1);
+    transform: translateY(0) scale(1);
   }
 }
-
 
 /* =========================================================
    TOAST AND BANNER
@@ -1823,11 +1506,7 @@ strong {
   left: 50%;
   z-index: 25000;
 
-  max-width:
-    min(
-      90vw,
-      420px
-    );
+  max-width: min(90vw, 420px);
 
   padding: 9px 15px;
 
@@ -1835,27 +1514,18 @@ strong {
   font-size: 11px;
   font-weight: 800;
 
-  border:
-    1px solid
-    rgba(255, 215, 70, 0.35);
+  border: 1px solid rgba(255, 215, 70, 0.35);
 
   border-radius: 12px;
 
-  background:
-    rgba(5, 35, 31, 0.97);
+  background: rgba(5, 35, 31, 0.97);
 
-  box-shadow:
-    0 8px 20px
-    rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
 
   opacity: 0;
   visibility: hidden;
 
-  transform:
-    translate(
-      -50%,
-      -15px
-    );
+  transform: translate(-50%, -15px);
 
   transition:
     opacity 180ms ease,
@@ -1868,13 +1538,8 @@ strong {
   opacity: 1;
   visibility: visible;
 
-  transform:
-    translate(
-      -50%,
-      0
-    );
+  transform: translate(-50%, 0);
 }
-
 
 /* =========================================================
    CARD FLYING ANIMATION SUPPORT
@@ -1885,23 +1550,14 @@ strong {
 
   object-fit: fill;
 
-  border:
-    1px solid #ffffff;
+  border: 1px solid #ffffff;
 
   border-radius: 5px;
 
-  box-shadow:
-    0 8px 18px
-    rgba(0, 0, 0, 0.62);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.62);
 
-  will-change:
-    left,
-    top,
-    width,
-    height,
-    transform;
+  will-change: left, top, width, height, transform;
 }
-
 
 /* =========================================================
    PORTRAIT ROTATE SCREEN
@@ -1922,12 +1578,7 @@ strong {
   color: var(--gold-light);
   text-align: center;
 
-  background:
-    radial-gradient(
-      circle,
-      #124134,
-      #020c09 72%
-    );
+  background: radial-gradient(circle, #124134, #020c09 72%);
 }
 
 .tp-rotate-icon {
@@ -1944,29 +1595,18 @@ strong {
   font-size: 13px;
 }
 
-
 /* =========================================================
    TABLET
 ========================================================= */
 
 @media (max-width: 1150px) {
-
   :root {
-    --table-width:
-      min(
-        86vw,
-        900px
-      );
+    --table-width: min(86vw, 900px);
   }
 
   .tp-player,
   .player {
-    width:
-      clamp(
-        125px,
-        17vw,
-        175px
-      );
+    width: clamp(125px, 17vw, 175px);
   }
 
   .tp-action-footer,
@@ -1994,22 +1634,16 @@ strong {
   }
 }
 
-
 /* =========================================================
    MOBILE LANDSCAPE
 ========================================================= */
 
 @media (orientation: landscape) and (max-height: 520px) {
-
   :root {
     --header-height: 54px;
     --footer-height: 58px;
 
-    --table-width:
-      min(
-        66vw,
-        620px
-      );
+    --table-width: min(66vw, 620px);
   }
 
   .tp-app {
@@ -2049,12 +1683,7 @@ strong {
   }
 
   .tp-brand-copy h1 {
-    font-size:
-      clamp(
-        14px,
-        2.5vw,
-        19px
-      );
+    font-size: clamp(14px, 2.5vw, 19px);
   }
 
   .tp-table-meta {
@@ -2084,18 +1713,12 @@ strong {
   }
 
   .table-area {
-    transform:
-      translateY(-8%);
+    transform: translateY(-8%);
   }
 
   .tp-player,
   .player {
-    width:
-      clamp(
-        112px,
-        14.5vw,
-        137px
-      );
+    width: clamp(112px, 14.5vw, 137px);
 
     min-height: 46px;
   }
@@ -2235,8 +1858,7 @@ strong {
       minmax(0, 1fr)
       55px;
 
-    min-height:
-      var(--footer-height);
+    min-height: var(--footer-height);
 
     padding: 5px 7px;
     gap: 5px;
@@ -2256,11 +1878,7 @@ strong {
   }
 
   .tp-actions {
-    grid-template-columns:
-      repeat(
-        6,
-        minmax(54px, 1fr)
-      );
+    grid-template-columns: repeat(6, minmax(54px, 1fr));
 
     gap: 4px;
   }
@@ -2285,16 +1903,9 @@ strong {
   }
 
   .winner-card {
-    width:
-      min(
-        88vw,
-        350px
-      );
+    width: min(88vw, 350px);
 
-    max-height:
-      calc(
-        100dvh - 16px
-      );
+    max-height: calc(100dvh - 16px);
 
     padding: 12px 17px;
   }
@@ -2330,22 +1941,16 @@ strong {
   }
 }
 
-
 /* =========================================================
    VERY SHORT LANDSCAPE
 ========================================================= */
 
 @media (orientation: landscape) and (max-height: 380px) {
-
   :root {
     --header-height: 50px;
     --footer-height: 54px;
 
-    --table-width:
-      min(
-        60vw,
-        570px
-      );
+    --table-width: min(60vw, 570px);
   }
 
   .tp-brand-logo {
@@ -2358,8 +1963,7 @@ strong {
   }
 
   .table-area {
-    transform:
-      translateY(-10%);
+    transform: translateY(-10%);
   }
 
   .tp-player,
@@ -2390,13 +1994,11 @@ strong {
   }
 }
 
-
 /* =========================================================
    PORTRAIT
 ========================================================= */
 
 @media (orientation: portrait) and (max-width: 950px) {
-
   .tp-app {
     visibility: hidden;
 
@@ -2408,63 +2010,35 @@ strong {
   }
 }
 
-
 /* =========================================================
    SAFE AREA
 ========================================================= */
 
-@supports (
-  padding:
-    env(
-      safe-area-inset-bottom
-    )
-) {
-
+@supports (padding: env(safe-area-inset-bottom)) {
   @media (orientation: landscape) {
-
     .tp-app {
-      padding-left:
-        max(
-          7px,
-          env(
-            safe-area-inset-left
-          )
-        );
+      padding-left: max(7px, env(safe-area-inset-left));
 
-      padding-right:
-        max(
-          7px,
-          env(
-            safe-area-inset-right
-          )
-        );
+      padding-right: max(7px, env(safe-area-inset-right));
     }
   }
 }
-
 
 /* =========================================================
    REDUCED MOTION
 ========================================================= */
 
-@media (
-  prefers-reduced-motion:
-  reduce
-) {
-
+@media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     scroll-behavior: auto !important;
 
-    animation-duration:
-      1ms !important;
+    animation-duration: 1ms !important;
 
-    animation-iteration-count:
-      1 !important;
+    animation-iteration-count: 1 !important;
 
-    transition-duration:
-      1ms !important;
+    transition-duration: 1ms !important;
   }
 }
 
@@ -2476,147 +2050,146 @@ strong {
 /* ---------- TABLE ---------- */
 
 .tp-stage .table-area {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
 
-    width: min(64vw, 960px) !important;
-    height: auto !important;
-    aspect-ratio: 16 / 9;
+  width: min(64vw, 960px) !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
 
-    margin: 0 !important;
+  margin: 0 !important;
 
-    transform: translate(-50%, -50%) !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 .tp-stage .table-area .table-image {
-    display: block;
+  display: block;
 
-    width: 100% !important;
-    height: 100% !important;
+  width: 100% !important;
+  height: 100% !important;
 
-    object-fit: contain;
+  object-fit: contain;
 }
 
 /* ---------- POT ---------- */
 
 .tp-stage #pot {
-    position: absolute !important;
-    top: 7% !important;
-    left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
+  position: absolute !important;
+  top: 7% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
 
-    transform: translateX(-50%) !important;
+  transform: translateX(-50%) !important;
 
-    z-index: 40;
+  z-index: 40;
 }
 
 /* ---------- LOCAL PLAYER ---------- */
 
 .tp-stage #currentPlayer {
-    position: absolute !important;
-    left: 50% !important;
-    right: auto !important;
-    top: auto !important;
-    bottom: 11% !important;
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 11% !important;
 
-    transform: translateX(-50%) !important;
+  transform: translateX(-50%) !important;
 
-    z-index: 50;
+  z-index: 50;
 }
 
 .tp-stage #currentPlayerCards {
-    position: absolute !important;
-    left: 50% !important;
-    bottom: calc(100% - 4px) !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: calc(100% - 4px) !important;
 
-    transform: translateX(-50%) !important;
+  transform: translateX(-50%) !important;
 
-    z-index: 51;
+  z-index: 51;
 }
 
 /* ---------- COMPLETE FOOTER ---------- */
 
 .tp-action-footer.bottom-panel {
-    position: relative !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
 
-    display: grid !important;
+  display: grid !important;
 
-    grid-template-columns:
-        minmax(78px, 110px)
-        minmax(0, 1100px)
-        minmax(58px, 130px) !important;
+  grid-template-columns:
+    minmax(78px, 110px)
+    minmax(0, 1100px)
+    minmax(58px, 130px) !important;
 
-    justify-content: space-between;
-    align-items: center;
+  justify-content: space-between;
+  align-items: center;
 
-    width: 100% !important;
-    max-width: none !important;
+  width: 100% !important;
+  max-width: none !important;
 
-    min-height: var(--footer-height);
+  min-height: var(--footer-height);
 
-    padding: 7px 10px;
-    gap: 8px;
+  padding: 7px 10px;
+  gap: 8px;
 
-    box-sizing: border-box;
+  box-sizing: border-box;
 
-    z-index: 110;
+  z-index: 110;
 }
 
 /* Action section must remain inside footer */
 .tp-action-footer .tp-actions {
-    position: static !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
 
-    display: grid !important;
+  display: grid !important;
 
-    grid-template-columns:
-        repeat(6, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
 
-    width: 100% !important;
-    min-width: 0;
-    max-width: 1100px;
+  width: 100% !important;
+  min-width: 0;
+  max-width: 1100px;
 
-    margin: 0 auto;
+  margin: 0 auto;
 
-    gap: 7px;
+  gap: 7px;
 }
 
 /* Rules and Exit section */
 .tp-action-footer .tp-footer-tools {
-    position: static !important;
+  position: static !important;
 
-    display: flex !important;
-    align-items: center;
-    justify-content: flex-end;
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
 
-    min-width: 0;
-    gap: 6px;
+  min-width: 0;
+  gap: 6px;
 }
 
 .tp-action-footer .tp-action-button,
 .tp-action-footer .tp-tool-button {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
 
-    overflow: hidden;
+  overflow: hidden;
 
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tp-action-footer .tp-exit-button {
-    width: auto;
-    min-width: 55px;
+  width: auto;
+  min-width: 55px;
 }
 
 /* =========================================================
@@ -2624,62 +2197,60 @@ strong {
 ========================================================= */
 
 @media (orientation: landscape) and (max-height: 520px) {
+  .tp-stage .table-area {
+    top: 51% !important;
 
-    .tp-stage .table-area {
-        top: 51% !important;
+    width: min(59vw, 520px) !important;
+  }
 
-        width: min(59vw, 520px) !important;
-    }
+  /* Move pot down so header does not cut it */
+  .tp-stage #pot {
+    top: 13% !important;
+  }
 
-    /* Move pot down so header does not cut it */
-    .tp-stage #pot {
-        top: 13% !important;
-    }
+  .tp-stage #currentPlayer {
+    bottom: 18% !important;
+  }
 
-    .tp-stage #currentPlayer {
-        bottom: 18% !important;
-    }
+  .tp-action-footer.bottom-panel {
+    grid-template-columns:
+      72px
+      minmax(0, 1fr)
+      54px !important;
 
-    .tp-action-footer.bottom-panel {
-        grid-template-columns:
-            72px
-            minmax(0, 1fr)
-            54px !important;
+    padding: 5px 7px;
+    gap: 5px;
+  }
 
-        padding: 5px 7px;
-        gap: 5px;
-    }
+  .tp-action-footer .tp-actions {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
 
-    .tp-action-footer .tp-actions {
-        grid-template-columns:
-            repeat(6, minmax(0, 1fr)) !important;
+    gap: 4px;
+  }
 
-        gap: 4px;
-    }
+  .tp-action-footer .tp-action-button,
+  .tp-action-footer .tp-tool-button {
+    min-height: 36px;
 
-    .tp-action-footer .tp-action-button,
-    .tp-action-footer .tp-tool-button {
-        min-height: 36px;
+    padding: 0 3px;
 
-        padding: 0 3px;
+    font-size: 9px;
 
-        font-size: 9px;
+    border-radius: 10px;
+  }
 
-        border-radius: 10px;
-    }
+  .tp-action-footer #teenPattiRulesButton {
+    display: none !important;
+  }
 
-    .tp-action-footer #teenPattiRulesButton {
-        display: none !important;
-    }
+  .tp-action-footer .tp-exit-button {
+    display: block !important;
 
-    .tp-action-footer .tp-exit-button {
-        display: block !important;
+    width: 52px;
+    min-width: 52px;
 
-        width: 52px;
-        min-width: 52px;
-
-        padding: 0 3px;
-    }
+    padding: 0 3px;
+  }
 }
 
 /* =========================================================
@@ -2687,62 +2258,59 @@ strong {
 ========================================================= */
 
 @media (orientation: landscape) and (max-height: 380px) {
+  .tp-stage .table-area {
+    top: 51% !important;
 
-    .tp-stage .table-area {
-        top: 51% !important;
+    width: min(56vw, 500px) !important;
+  }
 
-        width: min(56vw, 500px) !important;
-    }
+  .tp-stage #pot {
+    top: 14% !important;
+  }
 
-    .tp-stage #pot {
-        top: 14% !important;
-    }
+  .tp-stage #currentPlayer {
+    bottom: 19% !important;
+  }
 
-    .tp-stage #currentPlayer {
-        bottom: 19% !important;
-    }
+  .tp-action-footer.bottom-panel {
+    grid-template-columns:
+      68px
+      minmax(0, 1fr)
+      50px !important;
 
-    .tp-action-footer.bottom-panel {
-        grid-template-columns:
-            68px
-            minmax(0, 1fr)
-            50px !important;
+    padding: 4px 6px;
+    gap: 4px;
+  }
 
-        padding: 4px 6px;
-        gap: 4px;
-    }
+  .tp-action-footer .tp-actions {
+    gap: 4px;
+  }
 
-    .tp-action-footer .tp-actions {
-        gap: 4px;
-    }
+  .tp-action-footer .tp-action-button,
+  .tp-action-footer .tp-tool-button {
+    min-height: 34px;
 
-    .tp-action-footer .tp-action-button,
-    .tp-action-footer .tp-tool-button {
-        min-height: 34px;
+    padding: 0 2px;
 
-        padding: 0 2px;
+    font-size: 8px;
+  }
 
-        font-size: 8px;
-    }
-
-    .tp-action-footer .tp-exit-button {
-        width: 48px;
-        min-width: 48px;
-    }
+  .tp-action-footer .tp-exit-button {
+    width: 48px;
+    min-width: 48px;
+  }
 }
 
 /* 890 × 344 — keep local cards below turn timer */
 @media (orientation: landscape) and (max-height: 380px) {
+  .tp-stage #currentPlayer {
+    bottom: 15% !important;
+  }
 
-    .tp-stage #currentPlayer {
-        bottom: 15% !important;
-    }
-
-    .tp-stage #currentPlayerCards {
-        bottom: calc(100% - 14px) !important;
-    }
+  .tp-stage #currentPlayerCards {
+    bottom: calc(100% - 14px) !important;
+  }
 }
-
 
 /* =========================================================
    TEEN PATTI MATCHMAKING OVERLAY
@@ -2756,19 +2324,16 @@ strong {
   display: grid;
   place-items: center;
 
-  padding:
-    max(16px, env(safe-area-inset-top))
-    max(16px, env(safe-area-inset-right))
-    max(16px, env(safe-area-inset-bottom))
+  padding: max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
     max(16px, env(safe-area-inset-left));
 
-  background:
-    radial-gradient(
-      circle at 50% 45%,
-      rgba(13, 88, 65, 0.34),
-      rgba(0, 8, 8, 0.9) 58%,
-      rgba(0, 4, 6, 0.96)
-    );
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(13, 88, 65, 0.34),
+    rgba(0, 8, 8, 0.9) 58%,
+    rgba(0, 4, 6, 0.96)
+  );
 
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -2795,31 +2360,22 @@ strong {
 
   text-align: center;
 
-  border:
-    1px solid
-    rgba(255, 213, 67, 0.46);
+  border: 1px solid rgba(255, 213, 67, 0.46);
 
   border-radius: 26px;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(9, 56, 48, 0.98),
-      rgba(3, 21, 26, 0.99)
-    );
+  background: linear-gradient(
+    145deg,
+    rgba(9, 56, 48, 0.98),
+    rgba(3, 21, 26, 0.99)
+  );
 
   box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.1),
-    0 0 45px
-    rgba(14, 214, 142, 0.12),
-    0 28px 75px
-    rgba(0, 0, 0, 0.72);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 45px rgba(14, 214, 142, 0.12),
+    0 28px 75px rgba(0, 0, 0, 0.72);
 
-  animation:
-    tpMatchmakingCardEntry
-    320ms
-    cubic-bezier(0.2, 0.82, 0.25, 1);
+  animation: tpMatchmakingCardEntry 320ms cubic-bezier(0.2, 0.82, 0.25, 1);
 }
 
 .tp-matchmaking-loader {
@@ -2839,22 +2395,11 @@ strong {
 
   border-radius: 999px;
 
-  background:
-    linear-gradient(
-      145deg,
-      #ffe971,
-      #ffbc21
-    );
+  background: linear-gradient(145deg, #ffe971, #ffbc21);
 
-  box-shadow:
-    0 0 14px
-    rgba(255, 205, 55, 0.72);
+  box-shadow: 0 0 14px rgba(255, 205, 55, 0.72);
 
-  animation:
-    tpMatchmakingDot
-    1.05s
-    ease-in-out
-    infinite;
+  animation: tpMatchmakingDot 1.05s ease-in-out infinite;
 }
 
 .tp-matchmaking-loader span:nth-child(2) {
@@ -2902,21 +2447,16 @@ strong {
 
   margin: 18px auto 12px;
 
-  border:
-    5px solid
-    rgba(255, 215, 70, 0.22);
+  border: 5px solid rgba(255, 215, 70, 0.22);
 
   border-top-color: #ffda4d;
   border-radius: 50%;
 
-  background:
-    rgba(0, 13, 18, 0.62);
+  background: rgba(0, 13, 18, 0.62);
 
   box-shadow:
-    inset 0 0 24px
-    rgba(0, 0, 0, 0.48),
-    0 0 25px
-    rgba(255, 205, 55, 0.12);
+    inset 0 0 24px rgba(0, 0, 0, 0.48),
+    0 0 25px rgba(255, 205, 55, 0.12);
 }
 
 .tp-matchmaking-timer strong {
@@ -2943,14 +2483,11 @@ strong {
 
   overflow: hidden;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   border-radius: 999px;
 
-  background:
-    rgba(0, 8, 10, 0.72);
+  background: rgba(0, 8, 10, 0.72);
 }
 
 .tp-matchmaking-progress span {
@@ -2961,16 +2498,9 @@ strong {
 
   border-radius: inherit;
 
-  background:
-    linear-gradient(
-      90deg,
-      #18db8c,
-      #ffe15c
-    );
+  background: linear-gradient(90deg, #18db8c, #ffe15c);
 
-  box-shadow:
-    0 0 14px
-    rgba(34, 230, 147, 0.5);
+  box-shadow: 0 0 14px rgba(34, 230, 147, 0.5);
 
   transition: width 260ms linear;
 }
@@ -2989,14 +2519,11 @@ strong {
 
   padding: 11px 10px;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.09);
 
   border-radius: 13px;
 
-  background:
-    rgba(0, 12, 16, 0.48);
+  background: rgba(0, 12, 16, 0.48);
 }
 
 .tp-matchmaking-counts span {
@@ -3203,12 +2730,11 @@ strong {
   border: 2px solid rgba(255, 215, 71, 0.82);
   border-radius: 22px;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(9, 57, 50, 0.94),
-      rgba(2, 24, 27, 0.94)
-    );
+  background: linear-gradient(
+    145deg,
+    rgba(9, 57, 50, 0.94),
+    rgba(2, 24, 27, 0.94)
+  );
 
   box-shadow:
     0 0 28px rgba(255, 205, 45, 0.35),
@@ -3354,8 +2880,7 @@ strong {
 
     background: rgba(2, 20, 19, 0.9);
 
-    box-shadow:
-      0 7px 18px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.4);
   }
 
   .tp-wallet span {
@@ -3378,8 +2903,7 @@ strong {
 
     background: rgba(2, 20, 19, 0.9);
 
-    box-shadow:
-      0 7px 18px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -3421,9 +2945,7 @@ strong {
   visibility: visible !important;
   pointer-events: none !important;
 
-  filter:
-    grayscale(0.55)
-    saturate(0.65);
+  filter: grayscale(0.55) saturate(0.65);
 }
 
 .tp-player.is-packed .cards,
@@ -3435,12 +2957,7 @@ strong {
    TEEN PATTI — MOBILE LANDSCAPE SOURCE OF TRUTH
 ========================================================= */
 
-@media (
-  orientation: landscape
-) and (
-  max-height: 520px
-) {
-
+@media (orientation: landscape) and (max-height: 520px) {
   /*
    * Width ও available viewport height—দুটো
    * অনুযায়ী table scale হবে।
@@ -3448,25 +2965,11 @@ strong {
   .tp-stage .table-area {
     top: 54% !important;
 
-    width:
-      min(
-        70vw,
-        132dvh,
-        650px
-      ) !important;
+    width: min(74vw, 160dvh, 700px) !important;
 
-    max-height:
-      calc(
-        100dvh -
-        var(--footer-height) -
-        18px
-      );
+    max-height: calc(100dvh - var(--footer-height) - 18px);
 
-    transform:
-      translate(
-        -50%,
-        -50%
-      ) !important;
+    transform: translate(-50%, -50%) !important;
   }
 
   /*
@@ -3478,8 +2981,7 @@ strong {
     left: -2% !important;
     right: auto !important;
 
-    transform:
-      translateY(-50%) !important;
+    transform: translateY(-50%) !important;
   }
 
   .tp-stage .tp-seat-4,
@@ -3488,8 +2990,7 @@ strong {
     right: -2% !important;
     left: auto !important;
 
-    transform:
-      translateY(-50%) !important;
+    transform: translateY(-50%) !important;
   }
 
   /*
@@ -3502,8 +3003,7 @@ strong {
     left: 23% !important;
     right: auto !important;
 
-    transform:
-      translateX(-50%) !important;
+    transform: translateX(-50%) !important;
   }
 
   .tp-stage .tp-seat-3,
@@ -3512,8 +3012,7 @@ strong {
     right: 23% !important;
     left: auto !important;
 
-    transform:
-      translateX(50%) !important;
+    transform: translateX(50%) !important;
   }
 
   /*
@@ -3523,11 +3022,10 @@ strong {
   .tp-stage #currentPlayer {
     top: auto !important;
     right: auto !important;
-    bottom: 0 !important;
+    bottom: 6% !important;
     left: 50% !important;
 
-    transform:
-      translateX(-50%) !important;
+    transform: translateX(-50%) !important;
   }
 
   /*
@@ -3535,12 +3033,7 @@ strong {
    */
   .tp-player,
   .player {
-    width:
-      clamp(
-        116px,
-        16vw,
-        142px
-      );
+    width: clamp(116px, 16vw, 142px);
 
     min-height: 46px;
   }
@@ -3586,10 +3079,7 @@ strong {
    * সামান্য বড় থাকবে।
    */
   .tp-stage #currentPlayerCards {
-    bottom:
-      calc(
-        100% - 5px
-      ) !important;
+    bottom: calc(100% - 5px) !important;
 
     z-index: 52 !important;
 
@@ -3599,18 +3089,14 @@ strong {
     scale: 1 !important;
   }
 
-  .tp-stage
-  #currentPlayerCards
-  img {
+  .tp-stage #currentPlayerCards img {
     width: 48px !important;
     height: 68px !important;
 
     margin-left: -9px !important;
   }
 
-  .tp-stage
-  #currentPlayerCards
-  img:first-child {
+  .tp-stage #currentPlayerCards img:first-child {
     margin-left: 0 !important;
   }
 
@@ -3621,19 +3107,15 @@ strong {
     top: 11% !important;
   }
 
-  .tp-stage
-  .table-area
-  .tp-turn-control {
+  .tp-stage .table-area .tp-turn-control {
     top: 37% !important;
   }
 
   /*
    * Action/turn update-এর সময় player blink বন্ধ।
    */
-  .player.active-turn
-  .tp-player-profile,
-  .player.current-turn
-  .tp-player-profile {
+  .player.active-turn .tp-player-profile,
+  .player.current-turn .tp-player-profile {
     animation: none !important;
     filter: none !important;
 
@@ -3643,12 +3125,8 @@ strong {
       transform 180ms ease;
   }
 
-  .tp-player.occupied:not(
-    .is-resolved-seat
-  ),
-  .player.occupied:not(
-    .is-resolved-seat
-  ) {
+  .tp-player.occupied:not(.is-resolved-seat),
+  .player.occupied:not(.is-resolved-seat) {
     transition:
       opacity 120ms ease,
       filter 160ms ease !important;
@@ -3659,21 +3137,16 @@ strong {
    VERY SHORT MOBILE LANDSCAPE
 ========================================== */
 
-@media (
-  orientation: landscape
-) and (
-  max-height: 380px
-) {
-
+@media (orientation: landscape) and (max-height: 380px) {
   .tp-stage .table-area {
     top: 53% !important;
 
     width:
-      min(
-        66vw,
-        128dvh,
-        570px
-      ) !important;
+  min(
+    72vw,
+    158dvh,
+    650px
+  ) !important;
   }
 
   .tp-stage .tp-seat-2,
@@ -3684,7 +3157,7 @@ strong {
   }
 
   .tp-stage #currentPlayer {
-    bottom: -1% !important;
+    bottom: 6% !important;
   }
 
   .tp-player .cards,
@@ -3706,9 +3179,7 @@ strong {
     height: 67px !important;
   }
 
-  .tp-stage
-  #currentPlayerCards
-  img {
+  .tp-stage #currentPlayerCards img {
     width: 45px !important;
     height: 63px !important;
   }
@@ -3717,9 +3188,7 @@ strong {
     top: 10% !important;
   }
 
-  .tp-stage
-  .table-area
-  .tp-turn-control {
+  .tp-stage .table-area .tp-turn-control {
     top: 36% !important;
   }
 }
@@ -3732,34 +3201,53 @@ strong {
  * Heads-up:
  * একমাত্র opponent top center।
  */
-.table-area[
-  data-opponent-count="1"
-]
-.tp-seat-2 {
+.table-area[data-opponent-count="1"] .tp-seat-2 {
   top: 8% !important;
   left: 50% !important;
   right: auto !important;
 
-  transform:
-    translateX(-50%) !important;
+  transform: translateX(-50%) !important;
 }
 
 /*
  * Local + তিন opponent:
  * একজন top center, অন্য দুজন side।
  */
-.table-area[
-  data-opponent-count="3"
-]
-.tp-seat-2 {
+.table-area[data-opponent-count="3"] .tp-seat-2 {
   top: 8% !important;
   left: 50% !important;
   right: auto !important;
 
-  transform:
-    translateX(-50%) !important;
+  transform: translateX(-50%) !important;
 }
 
+@media (orientation: landscape) and (max-height: 520px) {
+  .table-area[data-opponent-count="1"] .tp-seat-2,
+  .table-area[data-opponent-count="3"] .tp-seat-2 {
+    top: 24% !important;
+    left: 50% !important;
+    right: auto !important;
+
+    transform: translateX(-50%) !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 380px) {
+  .table-area[data-opponent-count="1"] .tp-seat-2,
+  .table-area[data-opponent-count="3"] .tp-seat-2 {
+    top: 25% !important;
+  }
+}
+
+/* ==========================================
+   TEEN PATTI — CENTER OPPONENT POT OFFSET
+========================================== */
+
+/*
+ * একজন অথবা তিনজন opponent হলে
+ * top-center seat ব্যবহৃত হয়।
+ * তাই pot ডান দিকে থাকবে।
+ */
 @media (
   orientation: landscape
 ) and (
@@ -3769,34 +3257,16 @@ strong {
   .table-area[
     data-opponent-count="1"
   ]
-  .tp-seat-2,
+  #pot,
   .table-area[
     data-opponent-count="3"
   ]
-  .tp-seat-2 {
-    top: 24% !important;
-    left: 50% !important;
+  #pot {
+    top: 10% !important;
+    left: 73% !important;
     right: auto !important;
 
     transform:
       translateX(-50%) !important;
-  }
-}
-
-@media (
-  orientation: landscape
-) and (
-  max-height: 380px
-) {
-
-  .table-area[
-    data-opponent-count="1"
-  ]
-  .tp-seat-2,
-  .table-area[
-    data-opponent-count="3"
-  ]
-  .tp-seat-2 {
-    top: 25% !important;
   }
 }

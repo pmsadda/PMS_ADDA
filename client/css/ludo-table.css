@@ -2194,7 +2194,15 @@ button {
  * Landscape হলে game চালু থাকবে না।
  * ফোন portrait করতে বলা হবে।
  */
-@media (orientation: landscape) {
+@media (
+  orientation: landscape
+) and (
+  max-height: 600px
+) and (
+  hover: none
+) and (
+  pointer: coarse
+) {
 
   html,
   body {
@@ -2260,6 +2268,28 @@ button {
 
   .ludo-app {
     display: grid;
+  }
+}
+
+/*
+ * Desktop এবং laptop landscape screen-এ
+ * Ludo সবসময় স্বাভাবিকভাবে দেখা যাবে।
+ */
+@media (
+  orientation: landscape
+) and (
+  hover: hover
+) and (
+  pointer: fine
+) {
+
+  body::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  .ludo-app {
+    display: grid !important;
   }
 }
 
