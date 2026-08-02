@@ -2272,8 +2272,10 @@ button {
 }
 
 /*
- * Desktop এবং laptop landscape screen-এ
- * Ludo সবসময় স্বাভাবিকভাবে দেখা যাবে।
+ * Desktop এবং laptop landscape layout।
+ *
+ * Header remove হওয়ার পরে stage ও footer-এর
+ * grid row এখানে নতুন করে নির্ধারণ করা হচ্ছে।
  */
 @media (
   orientation: landscape
@@ -2283,6 +2285,29 @@ button {
   pointer: fine
 ) {
 
+  :root {
+    --footer-height: 66px;
+
+    --board-size:
+      min(
+        calc(
+          100dvh -
+          var(--footer-height) -
+          42px
+        ),
+        50vw,
+        720px
+      );
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden !important;
+  }
+
   body::before {
     display: none !important;
     content: none !important;
@@ -2290,6 +2315,120 @@ button {
 
   .ludo-app {
     display: grid !important;
+
+    grid-template-rows:
+      minmax(0, 1fr)
+      var(--footer-height) !important;
+
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+
+    padding: 10px 16px;
+    gap: 9px;
+
+    overflow: hidden;
+  }
+
+  /*
+   * Header আর grid item নয়।
+   */
+  .game-header {
+    display: none !important;
+  }
+
+  /*
+   * Stage প্রথম row সম্পূর্ণ ব্যবহার করবে।
+   */
+  .game-stage {
+    grid-row: 1;
+
+    min-width: 0;
+    min-height: 0;
+
+    grid-template-columns:
+      minmax(180px, 1fr)
+      var(--board-size)
+      minmax(180px, 1fr);
+
+    grid-template-rows:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    align-items: center;
+
+    gap: 12px 24px;
+
+    overflow: visible;
+  }
+
+  .board-zone {
+    grid-column: 2;
+    grid-row: 1 / 3;
+
+    width: var(--board-size);
+    height: var(--board-size);
+
+    align-self: center;
+    justify-self: center;
+  }
+
+  .ludo-board {
+    width: 94%;
+    height: 94%;
+
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /*
+   * Dice board-এর ডান পাশে থাকবে।
+   */
+  .dice-control {
+    top: 50%;
+
+    right: auto;
+
+    left:
+      calc(
+        50% +
+        (
+          var(--board-size) / 2
+        ) +
+        28px
+      );
+
+    width: 112px;
+
+    transform:
+      translateY(-50%);
+  }
+
+  /*
+   * Footer শুধু দ্বিতীয় fixed row ব্যবহার করবে।
+   */
+  .game-footer {
+    position: relative !important;
+
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    grid-row: 2;
+
+    width: 100% !important;
+    height: var(--footer-height) !important;
+    min-height: var(--footer-height) !important;
+    max-height: var(--footer-height) !important;
+
+    margin: 0 !important;
+    padding: 8px 16px;
+
+    align-self: stretch;
+
+    overflow: hidden;
   }
 }
 
