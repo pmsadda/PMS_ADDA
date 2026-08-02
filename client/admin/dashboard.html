@@ -589,6 +589,152 @@
                 </section>
 
                 <!-- =========================
+     First Deposit Bonus Control
+========================== -->
+
+                <section
+                    class="dashboard-section referral-admin-section first-deposit-bonus-section">
+
+                    <div class="section-heading">
+
+                        <div>
+                            <h2>First Deposit Bonus Control</h2>
+
+                            <p>
+                                Control the bonus credited with a user's
+                                first approved deposit
+                            </p>
+                        </div>
+
+                        <label class="referral-admin-switch">
+
+                            <input
+                                type="checkbox"
+                                id="firstDepositBonusEnabled"
+                                checked>
+
+                            <span class="referral-switch-track"></span>
+
+                            <strong id="firstDepositBonusStatusLabel">
+                                Enabled
+                            </strong>
+
+                        </label>
+
+                    </div>
+
+                    <form
+                        id="firstDepositBonusSettingsForm"
+                        class="referral-settings-form"
+                        novalidate>
+
+                        <div class="referral-setting-field">
+
+                            <label for="firstDepositBonusPercent">
+                                Bonus Percentage
+                            </label>
+
+                            <div class="referral-money-input">
+
+                                <span>%</span>
+
+                                <input
+                                    type="number"
+                                    id="firstDepositBonusPercent"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    value="50"
+                                    required>
+
+                            </div>
+
+                            <small>
+                                Percentage calculated from the first deposit
+                            </small>
+
+                        </div>
+
+                        <div class="referral-setting-field">
+
+                            <label for="firstDepositMaximumBonus">
+                                Maximum Bonus
+                            </label>
+
+                            <div class="referral-money-input">
+
+                                <span>৳</span>
+
+                                <input
+                                    type="number"
+                                    id="firstDepositMaximumBonus"
+                                    min="0"
+                                    step="0.01"
+                                    value="2000"
+                                    required>
+
+                            </div>
+
+                            <small>
+                                Maximum bonus a new user can receive
+                            </small>
+
+                        </div>
+
+                        <div class="referral-setting-field">
+
+                            <label for="firstDepositMinimumDeposit">
+                                Minimum First Deposit
+                            </label>
+
+                            <div class="referral-money-input">
+
+                                <span>৳</span>
+
+                                <input
+                                    type="number"
+                                    id="firstDepositMinimumDeposit"
+                                    min="0"
+                                    step="0.01"
+                                    value="0"
+                                    required>
+
+                            </div>
+
+                            <small>
+                                Minimum deposit required to qualify
+                            </small>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="saveFirstDepositBonusSettings"
+                            class="save-referral-btn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+
+                            Save First Deposit Bonus Settings
+
+                        </button>
+
+                    </form>
+
+                    <div class="referral-admin-notice">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <p>
+                            Updated settings apply only to future approved
+                            first deposits. Existing deposit and bonus records
+                            will remain unchanged.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <!-- =========================
      Referral Program Control
 ========================== -->
 
@@ -1616,6 +1762,123 @@
                                 class="confirm-btn">
                                 <i class="fa-solid fa-check"></i>
                                 Confirm
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- First Deposit Bonus Confirmation Modal -->
+
+                <div
+                    class="modal"
+                    id="firstDepositBonusConfirmModal"
+                    aria-hidden="true">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h3>
+                                Confirm First Deposit Bonus
+                            </h3>
+
+                            <button
+                                type="button"
+                                id="closeFirstDepositBonusModal"
+                                class="bonus-modal-close"
+                                aria-label="Close">
+
+                                <i class="fa-solid fa-xmark"></i>
+
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <p>
+                                Confirm the bonus settings that will apply
+                                to future approved first deposits.
+                            </p>
+
+                            <div class="confirm-charge-list">
+
+                                <div class="confirm-charge-row">
+
+                                    <span>Bonus Status</span>
+
+                                    <strong id="confirmFirstDepositBonusStatus">
+                                        Enabled
+                                    </strong>
+
+                                </div>
+
+                                <div class="confirm-charge-row">
+
+                                    <span>Bonus Percentage</span>
+
+                                    <strong>
+                                        <span
+                                            id="confirmFirstDepositBonusPercent">
+                                            50
+                                        </span>%
+                                    </strong>
+
+                                </div>
+
+                                <div class="confirm-charge-row">
+
+                                    <span>Maximum Bonus</span>
+
+                                    <strong>
+                                        ৳<span
+                                            id="confirmFirstDepositMaximumBonus">
+                                            2,000.00
+                                        </span>
+                                    </strong>
+
+                                </div>
+
+                                <div class="confirm-charge-row">
+
+                                    <span>Minimum Deposit</span>
+
+                                    <strong>
+                                        ৳<span
+                                            id="confirmFirstDepositMinimumDeposit">
+                                            0.00
+                                        </span>
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-actions">
+
+                            <button
+                                type="button"
+                                id="cancelFirstDepositBonusSave"
+                                class="cancel-btn">
+
+                                Cancel
+
+                            </button>
+
+                            <button
+                                type="button"
+                                id="confirmFirstDepositBonusSave"
+                                class="confirm-btn">
+
+                                <i class="fa-solid fa-check"></i>
+
+                                Confirm & Save
+
                             </button>
 
                         </div>

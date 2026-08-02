@@ -424,3 +424,299 @@ body {
     font-size: 16px;
   }
 }
+
+/* ==========================
+   History Tabs & Views
+========================== */
+
+.is-hidden {
+  display: none !important;
+}
+
+.history-tabs {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 7px;
+
+  border: 1px solid #193453;
+  border-radius: 15px;
+
+  background: #0c1b2d;
+}
+
+.history-tab {
+  min-height: 48px;
+  padding: 11px 16px;
+
+  border: 1px solid transparent;
+  border-radius: 11px;
+
+  color: #8fa4bc;
+  font-size: 14px;
+  font-weight: 750;
+
+  cursor: pointer;
+  background: transparent;
+
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.history-tab i {
+  margin-right: 7px;
+}
+
+.history-tab:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.history-tab.active {
+  color: #111111;
+
+  border-color:
+    rgba(255, 199, 56, 0.75);
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffd766,
+      #f4aa20
+    );
+
+  box-shadow:
+    0 8px 22px
+    rgba(255, 185, 30, 0.17);
+}
+
+/* ==========================
+   History Section Heading
+========================== */
+
+.history-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+  padding: 20px;
+
+  border-bottom:
+    1px solid #193453;
+}
+
+.history-section-heading h2,
+.history-section-heading p {
+  margin: 0;
+}
+
+.history-section-heading h2 {
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.history-section-heading p {
+  margin-top: 7px;
+
+  color: #8195ad;
+  font-size: 14px;
+}
+
+.pdf-download-btn {
+  flex: 0 0 auto;
+
+  min-height: 44px;
+  padding: 10px 16px;
+
+  border: 1px solid
+    rgba(255, 96, 112, 0.45);
+
+  border-radius: 10px;
+
+  color: #ffffff;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ba253d,
+      #78182b
+    );
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pdf-download-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 22px
+    rgba(206, 44, 69, 0.25);
+}
+
+.pdf-download-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==========================
+   Date Filters
+========================== */
+
+.date-filter-field {
+  display: flex;
+  align-items: center;
+
+  min-height: 42px;
+  overflow: hidden;
+
+  border: 1px solid #294662;
+  border-radius: 9px;
+
+  background: #081728;
+}
+
+.date-filter-field span {
+  display: grid;
+  place-items: center;
+
+  min-width: 48px;
+  align-self: stretch;
+
+  color: #07111f;
+  font-size: 12px;
+  font-weight: 800;
+
+  background: #ffc738;
+}
+
+.date-filter-field input {
+  min-height: 40px;
+  padding: 0 10px;
+
+  border: none;
+  outline: none;
+
+  color: #f1f6ff;
+  color-scheme: dark;
+
+  background: transparent;
+}
+
+/* ==========================
+   Bonus & Referral Badges
+========================== */
+
+.type-badge.first-deposit {
+  color: #ffdc71;
+  background: #443817;
+}
+
+.type-badge.referrer-bonus {
+  color: #8ed8ff;
+  background: #15374a;
+}
+
+.type-badge.referred-user-bonus {
+  color: #d8a5ff;
+  background: #38224d;
+}
+
+.status-badge.rewarded {
+  color: #61dca7;
+  background: #123b30;
+}
+
+.status-badge.cancelled {
+  color: #ff8c9f;
+  background: #42232c;
+}
+
+.status-badge.rewarded,
+.status-badge.cancelled {
+  text-transform: capitalize;
+}
+
+.history-user-cell strong,
+.history-related-user strong {
+  display: block;
+}
+
+.history-reference {
+  color: #ffc738;
+  font-weight: 700;
+}
+
+.history-amount {
+  color: #70e2ad;
+}
+
+.history-table-note {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #7489a1;
+  font-size: 12px;
+}
+
+/* ==========================
+   History Responsive
+========================== */
+
+@media (max-width: 900px) {
+  .history-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .history-tab {
+    text-align: left;
+  }
+
+  .history-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pdf-download-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .date-filter-field {
+    width: 100%;
+  }
+
+  .date-filter-field input {
+    width: 100%;
+  }
+
+  .history-section-heading {
+    padding: 17px;
+  }
+
+  .history-section-heading h2 {
+    font-size: 18px;
+  }
+
+  .pagination {
+    justify-content: space-between;
+  }
+
+  .pagination button {
+    padding: 10px;
+  }
+}

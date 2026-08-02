@@ -296,6 +296,8 @@ function renderDashboardStats(data) {
 
   updateServiceChargeValues(data.serviceCharges || data.serviceCharge || {});
 
+  updateFirstDepositBonusSettingsValues(data.firstDepositBonusSettings || {});
+
   updateReferralSettingsValues(data.referralSettings || {});
 
   updateReferralStats(data.referrals || {});
@@ -467,6 +469,233 @@ async function confirmServiceChargeSave() {
   } finally {
     if (confirmButton) {
       confirmButton.disabled = false;
+    }
+
+    hideLoader();
+  }
+}
+
+/* =========================
+   First Deposit Bonus Settings
+========================= */
+
+function updateFirstDepositBonusStatusLabel() {
+  const enabled = Boolean(
+    document.getElementById("firstDepositBonusEnabled")?.checked,
+  );
+
+  setText("firstDepositBonusStatusLabel", enabled ? "Enabled" : "Disabled");
+}
+
+function updateFirstDepositBonusSettingsValues(settings) {
+  const enabledInput = document.getElementById("firstDepositBonusEnabled");
+
+  if (enabledInput) {
+    enabledInput.checked =
+      settings.isEnabled === undefined ? true : Boolean(settings.isEnabled);
+  }
+
+  setInputValue(
+    "firstDepositBonusPercent",
+    Number(settings.bonusPercent ?? 50),
+  );
+
+  setInputValue(
+    "firstDepositMaximumBonus",
+    Number(settings.maximumBonus ?? 2000),
+  );
+
+  setInputValue(
+    "firstDepositMinimumDeposit",
+    Number(settings.minimumDeposit ?? 0),
+  );
+
+  updateFirstDepositBonusStatusLabel();
+}
+
+function getFirstDepositBonusSettingsValues() {
+  return {
+    isEnabled: Boolean(
+      document.getElementById("firstDepositBonusEnabled")?.checked,
+    ),
+
+    bonusPercent: Number(
+      document.getElementById("firstDepositBonusPercent")?.value,
+    ),
+
+    maximumBonus: Number(
+      document.getElementById("firstDepositMaximumBonus")?.value,
+    ),
+
+    minimumDeposit: Number(
+      document.getElementById("firstDepositMinimumDeposit")?.value,
+    ),
+  };
+}
+
+function validateFirstDepositBonusSettings(settings) {
+  const isValidPercent =
+    Number.isFinite(settings.bonusPercent) &&
+    settings.bonusPercent >= 0 &&
+    settings.bonusPercent <= 100;
+
+  const isValidMaximumBonus =
+    Number.isFinite(settings.maximumBonus) &&
+    settings.maximumBonus >= 0 &&
+    settings.maximumBonus <= 1000000;
+
+  const isValidMinimumDeposit =
+    Number.isFinite(settings.minimumDeposit) &&
+    settings.minimumDeposit >= 0 &&
+    settings.minimumDeposit <= 1000000;
+
+  return isValidPercent && isValidMaximumBonus && isValidMinimumDeposit;
+}
+
+function openFirstDepositBonusConfirmModal() {
+  const settings = getFirstDepositBonusSettingsValues();
+
+  if (!validateFirstDepositBonusSettings(settings)) {
+    showToast(
+      "Bonus percentage must be 0–100 and amounts must be 0–1000000.",
+      "error",
+    );
+
+    return;
+  }
+
+  setText(
+    "confirmFirstDepositBonusStatus",
+    settings.isEnabled ? "Enabled" : "Disabled",
+  );
+
+  setText("confirmFirstDepositBonusPercent", settings.bonusPercent);
+
+  setText(
+    "confirmFirstDepositMaximumBonus",
+    formatMoneyValue(settings.maximumBonus),
+  );
+
+  setText(
+    "confirmFirstDepositMinimumDeposit",
+    formatMoneyValue(settings.minimumDeposit),
+  );
+
+  const modal = document.getElementById("firstDepositBonusConfirmModal");
+
+  if (modal) {
+    modal.classList.add("show");
+
+    modal.style.display = "flex";
+
+    modal.setAttribute("aria-hidden", "false");
+  }
+}
+
+function closeFirstDepositBonusConfirmModal() {
+  const modal = document.getElementById("firstDepositBonusConfirmModal");
+
+  if (modal) {
+    modal.classList.remove("show");
+
+    modal.style.display = "none";
+
+    modal.setAttribute("aria-hidden", "true");
+  }
+}
+
+async function confirmFirstDepositBonusSettingsSave() {
+  const settings = getFirstDepositBonusSettingsValues();
+
+  if (!validateFirstDepositBonusSettings(settings)) {
+    showToast("Invalid first deposit bonus settings.", "error");
+
+    return;
+  }
+
+  const token = getAccessToken();
+
+  if (!token) {
+    window.location.href = "../pages/login.html";
+
+    return;
+  }
+
+  const confirmButton = document.getElementById("confirmFirstDepositBonusSave");
+
+  try {
+    if (confirmButton) {
+      confirmButton.disabled = true;
+
+      confirmButton.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Saving...
+      `;
+    }
+
+    showLoader();
+
+    const response = await fetch(
+      `${API_BASE_URL}/admin/dashboard/first-deposit-bonus-settings`,
+      {
+        method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+
+          Accept: "application/json",
+
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(settings),
+      },
+    );
+
+    const result = await parseResponse(response);
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("access_token");
+
+      throw new Error("Your admin session has expired.");
+    }
+
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "First deposit bonus settings update failed.",
+      );
+    }
+
+    const savedSettings = result.data?.firstDepositBonusSettings || settings;
+
+    updateFirstDepositBonusSettingsValues(savedSettings);
+
+    closeFirstDepositBonusConfirmModal();
+
+    showToast(
+      result.message || "First deposit bonus settings updated successfully.",
+    );
+  } catch (error) {
+    console.error("FIRST DEPOSIT BONUS SETTINGS UPDATE ERROR:", error);
+
+    showToast(
+      error.message || "First deposit bonus settings update failed.",
+      "error",
+    );
+
+    if (error.message === "Your admin session has expired.") {
+      window.setTimeout(() => {
+        window.location.href = "../pages/login.html";
+      }, 1200);
+    }
+  } finally {
+    if (confirmButton) {
+      confirmButton.disabled = false;
+
+      confirmButton.innerHTML = `
+        <i class="fa-solid fa-check"></i>
+        Confirm & Save
+      `;
     }
 
     hideLoader();
@@ -921,6 +1150,38 @@ function bindDashboardEvents() {
     });
 
   document
+    .getElementById("firstDepositBonusEnabled")
+    ?.addEventListener("change", updateFirstDepositBonusStatusLabel);
+
+  document
+    .getElementById("firstDepositBonusSettingsForm")
+    ?.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      openFirstDepositBonusConfirmModal();
+    });
+
+  document
+    .getElementById("closeFirstDepositBonusModal")
+    ?.addEventListener("click", closeFirstDepositBonusConfirmModal);
+
+  document
+    .getElementById("cancelFirstDepositBonusSave")
+    ?.addEventListener("click", closeFirstDepositBonusConfirmModal);
+
+  document
+    .getElementById("confirmFirstDepositBonusSave")
+    ?.addEventListener("click", confirmFirstDepositBonusSettingsSave);
+
+  document
+    .getElementById("firstDepositBonusConfirmModal")
+    ?.addEventListener("click", (event) => {
+      if (event.target.id === "firstDepositBonusConfirmModal") {
+        closeFirstDepositBonusConfirmModal();
+      }
+    });
+
+  document
     .getElementById("referralEnabled")
     ?.addEventListener("change", updateReferralStatusLabel);
 
@@ -956,6 +1217,7 @@ function bindDashboardEvents() {
     if (event.key === "Escape") {
       closeSidebar();
       closeChargeConfirmModal();
+      closeFirstDepositBonusConfirmModal();
       closeReferralConfirmModal();
     }
   });

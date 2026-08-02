@@ -35,6 +35,18 @@ router.get(
 );
 
 router.get(
+  "/referrals",
+  transactionController
+    .getReferralHistory,
+);
+
+router.get(
+  "/bonuses",
+  transactionController
+    .getBonusHistory,
+);
+
+router.get(
   "/",
   transactionController
     .getTransactions

@@ -20,6 +20,12 @@ router.patch(
 );
 
 router.patch(
+  "/first-deposit-bonus-settings",
+  adminDashboardController
+    .updateFirstDepositBonusSettings,
+);
+
+router.patch(
   "/referral-settings",
   adminDashboardController
     .updateReferralSettings

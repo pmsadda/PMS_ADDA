@@ -1,358 +1,689 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-  <title>
-    PMS ADDA | Transaction History
-  </title>
+    <title>
+      PMS ADDA | Transaction History
+    </title>
 
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <script src="../js/app-config.js"></script>
 
-  <script src="../js/auth-guard.js"></script>
+    <script src="../js/auth-guard.js"></script>
 
-  <link
-    rel="stylesheet"
-    href="../css/common.css">
+    <link
+      rel="stylesheet"
+      href="../css/common.css">
 
-  <link
-    rel="stylesheet"
-    href="../css/transactions.css">
-</head>
+    <link
+      rel="stylesheet"
+      href="../css/transactions.css">
+  </head>
 
-<body>
+  <body>
 
-  <div class="admin-layout">
+    <div class="admin-layout">
 
-    <aside
-      class="admin-sidebar"
-      id="adminSidebar">
+      <aside
+        class="admin-sidebar"
+        id="adminSidebar">
 
-      <div class="admin-brand">
+        <div class="admin-brand">
 
-        <img
-          src="../assets/logo/logo.png"
-          alt="PMS ADDA Logo">
-
-        <div>
-          <h2>PMS ADDA</h2>
-          <p>Admin Panel</p>
-        </div>
-
-      </div>
-
-      <nav class="admin-menu">
-
-        <a
-          href="dashboard.html"
-          class="menu-item">
-          <i class="fa-solid fa-chart-pie"></i>
-          <span>Dashboard</span>
-        </a>
-
-        <a
-          href="users.html"
-          class="menu-item">
-          <i class="fa-solid fa-users"></i>
-          <span>Users</span>
-        </a>
-
-        <a
-          href="deposits.html"
-          class="menu-item">
-          <i class="fa-solid fa-circle-plus"></i>
-          <span>Deposits</span>
-        </a>
-
-        <a
-          href="withdrawals.html"
-          class="menu-item">
-          <i class="fa-solid fa-money-bill-transfer"></i>
-          <span>Withdrawals</span>
-        </a>
-
-        <a
-          href="games.html"
-          class="menu-item">
-          <i class="fa-solid fa-gamepad"></i>
-          <span>Games & Revenue</span>
-        </a>
-
-        <a
-          href="bots.html"
-          class="menu-item">
-          <i class="fa-solid fa-robot"></i>
-          <span>Bots</span>
-        </a>
-
-        <a
-          href="transactions.html"
-          class="menu-item active">
-          <i class="fa-solid fa-receipt"></i>
-          <span>Transactions</span>
-        </a>
-
-        <a
-          href="settings.html"
-          class="menu-item">
-          <i class="fa-solid fa-gears"></i>
-          <span>Settings</span>
-        </a>
-
-        <a
-          href="admin-logs.html"
-          class="menu-item">
-          <i class="fa-solid fa-file-shield"></i>
-          <span>Admin Logs</span>
-        </a>
-
-      </nav>
-
-      <button
-        type="button"
-        class="logout-btn"
-        id="adminLogoutBtn">
-
-        <i
-          class="fa-solid fa-right-from-bracket">
-        </i>
-
-        <span>Logout</span>
-      </button>
-
-    </aside>
-
-    <main class="admin-main">
-
-      <header class="admin-header">
-
-        <div class="header-left">
-
-          <button
-            type="button"
-            id="sidebarToggle"
-            class="sidebar-toggle">
-
-            <i class="fa-solid fa-bars"></i>
-          </button>
+          <img
+            src="../assets/logo/logo.png"
+            alt="PMS ADDA Logo">
 
           <div>
-            <h1>Transaction History</h1>
-
-            <p>
-              View all deposit and withdrawal
-              transactions
-            </p>
+            <h2>PMS ADDA</h2>
+            <p>Admin Panel</p>
           </div>
 
         </div>
+
+        <nav class="admin-menu">
+
+          <a
+            href="dashboard.html"
+            class="menu-item">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Dashboard</span>
+          </a>
+
+          <a
+            href="users.html"
+            class="menu-item">
+            <i class="fa-solid fa-users"></i>
+            <span>Users</span>
+          </a>
+
+          <a
+            href="deposits.html"
+            class="menu-item">
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>Deposits</span>
+          </a>
+
+          <a
+            href="withdrawals.html"
+            class="menu-item">
+            <i class="fa-solid fa-money-bill-transfer"></i>
+            <span>Withdrawals</span>
+          </a>
+
+          <a
+            href="games.html"
+            class="menu-item">
+            <i class="fa-solid fa-gamepad"></i>
+            <span>Games & Revenue</span>
+          </a>
+
+          <a
+            href="bots.html"
+            class="menu-item">
+            <i class="fa-solid fa-robot"></i>
+            <span>Bots</span>
+          </a>
+
+          <a
+            href="transactions.html"
+            class="menu-item active">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Transactions</span>
+          </a>
+
+          <a
+            href="settings.html"
+            class="menu-item">
+            <i class="fa-solid fa-gears"></i>
+            <span>Settings</span>
+          </a>
+
+          <a
+            href="admin-logs.html"
+            class="menu-item">
+            <i class="fa-solid fa-file-shield"></i>
+            <span>Admin Logs</span>
+          </a>
+
+        </nav>
 
         <button
           type="button"
-          id="refreshTransactions"
-          class="refresh-btn">
+          class="logout-btn"
+          id="adminLogoutBtn">
 
-          <i class="fa-solid fa-rotate"></i>
-          Refresh
+          <i
+            class="fa-solid fa-right-from-bracket">
+          </i>
+
+          <span>Logout</span>
         </button>
 
-      </header>
+      </aside>
 
-      <section class="summary-grid">
+      <main class="admin-main">
 
-        <article class="summary-card">
-          <p>Total Transactions</p>
-          <h2 id="totalTransactions">0</h2>
-        </article>
+        <header class="admin-header">
 
-        <article class="summary-card">
-          <p>Approved Deposits</p>
+          <div class="header-left">
 
-          <h2>
-            ৳<span id="approvedDeposits">
-              0.00
-            </span>
-          </h2>
-        </article>
+            <button
+              type="button"
+              id="sidebarToggle"
+              class="sidebar-toggle">
 
-        <article class="summary-card">
-          <p>Approved Withdrawals</p>
+              <i class="fa-solid fa-bars"></i>
+            </button>
 
-          <h2>
-            ৳<span id="approvedWithdrawals">
-              0.00
-            </span>
-          </h2>
-        </article>
+            <div>
 
-        <article class="summary-card">
-          <p>Net Cash Flow</p>
+              <h1>Financial & Bonus History</h1>
 
-          <h2>
-            ৳<span id="netCashFlow">
-              0.00
-            </span>
-          </h2>
-        </article>
+              <p>
+                View transactions, bonuses and referral records
+              </p>
+            </div>
 
-        <article class="summary-card">
-          <p>Pending Requests</p>
-          <h2 id="pendingTransactions">0</h2>
-        </article>
-
-      </section>
-
-      <section class="transaction-section">
-
-        <div class="filter-bar">
-
-          <div class="search-box">
-
-            <i
-              class="fa-solid fa-magnifying-glass">
-            </i>
-
-            <input
-              type="search"
-              id="transactionSearch"
-              placeholder="Search ID, UID, name or phone">
           </div>
 
-          <select id="transactionType">
-            <option value="all">All Types</option>
-            <option value="deposit">Deposit</option>
-            <option value="withdraw">Withdraw</option>
-          </select>
+          <button
+            type="button"
+            id="refreshTransactions"
+            class="refresh-btn">
 
-          <select id="transactionStatus">
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+            <i class="fa-solid fa-rotate"></i>
+            Refresh
+          </button>
 
-          <select id="transactionMethod">
-            <option value="all">All Methods</option>
-            <option value="bkash">bKash</option>
-            <option value="nagad">Nagad</option>
-            <option value="rocket">Rocket</option>
-          </select>
+        </header>
 
-          <select id="pageLimit">
-            <option value="10">10 rows</option>
-            <option value="25">25 rows</option>
-            <option value="50">50 rows</option>
-          </select>
+        <!-- History Tabs -->
+
+        <section
+          class="history-tabs"
+          aria-label="History type">
 
           <button
             type="button"
-            id="resetFilters"
-            class="reset-btn">
+            class="history-tab active"
+            data-history-view="transactions"
+            aria-pressed="true">
 
-            Reset
+            <i class="fa-solid fa-receipt"></i>
+            Transactions
+
           </button>
-
-        </div>
-
-        <div class="table-wrapper">
-
-          <table class="transaction-table">
-
-            <thead>
-              <tr>
-                <th>Transaction ID</th>
-                <th>User</th>
-                <th>Type</th>
-                <th>Method</th>
-                <th>Account</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-
-            <tbody id="transactionTableBody">
-
-              <tr>
-                <td
-                  colspan="8"
-                  class="empty-cell">
-
-                  Loading transactions...
-                </td>
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-        <div class="pagination">
 
           <button
             type="button"
-            id="previousPage">
+            class="history-tab"
+            data-history-view="bonuses"
+            aria-pressed="false">
 
-            <i
-              class="fa-solid fa-chevron-left">
-            </i>
+            <i class="fa-solid fa-gift"></i>
+            Bonus History
 
-            Previous
           </button>
-
-          <span id="paginationInfo">
-            Page 1 of 1
-          </span>
 
           <button
             type="button"
-            id="nextPage">
+            class="history-tab"
+            data-history-view="referrals"
+            aria-pressed="false">
 
-            Next
+            <i class="fa-solid fa-user-group"></i>
+            Referral History
 
-            <i
-              class="fa-solid fa-chevron-right">
-            </i>
           </button>
 
+        </section>
+
+        <!-- Transaction Summary -->
+
+        <section
+          id="transactionSummaryGrid"
+          class="summary-grid history-summary">
+
+          <article class="summary-card">
+            <p>Total Transactions</p>
+            <h2 id="totalTransactions">0</h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Approved Deposits</p>
+
+            <h2>
+              ৳<span id="approvedDeposits">
+                0.00
+              </span>
+            </h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Approved Withdrawals</p>
+
+            <h2>
+              ৳<span id="approvedWithdrawals">
+                0.00
+              </span>
+            </h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Net Cash Flow</p>
+
+            <h2>
+              ৳<span id="netCashFlow">
+                0.00
+              </span>
+            </h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Pending Requests</p>
+            <h2 id="pendingTransactions">0</h2>
+          </article>
+
+        </section>
+
+        <!-- Bonus Summary -->
+
+        <section
+          id="bonusSummaryGrid"
+          class="summary-grid history-summary is-hidden">
+
+          <article class="summary-card">
+            <p>Total Bonus Records</p>
+            <h2 id="totalBonusRecords">0</h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Total Bonus Paid</p>
+
+            <h2>
+              ৳<span id="totalBonusPaid">
+                0.00
+              </span>
+            </h2>
+          </article>
+
+          <article class="summary-card">
+            <p>First Deposit Bonus</p>
+
+            <h2>
+              ৳<span id="firstDepositBonusPaid">
+                0.00
+              </span>
+            </h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Referrer Bonus</p>
+
+            <h2>
+              ৳<span id="referrerBonusPaid">
+                0.00
+              </span>
+            </h2>
+          </article>
+
+          <article class="summary-card">
+            <p>New User Bonus</p>
+
+            <h2>
+              ৳<span id="referredUserBonusPaid">
+                0.00
+              </span>
+            </h2>
+          </article>
+
+        </section>
+
+        <!-- Referral Summary -->
+
+        <section
+          id="referralSummaryGrid"
+          class="summary-grid history-summary is-hidden">
+
+          <article class="summary-card">
+            <p>Total Referrals</p>
+            <h2 id="historyTotalReferrals">0</h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Pending Referrals</p>
+            <h2 id="historyPendingReferrals">0</h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Rewarded Referrals</p>
+            <h2 id="historyRewardedReferrals">0</h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Cancelled Referrals</p>
+            <h2 id="historyCancelledReferrals">0</h2>
+          </article>
+
+          <article class="summary-card">
+            <p>Total Referral Bonus</p>
+
+            <h2>
+              ৳<span id="historyReferralBonusPaid">
+                0.00
+              </span>
+            </h2>
+          </article>
+
+        </section>
+
+        <!-- History Table -->
+
+        <section class="transaction-section">
+
+          <div class="history-section-heading">
+
+            <div>
+              <h2 id="historyViewTitle">
+                Deposit & Withdrawal Transactions
+              </h2>
+
+              <p id="historyViewDescription">
+                Complete deposit and withdrawal request history
+              </p>
+            </div>
+
+            <button
+              type="button"
+              id="downloadHistoryPdf"
+              class="pdf-download-btn is-hidden">
+
+              <i class="fa-solid fa-file-pdf"></i>
+              Download PDF
+
+            </button>
+
+          </div>
+
+          <div class="filter-bar">
+
+            <div class="search-box">
+
+              <i class="fa-solid fa-magnifying-glass"></i>
+
+              <input
+                type="search"
+                id="historySearch"
+                placeholder="Search ID, UID, name or phone"
+                autocomplete="off">
+
+            </div>
+
+            <select
+              id="historyTypeFilter"
+              aria-label="History type filter">
+
+              <option value="all">All Types</option>
+              <option value="deposit">Deposit</option>
+              <option value="withdraw">Withdraw</option>
+
+            </select>
+
+            <select
+              id="historyStatusFilter"
+              aria-label="History status filter">
+
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+
+            </select>
+
+            <select
+              id="historyMethodFilter"
+              aria-label="Payment method filter">
+
+              <option value="all">All Methods</option>
+              <option value="bkash">bKash</option>
+              <option value="nagad">Nagad</option>
+              <option value="rocket">Rocket</option>
+
+            </select>
+
+            <label
+              id="historyStartDateField"
+              class="date-filter-field is-hidden">
+
+              <span>From</span>
+
+              <input
+                type="date"
+                id="historyStartDate">
+
+            </label>
+
+            <label
+              id="historyEndDateField"
+              class="date-filter-field is-hidden">
+
+              <span>To</span>
+
+              <input
+                type="date"
+                id="historyEndDate">
+
+            </label>
+
+            <select
+              id="historyPageLimit"
+              aria-label="Rows per page">
+
+              <option value="10">10 rows</option>
+              <option value="20">20 rows</option>
+              <option value="50">50 rows</option>
+              <option value="100">100 rows</option>
+
+            </select>
+
+            <button
+              type="button"
+              id="resetHistoryFilters"
+              class="reset-btn">
+
+              <i class="fa-solid fa-filter-circle-xmark"></i>
+              Reset
+
+            </button>
+
+          </div>
+
+          <div class="table-wrapper">
+
+            <table
+              class="transaction-table"
+              id="historyTable">
+
+              <thead id="historyTableHead">
+
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>User</th>
+                  <th>Type</th>
+                  <th>Method</th>
+                  <th>Account</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+
+              </thead>
+
+              <tbody id="historyTableBody">
+
+                <tr>
+                  <td
+                    colspan="8"
+                    class="empty-cell">
+
+                    Loading history...
+
+                  </td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <div class="pagination">
+
+            <button
+              type="button"
+              id="historyPreviousPage">
+
+              <i class="fa-solid fa-chevron-left"></i>
+              Previous
+
+            </button>
+
+            <span id="historyPaginationInfo">
+              Page 1 of 1
+            </span>
+
+            <button
+              type="button"
+              id="historyNextPage">
+
+              Next
+              <i class="fa-solid fa-chevron-right"></i>
+
+            </button>
+
+          </div>
+
+        </section>
+
+        <section class="transaction-section">
+
+          <div class="filter-bar">
+
+            <div class="search-box">
+
+              <i
+                class="fa-solid fa-magnifying-glass">
+              </i>
+
+              <input
+                type="search"
+                id="transactionSearch"
+                placeholder="Search ID, UID, name or phone">
+            </div>
+
+            <select id="transactionType">
+              <option value="all">All Types</option>
+              <option value="deposit">Deposit</option>
+              <option value="withdraw">Withdraw</option>
+            </select>
+
+            <select id="transactionStatus">
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+
+            <select id="transactionMethod">
+              <option value="all">All Methods</option>
+              <option value="bkash">bKash</option>
+              <option value="nagad">Nagad</option>
+              <option value="rocket">Rocket</option>
+            </select>
+
+            <select id="pageLimit">
+              <option value="10">10 rows</option>
+              <option value="25">25 rows</option>
+              <option value="50">50 rows</option>
+            </select>
+
+            <button
+              type="button"
+              id="resetFilters"
+              class="reset-btn">
+
+              Reset
+            </button>
+
+          </div>
+
+          <div class="table-wrapper">
+
+            <table class="transaction-table">
+
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>User</th>
+                  <th>Type</th>
+                  <th>Method</th>
+                  <th>Account</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+
+              <tbody id="transactionTableBody">
+
+                <tr>
+                  <td
+                    colspan="8"
+                    class="empty-cell">
+
+                    Loading transactions...
+                  </td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <div class="pagination">
+
+            <button
+              type="button"
+              id="previousPage">
+
+              <i
+                class="fa-solid fa-chevron-left">
+              </i>
+
+              Previous
+            </button>
+
+            <span id="paginationInfo">
+              Page 1 of 1
+            </span>
+
+            <button
+              type="button"
+              id="nextPage">
+
+              Next
+
+              <i
+                class="fa-solid fa-chevron-right">
+              </i>
+            </button>
+
+          </div>
+
+        </section>
+
+        <div
+          class="loader-overlay"
+          id="loaderOverlay">
+
+          <div class="loader"></div>
         </div>
 
-      </section>
+        <div
+          class="toast"
+          id="toast">
 
-      <div
-        class="loader-overlay"
-        id="loaderOverlay">
+          <span id="toastMessage"></span>
+        </div>
 
-        <div class="loader"></div>
-      </div>
+        <div
+          class="sidebar-overlay"
+          id="sidebarOverlay">
+        </div>
 
-      <div
-        class="toast"
-        id="toast">
+      </main>
 
-        <span id="toastMessage"></span>
-      </div>
+    </div>
 
-      <div
-        class="sidebar-overlay"
-        id="sidebarOverlay">
-      </div>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+      integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer">
+</script>
 
-    </main>
+    <script src="../js/transactions.js"></script>
 
-  </div>
-
-  <script src="../js/transactions.js"></script>
-
-</body>
+  </body>
 </html>

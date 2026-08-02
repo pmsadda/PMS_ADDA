@@ -760,6 +760,20 @@ async function getDashboardStats() {
     FROM game_settings
   `);
 
+    const [firstDepositBonusSettingRows] = await connection.query(
+      `
+      SELECT
+        is_enabled,
+        bonus_percent,
+        maximum_bonus,
+        minimum_deposit,
+        updated_at
+      FROM first_deposit_bonus_settings
+      WHERE id = 1
+      LIMIT 1
+      `,
+    );
+
     const [referralSettingRows] = await connection.query(
       `
     SELECT
@@ -860,6 +874,8 @@ async function getDashboardStats() {
     const botActivityStats = botActivityRows[0] || {};
 
     const chargeStats = chargeRows[0] || {};
+
+    const firstDepositBonusSettings = firstDepositBonusSettingRows[0] || {};
 
     const referralSettings = referralSettingRows[0] || {};
 
@@ -1002,6 +1018,18 @@ async function getDashboardStats() {
         poker: Number(chargeStats.poker_charge || 5),
 
         ludo: Number(chargeStats.ludo_charge || 10),
+      },
+
+      firstDepositBonusSettings: {
+        isEnabled: Boolean(firstDepositBonusSettings.is_enabled),
+
+        bonusPercent: Number(firstDepositBonusSettings.bonus_percent || 0),
+
+        maximumBonus: Number(firstDepositBonusSettings.maximum_bonus || 0),
+
+        minimumDeposit: Number(firstDepositBonusSettings.minimum_deposit || 0),
+
+        updatedAt: firstDepositBonusSettings.updated_at || null,
       },
 
       referralSettings: {
@@ -1168,6 +1196,84 @@ function normalizeReferralEnabled(value) {
   );
 }
 
+function validateFirstDepositBonusPercent(value) {
+  const percent = Number(value);
+
+  if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+    const error = new Error(
+      "First deposit bonus percent must be between 0 and 100.",
+    );
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return Number(percent.toFixed(2));
+}
+
+async function updateFirstDepositBonusSettings(settings, adminId = null) {
+  const values = {
+    isEnabled: normalizeReferralEnabled(settings?.isEnabled),
+
+    bonusPercent: validateFirstDepositBonusPercent(settings?.bonusPercent),
+
+    maximumBonus: validateReferralMoney(
+      settings?.maximumBonus,
+      "Maximum first deposit bonus",
+    ),
+
+    minimumDeposit: validateReferralMoney(
+      settings?.minimumDeposit,
+      "Minimum first deposit",
+    ),
+  };
+
+  await pool.query(
+    `
+    INSERT INTO first_deposit_bonus_settings (
+      id,
+      is_enabled,
+      bonus_percent,
+      maximum_bonus,
+      minimum_deposit,
+      updated_by
+    )
+    VALUES (
+      1,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?
+    )
+    ON DUPLICATE KEY UPDATE
+      is_enabled =
+        VALUES(is_enabled),
+
+      bonus_percent =
+        VALUES(bonus_percent),
+
+      maximum_bonus =
+        VALUES(maximum_bonus),
+
+      minimum_deposit =
+        VALUES(minimum_deposit),
+
+      updated_by =
+        VALUES(updated_by)
+    `,
+    [
+      values.isEnabled ? 1 : 0,
+      values.bonusPercent,
+      values.maximumBonus,
+      values.minimumDeposit,
+      adminId,
+    ],
+  );
+
+  return values;
+}
+
 async function updateReferralSettings(settings, adminId = null) {
   const values = {
     isEnabled: normalizeReferralEnabled(settings?.isEnabled),
@@ -1239,5 +1345,6 @@ async function updateReferralSettings(settings, adminId = null) {
 module.exports = {
   getDashboardStats,
   updateServiceCharges,
+  updateFirstDepositBonusSettings,
   updateReferralSettings
 };

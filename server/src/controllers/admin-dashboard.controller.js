@@ -62,8 +62,31 @@ async function updateReferralSettings(req, res, next) {
   }
 }
 
+async function updateFirstDepositBonusSettings(req, res, next) {
+  try {
+    const firstDepositBonusSettings =
+      await adminDashboardService.updateFirstDepositBonusSettings(
+        req.body,
+        req.user?.id || null,
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message: "First deposit bonus settings updated successfully.",
+
+      data: {
+        firstDepositBonusSettings,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getDashboardStats,
   updateServiceCharges,
-  updateReferralSettings
+  updateReferralSettings,
+  updateFirstDepositBonusSettings,
 };
