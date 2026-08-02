@@ -20,9 +20,11 @@ const {
 );
 
 const {
-  getAdminBanner,
+  getAdminBanners,
   getAdminBannerImage,
-  saveLobbyBanner
+  createLobbyBanner,
+  updateLobbyBanner,
+  deleteLobbyBanner
 } = require(
   "../controllers/lobby-banner.controller"
 );
@@ -30,18 +32,10 @@ const {
 const router =
   express.Router();
 
-/* ==========================
-   Admin Authorization
-========================== */
-
 router.use(
   requireAuth,
   requireAdmin
 );
-
-/* ==========================
-   Upload Error Handler
-========================== */
 
 function handleBannerUpload(
   request,
@@ -102,24 +96,31 @@ function handleBannerUpload(
   );
 }
 
-/* ==========================
-   Admin Banner Settings
-========================== */
-
 router.get(
   "/",
-  getAdminBanner
+  getAdminBanners
 );
 
 router.get(
-  "/image",
+  "/:bannerId/image",
   getAdminBannerImage
 );
 
-router.patch(
+router.post(
   "/",
   handleBannerUpload,
-  saveLobbyBanner
+  createLobbyBanner
+);
+
+router.patch(
+  "/:bannerId",
+  handleBannerUpload,
+  updateLobbyBanner
+);
+
+router.delete(
+  "/:bannerId",
+  deleteLobbyBanner
 );
 
 module.exports = router;

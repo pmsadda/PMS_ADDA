@@ -16,7 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
     withdrawals: [],
     notifications: [],
     lobbyNotices: [],
-    lobbyBanner: null,
+    lobbyBanners: [],
+    lobbyBannerIndex: 0,
+    lobbyBannerTimer: null,
+    lobbyBannerRenderToken: 0,
     gameAvailability: {},
     referral: null,
     loading: false,
@@ -47,6 +50,14 @@ document.addEventListener("DOMContentLoaded", () => {
     lobbyBannerImage: document.getElementById("lobbyBannerImage"),
 
     lobbyBannerLoading: document.getElementById("lobbyBannerLoading"),
+
+    lobbyBannerPrevious: document.getElementById("lobbyBannerPrevious"),
+
+    lobbyBannerNext: document.getElementById("lobbyBannerNext"),
+
+    lobbyBannerCounter: document.getElementById("lobbyBannerCounter"),
+
+    lobbyBannerDots: document.getElementById("lobbyBannerDots"),
 
     refreshButton: document.getElementById("refreshBtn"),
 
@@ -853,11 +864,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================================================
-   DYNAMIC LOBBY BANNER
+   DYNAMIC LOBBY BANNER CAROUSEL
 ========================================================= */
 
-  function extractLobbyBanner(result) {
-    return result?.data?.banner || null;
+  const LOBBY_BANNER_INTERVAL_MS = 5000;
+
+  function extractLobbyBanners(result) {
+    const banners = Array.isArray(result?.data?.banners)
+      ? result.data.banners
+      : [];
+
+    return banners
+      .filter(
+        (banner) => banner && banner.status === "active" && banner.imageUrl,
+      )
+      .sort(
+        (firstBanner, secondBanner) =>
+          Number(firstBanner.displayOrder || 0) -
+          Number(secondBanner.displayOrder || 0),
+      )
+      .slice(0, 5);
   }
 
   function resolveLobbyBannerImageUrl(imageUrl) {
@@ -875,12 +901,64 @@ document.addEventListener("DOMContentLoaded", () => {
     return new URL(imageUrl, apiOrigin).href;
   }
 
+  function stopLobbyBannerTimer() {
+    if (!STATE.lobbyBannerTimer) {
+      return;
+    }
+
+    window.clearInterval(STATE.lobbyBannerTimer);
+
+    STATE.lobbyBannerTimer = null;
+  }
+
+  function startLobbyBannerTimer() {
+    stopLobbyBannerTimer();
+
+    if (
+      document.visibilityState !== "visible" ||
+      STATE.lobbyBanners.length < 2
+    ) {
+      return;
+    }
+
+    STATE.lobbyBannerTimer = window.setInterval(() => {
+      showLobbyBanner(STATE.lobbyBannerIndex + 1);
+    }, LOBBY_BANNER_INTERVAL_MS);
+  }
+
+  function hideLobbyBannerControls() {
+    if (DOM.lobbyBannerPrevious) {
+      DOM.lobbyBannerPrevious.hidden = true;
+    }
+
+    if (DOM.lobbyBannerNext) {
+      DOM.lobbyBannerNext.hidden = true;
+    }
+
+    if (DOM.lobbyBannerCounter) {
+      DOM.lobbyBannerCounter.hidden = true;
+      DOM.lobbyBannerCounter.textContent = "";
+    }
+
+    if (DOM.lobbyBannerDots) {
+      DOM.lobbyBannerDots.hidden = true;
+      DOM.lobbyBannerDots.innerHTML = "";
+    }
+  }
+
   function hideLobbyBanner() {
+    stopLobbyBannerTimer();
+
+    STATE.lobbyBannerRenderToken += 1;
+    STATE.lobbyBannerIndex = 0;
+
     if (DOM.lobbyBanner) {
       DOM.lobbyBanner.hidden = true;
     }
 
     if (DOM.lobbyBannerImage) {
+      DOM.lobbyBannerImage.classList.remove("is-changing");
+
       DOM.lobbyBannerImage.removeAttribute("src");
 
       DOM.lobbyBannerImage.alt = "PMS ADDA lobby advertisement";
@@ -897,6 +975,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       DOM.lobbyBannerLink.removeAttribute("title");
     }
+
+    hideLobbyBannerControls();
   }
 
   function setLobbyBannerTarget(banner) {
@@ -906,13 +986,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const targetUrl = String(banner?.targetUrl || "").trim();
 
+    DOM.lobbyBannerLink.removeAttribute("href");
+
+    DOM.lobbyBannerLink.removeAttribute("target");
+
+    DOM.lobbyBannerLink.removeAttribute("title");
+
     if (!targetUrl) {
-      DOM.lobbyBannerLink.removeAttribute("href");
-
-      DOM.lobbyBannerLink.removeAttribute("target");
-
-      DOM.lobbyBannerLink.removeAttribute("title");
-
       return;
     }
 
@@ -921,18 +1001,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       parsedUrl = new URL(targetUrl);
     } catch (error) {
-      DOM.lobbyBannerLink.removeAttribute("href");
-
-      DOM.lobbyBannerLink.removeAttribute("target");
-
       return;
     }
 
     if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
-      DOM.lobbyBannerLink.removeAttribute("href");
-
-      DOM.lobbyBannerLink.removeAttribute("target");
-
       return;
     }
 
@@ -945,52 +1017,210 @@ document.addEventListener("DOMContentLoaded", () => {
     DOM.lobbyBannerLink.title = banner.title || "Open advertisement";
   }
 
-  function renderLobbyBanner() {
+  function normalizeLobbyBannerIndex(index) {
+    const total = STATE.lobbyBanners.length;
+
+    if (total < 1) {
+      return 0;
+    }
+
+    return ((Number(index) % total) + total) % total;
+  }
+
+  function renderLobbyBannerControls() {
+    const total = STATE.lobbyBanners.length;
+
+    const hasMultipleBanners = total > 1;
+
+    if (DOM.lobbyBannerPrevious) {
+      DOM.lobbyBannerPrevious.hidden = !hasMultipleBanners;
+    }
+
+    if (DOM.lobbyBannerNext) {
+      DOM.lobbyBannerNext.hidden = !hasMultipleBanners;
+    }
+
+    if (DOM.lobbyBannerCounter) {
+      DOM.lobbyBannerCounter.hidden = !hasMultipleBanners;
+
+      DOM.lobbyBannerCounter.textContent = hasMultipleBanners
+        ? `${STATE.lobbyBannerIndex + 1}/${total}`
+        : "";
+    }
+
+    if (!DOM.lobbyBannerDots) {
+      return;
+    }
+
+    DOM.lobbyBannerDots.hidden = !hasMultipleBanners;
+
+    if (!hasMultipleBanners) {
+      DOM.lobbyBannerDots.innerHTML = "";
+      return;
+    }
+
+    DOM.lobbyBannerDots.innerHTML = STATE.lobbyBanners
+      .map((banner, index) => {
+        const isActive = index === STATE.lobbyBannerIndex;
+
+        return `
+          <button
+            type="button"
+            class="lobby-banner-dot${isActive ? " is-active" : ""}"
+            data-banner-index="${index}"
+            role="tab"
+            aria-label="Show advertisement ${index + 1}"
+            aria-selected="${String(isActive)}"
+          ></button>
+        `;
+      })
+      .join("");
+  }
+
+  function removeBrokenLobbyBanner(bannerId) {
+    STATE.lobbyBanners = STATE.lobbyBanners.filter(
+      (banner) => Number(banner.id) !== Number(bannerId),
+    );
+
+    if (STATE.lobbyBannerIndex >= STATE.lobbyBanners.length) {
+      STATE.lobbyBannerIndex = 0;
+    }
+
+    renderLobbyBanner();
+  }
+
+  function showLobbyBanner(requestedIndex, options = {}) {
     if (!DOM.lobbyBanner || !DOM.lobbyBannerImage) {
       return;
     }
 
-    const banner = STATE.lobbyBanner;
+    const total = STATE.lobbyBanners.length;
 
-    if (!banner || banner.status !== "active" || !banner.imageUrl) {
+    if (total < 1) {
       hideLobbyBanner();
       return;
     }
+
+    const index = normalizeLobbyBannerIndex(requestedIndex);
+
+    const banner = STATE.lobbyBanners[index];
 
     const imageUrl = resolveLobbyBannerImageUrl(banner.imageUrl);
 
     if (!imageUrl) {
+      removeBrokenLobbyBanner(banner.id);
+
+      return;
+    }
+
+    STATE.lobbyBannerIndex = index;
+    STATE.lobbyBannerRenderToken += 1;
+
+    const renderToken = STATE.lobbyBannerRenderToken;
+
+    DOM.lobbyBanner.hidden = false;
+
+    renderLobbyBannerControls();
+
+    const hasCurrentImage = Boolean(DOM.lobbyBannerImage.getAttribute("src"));
+
+    if (DOM.lobbyBannerLoading && !hasCurrentImage) {
+      DOM.lobbyBannerLoading.hidden = false;
+    }
+
+    const preloadedImage = new Image();
+
+    preloadedImage.onload = () => {
+      if (renderToken !== STATE.lobbyBannerRenderToken) {
+        return;
+      }
+
+      DOM.lobbyBannerImage.classList.add("is-changing");
+
+      window.setTimeout(
+        () => {
+          if (renderToken !== STATE.lobbyBannerRenderToken) {
+            return;
+          }
+
+          DOM.lobbyBannerImage.alt =
+            banner.title || "PMS ADDA lobby advertisement";
+
+          setLobbyBannerTarget(banner);
+
+          DOM.lobbyBannerImage.src = imageUrl;
+
+          if (DOM.lobbyBannerLoading) {
+            DOM.lobbyBannerLoading.hidden = true;
+          }
+
+          window.requestAnimationFrame(() => {
+            DOM.lobbyBannerImage.classList.remove("is-changing");
+          });
+        },
+        hasCurrentImage ? 150 : 0,
+      );
+    };
+
+    preloadedImage.onerror = () => {
+      if (renderToken !== STATE.lobbyBannerRenderToken) {
+        return;
+      }
+
+      console.error(`Lobby banner ${banner.id} image could not be loaded.`);
+
+      removeBrokenLobbyBanner(banner.id);
+    };
+
+    preloadedImage.src = imageUrl;
+
+    if (options.restartTimer === true) {
+      startLobbyBannerTimer();
+    }
+  }
+
+  function renderLobbyBanner() {
+    if (STATE.lobbyBanners.length < 1) {
       hideLobbyBanner();
       return;
     }
 
-    DOM.lobbyBanner.hidden = false;
+    STATE.lobbyBannerIndex = normalizeLobbyBannerIndex(STATE.lobbyBannerIndex);
 
-    if (DOM.lobbyBannerLoading) {
-      DOM.lobbyBannerLoading.hidden = false;
-    }
+    showLobbyBanner(STATE.lobbyBannerIndex);
 
-    DOM.lobbyBannerImage.alt = banner.title || "PMS ADDA lobby advertisement";
-
-    setLobbyBannerTarget(banner);
-
-    DOM.lobbyBannerImage.onload = () => {
-      if (DOM.lobbyBannerLoading) {
-        DOM.lobbyBannerLoading.hidden = true;
-      }
-
-      DOM.lobbyBanner.hidden = false;
-    };
-
-    DOM.lobbyBannerImage.onerror = () => {
-      console.error("Lobby banner image could not be loaded.");
-
-      hideLobbyBanner();
-    };
-
-    DOM.lobbyBannerImage.src = imageUrl;
+    startLobbyBannerTimer();
   }
 
+  function selectLobbyBanner(index) {
+    showLobbyBanner(index, {
+      restartTimer: true,
+    });
+  }
+
+  DOM.lobbyBannerPrevious?.addEventListener("click", () => {
+    selectLobbyBanner(STATE.lobbyBannerIndex - 1);
+  });
+
+  DOM.lobbyBannerNext?.addEventListener("click", () => {
+    selectLobbyBanner(STATE.lobbyBannerIndex + 1);
+  });
+
+  DOM.lobbyBannerDots?.addEventListener("click", (event) => {
+    const button = event.target.closest(".lobby-banner-dot");
+
+    if (!button) {
+      return;
+    }
+
+    const selectedIndex = Number(button.dataset.bannerIndex);
+
+    if (!Number.isInteger(selectedIndex)) {
+      return;
+    }
+
+    selectLobbyBanner(selectedIndex);
+  });
   /* =========================================================
      LOAD DYNAMIC LOBBY DATA
   ========================================================= */
@@ -1063,10 +1293,12 @@ document.addEventListener("DOMContentLoaded", () => {
           ? extractLobbyNotices(noticeResult.value)
           : [];
 
-      STATE.lobbyBanner =
+      STATE.lobbyBanners =
         bannerResult.status === "fulfilled"
-          ? extractLobbyBanner(bannerResult.value)
-          : null;
+          ? extractLobbyBanners(bannerResult.value)
+          : [];
+
+      STATE.lobbyBannerIndex = 0;
 
       STATE.gameAvailability =
         gameResult.status === "fulfilled"
@@ -1302,10 +1534,14 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================================= */
 
   document.addEventListener("visibilitychange", () => {
-    if (
-      document.visibilityState === "visible" &&
-      Date.now() - STATE.lastLoadedAt > 15000
-    ) {
+    if (document.visibilityState === "hidden") {
+      stopLobbyBannerTimer();
+      return;
+    }
+
+    startLobbyBannerTimer();
+
+    if (Date.now() - STATE.lastLoadedAt > 15000) {
       loadLobbyData();
     }
   });
@@ -1314,6 +1550,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (Date.now() - STATE.lastLoadedAt > 15000) {
       loadLobbyData();
     }
+  });
+
+  window.addEventListener("beforeunload", () => {
+    stopLobbyBannerTimer();
   });
 
   /* =========================================================

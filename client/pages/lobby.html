@@ -109,13 +109,14 @@
             </section>
 
             <!-- ==========================
-     Dynamic Lobby Banner
+     Dynamic Lobby Banner Carousel
 ========================== -->
 
             <section
                 class="lobby-banner"
                 id="lobbyBanner"
-                aria-label="Lobby advertisement"
+                aria-label="Lobby advertisements"
+                aria-roledescription="carousel"
                 hidden>
 
                 <a
@@ -142,6 +143,43 @@
                     </div>
 
                 </a>
+
+                <button
+                    type="button"
+                    class="lobby-banner-navigation lobby-banner-previous"
+                    id="lobbyBannerPrevious"
+                    aria-label="Show previous advertisement"
+                    hidden>
+
+                    <i class="fa-solid fa-chevron-left"></i>
+
+                </button>
+
+                <button
+                    type="button"
+                    class="lobby-banner-navigation lobby-banner-next"
+                    id="lobbyBannerNext"
+                    aria-label="Show next advertisement"
+                    hidden>
+
+                    <i class="fa-solid fa-chevron-right"></i>
+
+                </button>
+
+                <span
+                    class="lobby-banner-counter"
+                    id="lobbyBannerCounter"
+                    aria-live="polite"
+                    hidden>
+                </span>
+
+                <div
+                    class="lobby-banner-dots"
+                    id="lobbyBannerDots"
+                    role="tablist"
+                    aria-label="Choose advertisement"
+                    hidden>
+                </div>
 
             </section>
 

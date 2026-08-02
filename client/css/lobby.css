@@ -1771,6 +1771,278 @@ button:focus{
 }
 
 /* ==========================================
+   LOBBY BANNER CAROUSEL CONTROLS
+========================================== */
+
+.lobby-banner-navigation[hidden],
+.lobby-banner-counter[hidden],
+.lobby-banner-dots[hidden] {
+    display: none !important;
+}
+
+.lobby-banner-image {
+    opacity: 1;
+
+    transition:
+        opacity 220ms ease,
+        transform 280ms ease,
+        filter 280ms ease;
+}
+
+.lobby-banner-image.is-changing {
+    opacity: 0;
+}
+
+.lobby-banner-navigation {
+    position: absolute;
+    top: 50%;
+    z-index: 5;
+
+    display: grid;
+    place-items: center;
+
+    width: 38px;
+    height: 38px;
+
+    padding: 0;
+
+    color: #ffe26c;
+
+    cursor: pointer;
+
+    border:
+        1px solid
+        rgba(255, 220, 79, 0.42);
+
+    border-radius: 50%;
+
+    background:
+        rgba(3, 13, 18, 0.76);
+
+    box-shadow:
+        0 5px 18px
+        rgba(0, 0, 0, 0.32);
+
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+
+    transform: translateY(-50%);
+
+    transition:
+        color 160ms ease,
+        background 160ms ease,
+        border-color 160ms ease,
+        transform 160ms ease;
+}
+
+.lobby-banner-navigation:hover {
+    color: #10160b;
+
+    border-color:
+        rgba(255, 230, 115, 0.9);
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe773,
+            #dca51d
+        );
+}
+
+.lobby-banner-navigation:active {
+    transform:
+        translateY(-50%)
+        scale(0.92);
+}
+
+.lobby-banner-navigation:focus-visible {
+    outline:
+        3px solid
+        rgba(255, 220, 67, 0.38);
+
+    outline-offset: 3px;
+}
+
+.lobby-banner-previous {
+    left: 12px;
+}
+
+.lobby-banner-next {
+    right: 12px;
+}
+
+.lobby-banner-counter {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 5;
+
+    min-width: 43px;
+
+    padding: 5px 9px;
+
+    color: #fff2ae;
+
+    border:
+        1px solid
+        rgba(255, 221, 83, 0.34);
+
+    border-radius: 999px;
+
+    background:
+        rgba(2, 12, 17, 0.74);
+
+    box-shadow:
+        0 4px 15px
+        rgba(0, 0, 0, 0.25);
+
+    font-size: 10px;
+    font-weight: 850;
+    line-height: 1;
+
+    text-align: center;
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.lobby-banner-dots {
+    position: absolute;
+    left: 50%;
+    bottom: 9px;
+    z-index: 5;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    max-width:
+        calc(100% - 110px);
+
+    padding: 5px 7px;
+    gap: 6px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(2, 11, 15, 0.64);
+
+    box-shadow:
+        0 4px 16px
+        rgba(0, 0, 0, 0.24);
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+
+    transform: translateX(-50%);
+}
+
+.lobby-banner-dot {
+    width: 8px;
+    height: 8px;
+
+    padding: 0;
+
+    cursor: pointer;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.52);
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.34);
+
+    transition:
+        width 180ms ease,
+        background 180ms ease,
+        border-color 180ms ease,
+        transform 180ms ease;
+}
+
+.lobby-banner-dot:hover {
+    transform: scale(1.18);
+}
+
+.lobby-banner-dot.is-active {
+    width: 23px;
+
+    border-color: #ffe574;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ffe877,
+            #daa01a
+        );
+}
+
+.lobby-banner-dot:focus-visible {
+    outline:
+        2px solid
+        rgba(255, 225, 94, 0.58);
+
+    outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+    .lobby-banner-navigation {
+        width: 32px;
+        height: 32px;
+
+        font-size: 11px;
+    }
+
+    .lobby-banner-previous {
+        left: 7px;
+    }
+
+    .lobby-banner-next {
+        right: 7px;
+    }
+
+    .lobby-banner-counter {
+        top: 7px;
+        right: 7px;
+
+        min-width: 38px;
+
+        padding: 4px 7px;
+
+        font-size: 9px;
+    }
+
+    .lobby-banner-dots {
+        bottom: 6px;
+
+        gap: 5px;
+    }
+
+    .lobby-banner-dot {
+        width: 7px;
+        height: 7px;
+    }
+
+    .lobby-banner-dot.is-active {
+        width: 19px;
+    }
+}
+
+@media (
+    prefers-reduced-motion:
+    reduce
+) {
+    .lobby-banner-image,
+    .lobby-banner-navigation,
+    .lobby-banner-dot {
+        transition: none;
+    }
+}
+
+/* ==========================================
    LOBBY REFERRAL
 ========================================== */
 

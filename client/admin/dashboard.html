@@ -1426,35 +1426,99 @@
                             </span>
 
                             <h2>
-                                <i class="fa-regular fa-image"></i>
-                                Lobby Banner
+                                <i class="fa-regular fa-images"></i>
+                                Lobby Banner Carousel
                             </h2>
 
                             <p>
-                                Upload and control the advertisement
-                                banner shown in the user Lobby.
+                                Add and manage up to five advertisement
+                                banners. Active banners rotate every 5 seconds.
                             </p>
 
                         </div>
 
-                        <button
-                            type="button"
-                            class="banner-refresh-btn"
-                            id="refreshLobbyBanner">
+                        <div class="banner-header-actions">
 
-                            <i class="fa-solid fa-rotate"></i>
+                            <strong
+                                class="banner-slot-count"
+                                id="lobbyBannerCount">
+                                0 / 5
+                            </strong>
 
-                            Refresh
+                            <button
+                                type="button"
+                                class="banner-add-btn"
+                                id="addLobbyBanner">
 
-                        </button>
+                                <i class="fa-solid fa-plus"></i>
+                                Add Banner
+
+                            </button>
+
+                            <button
+                                type="button"
+                                class="banner-refresh-btn"
+                                id="refreshLobbyBanner">
+
+                                <i class="fa-solid fa-rotate"></i>
+                                Refresh
+
+                            </button>
+
+                        </div>
 
                     </div>
+
+                    <!-- Existing Banner List -->
+
+                    <div
+                        class="banner-slot-list"
+                        id="lobbyBannerList">
+
+                        <div class="banner-slot-empty">
+
+                            <i class="fa-regular fa-images"></i>
+
+                            <p>
+                                Loading lobby banners...
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Banner Editor -->
 
                     <form
                         id="lobbyBannerForm"
                         class="banner-management-form"
                         enctype="multipart/form-data"
                         novalidate>
+
+                        <input
+                            type="hidden"
+                            id="lobbyBannerId"
+                            value>
+
+                        <div class="banner-editor-heading">
+
+                            <div>
+
+                                <span id="lobbyBannerFormMode">
+                                    EDIT BANNER
+                                </span>
+
+                                <h3 id="lobbyBannerFormTitle">
+                                    Select a banner
+                                </h3>
+
+                            </div>
+
+                            <span id="lobbyBannerCurrentStatus">
+                                Disabled
+                            </span>
+
+                        </div>
 
                         <div class="banner-management-grid">
 
@@ -1466,8 +1530,8 @@
 
                                     <h3>Banner Preview</h3>
 
-                                    <span id="lobbyBannerCurrentStatus">
-                                        Disabled
+                                    <span id="lobbyBannerOrderText">
+                                        Carousel position: -
                                     </span>
 
                                 </div>
@@ -1488,7 +1552,7 @@
                                         <i class="fa-regular fa-image"></i>
 
                                         <strong>
-                                            No banner uploaded
+                                            No banner image selected
                                         </strong>
 
                                         <span>
@@ -1561,8 +1625,8 @@
                                         placeholder="https://example.com">
 
                                     <small>
-                                        User banner-এ click করলে এই
-                                        link নতুন tab-এ খুলবে।
+                                        User banner-এ click করলে এই link
+                                        নতুন tab-এ খুলবে।
                                     </small>
 
                                 </div>
@@ -1586,8 +1650,8 @@
                                     </select>
 
                                     <small>
-                                        Active করলে banner User Lobby-তে
-                                        দেখা যাবে।
+                                        শুধু Active banner User Lobby carousel-এ
+                                        দেখানো হবে।
                                     </small>
 
                                 </div>
@@ -1597,9 +1661,11 @@
                                     <i class="fa-solid fa-circle-info"></i>
 
                                     <p>
-                                        নতুন image নির্বাচন না করলে Save-এর
-                                        সময় বর্তমান banner image অপরিবর্তিত
-                                        থাকবে।
+                                        নতুন image নির্বাচন না করলে Edit করার
+                                        সময়
+                                        বর্তমান image অপরিবর্তিত থাকবে। নতুন
+                                        banner
+                                        তৈরির সময় image দেওয়া বাধ্যতামূলক।
                                     </p>
 
                                 </div>
@@ -1607,19 +1673,45 @@
                                 <div class="banner-form-footer">
 
                                     <p id="lobbyBannerUpdatedText">
-                                        Banner settings loading...
+                                        Select a banner or add a new one.
                                     </p>
 
-                                    <button
-                                        type="submit"
-                                        class="save-banner-btn"
-                                        id="saveLobbyBanner">
+                                    <div class="banner-editor-actions">
 
-                                        <i class="fa-solid fa-floppy-disk"></i>
+                                        <button
+                                            type="button"
+                                            class="banner-cancel-btn"
+                                            id="cancelLobbyBannerEdit"
+                                            hidden>
 
-                                        Save Lobby Banner
+                                            Cancel
 
-                                    </button>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="banner-delete-btn"
+                                            id="deleteLobbyBanner"
+                                            hidden>
+
+                                            <i class="fa-solid fa-trash"></i>
+                                            Delete
+
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            class="save-banner-btn"
+                                            id="saveLobbyBanner">
+
+                                            <i
+                                                class="fa-solid fa-floppy-disk"></i>
+
+                                            Save Banner
+
+                                        </button>
+
+                                    </div>
 
                                 </div>
 
