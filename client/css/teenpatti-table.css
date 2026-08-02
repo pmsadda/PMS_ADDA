@@ -3432,7 +3432,7 @@ strong {
 }
 
 /* =========================================================
-   TEEN PATTI — MOBILE LANDSCAPE FINAL TUNING
+   TEEN PATTI — MOBILE LANDSCAPE SOURCE OF TRUTH
 ========================================================= */
 
 @media (
@@ -3442,44 +3442,136 @@ strong {
 ) {
 
   /*
-   * Mobile-এ table বড় এবং নিচের দিকে থাকবে।
+   * Width ও available viewport height—দুটো
+   * অনুযায়ী table scale হবে।
    */
   .tp-stage .table-area {
-    top: 56% !important;
+    top: 54% !important;
 
     width:
       min(
-        74vw,
-        680px
+        70vw,
+        132dvh,
+        650px
+      ) !important;
+
+    max-height:
+      calc(
+        100dvh -
+        var(--footer-height) -
+        18px
+      );
+
+    transform:
+      translate(
+        -50%,
+        -50%
       ) !important;
   }
 
   /*
-   * Local player table-এর নিচের edge-এর কাছে থাকবে।
+   * Side players।
    */
-  .tp-stage #currentPlayer {
-    bottom: 6% !important;
+  .tp-stage .tp-seat-1,
+  .tp-stage .player1 {
+    top: 51% !important;
+    left: -2% !important;
+    right: auto !important;
+
+    transform:
+      translateY(-50%) !important;
+  }
+
+  .tp-stage .tp-seat-4,
+  .tp-stage .player4 {
+    top: 51% !important;
+    right: -2% !important;
+    left: auto !important;
+
+    transform:
+      translateY(-50%) !important;
   }
 
   /*
-   * সব player-এর cards বড়।
+   * Top players নিচে নামানো হয়েছে,
+   * যাতে cards viewport-এর বাইরে না যায়।
+   */
+  .tp-stage .tp-seat-2,
+  .tp-stage .player2 {
+    top: 24% !important;
+    left: 23% !important;
+    right: auto !important;
+
+    transform:
+      translateX(-50%) !important;
+  }
+
+  .tp-stage .tp-seat-3,
+  .tp-stage .player3 {
+    top: 24% !important;
+    right: 23% !important;
+    left: auto !important;
+
+    transform:
+      translateX(50%) !important;
+  }
+
+  /*
+   * Local player table-এর নিচের edge-এ,
+   * কিন্তু footer-এর ওপরে থাকবে।
+   */
+  .tp-stage #currentPlayer {
+    top: auto !important;
+    right: auto !important;
+    bottom: 0 !important;
+    left: 50% !important;
+
+    transform:
+      translateX(-50%) !important;
+  }
+
+  /*
+   * Mobile player panels।
+   */
+  .tp-player,
+  .player {
+    width:
+      clamp(
+        116px,
+        16vw,
+        142px
+      );
+
+    min-height: 46px;
+  }
+
+  .tp-player-profile {
+    min-height: 46px;
+
+    padding: 4px 6px;
+  }
+
+  /*
+   * Opponent cards বড় থাকবে, কিন্তু top/side
+   * seat থেকে আর বাইরে যাবে না।
    */
   .tp-player .cards,
   .player .cards {
-    bottom: 46px !important;
+    bottom: 44px !important;
+    z-index: 42 !important;
 
-    width: 118px !important;
-    height: 68px !important;
+    width: 108px !important;
+    height: 62px !important;
 
     scale: 1 !important;
   }
 
   .tp-player .cards img,
   .player .cards img {
-    width: 45px !important;
-    height: 63px !important;
+    width: 42px !important;
+    height: 59px !important;
 
-    margin-left: -10px !important;
+    margin-left: -9px !important;
 
     border-radius: 5px;
   }
@@ -3490,17 +3582,19 @@ strong {
   }
 
   /*
-   * নিজের cards অন্য player-এর card থেকে
+   * Local cards opponent-এর তুলনায়
    * সামান্য বড় থাকবে।
    */
   .tp-stage #currentPlayerCards {
     bottom:
       calc(
-        100% - 6px
+        100% - 5px
       ) !important;
 
-    width: 136px !important;
-    height: 78px !important;
+    z-index: 52 !important;
+
+    width: 126px !important;
+    height: 72px !important;
 
     scale: 1 !important;
   }
@@ -3508,10 +3602,10 @@ strong {
   .tp-stage
   #currentPlayerCards
   img {
-    width: 52px !important;
-    height: 73px !important;
+    width: 48px !important;
+    height: 68px !important;
 
-    margin-left: -10px !important;
+    margin-left: -9px !important;
   }
 
   .tp-stage
@@ -3521,8 +3615,20 @@ strong {
   }
 
   /*
-   * Active turn steady highlight হবে।
-   * Infinite brightness blink থাকবে না।
+   * Pot ও timer table-এর readable জায়গায়।
+   */
+  .tp-stage #pot {
+    top: 11% !important;
+  }
+
+  .tp-stage
+  .table-area
+  .tp-turn-control {
+    top: 37% !important;
+  }
+
+  /*
+   * Action/turn update-এর সময় player blink বন্ধ।
    */
   .player.active-turn
   .tp-player-profile,
@@ -3537,9 +3643,6 @@ strong {
       transform 180ms ease;
   }
 
-  /*
-   * State refresh-এর সময় player opacity flash বন্ধ।
-   */
   .tp-player.occupied:not(
     .is-resolved-seat
   ),
@@ -3552,9 +3655,10 @@ strong {
   }
 }
 
-/*
- * খুব কম-height mobile-এ footer overlap ঠেকাবে।
- */
+/* ==========================================
+   VERY SHORT MOBILE LANDSCAPE
+========================================== */
+
 @media (
   orientation: landscape
 ) and (
@@ -3562,23 +3666,99 @@ strong {
 ) {
 
   .tp-stage .table-area {
-    top: 55% !important;
+    top: 53% !important;
 
     width:
       min(
-        70vw,
-        620px
+        66vw,
+        128dvh,
+        570px
       ) !important;
   }
 
+  .tp-stage .tp-seat-2,
+  .tp-stage .player2,
+  .tp-stage .tp-seat-3,
+  .tp-stage .player3 {
+    top: 25% !important;
+  }
+
   .tp-stage #currentPlayer {
-    bottom: 7% !important;
+    bottom: -1% !important;
+  }
+
+  .tp-player .cards,
+  .player .cards {
+    bottom: 42px !important;
+
+    width: 101px !important;
+    height: 58px !important;
+  }
+
+  .tp-player .cards img,
+  .player .cards img {
+    width: 39px !important;
+    height: 55px !important;
+  }
+
+  .tp-stage #currentPlayerCards {
+    width: 116px !important;
+    height: 67px !important;
+  }
+
+  .tp-stage
+  #currentPlayerCards
+  img {
+    width: 45px !important;
+    height: 63px !important;
+  }
+
+  .tp-stage #pot {
+    top: 10% !important;
+  }
+
+  .tp-stage
+  .table-area
+  .tp-turn-control {
+    top: 36% !important;
   }
 }
 
-/* =========================================================
-   TEEN PATTI MOBILE — FINAL VERTICAL POSITION
-========================================================= */
+/* ==========================================
+   TEEN PATTI — BALANCED PLAYER SEATS
+========================================== */
+
+/*
+ * Heads-up:
+ * একমাত্র opponent top center।
+ */
+.table-area[
+  data-opponent-count="1"
+]
+.tp-seat-2 {
+  top: 8% !important;
+  left: 50% !important;
+  right: auto !important;
+
+  transform:
+    translateX(-50%) !important;
+}
+
+/*
+ * Local + তিন opponent:
+ * একজন top center, অন্য দুজন side।
+ */
+.table-area[
+  data-opponent-count="3"
+]
+.tp-seat-2 {
+  top: 8% !important;
+  left: 50% !important;
+  right: auto !important;
+
+  transform:
+    translateX(-50%) !important;
+}
 
 @media (
   orientation: landscape
@@ -3586,21 +3766,20 @@ strong {
   max-height: 520px
 ) {
 
-  /*
-   * Turn timer table-এর উপরের দিকে।
-   */
-  .tp-stage
-  .table-area
-  .tp-turn-control {
-    top: 32% !important;
-  }
+  .table-area[
+    data-opponent-count="1"
+  ]
+  .tp-seat-2,
+  .table-area[
+    data-opponent-count="3"
+  ]
+  .tp-seat-2 {
+    top: 24% !important;
+    left: 50% !important;
+    right: auto !important;
 
-  /*
-   * Local profile ও তার cards একসঙ্গে উপরে।
-   */
-  .tp-stage
-  #currentPlayer {
-    bottom: 13% !important;
+    transform:
+      translateX(-50%) !important;
   }
 }
 
@@ -3610,14 +3789,14 @@ strong {
   max-height: 380px
 ) {
 
-  .tp-stage
-  .table-area
-  .tp-turn-control {
-    top: 30% !important;
-  }
-
-  .tp-stage
-  #currentPlayer {
-    bottom: 14% !important;
+  .table-area[
+    data-opponent-count="1"
+  ]
+  .tp-seat-2,
+  .table-area[
+    data-opponent-count="3"
+  ]
+  .tp-seat-2 {
+    top: 25% !important;
   }
 }

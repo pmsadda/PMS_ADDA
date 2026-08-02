@@ -105,6 +105,8 @@
 
     deck: document.getElementById("deck"),
 
+    tableArea: document.querySelector(".table-area"),
+
     chipLayer: document.getElementById("chipLayer"),
 
     turnTimer: document.getElementById("turnTimer"),
@@ -858,22 +860,74 @@
   function renderPlayers() {
     const localPlayer = getLocalPlayer();
 
+    const localServerSeat = Number(localPlayer?.seatNo || 0);
+
     const opponentPlayers = STATE.players
       .filter((player) => player !== localPlayer && !player.isLocalPlayer)
-      .sort(
-        (firstPlayer, secondPlayer) =>
-          Number(firstPlayer.seatNo) - Number(secondPlayer.seatNo),
-      )
+      .sort((firstPlayer, secondPlayer) => {
+        const firstSeat = Number(firstPlayer.seatNo || 0);
+
+        const secondSeat = Number(secondPlayer.seatNo || 0);
+
+        if (localServerSeat > 0 && firstSeat > 0 && secondSeat > 0) {
+          const firstDistance = (firstSeat - localServerSeat + 5) % 5;
+
+          const secondDistance = (secondSeat - localServerSeat + 5) % 5;
+
+          return firstDistance - secondDistance;
+        }
+
+        return firstSeat - secondSeat;
+      })
       .slice(0, 4);
 
-    for (let index = 0; index < 4; index += 1) {
+    /*
+     * Opponent count অনুযায়ী balanced
+     * visual seat arrangement।
+     *
+     * Visual seats:
+     * 1 = left
+     * 2 = top-left / top-center
+     * 3 = top-right
+     * 4 = right
+     * 5 = local bottom
+     */
+    const visualSeatPlans = {
+      0: [],
+      1: [2],
+      2: [1, 4],
+      3: [1, 2, 4],
+      4: [1, 2, 3, 4],
+    };
+
+    const opponentCount = opponentPlayers.length;
+
+    const visualSeatPlan = visualSeatPlans[opponentCount] || [];
+
+    if (DOM.tableArea) {
+      DOM.tableArea.dataset.opponentCount = String(opponentCount);
+    }
+
+    /*
+     * আগে সব opponent visual seat reset।
+     */
+    for (let visualIndex = 0; visualIndex < 4; visualIndex += 1) {
+      resetSeat(DOM.seats[visualIndex], visualIndex + 1, false);
+    }
+
+    /*
+     * Balanced seat plan অনুযায়ী player render।
+     */
+    visualSeatPlan.forEach((visualSeatNumber, playerIndex) => {
       renderSeat(
-        DOM.seats[index],
-        opponentPlayers[index] || null,
-        index + 1,
+        DOM.seats[visualSeatNumber - 1],
+
+        opponentPlayers[playerIndex],
+
+        visualSeatNumber,
         false,
       );
-    }
+    });
 
     renderSeat(DOM.seats[4], localPlayer, 5, true);
   }
