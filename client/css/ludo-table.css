@@ -2535,3 +2535,429 @@ button {
   }
 }
 
+/* =========================================================
+   LUDO — LOCAL PLAYER BOARD PERSPECTIVE
+========================================================= */
+
+@media (orientation: portrait) {
+
+  /*
+   * Compact portrait grid:
+   *
+   * Row 1 = top players
+   * Row 2 = board
+   * Row 3 = dice
+   * Row 4 = bottom players
+   */
+  .game-stage.has-local-perspective {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr) !important;
+
+    grid-template-rows:
+      auto
+      auto
+      88px
+      auto !important;
+
+    align-items: center !important;
+
+    gap: 8px !important;
+
+    margin: 0 !important;
+  }
+
+  .game-stage.has-local-perspective
+  .board-zone {
+    grid-column: 1 / 3 !important;
+    grid-row: 2 !important;
+
+    justify-self: center !important;
+  }
+
+  /*
+   * Local player bottom-left।
+   */
+  .game-stage.has-local-perspective
+  .player-panel.view-bottom-left {
+    grid-column: 1 !important;
+    grid-row: 4 !important;
+
+    justify-self: stretch !important;
+  }
+
+  /*
+   * Clockwise next player top-left।
+   */
+  .game-stage.has-local-perspective
+  .player-panel.view-top-left {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+
+    justify-self: stretch !important;
+  }
+
+  /*
+   * Clockwise next player top-right।
+   */
+  .game-stage.has-local-perspective
+  .player-panel.view-top-right {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    justify-self: stretch !important;
+  }
+
+  /*
+   * Clockwise last player bottom-right।
+   */
+  .game-stage.has-local-perspective
+  .player-panel.view-bottom-right {
+    grid-column: 2 !important;
+    grid-row: 4 !important;
+
+    justify-self: stretch !important;
+  }
+
+  /*
+   * Dice আর কোনো player panel-এর ওপর থাকবে না।
+   * Board এবং bottom players-এর মাঝের
+   * আলাদা row-তে থাকবে।
+   */
+  .game-stage.has-local-perspective
+  .dice-control {
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    grid-column: 1 / 3 !important;
+    grid-row: 3 !important;
+
+    align-self: center !important;
+    justify-self: center !important;
+
+    width: 78px !important;
+
+    margin: 0 !important;
+    padding: 7px 6px !important;
+    gap: 5px !important;
+
+    border-radius: 18px !important;
+
+    transform: none !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-button {
+    width: 54px !important;
+    height: 54px !important;
+
+    border-radius: 16px !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-face {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  /*
+   * Inactive player-এর ধূসর timer hide।
+   */
+  .game-stage.has-local-perspective
+  .player-panel:not(.is-active-turn)
+  .turn-timer {
+    display: none !important;
+  }
+
+  .game-stage.has-local-perspective
+  .player-panel.is-active-turn
+  .turn-timer {
+    display: grid !important;
+  }
+
+  /*
+   * Local player profile আরও পরিষ্কারভাবে
+   * চিহ্নিত থাকবে।
+   */
+  .game-stage.has-local-perspective
+  .player-panel.is-local-player {
+    border-color:
+      color-mix(
+        in srgb,
+        var(--player-color) 75%,
+        white
+      );
+
+    box-shadow:
+      inset 0 1px 0
+        rgba(255, 255, 255, 0.12),
+      0 0 18px
+        color-mix(
+          in srgb,
+          var(--player-color) 24%,
+          transparent
+        );
+  }
+
+  /*
+   * Board smoothভাবে local color perspective-এ
+   * rotate হবে।
+   */
+  .game-stage.has-local-perspective
+  .ludo-board {
+    transform-origin: center;
+
+    transition:
+      transform 320ms ease;
+  }
+
+  /*
+   * BLUE default bottom-left—rotation প্রয়োজন নেই।
+   */
+  .game-stage[
+    data-local-color="blue"
+  ]
+  .ludo-board {
+    transform:
+      perspective(1100px)
+      rotateX(1deg)
+      rotate(0deg);
+  }
+
+  /*
+   * RED top-left থেকে bottom-left।
+   */
+  .game-stage[
+    data-local-color="red"
+  ]
+  .ludo-board {
+    transform:
+      perspective(1100px)
+      rotateX(1deg)
+      rotate(-90deg);
+  }
+
+  /*
+   * GREEN top-right থেকে bottom-left।
+   */
+  .game-stage[
+    data-local-color="green"
+  ]
+  .ludo-board {
+    transform:
+      perspective(1100px)
+      rotateX(1deg)
+      rotate(180deg);
+  }
+
+  /*
+   * YELLOW bottom-right থেকে bottom-left।
+   */
+  .game-stage[
+    data-local-color="yellow"
+  ]
+  .ludo-board {
+    transform:
+      perspective(1100px)
+      rotateX(1deg)
+      rotate(90deg);
+  }
+
+  /*
+   * Board rotate হলেও center logo সোজা থাকবে।
+   */
+  .game-stage[
+    data-local-color="blue"
+  ]
+  .board-center-logo {
+    transform:
+      translate(-50%, -50%)
+      rotate(0deg);
+  }
+
+  .game-stage[
+    data-local-color="red"
+  ]
+  .board-center-logo {
+    transform:
+      translate(-50%, -50%)
+      rotate(90deg);
+  }
+
+  .game-stage[
+    data-local-color="green"
+  ]
+  .board-center-logo {
+    transform:
+      translate(-50%, -50%)
+      rotate(180deg);
+  }
+
+  .game-stage[
+    data-local-color="yellow"
+  ]
+  .board-center-logo {
+    transform:
+      translate(-50%, -50%)
+      rotate(-90deg);
+  }
+
+  /*
+   * Pawn board-এর সঙ্গে position পরিবর্তন করবে,
+   * কিন্তু নিজে সবসময় সোজা থাকবে।
+   */
+  .game-stage[
+    data-local-color="blue"
+  ]
+  .ludo-pawn {
+    --pawn-upright-rotation: 0deg;
+  }
+
+  .game-stage[
+    data-local-color="red"
+  ]
+  .ludo-pawn {
+    --pawn-upright-rotation: 90deg;
+  }
+
+  .game-stage[
+    data-local-color="green"
+  ]
+  .ludo-pawn {
+    --pawn-upright-rotation: 180deg;
+  }
+
+  .game-stage[
+    data-local-color="yellow"
+  ]
+  .ludo-pawn {
+    --pawn-upright-rotation: -90deg;
+  }
+
+  .game-stage.has-local-perspective
+  .ludo-pawn {
+    transform:
+      translate(-50%, -58%)
+      rotate(
+        var(
+          --pawn-upright-rotation,
+          0deg
+        )
+      );
+  }
+
+  .game-stage.has-local-perspective
+  .ludo-pawn:hover {
+    transform:
+      translate(-50%, -65%)
+      rotate(
+        var(
+          --pawn-upright-rotation,
+          0deg
+        )
+      )
+      scale(1.1);
+  }
+
+  /*
+   * পুরোনো pulse animation pawn rotation
+   * মুছে দিত। নতুন animation rotation রাখবে।
+   */
+  .game-stage.has-local-perspective
+  .ludo-pawn.can-move {
+    animation:
+      ludoPerspectivePawnPulse
+      850ms
+      ease-in-out
+      infinite;
+  }
+}
+
+/* Pawn selectable pulse */
+
+@keyframes ludoPerspectivePawnPulse {
+
+  0%,
+  100% {
+    filter:
+      drop-shadow(
+        0 5px 3px
+        rgba(0, 0, 0, 0.4)
+      );
+
+    transform:
+      translate(-50%, -58%)
+      rotate(
+        var(
+          --pawn-upright-rotation,
+          0deg
+        )
+      )
+      scale(1);
+  }
+
+  50% {
+    filter:
+      drop-shadow(
+        0 0 9px
+        var(--pawn-color)
+      );
+
+    transform:
+      translate(-50%, -62%)
+      rotate(
+        var(
+          --pawn-upright-rotation,
+          0deg
+        )
+      )
+      scale(1.08);
+  }
+}
+
+/* =========================================================
+   VERY NARROW PORTRAIT
+========================================================= */
+
+@media (
+  orientation: portrait
+) and (
+  max-width: 380px
+) {
+
+  .game-stage.has-local-perspective {
+    grid-template-rows:
+      auto
+      auto
+      78px
+      auto !important;
+
+    gap: 6px !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-control {
+    width: 70px !important;
+
+    padding: 6px 5px !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-button {
+    width: 49px !important;
+    height: 49px !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-face {
+    width: 38px !important;
+    height: 38px !important;
+  }
+}
+

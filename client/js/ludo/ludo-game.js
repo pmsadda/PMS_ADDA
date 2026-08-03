@@ -671,148 +671,325 @@ const LUDO_LIVE = {
     }
   },
 
-  renderPlayers() {
-    const me = this.getMe();
+renderPlayers() {
+  const me = this.getMe();
 
-    const perspectiveSlots = [
-      "view-bottom-left",
-      "view-top-left",
-      "view-top-right",
-      "view-bottom-right",
-    ];
+  /*
+   * Local player সবসময় bottom-left।
+   *
+   * Clockwise visual slots:
+   * 0 = bottom-left
+   * 1 = top-left
+   * 2 = top-right
+   * 3 = bottom-right
+   */
+  const perspectiveSlots = [
+    "view-bottom-left",
+    "view-top-left",
+    "view-top-right",
+    "view-bottom-right",
+  ];
 
-    const localColorIndex = this.colors.indexOf(
-      String(me?.color || "").toLowerCase(),
+  /*
+   * এই color order board-এর clockwise order:
+   *
+   * Red    → top-left
+   * Green  → top-right
+   * Yellow → bottom-right
+   * Blue   → bottom-left
+   */
+  const localColor = String(
+    me?.color || "",
+  ).toLowerCase();
+
+  const localColorIndex =
+    this.colors.indexOf(localColor);
+
+  const playerMode = Number(
+    this.state?.match?.playerMode ||
+      this.state?.match?.requestedPlayerMode ||
+      this.state?.match?.requiredPlayers ||
+      2,
+  );
+
+  const isTwoPlayerMode =
+    playerMode === 2;
+
+  const isFourPlayerMode =
+    playerMode === 4;
+
+  /*
+   * Local player পাওয়া গেলে 2-player এবং
+   * 4-player উভয় mode-এ perspective ব্যবহার হবে।
+   */
+  const useLocalPerspective =
+    localColorIndex >= 0;
+
+  const gameStage =
+    document.querySelector(
+      ".game-stage",
     );
 
-    const playerMode = Number(
-      this.state?.match?.playerMode ||
-        this.state?.match?.requestedPlayerMode ||
-        this.state?.match?.requiredPlayers ||
-        2,
+  if (gameStage) {
+    gameStage.classList.toggle(
+      "is-two-player-mode",
+      isTwoPlayerMode,
     );
 
-    const isFourPlayerMode = playerMode === 4;
+    gameStage.classList.toggle(
+      "is-four-player-mode",
+      isFourPlayerMode,
+    );
 
-    const useLocalPerspective = playerMode === 2;
+    gameStage.classList.toggle(
+      "has-local-perspective",
+      useLocalPerspective,
+    );
 
-    const gameStage = document.querySelector(".game-stage");
+    /*
+     * CSS এই value ব্যবহার করে board rotate করবে।
+     */
+    gameStage.dataset.localColor =
+      useLocalPerspective
+        ? localColor
+        : "";
+  }
 
-    gameStage?.classList.toggle("is-four-player-mode", isFourPlayerMode);
+  this.colors.forEach((color) => {
+    const suffix =
+      color.charAt(0).toUpperCase() +
+      color.slice(1);
 
-    gameStage?.classList.toggle("is-two-player-mode", useLocalPerspective);
-
-    this.colors.forEach((color) => {
-      const suffix = color.charAt(0).toUpperCase() + color.slice(1);
-
-      const panel = this.getElement(`playerPanel${suffix}`);
-
-      const name = this.getElement(`playerName${suffix}`);
-
-      const balance = this.getElement(`playerBalance${suffix}`);
-
-      const avatar = this.getElement(`playerAvatar${suffix}`);
-
-      const player = this.state.players.find((item) => item.color === color);
-
-      panel?.classList.remove(
-        ...perspectiveSlots,
-        "is-local-player",
-        "is-bot-player",
+    const panel =
+      this.getElement(
+        `playerPanel${suffix}`,
       );
 
-      panel?.classList.toggle("is-empty", !player);
+    const name =
+      this.getElement(
+        `playerName${suffix}`,
+      );
 
-      panel?.classList.toggle("is-online", Boolean(player));
+    const balance =
+      this.getElement(
+        `playerBalance${suffix}`,
+      );
 
-      if (!player) {
-        if (name) {
-          name.textContent = "Waiting…";
-        }
+    const avatar =
+      this.getElement(
+        `playerAvatar${suffix}`,
+      );
 
-        if (balance) {
-          balance.hidden = false;
-          balance.textContent = "৳0";
-        }
+    const player =
+      this.state.players.find(
+        (item) =>
+          String(
+            item.color || "",
+          ).toLowerCase() === color,
+      );
 
-        return;
-      }
+    panel?.classList.remove(
+      ...perspectiveSlots,
+      "is-local-player",
+      "is-bot-player",
+    );
 
-      /*
-       * প্রত্যেক user-এর নিজের profile
-       * তার screen-এর নিচে থাকবে।
-       */
-      if (panel && useLocalPerspective && localColorIndex >= 0) {
-        const playerColorIndex = this.colors.indexOf(color);
+    panel?.classList.toggle(
+      "is-empty",
+      !player,
+    );
 
-        const relativePosition =
-          (playerColorIndex - localColorIndex + this.colors.length) %
-          this.colors.length;
+    panel?.classList.toggle(
+      "is-online",
+      Boolean(player),
+    );
 
-        panel.classList.add(perspectiveSlots[relativePosition]);
-      }
-
-      const isLocalPlayer = Number(player.id) === Number(me?.id);
-
-      panel?.classList.toggle("is-local-player", isLocalPlayer);
-
-      panel?.classList.toggle("is-bot-player", Boolean(player.isBot));
-
+    if (!player) {
       if (name) {
-        /*
-         * Bot-এর আসল নাম থাকবে।
-         * কোনো fallback-এও Bot লেখা হবে না।
-         */
         name.textContent =
-          player.fullName || player.username || `Player ${player.seatNo}`;
+          "Waiting…";
       }
 
       if (balance) {
-        /*
-         * Bot profile-এ BOT লেখা এবং
-         * balance line দুটোই hide হবে।
-         */
-        balance.hidden = Boolean(player.isBot);
+        balance.hidden = false;
 
-        balance.textContent = player.isBot
-          ? ""
-          : this.formatMoney(player.walletBalance);
+        balance.textContent =
+          "৳0.00";
       }
 
-      if (avatar && player.avatarUrl) {
-        const rawUrl = String(player.avatarUrl);
+      return;
+    }
 
-        let avatarUrl = rawUrl;
+    /*
+     * Local color থেকে clockwise distance
+     * হিসাব করে visual slot নির্ধারণ।
+     *
+     * এতে প্রত্যেক real user নিজের screen-এ
+     * নিজের panel bottom-left-এ দেখবে।
+     */
+    if (
+      panel &&
+      useLocalPerspective
+    ) {
+      const playerColorIndex =
+        this.colors.indexOf(
+          color,
+        );
 
-        if (!/^https?:\/\//i.test(rawUrl) && !rawUrl.startsWith("/")) {
-          avatarUrl = rawUrl.startsWith("assets/")
-            ? `../${rawUrl}`
-            : `../assets/images/avatars/${rawUrl}`;
-        }
+      const relativePosition =
+        (
+          playerColorIndex -
+          localColorIndex +
+          this.colors.length
+        ) %
+        this.colors.length;
 
-        if (avatar.dataset.failedSrc !== avatarUrl) {
-          avatar.onerror = () => {
-            avatar.dataset.failedSrc = avatarUrl;
+      panel.classList.add(
+        perspectiveSlots[
+          relativePosition
+        ],
+      );
+    }
 
-            avatar.hidden = true;
+    const isLocalPlayer =
+      Number(player.id) ===
+      Number(me?.id);
 
-            const wrapper = avatar.closest(".player-avatar");
+    panel?.classList.toggle(
+      "is-local-player",
+      isLocalPlayer,
+    );
 
-            wrapper?.classList.add("has-fallback-avatar");
+    panel?.classList.toggle(
+      "is-bot-player",
+      Boolean(player.isBot),
+    );
 
-            wrapper.dataset.letter = (player.fullName || player.username || "P")
-              .charAt(0)
-              .toUpperCase();
-          };
+    if (name) {
+      /*
+       * Bot-এর আসল নাম থাকবে।
+       * কোথাও BOT label দেখানো হবে না।
+       */
+      name.textContent =
+        player.fullName ||
+        player.name ||
+        player.username ||
+        `Player ${player.seatNo}`;
+    }
 
-          if (avatar.src !== new URL(avatarUrl, window.location.href).href) {
-            avatar.hidden = false;
-            avatar.src = avatarUrl;
-          }
-        }
+    if (balance) {
+      /*
+       * Real এবং bot—সব player-এর
+       * current wallet balance দেখা যাবে।
+       */
+      balance.hidden = false;
+
+      balance.textContent =
+        this.formatMoney(
+          player.walletBalance ??
+          player.balance ??
+          player.endingBalance ??
+          0,
+        );
+    }
+
+    if (!avatar) {
+      return;
+    }
+
+    const avatarWrapper =
+      avatar.closest(
+        ".player-avatar",
+      );
+
+    const playerInitial =
+      (
+        player.fullName ||
+        player.name ||
+        player.username ||
+        color
+      )
+        .charAt(0)
+        .toUpperCase();
+
+    const showAvatarFallback = () => {
+      avatar.hidden = true;
+
+      avatarWrapper?.classList.add(
+        "has-fallback-avatar",
+      );
+
+      if (avatarWrapper) {
+        avatarWrapper.dataset.letter =
+          playerInitial;
       }
-    });
-  },
+    };
+
+    const rawAvatarUrl =
+      String(
+        player.avatarUrl || "",
+      ).trim();
+
+    if (!rawAvatarUrl) {
+      showAvatarFallback();
+
+      return;
+    }
+
+    let avatarUrl =
+      rawAvatarUrl;
+
+    if (
+      !/^https?:\/\//i.test(
+        rawAvatarUrl,
+      ) &&
+      !rawAvatarUrl.startsWith("/")
+    ) {
+      avatarUrl =
+        rawAvatarUrl.startsWith(
+          "assets/",
+        )
+          ? `../${rawAvatarUrl}`
+          : `../assets/images/avatars/${rawAvatarUrl}`;
+    }
+
+    const absoluteAvatarUrl =
+      new URL(
+        avatarUrl,
+        window.location.href,
+      ).href;
+
+    avatar.onerror = () => {
+      avatar.dataset.failedSrc =
+        absoluteAvatarUrl;
+
+      showAvatarFallback();
+    };
+
+    if (
+      avatar.dataset.failedSrc ===
+      absoluteAvatarUrl
+    ) {
+      showAvatarFallback();
+
+      return;
+    }
+
+    avatarWrapper?.classList.remove(
+      "has-fallback-avatar",
+    );
+
+    avatar.hidden = false;
+
+    if (
+      avatar.src !==
+      absoluteAvatarUrl
+    ) {
+      avatar.src =
+        absoluteAvatarUrl;
+    }
+  });
+},
 
   renderMatchmaking() {
     const match = this.state.match;
