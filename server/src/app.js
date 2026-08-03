@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const path = require("path");
 
 const authRoutes = require("./routes/auth.routes");
@@ -56,6 +57,50 @@ app.set("trust proxy", 1);
  * Response header-এ Express ব্যবহারের তথ্য প্রকাশ বন্ধ করে।
  */
 app.disable("x-powered-by");
+
+const isProduction = process.env.NODE_ENV === "production";
+
+/* ==========================
+   Global Security Middleware
+========================== */
+
+app.use(
+  helmet({
+    /*
+     * Existing pages contain inline scripts.
+     * CSP will be configured separately after asset inventory.
+     */
+    contentSecurityPolicy: false,
+
+    /*
+     * Allows uploaded avatars and game assets to load when the frontend
+     * is running from a different local port or a future app client.
+     */
+    crossOriginResourcePolicy: {
+      policy: "cross-origin",
+    },
+
+    /*
+     * Render sets NODE_ENV=production.
+     * Local HTTP development must not be forced to HTTPS.
+     */
+    strictTransportSecurity: isProduction
+      ? {
+          maxAge: 31536000,
+          includeSubDomains: true,
+          preload: false,
+        }
+      : false,
+
+    referrerPolicy: {
+      policy: "strict-origin-when-cross-origin",
+    },
+
+    xFrameOptions: {
+      action: "deny",
+    },
+  }),
+);
 
 /* ==========================
    Global Middleware
