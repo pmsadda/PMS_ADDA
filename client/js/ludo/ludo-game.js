@@ -671,239 +671,162 @@ const LUDO_LIVE = {
     }
   },
 
-renderPlayers() {
-  const me = this.getMe();
-
-  /*
-   * Local player সবসময় bottom-left।
-   *
-   * Clockwise visual slots:
-   * 0 = bottom-left
-   * 1 = top-left
-   * 2 = top-right
-   * 3 = bottom-right
-   */
-  const perspectiveSlots = [
-    "view-bottom-left",
-    "view-top-left",
-    "view-top-right",
-    "view-bottom-right",
-  ];
-
-  /*
-   * এই color order board-এর clockwise order:
-   *
-   * Red    → top-left
-   * Green  → top-right
-   * Yellow → bottom-right
-   * Blue   → bottom-left
-   */
-  const localColor = String(
-    me?.color || "",
-  ).toLowerCase();
-
-  const localColorIndex =
-    this.colors.indexOf(localColor);
-
-  const playerMode = Number(
-    this.state?.match?.playerMode ||
-      this.state?.match?.requestedPlayerMode ||
-      this.state?.match?.requiredPlayers ||
-      2,
-  );
-
-  const isTwoPlayerMode =
-    playerMode === 2;
-
-  const isFourPlayerMode =
-    playerMode === 4;
-
-  /*
-   * Local player পাওয়া গেলে 2-player এবং
-   * 4-player উভয় mode-এ perspective ব্যবহার হবে।
-   */
-  const useLocalPerspective =
-    localColorIndex >= 0;
-
-  const gameStage =
-    document.querySelector(
-      ".game-stage",
-    );
-
-  if (gameStage) {
-    gameStage.classList.toggle(
-      "is-two-player-mode",
-      isTwoPlayerMode,
-    );
-
-    gameStage.classList.toggle(
-      "is-four-player-mode",
-      isFourPlayerMode,
-    );
-
-    gameStage.classList.toggle(
-      "has-local-perspective",
-      useLocalPerspective,
-    );
+  renderPlayers() {
+    const me = this.getMe();
 
     /*
-     * CSS এই value ব্যবহার করে board rotate করবে।
+     * Local player সবসময় bottom-left।
+     *
+     * Clockwise visual slots:
+     * 0 = bottom-left
+     * 1 = top-left
+     * 2 = top-right
+     * 3 = bottom-right
      */
-    gameStage.dataset.localColor =
-      useLocalPerspective
-        ? localColor
-        : "";
-  }
+    const perspectiveSlots = [
+      "view-bottom-left",
+      "view-top-left",
+      "view-top-right",
+      "view-bottom-right",
+    ];
 
-  this.colors.forEach((color) => {
-    const suffix =
-      color.charAt(0).toUpperCase() +
-      color.slice(1);
+    /*
+     * এই color order board-এর clockwise order:
+     *
+     * Red    → top-left
+     * Green  → top-right
+     * Yellow → bottom-right
+     * Blue   → bottom-left
+     */
+    const localColor = String(me?.color || "").toLowerCase();
 
-    const panel =
-      this.getElement(
-        `playerPanel${suffix}`,
-      );
+    const localColorIndex = this.colors.indexOf(localColor);
 
-    const name =
-      this.getElement(
-        `playerName${suffix}`,
-      );
-
-    const balance =
-      this.getElement(
-        `playerBalance${suffix}`,
-      );
-
-    const avatar =
-      this.getElement(
-        `playerAvatar${suffix}`,
-      );
-
-    const player =
-      this.state.players.find(
-        (item) =>
-          String(
-            item.color || "",
-          ).toLowerCase() === color,
-      );
-
-    panel?.classList.remove(
-      ...perspectiveSlots,
-      "is-local-player",
-      "is-bot-player",
+    const playerMode = Number(
+      this.state?.match?.playerMode ||
+        this.state?.match?.requestedPlayerMode ||
+        this.state?.match?.requiredPlayers ||
+        2,
     );
 
-    panel?.classList.toggle(
-      "is-empty",
-      !player,
-    );
+    const isTwoPlayerMode = playerMode === 2;
 
-    panel?.classList.toggle(
-      "is-online",
-      Boolean(player),
-    );
+    const isFourPlayerMode = playerMode === 4;
 
-    if (!player) {
+    /*
+     * Local player পাওয়া গেলে 2-player এবং
+     * 4-player উভয় mode-এ perspective ব্যবহার হবে।
+     */
+    const useLocalPerspective = localColorIndex >= 0;
+
+    const gameStage = document.querySelector(".game-stage");
+
+    if (gameStage) {
+      gameStage.classList.toggle("is-two-player-mode", isTwoPlayerMode);
+
+      gameStage.classList.toggle("is-four-player-mode", isFourPlayerMode);
+
+      gameStage.classList.toggle("has-local-perspective", useLocalPerspective);
+
+      /*
+       * CSS এই value ব্যবহার করে board rotate করবে।
+       */
+      gameStage.dataset.localColor = useLocalPerspective ? localColor : "";
+    }
+
+    this.colors.forEach((color) => {
+      const suffix = color.charAt(0).toUpperCase() + color.slice(1);
+
+      const panel = this.getElement(`playerPanel${suffix}`);
+
+      const name = this.getElement(`playerName${suffix}`);
+
+      const balance = this.getElement(`playerBalance${suffix}`);
+
+      const avatar = this.getElement(`playerAvatar${suffix}`);
+
+      const player = this.state.players.find(
+        (item) => String(item.color || "").toLowerCase() === color,
+      );
+
+      panel?.classList.remove(
+        ...perspectiveSlots,
+        "is-local-player",
+        "is-bot-player",
+      );
+
+      panel?.classList.toggle("is-empty", !player);
+
+      panel?.classList.toggle("is-online", Boolean(player));
+
+      if (!player) {
+        if (name) {
+          name.textContent = "Waiting…";
+        }
+
+        if (balance) {
+          balance.hidden = false;
+
+          balance.textContent = "৳0.00";
+        }
+
+        return;
+      }
+
+      /*
+       * Local color থেকে clockwise distance
+       * হিসাব করে visual slot নির্ধারণ।
+       *
+       * এতে প্রত্যেক real user নিজের screen-এ
+       * নিজের panel bottom-left-এ দেখবে।
+       */
+      if (panel && useLocalPerspective) {
+        const playerColorIndex = this.colors.indexOf(color);
+
+        const relativePosition =
+          (playerColorIndex - localColorIndex + this.colors.length) %
+          this.colors.length;
+
+        panel.classList.add(perspectiveSlots[relativePosition]);
+      }
+
+      const isLocalPlayer = Number(player.id) === Number(me?.id);
+
+      panel?.classList.toggle("is-local-player", isLocalPlayer);
+
+      panel?.classList.toggle("is-bot-player", Boolean(player.isBot));
+
       if (name) {
+        /*
+         * Bot-এর আসল নাম থাকবে।
+         * কোথাও BOT label দেখানো হবে না।
+         */
         name.textContent =
-          "Waiting…";
+          player.fullName ||
+          player.name ||
+          player.username ||
+          `Player ${player.seatNo}`;
       }
 
       if (balance) {
+        /*
+         * Real এবং bot—সব player-এর
+         * current wallet balance দেখা যাবে।
+         */
         balance.hidden = false;
 
-        balance.textContent =
-          "৳0.00";
+        balance.textContent = this.formatMoney(
+          player.walletBalance ?? player.balance ?? player.endingBalance ?? 0,
+        );
       }
 
-      return;
-    }
+      if (!avatar) {
+        return;
+      }
 
-    /*
-     * Local color থেকে clockwise distance
-     * হিসাব করে visual slot নির্ধারণ।
-     *
-     * এতে প্রত্যেক real user নিজের screen-এ
-     * নিজের panel bottom-left-এ দেখবে।
-     */
-    if (
-      panel &&
-      useLocalPerspective
-    ) {
-      const playerColorIndex =
-        this.colors.indexOf(
-          color,
-        );
+      const avatarWrapper = avatar.closest(".player-avatar");
 
-      const relativePosition =
-        (
-          playerColorIndex -
-          localColorIndex +
-          this.colors.length
-        ) %
-        this.colors.length;
-
-      panel.classList.add(
-        perspectiveSlots[
-          relativePosition
-        ],
-      );
-    }
-
-    const isLocalPlayer =
-      Number(player.id) ===
-      Number(me?.id);
-
-    panel?.classList.toggle(
-      "is-local-player",
-      isLocalPlayer,
-    );
-
-    panel?.classList.toggle(
-      "is-bot-player",
-      Boolean(player.isBot),
-    );
-
-    if (name) {
-      /*
-       * Bot-এর আসল নাম থাকবে।
-       * কোথাও BOT label দেখানো হবে না।
-       */
-      name.textContent =
-        player.fullName ||
-        player.name ||
-        player.username ||
-        `Player ${player.seatNo}`;
-    }
-
-    if (balance) {
-      /*
-       * Real এবং bot—সব player-এর
-       * current wallet balance দেখা যাবে।
-       */
-      balance.hidden = false;
-
-      balance.textContent =
-        this.formatMoney(
-          player.walletBalance ??
-          player.balance ??
-          player.endingBalance ??
-          0,
-        );
-    }
-
-    if (!avatar) {
-      return;
-    }
-
-    const avatarWrapper =
-      avatar.closest(
-        ".player-avatar",
-      );
-
-    const playerInitial =
-      (
+      const playerInitial = (
         player.fullName ||
         player.name ||
         player.username ||
@@ -912,84 +835,58 @@ renderPlayers() {
         .charAt(0)
         .toUpperCase();
 
-    const showAvatarFallback = () => {
-      avatar.hidden = true;
+      const showAvatarFallback = () => {
+        avatar.hidden = true;
 
-      avatarWrapper?.classList.add(
-        "has-fallback-avatar",
-      );
+        avatarWrapper?.classList.add("has-fallback-avatar");
 
-      if (avatarWrapper) {
-        avatarWrapper.dataset.letter =
-          playerInitial;
+        if (avatarWrapper) {
+          avatarWrapper.dataset.letter = playerInitial;
+        }
+      };
+
+      const rawAvatarUrl = String(player.avatarUrl || "").trim();
+
+      if (!rawAvatarUrl) {
+        showAvatarFallback();
+
+        return;
       }
-    };
 
-    const rawAvatarUrl =
-      String(
-        player.avatarUrl || "",
-      ).trim();
+      let avatarUrl = rawAvatarUrl;
 
-    if (!rawAvatarUrl) {
-      showAvatarFallback();
-
-      return;
-    }
-
-    let avatarUrl =
-      rawAvatarUrl;
-
-    if (
-      !/^https?:\/\//i.test(
-        rawAvatarUrl,
-      ) &&
-      !rawAvatarUrl.startsWith("/")
-    ) {
-      avatarUrl =
-        rawAvatarUrl.startsWith(
-          "assets/",
-        )
+      if (
+        !/^https?:\/\//i.test(rawAvatarUrl) &&
+        !rawAvatarUrl.startsWith("/")
+      ) {
+        avatarUrl = rawAvatarUrl.startsWith("assets/")
           ? `../${rawAvatarUrl}`
           : `../assets/images/avatars/${rawAvatarUrl}`;
-    }
+      }
 
-    const absoluteAvatarUrl =
-      new URL(
-        avatarUrl,
-        window.location.href,
-      ).href;
+      const absoluteAvatarUrl = new URL(avatarUrl, window.location.href).href;
 
-    avatar.onerror = () => {
-      avatar.dataset.failedSrc =
-        absoluteAvatarUrl;
+      avatar.onerror = () => {
+        avatar.dataset.failedSrc = absoluteAvatarUrl;
 
-      showAvatarFallback();
-    };
+        showAvatarFallback();
+      };
 
-    if (
-      avatar.dataset.failedSrc ===
-      absoluteAvatarUrl
-    ) {
-      showAvatarFallback();
+      if (avatar.dataset.failedSrc === absoluteAvatarUrl) {
+        showAvatarFallback();
 
-      return;
-    }
+        return;
+      }
 
-    avatarWrapper?.classList.remove(
-      "has-fallback-avatar",
-    );
+      avatarWrapper?.classList.remove("has-fallback-avatar");
 
-    avatar.hidden = false;
+      avatar.hidden = false;
 
-    if (
-      avatar.src !==
-      absoluteAvatarUrl
-    ) {
-      avatar.src =
-        absoluteAvatarUrl;
-    }
-  });
-},
+      if (avatar.src !== absoluteAvatarUrl) {
+        avatar.src = absoluteAvatarUrl;
+      }
+    });
+  },
 
   renderMatchmaking() {
     const match = this.state.match;
@@ -1478,24 +1375,40 @@ renderPlayers() {
         `.yard-slot[data-color="${pawn.color}"][data-pawn-number="${pawn.pawnNo}"]`,
       );
 
-      const board = this.getElement("ludoBoard");
+      const boardGrid = this.getElement("boardGrid");
 
-      if (slot && board) {
-        const slotRect = slot.getBoundingClientRect();
+      const homeArea = slot?.closest(".home-yard");
 
-        const boardRect = board.getBoundingClientRect();
+      if (slot && homeArea && boardGrid) {
+        /*
+         * getBoundingClientRect() rotated visual
+         * coordinate দেয়। এরপর pawn layer rotate হলে
+         * double rotation হচ্ছিল।
+         *
+         * offset position ব্যবহার করলে logical,
+         * unrotated board coordinate পাওয়া যায়।
+         */
+        const centerX =
+          Number(homeArea.offsetLeft) +
+          Number(slot.offsetLeft) +
+          Number(slot.offsetWidth) / 2;
 
-        return {
-          left:
-            ((slotRect.left + slotRect.width / 2 - boardRect.left) /
-              boardRect.width) *
-            100,
+        const centerY =
+          Number(homeArea.offsetTop) +
+          Number(slot.offsetTop) +
+          Number(slot.offsetHeight) / 2;
 
-          top:
-            ((slotRect.top + slotRect.height / 2 - boardRect.top) /
-              boardRect.height) *
-            100,
-        };
+        const boardWidth = Number(boardGrid.clientWidth);
+
+        const boardHeight = Number(boardGrid.clientHeight);
+
+        if (boardWidth > 0 && boardHeight > 0) {
+          return {
+            left: (centerX / boardWidth) * 100,
+
+            top: (centerY / boardHeight) * 100,
+          };
+        }
       }
     }
 

@@ -2961,3 +2961,267 @@ button {
   }
 }
 
+/* =========================================================
+   LUDO PERSPECTIVE HOTFIX
+   Correct pawns and remove portrait scrolling
+========================================================= */
+
+@media (orientation: portrait) {
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden !important;
+  }
+
+  .ludo-app {
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+
+    padding-bottom: 70px !important;
+
+    overflow: hidden !important;
+  }
+
+  /*
+   * Dice ও bottom players একই row-তে থাকবে।
+   *
+   * Column 1 = local bottom-left
+   * Column 2 = dice
+   * Column 3 = bottom-right player
+   */
+  .game-stage.has-local-perspective {
+    grid-template-columns:
+      minmax(0, 1fr)
+      78px
+      minmax(0, 1fr) !important;
+
+    grid-template-rows:
+      auto
+      auto
+      auto !important;
+
+    align-content: center !important;
+    align-items: center !important;
+
+    gap:
+      8px
+      6px !important;
+
+    min-height: 0 !important;
+
+    overflow: visible !important;
+  }
+
+  /*
+   * Board সব তিনটি column ব্যবহার করবে।
+   */
+  .game-stage.has-local-perspective
+  .board-zone {
+    grid-column: 1 / 4 !important;
+    grid-row: 2 !important;
+  }
+
+  /* Top players */
+
+  .game-stage.has-local-perspective
+  .player-panel.view-top-left {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  .game-stage.has-local-perspective
+  .player-panel.view-top-right {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+
+  /* Bottom players */
+
+  .game-stage.has-local-perspective
+  .player-panel.view-bottom-left {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+  }
+
+  .game-stage.has-local-perspective
+  .player-panel.view-bottom-right {
+    grid-column: 3 !important;
+    grid-row: 3 !important;
+  }
+
+  /*
+   * Dice bottom players-এর মাঝের নিজস্ব column।
+   */
+  .game-stage.has-local-perspective
+  .dice-control {
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+
+    align-self: center !important;
+    justify-self: center !important;
+
+    width: 74px !important;
+
+    margin: 0 !important;
+    padding: 6px 5px !important;
+    gap: 4px !important;
+
+    transform: none !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-button {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-face {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /*
+   * পুরো ludo-board আর rotate হবে না।
+   * এতে board rect ও pawn coordinate stable থাকবে।
+   */
+  .game-stage.has-local-perspective
+  .ludo-board {
+    transform:
+      perspective(1100px)
+      rotateX(1deg) !important;
+
+    transition: none !important;
+  }
+
+  /*
+   * শুধু visual grid এবং pawn layer একইসঙ্গে
+   * rotate হবে।
+   */
+  .game-stage.has-local-perspective
+  .board-grid,
+  .game-stage.has-local-perspective
+  .pawn-layer {
+    transform-origin: center;
+
+    transition:
+      transform 280ms ease;
+  }
+
+  /* Blue already bottom-left */
+
+  .game-stage[
+    data-local-color="blue"
+  ]
+  .board-grid,
+  .game-stage[
+    data-local-color="blue"
+  ]
+  .pawn-layer {
+    transform:
+      rotate(0deg) !important;
+  }
+
+  /* Red → bottom-left */
+
+  .game-stage[
+    data-local-color="red"
+  ]
+  .board-grid,
+  .game-stage[
+    data-local-color="red"
+  ]
+  .pawn-layer {
+    transform:
+      rotate(-90deg) !important;
+  }
+
+  /* Green → bottom-left */
+
+  .game-stage[
+    data-local-color="green"
+  ]
+  .board-grid,
+  .game-stage[
+    data-local-color="green"
+  ]
+  .pawn-layer {
+    transform:
+      rotate(180deg) !important;
+  }
+
+  /* Yellow → bottom-left */
+
+  .game-stage[
+    data-local-color="yellow"
+  ]
+  .board-grid,
+  .game-stage[
+    data-local-color="yellow"
+  ]
+  .pawn-layer {
+    transform:
+      rotate(90deg) !important;
+  }
+
+  /*
+   * Logo board container-এর মধ্যে স্থির,
+   * তাই আর counter-rotate প্রয়োজন নেই।
+   */
+  .game-stage.has-local-perspective
+  .board-center-logo {
+    transform:
+      translate(-50%, -50%) !important;
+  }
+}
+
+/* Very narrow portrait */
+
+@media (
+  orientation: portrait
+) and (
+  max-width: 380px
+) {
+
+  .game-stage.has-local-perspective {
+    grid-template-columns:
+      minmax(0, 1fr)
+      68px
+      minmax(0, 1fr) !important;
+
+    gap:
+      6px
+      4px !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-control {
+    width: 66px !important;
+
+    padding: 5px 4px !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-button {
+    width: 47px !important;
+    height: 47px !important;
+  }
+
+  .game-stage.has-local-perspective
+  .dice-face {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
