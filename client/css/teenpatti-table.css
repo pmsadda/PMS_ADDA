@@ -3270,3 +3270,392 @@ button {
       translateX(-50%) !important;
   }
 }
+
+/* =========================================================
+   TEEN PATTI — COMPACT CIRCULAR PLAYER SEATS
+========================================================= */
+
+/*
+ * Reference-style seat:
+ * circular avatar + compact information plate।
+ */
+.tp-player,
+.player {
+  width: 148px;
+  min-height: 66px;
+}
+
+.tp-player-profile {
+  position: relative;
+
+  display: block;
+
+  width: 100%;
+  height: 64px;
+  min-height: 64px;
+
+  padding: 0;
+
+  overflow: visible;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+
+  backdrop-filter: none;
+}
+
+/*
+ * Avatar-এর পেছনে ছোট information plate।
+ */
+.tp-player-profile::before {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  bottom: 5px;
+  left: 27px;
+  z-index: 1;
+
+  width: auto;
+
+  content: "";
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.17);
+
+  border-left:
+    4px solid
+    var(--gold);
+
+  border-radius:
+    8px
+    14px
+    14px
+    8px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 42, 49, 0.97),
+      rgba(3, 17, 23, 0.97)
+    );
+
+  box-shadow:
+    0 8px 18px
+    rgba(0, 0, 0, 0.48);
+
+  backdrop-filter: blur(8px);
+}
+
+/*
+ * Main circular avatar।
+ */
+.tp-player-profile .avatar {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  z-index: 5;
+
+  width: 59px;
+  height: 59px;
+
+  border:
+    3px solid
+    var(--gold);
+
+  background:
+    radial-gradient(
+      circle,
+      #254c55,
+      #071a21
+    );
+
+  box-shadow:
+    0 0 0 3px
+    rgba(2, 14, 19, 0.85),
+    0 7px 16px
+    rgba(0, 0, 0, 0.52);
+}
+
+.tp-player-profile .avatar::after {
+  right: 1px;
+  bottom: 2px;
+
+  width: 10px;
+  height: 10px;
+
+  border-width: 2px;
+}
+
+/*
+ * Name, balance এবং action।
+ */
+.tp-player-profile .name {
+  position: absolute;
+  top: 15px;
+  right: 7px;
+  left: 65px;
+  z-index: 6;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+}
+
+.tp-player-profile
+.name strong {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.tp-player-profile
+.name span {
+  margin-top: 3px;
+
+  font-size: 9px;
+  line-height: 1;
+}
+
+.tp-player-profile
+.status {
+  right: 7px;
+  bottom: 8px;
+  z-index: 7;
+
+  max-width: 72px;
+
+  font-size: 7px;
+  line-height: 1;
+
+  letter-spacing: 0.55px;
+}
+
+/*
+ * Dealer badge avatar-এর পাশে।
+ */
+.tp-player
+.dealer-chip,
+.player
+.dealer-chip {
+  top: -2px;
+  right: auto;
+  left: 45px;
+  z-index: 70;
+
+  width: 24px;
+  height: 24px;
+
+  font-size: 9px;
+}
+
+/*
+ * YOU label avatar-এর ওপরে।
+ */
+.tp-local-player
+.you-label {
+  top: -11px;
+  left: 3px;
+  z-index: 72;
+
+  border-radius: 999px;
+}
+
+/*
+ * Local player-এর information plate।
+ */
+.tp-local-player
+.tp-player-profile::before {
+  border-color:
+    rgba(74, 255, 179, 0.36);
+
+  border-left-color:
+    #27e99a;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(9, 48, 43, 0.98),
+      rgba(3, 22, 26, 0.98)
+    );
+
+  box-shadow:
+    0 8px 18px
+    rgba(0, 0, 0, 0.48),
+    0 0 17px
+    rgba(39, 233, 154, 0.14);
+}
+
+.tp-local-player
+.tp-player-profile
+.avatar {
+  border-color: #36efa4;
+}
+
+/*
+ * Current turn steady ring।
+ */
+.tp-player.active-turn
+.tp-player-profile,
+.player.active-turn
+.tp-player-profile,
+.player.current-turn
+.tp-player-profile {
+  border: 0;
+
+  animation: none !important;
+
+  box-shadow: none !important;
+}
+
+.tp-player.active-turn
+.avatar,
+.player.active-turn
+.avatar,
+.player.current-turn
+.avatar {
+  border-color: #ffe36b;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(2, 14, 19, 0.9),
+    0 0 0 6px
+    rgba(255, 220, 71, 0.23),
+    0 0 22px
+    rgba(255, 207, 43, 0.5);
+}
+
+/*
+ * Cards compact seat-এর ওপরে থাকবে।
+ */
+.tp-player .cards,
+.player .cards {
+  bottom: 57px;
+  z-index: 42;
+}
+
+/* =========================================================
+   TEEN PATTI CIRCULAR SEATS — MOBILE
+========================================================= */
+
+@media (
+  orientation: landscape
+) and (
+  max-height: 520px
+) {
+
+  .tp-player,
+  .player {
+    width:
+      clamp(
+        112px,
+        15vw,
+        128px
+      ) !important;
+
+    min-height: 52px;
+  }
+
+  .tp-player-profile {
+    height: 52px;
+    min-height: 52px !important;
+
+    padding: 0 !important;
+  }
+
+  .tp-player-profile::before {
+    top: 8px;
+    right: 0;
+    bottom: 4px;
+    left: 22px;
+
+    border-left-width: 3px;
+
+    border-radius:
+      7px
+      11px
+      11px
+      7px;
+  }
+
+  .tp-player-profile
+  .avatar {
+    top: 2px;
+
+    width: 48px;
+    height: 48px;
+
+    border-width: 2px;
+  }
+
+  .tp-player-profile
+  .avatar::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .tp-player-profile
+  .name {
+    top: 12px;
+    right: 5px;
+    left: 53px;
+  }
+
+  .tp-player-profile
+  .name strong {
+    font-size: 9px;
+  }
+
+  .tp-player-profile
+  .name span {
+    margin-top: 2px;
+
+    font-size: 8px;
+  }
+
+  .tp-player-profile
+  .status {
+    right: 5px;
+    bottom: 6px;
+
+    max-width: 63px;
+
+    font-size: 6px;
+  }
+
+  .tp-player
+  .dealer-chip,
+  .player
+  .dealer-chip {
+    top: -3px;
+    left: 36px;
+
+    width: 21px;
+    height: 21px;
+
+    font-size: 8px;
+  }
+
+  .tp-local-player
+  .you-label {
+    top: -10px;
+    left: 1px;
+  }
+
+  .tp-player .cards,
+  .player .cards {
+    bottom: 46px !important;
+  }
+
+  .tp-stage
+  #currentPlayerCards {
+    bottom:
+      calc(
+        100% - 4px
+      ) !important;
+  }
+}

@@ -3542,3 +3542,514 @@ input {
     font-size: 19px !important;
   }
 }
+
+/* =========================================================
+   POKER — COMPACT CIRCULAR PLAYER SEATS
+========================================================= */
+
+.player-seat {
+  width: 156px;
+  min-height: 70px;
+}
+
+/*
+ * পুরোনো বড় rectangular profile সরিয়ে
+ * avatar-কেন্দ্রিক compact seat।
+ */
+.player-seat .player-profile {
+  position: relative;
+
+  display: block;
+
+  width: 100%;
+  height: 66px;
+  min-height: 66px;
+
+  padding: 0;
+  overflow: visible;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+
+  backdrop-filter: none;
+}
+
+/*
+ * Avatar-এর পেছনের ছোট information plate।
+ */
+.player-seat .player-profile::before {
+  position: absolute;
+  top: 9px;
+  right: 0;
+  bottom: 5px;
+  left: 28px;
+  z-index: 1;
+
+  width: auto;
+
+  content: "";
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.16);
+
+  border-left:
+    4px solid
+    var(--red);
+
+  border-radius:
+    8px
+    14px
+    14px
+    8px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(9, 37, 45, 0.98),
+      rgba(2, 15, 22, 0.98)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.08),
+    0 7px 16px
+      rgba(0, 0, 0, 0.46);
+}
+
+/* Circular avatar */
+
+.player-seat .player-avatar {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  z-index: 5;
+
+  display: grid;
+  place-items: center;
+
+  width: 60px;
+  height: 60px;
+
+  overflow: hidden;
+
+  border:
+    3px solid
+    var(--gold);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      #1c4850,
+      #06151b 74%
+    );
+
+  box-shadow:
+    0 0 0 2px
+      rgba(2, 15, 22, 0.9),
+    0 5px 13px
+      rgba(0, 0, 0, 0.5);
+}
+
+.player-seat .player-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+/* Player information */
+
+.player-seat .player-details {
+  position: absolute;
+  top: 15px;
+  right: 34px;
+  left: 67px;
+  z-index: 6;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  gap: 1px;
+}
+
+.player-seat .player-name {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.15;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-seat .player-stack {
+  overflow: hidden;
+
+  color: var(--gold-light);
+
+  font-size: 9px;
+  font-weight: 850;
+  line-height: 1.2;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-seat .player-action {
+  overflow: hidden;
+
+  color: var(--green);
+
+  font-size: 7px;
+  font-weight: 950;
+  line-height: 1.2;
+
+  letter-spacing: 0.65px;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Compact timer */
+
+.player-seat .turn-timer {
+  position: absolute;
+  right: 5px;
+  bottom: 8px;
+  z-index: 7;
+
+  width: 26px;
+  height: 26px;
+
+  font-size: 9px;
+
+  border-width: 2px;
+
+  background:
+    rgba(2, 12, 18, 0.9);
+}
+
+/* Dealer / blind badges avatar-এর পাশে */
+
+.player-seat .player-badges {
+  position: absolute;
+  top: -2px;
+  right: auto;
+  left: 44px;
+  z-index: 9;
+
+  gap: 2px;
+}
+
+.player-seat .dealer-badge,
+.player-seat .blind-badge {
+  min-width: 21px;
+  height: 21px;
+
+  padding: 0 4px;
+
+  font-size: 8px;
+
+  border-width: 2px;
+}
+
+/* Cards avatar/profile-এর উপরে থাকবে */
+
+.player-seat .player-cards {
+  bottom: 58px;
+  left: 44%;
+  z-index: 12;
+
+  gap: 1px;
+}
+
+/*
+ * Active player-এ সম্পূর্ণ profile blink/glow হবে না।
+ * শুধু avatar এবং ছোট information plate highlight হবে।
+ */
+.player-seat.is-current-turn {
+  z-index: 95;
+}
+
+.player-seat.is-current-turn
+.player-profile {
+  border: 0;
+
+  box-shadow: none;
+}
+
+.player-seat.is-current-turn
+.player-profile::before {
+  border-color:
+    rgba(255, 218, 81, 0.75);
+
+  border-left-color:
+    var(--gold);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.1),
+    0 0 15px
+      rgba(255, 202, 47, 0.25);
+}
+
+.player-seat.is-current-turn
+.player-avatar {
+  border-color:
+    #ffe66c;
+
+  box-shadow:
+    0 0 0 2px
+      rgba(2, 15, 22, 0.95),
+    0 0 17px
+      rgba(255, 211, 64, 0.72);
+}
+
+/* Winner highlight */
+
+.player-seat.is-winner
+.player-profile {
+  border: 0;
+
+  box-shadow: none;
+}
+
+.player-seat.is-winner
+.player-profile::before {
+  border-color:
+    rgba(38, 255, 155, 0.65);
+
+  border-left-color:
+    var(--green);
+}
+
+.player-seat.is-winner
+.player-avatar {
+  border-color:
+    var(--green);
+
+  box-shadow:
+    0 0 18px
+      rgba(31, 255, 139, 0.6);
+}
+
+/*
+ * নিজের bottom seat আলাদা green identity পাবে।
+ */
+#playerSeat1 .player-profile::before {
+  border-left-color:
+    var(--green);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8, 48, 46, 0.98),
+      rgba(2, 20, 25, 0.98)
+    );
+}
+
+#playerSeat1 .player-avatar {
+  border-color:
+    var(--green);
+}
+
+/* Folded player readable থাকবে */
+
+.player-seat.is-folded {
+  opacity: 0.58;
+
+  filter:
+    grayscale(0.72);
+}
+
+/* =========================================================
+   POKER COMPACT SEATS — MOBILE LANDSCAPE
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 520px) {
+
+  .player-seat {
+    width: 126px !important;
+    min-height: 54px !important;
+  }
+
+  .player-seat .player-profile,
+  #playerSeat1 .player-profile {
+    width: 100% !important;
+    height: 54px !important;
+    min-height: 54px !important;
+
+    padding: 0 !important;
+
+    overflow: visible !important;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+
+    background: transparent !important;
+
+    box-shadow: none !important;
+  }
+
+  .player-seat .player-profile::before {
+    top: 7px;
+    right: 0;
+    bottom: 4px;
+    left: 23px;
+
+    border-left-width: 3px;
+
+    border-radius:
+      7px
+      11px
+      11px
+      7px;
+  }
+
+  .player-seat .player-avatar {
+    top: 2px;
+    left: 0;
+
+    width: 49px !important;
+    height: 49px !important;
+
+    border-width: 2px;
+  }
+
+  .player-seat .player-details {
+    top: 11px;
+    right: 29px;
+    left: 55px;
+
+    gap: 0;
+  }
+
+  .player-seat .player-name {
+    font-size: 9px;
+  }
+
+  .player-seat .player-stack {
+    font-size: 8px;
+  }
+
+  .player-seat .player-action {
+    font-size: 6px;
+
+    letter-spacing: 0.4px;
+  }
+
+  .player-seat .turn-timer {
+    right: 4px;
+    bottom: 6px;
+
+    width: 22px;
+    height: 22px;
+
+    font-size: 8px;
+
+    border-width: 2px;
+  }
+
+  .player-seat .player-badges,
+  #playerSeat1 .player-badges {
+    top: -3px;
+    right: auto;
+    left: 35px;
+    z-index: 110;
+  }
+
+  .player-seat .dealer-badge,
+  .player-seat .blind-badge {
+    min-width: 18px;
+    height: 18px;
+
+    padding: 0 3px;
+
+    font-size: 7px;
+  }
+
+  .player-seat .player-cards {
+    bottom: 47px !important;
+    left: 43%;
+
+    z-index: 35 !important;
+  }
+
+  /*
+   * নিজের cards বড় থাকবে এবং compact
+   * profile-এর ঠিক উপরে থাকবে।
+   */
+  #playerSeat1 .player-cards {
+    bottom: 50px !important;
+    left: 50%;
+
+    z-index: 105 !important;
+  }
+}
+
+/* খুব ছোট landscape phone */
+
+@media (orientation: landscape) and (max-height: 360px) {
+
+  .player-seat {
+    width: 116px !important;
+    min-height: 49px !important;
+  }
+
+  .player-seat .player-profile,
+  #playerSeat1 .player-profile {
+    height: 49px !important;
+    min-height: 49px !important;
+  }
+
+  .player-seat .player-avatar {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .player-seat .player-profile::before {
+    top: 6px;
+    left: 21px;
+  }
+
+  .player-seat .player-details {
+    top: 9px;
+    right: 26px;
+    left: 49px;
+  }
+
+  .player-seat .player-name {
+    font-size: 8px;
+  }
+
+  .player-seat .player-stack,
+  .player-seat .player-action {
+    font-size: 6.5px;
+  }
+
+  .player-seat .turn-timer {
+    width: 20px;
+    height: 20px;
+
+    font-size: 7px;
+  }
+
+  .player-seat .player-cards {
+    bottom: 43px !important;
+  }
+
+  #playerSeat1 .player-cards {
+    bottom: 46px !important;
+  }
+}
