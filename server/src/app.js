@@ -60,6 +60,85 @@ app.disable("x-powered-by");
 
 const isProduction = process.env.NODE_ENV === "production";
 
+const LOCAL_CORS_HOSTS = new Set([
+  "localhost",
+  "127.0.0.1",
+]);
+
+function normalizeCorsOrigin(origin) {
+  return String(origin || "")
+    .trim()
+    .replace(/\/+$/, "");
+}
+
+const configuredCorsOrigins = new Set(
+  [
+    process.env.RENDER_EXTERNAL_URL,
+    process.env.CLIENT_URL,
+    ...String(process.env.CORS_ALLOWED_ORIGINS || "").split(","),
+  ]
+    .map(normalizeCorsOrigin)
+    .filter(Boolean),
+);
+
+function isCorsOriginAllowed(origin) {
+  /*
+   * Native apps, curl and server-to-server requests might not send Origin.
+   */
+  if (!origin) {
+    return true;
+  }
+
+  const normalizedOrigin = normalizeCorsOrigin(origin);
+
+  if (configuredCorsOrigins.has(normalizedOrigin)) {
+    return true;
+  }
+
+  /*
+   * Allow localhost frontend ports only during local development.
+   */
+  if (!isProduction) {
+    try {
+      const parsedOrigin = new URL(normalizedOrigin);
+
+      return (
+        ["http:", "https:"].includes(parsedOrigin.protocol) &&
+        LOCAL_CORS_HOSTS.has(parsedOrigin.hostname)
+      );
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  return false;
+}
+
+const corsOptions = {
+  origin(origin, callback) {
+    callback(null, isCorsOriginAllowed(origin));
+  },
+
+  methods: [
+    "GET",
+    "HEAD",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ],
+
+  credentials: true,
+
+  maxAge: 86400,
+
+  optionsSuccessStatus: 204,
+};
+
+app.set("isCorsOriginAllowed", isCorsOriginAllowed);
+app.set("corsOptions", corsOptions);
+
 /* ==========================
    Global Security Middleware
 ========================== */
@@ -106,7 +185,7 @@ app.use(
    Global Middleware
 ========================== */
 
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.use(express.json());
 

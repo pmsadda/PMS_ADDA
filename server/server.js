@@ -21,6 +21,14 @@ const PORT = Number(process.env.PORT) || 5000;
 
 const HOST = process.env.HOST || "0.0.0.0";
 
+const corsOptions = app.get("corsOptions");
+
+const isCorsOriginAllowed = app.get("isCorsOriginAllowed");
+
+if (!corsOptions || typeof isCorsOriginAllowed !== "function") {
+  throw new Error("Shared CORS configuration is unavailable.");
+}
+
 /*
  * Express app-এর জন্য HTTP server।
  *
@@ -33,10 +41,17 @@ const httpServer = http.createServer(app);
  * Socket.IO server configuration।
  */
 const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
+  cors: corsOptions,
+
+  /*
+   * CORS headers protect browsers.
+   * allowRequest also rejects disallowed Socket.IO handshakes.
+   */
+  allowRequest(request, callback) {
+    callback(
+      null,
+      isCorsOriginAllowed(request.headers.origin),
+    );
   },
 });
 
