@@ -46,6 +46,17 @@ const ludoRoutes = require("./routes/ludo.routes");
 
 const app = express();
 
+/*
+ * Render reverse proxy-এর পেছনে আসল client IP শনাক্ত করার জন্য।
+ * express-rate-limit সঠিক user-কে limit করতে এটি প্রয়োজন।
+ */
+app.set("trust proxy", 1);
+
+/*
+ * Response header-এ Express ব্যবহারের তথ্য প্রকাশ বন্ধ করে।
+ */
+app.disable("x-powered-by");
+
 /* ==========================
    Global Middleware
 ========================== */
