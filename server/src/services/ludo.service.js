@@ -797,20 +797,205 @@ async function applyFinalPlayerMode(
    4 Real -> 4 players
 ========================================== */
 
-async function finalizeMatchmaking(matchId) {
-  const validMatchId = parsePositiveInteger(matchId);
+function resolveFinalPlayerMode(realPlayerCount) {
+  const totalRealPlayers = Number(realPlayerCount);
 
-  if (!validMatchId) {
-    throw createServiceError("Invalid Ludo match ID.", 400);
+  if (
+    totalRealPlayers === 1 ||
+    totalRealPlayers === 2
+  ) {
+    return 2;
   }
 
-  const connection = await pool.getConnection();
+  if (
+    totalRealPlayers === 3 ||
+    totalRealPlayers === 4
+  ) {
+    return 4;
+  }
+
+  throw createServiceError(
+    "Invalid number of real Ludo players.",
+    409,
+  );
+}
+
+async function normalizeTwoPlayerRealSeats(
+  matchId,
+  connection,
+) {
+  const [realPlayers] = await connection.query(
+    `
+      SELECT
+        id,
+        seat_no,
+        player_color
+      FROM ludo_match_players
+      WHERE match_id = ?
+        AND is_bot = 0
+        AND player_status != 'left'
+      ORDER BY id ASC
+      FOR UPDATE
+    `,
+    [matchId],
+  );
+
+  if (
+    realPlayers.length < 1 ||
+    realPlayers.length > 2
+  ) {
+    throw createServiceError(
+      "Two-player Ludo seat assignment is inconsistent.",
+      409,
+    );
+  }
+
+  /*
+   * 2-player match-এর বিপরীত seat:
+   *
+   * Seat 4 = Blue
+   * Seat 2 = Green
+   */
+  const desiredSeats = [4, 2];
+
+  const assignments = [];
+
+  const assignedPlayerIds = new Set();
+
+  const assignedSeats = new Set();
+
+  /*
+   * কোনো player ইতোমধ্যে Seat 4 অথবা
+   * Seat 2-তে থাকলে সেই বিপরীত seat
+   * অপরিবর্তিত রাখা হবে।
+   */
+  for (const desiredSeat of desiredSeats) {
+    const existingPlayer = realPlayers.find(
+      (player) =>
+        Number(player.seat_no) === desiredSeat &&
+        !assignedPlayerIds.has(Number(player.id)),
+    );
+
+    if (!existingPlayer) {
+      continue;
+    }
+
+    assignments.push({
+      playerId: Number(existingPlayer.id),
+      currentSeat: Number(existingPlayer.seat_no),
+      targetSeat: desiredSeat,
+    });
+
+    assignedPlayerIds.add(Number(existingPlayer.id));
+
+    assignedSeats.add(desiredSeat);
+  }
+
+  const unassignedPlayers = realPlayers.filter(
+    (player) =>
+      !assignedPlayerIds.has(Number(player.id)),
+  );
+
+  const availableSeats = desiredSeats.filter(
+    (seatNo) => !assignedSeats.has(seatNo),
+  );
+
+  for (
+    let index = 0;
+    index < unassignedPlayers.length;
+    index += 1
+  ) {
+    const player = unassignedPlayers[index];
+
+    const targetSeat = availableSeats[index];
+
+    if (!targetSeat) {
+      throw createServiceError(
+        "Unable to assign a two-player Ludo seat.",
+        409,
+      );
+    }
+
+    assignments.push({
+      playerId: Number(player.id),
+      currentSeat: Number(player.seat_no),
+      targetSeat,
+    });
+  }
+
+  /*
+   * একটি Real Player থাকলে তাকে সবসময়
+   * Seat 4 = Blue দেওয়া হবে।
+   *
+   * Bot পরে Seat 2 = Green পাবে।
+   */
+  if (assignments.length === 1) {
+    assignments[0].targetSeat = 4;
+  }
+
+  for (const assignment of assignments) {
+    const playerColor = getPlayerColor(
+      assignment.targetSeat,
+    );
+
+    if (!playerColor) {
+      throw createServiceError(
+        "Unable to assign Ludo player color.",
+        500,
+      );
+    }
+
+    await connection.query(
+      `
+        UPDATE ludo_match_players
+        SET
+          seat_no = ?,
+          player_color = ?
+        WHERE id = ?
+          AND match_id = ?
+          AND is_bot = 0
+          AND player_status != 'left'
+      `,
+      [
+        assignment.targetSeat,
+        playerColor,
+        assignment.playerId,
+        matchId,
+      ],
+    );
+  }
+}
+
+/* ==========================================
+   Timeout Finalizer
+
+   Rules:
+   1 Real -> 1 Bot -> 2 players
+   2 Real -> 0 Bot -> 2 players
+   3 Real -> 1 Bot -> 4 players
+   4 Real -> 0 Bot -> 4 players
+========================================== */
+
+async function finalizeMatchmaking(matchId) {
+  const validMatchId =
+    parsePositiveInteger(matchId);
+
+  if (!validMatchId) {
+    throw createServiceError(
+      "Invalid Ludo match ID.",
+      400,
+    );
+  }
+
+  const connection =
+    await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const [matchRows] = await connection.query(
-      `
+    const [matchRows] =
+      await connection.query(
+        `
           SELECT
             id,
             entry_amount,
@@ -826,115 +1011,225 @@ async function finalizeMatchmaking(matchId) {
           LIMIT 1
           FOR UPDATE
         `,
-      [validMatchId],
-    );
+        [validMatchId],
+      );
 
     const match = matchRows[0] || null;
 
     if (!match) {
-      throw createServiceError("Ludo match not found.", 404);
+      throw createServiceError(
+        "Ludo match not found.",
+        404,
+      );
     }
 
     /*
-     * Match অন্য request থেকে ইতোমধ্যে
-     * শুরু হয়ে থাকলে শুধু latest state।
+     * অন্য request থেকে match ইতোমধ্যে
+     * শুরু বা complete হয়ে থাকলে কোনো
+     * player, bot অথবা wallet পরিবর্তন হবে না।
      */
     if (
-      match.match_status !== MATCH_STATUS.WAITING ||
+      match.match_status !==
+        MATCH_STATUS.WAITING ||
       Boolean(match.entry_collected)
     ) {
       await connection.commit();
 
-      return buildMatchState(validMatchId);
+      return buildMatchState(
+        validMatchId,
+      );
     }
 
-    const requestedPlayerMode = validatePlayerMode(match.requested_player_mode);
+    const requestedPlayerMode =
+      validatePlayerMode(
+        match.requested_player_mode,
+      );
 
-    const realPlayers = await countRealPlayers(validMatchId, connection);
+    const realPlayerCount =
+      await countRealPlayers(
+        validMatchId,
+        connection,
+      );
 
     /*
-     * কোনো real player না থাকলে
-     * match cancel হবে।
+     * কোনো Real Player না থাকলে
+     * match শুরু না করে cancel হবে।
      */
-    if (realPlayers === 0) {
+    if (realPlayerCount === 0) {
       await connection.query(
         `
           UPDATE ludo_matches
           SET
             match_status = 'cancelled',
-            cancelled_at = NOW()
+            cancelled_at = NOW(),
+            current_players = 0
           WHERE id = ?
             AND match_status = 'waiting'
+            AND entry_collected = 0
         `,
         [validMatchId],
       );
 
       await connection.commit();
 
-      return buildMatchState(validMatchId);
-    }
-
-    /*
-     * Selected mode আর ছোট হবে না।
-     *
-     * 2-player mode সবসময় মোট 2।
-     * 4-player mode সবসময় মোট 4।
-     */
-    const finalPlayerMode = requestedPlayerMode;
-
-    let currentPlayerCount = await updateCurrentPlayers(
-      validMatchId,
-      connection,
-    );
-
-    if (currentPlayerCount > finalPlayerMode) {
-      throw createServiceError("Ludo player count exceeds selected mode.", 409);
-    }
-
-    /*
-     * যত seat খালি থাকবে,
-     * একটি করে আলাদা Bot বসবে।
-     */
-    while (currentPlayerCount < finalPlayerMode) {
-      const seatNo = await findAvailableSeat(
+      return buildMatchState(
         validMatchId,
-        finalPlayerMode,
-        connection,
+      );
+    }
+
+    if (
+      realPlayerCount >
+      requestedPlayerMode
+    ) {
+      throw createServiceError(
+        "Ludo real player count exceeds selected capacity.",
+        409,
+      );
+    }
+
+    const finalPlayerMode =
+      resolveFinalPlayerMode(
+        realPlayerCount,
       );
 
-      if (!seatNo) {
-        throw createServiceError("No seat is available for a Ludo bot.", 409);
+    const requiredBotCount =
+      finalPlayerMode -
+      realPlayerCount;
+
+    if (
+      requiredBotCount < 0 ||
+      requiredBotCount > 1
+    ) {
+      throw createServiceError(
+        "Ludo bot count is inconsistent.",
+        409,
+      );
+    }
+
+    /*
+     * পুরোনো বা duplicate waiting Bot থাকলে
+     * প্রথমে inactive করা হবে।
+     *
+     * Waiting অবস্থায় entry debit হওয়ার কথা নয়।
+     */
+    const [existingBots] =
+      await connection.query(
+        `
+          SELECT
+            id,
+            entry_debited
+          FROM ludo_match_players
+          WHERE match_id = ?
+            AND is_bot = 1
+            AND player_status != 'left'
+          ORDER BY id ASC
+          FOR UPDATE
+        `,
+        [validMatchId],
+      );
+
+    const debitedWaitingBot =
+      existingBots.find(
+        (bot) =>
+          Boolean(bot.entry_debited),
+      );
+
+    if (debitedWaitingBot) {
+      throw createServiceError(
+        "A waiting Ludo bot entry was already debited.",
+        409,
+      );
+    }
+
+    if (existingBots.length > 0) {
+      await connection.query(
+        `
+          UPDATE ludo_match_players
+          SET
+            player_status = 'left',
+            finished_at = NOW()
+          WHERE match_id = ?
+            AND is_bot = 1
+            AND player_status != 'left'
+            AND entry_debited = 0
+        `,
+        [validMatchId],
+      );
+    }
+
+    /*
+     * ১ অথবা ২ Real Player থাকলে
+     * Seat 4 এবং Seat 2 ব্যবহার হবে।
+     */
+    if (finalPlayerMode === 2) {
+      await normalizeTwoPlayerRealSeats(
+        validMatchId,
+        connection,
+      );
+    }
+
+    /*
+     * প্রয়োজন হলে ঠিক একটি Bot যোগ হবে।
+     */
+    if (requiredBotCount === 1) {
+      const botSeatNo =
+        await findAvailableSeat(
+          validMatchId,
+          finalPlayerMode,
+          connection,
+        );
+
+      if (!botSeatNo) {
+        throw createServiceError(
+          "No seat is available for the Ludo bot.",
+          409,
+        );
       }
 
       await insertBotMatchPlayer(
         validMatchId,
         Number(match.entry_amount),
-        seatNo,
+        botSeatNo,
+        connection,
+      );
+    }
+
+    const finalPlayerCount =
+      await updateCurrentPlayers(
+        validMatchId,
         connection,
       );
 
-      currentPlayerCount += 1;
-    }
-
-    const finalCount = await updateCurrentPlayers(validMatchId, connection);
-
-    if (finalCount !== finalPlayerMode) {
-      throw createServiceError("Final Ludo player count is inconsistent.", 409);
+    if (
+      finalPlayerCount !==
+      finalPlayerMode
+    ) {
+      throw createServiceError(
+        "Final Ludo player count is inconsistent.",
+        409,
+      );
     }
 
     await applyFinalPlayerMode(
       validMatchId,
       Number(match.entry_amount),
       finalPlayerMode,
-      Number(match.service_charge_percent),
+      Number(
+        match.service_charge_percent,
+      ),
       connection,
     );
 
-    await startMatchIfReady(validMatchId, connection);
+    await startMatchIfReady(
+      validMatchId,
+      connection,
+    );
 
     await connection.commit();
 
-    return buildMatchState(validMatchId);
+    return buildMatchState(
+      validMatchId,
+    );
   } catch (error) {
     await connection.rollback();
 
