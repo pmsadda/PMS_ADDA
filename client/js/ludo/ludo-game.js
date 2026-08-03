@@ -504,8 +504,10 @@ const LUDO_LIVE = {
       transports: ["websocket", "polling"],
 
       reconnection: true,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 700,
+      reconnectionDelayMax: 5000,
+      randomizationFactor: 0.5,
       timeout: 10000,
     });
 

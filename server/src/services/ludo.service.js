@@ -4848,6 +4848,42 @@ async function runBotTurn(matchId) {
 }
 
 /* ==========================================
+   Render Restart Recovery
+========================================== */
+
+async function getRecoverablePlayingMatches() {
+  const [rows] = await pool.query(
+    `
+      SELECT
+        id,
+        match_code,
+        player_mode,
+        current_players,
+        match_status,
+        entry_collected,
+        settlement_completed,
+        started_at,
+        updated_at
+      FROM ludo_matches
+      WHERE match_status = 'playing'
+        AND entry_collected = 1
+        AND settlement_completed = 0
+      ORDER BY id ASC
+    `,
+  );
+
+  return rows.map((match) => ({
+    matchId: Number(match.id),
+    matchCode: match.match_code || null,
+    playerMode: Number(match.player_mode),
+    currentPlayers: Number(match.current_players || 0),
+    status: String(match.match_status),
+    startedAt: match.started_at || null,
+    updatedAt: match.updated_at || null,
+  }));
+}
+
+/* ==========================================
    Service Exports
 ========================================== */
 
@@ -4857,6 +4893,7 @@ module.exports = {
   finalizeMatchmaking,
 
   getMatchState,
+  getRecoverablePlayingMatches,
 
   rollDice,
   movePawn,

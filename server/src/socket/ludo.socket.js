@@ -125,6 +125,11 @@ function initializeLudoSocket(io) {
   const disconnectTimers = new Map();
 
   const DISCONNECT_GRACE_MS = 10 * 1000;
+  /*
+   * Render restart/deploy-এর পরে client-দের
+   * পুনরায় connect হওয়ার জন্য 60 seconds।
+   */
+  const RESTART_RECOVERY_GRACE_MS = 60 * 1000;
 
   /* ========================================
      Broadcast State
@@ -507,6 +512,141 @@ function initializeLudoSocket(io) {
     }, delay);
 
     matchmakingTimers.set(matchId, timer);
+  }
+
+  /* ========================================
+     Render Restart Recovery
+  ======================================== */
+
+  async function recoverPlayingMatchesAfterRestart() {
+    const recoverableMatches = await ludoService.getRecoverablePlayingMatches();
+
+    if (!Array.isArray(recoverableMatches) || recoverableMatches.length === 0) {
+      return;
+    }
+
+    for (const recoverableMatch of recoverableMatches) {
+      const matchId = parsePositiveInteger(recoverableMatch.matchId);
+
+      if (!matchId) {
+        continue;
+      }
+
+      try {
+        let matchState = await ludoService.getMatchState(matchId);
+
+        if (matchState?.match?.status !== "playing") {
+          continue;
+        }
+
+        const roomName = getMatchRoomName(matchId);
+
+        const connectedSockets = await namespace.in(roomName).fetchSockets();
+
+        const connectedUserIds = new Set(
+          connectedSockets
+            .map((connectedSocket) => Number(connectedSocket.user?.id))
+            .filter((userId) => Number.isInteger(userId) && userId > 0),
+        );
+
+        const activeRealPlayers = matchState.players.filter(
+          (player) =>
+            !player.isBot &&
+            Number.isInteger(Number(player.userId)) &&
+            Number(player.userId) > 0 &&
+            ["waiting", "ready", "playing", "disconnected"].includes(
+              String(player.status || "").toLowerCase(),
+            ),
+        );
+
+        const missingRealPlayers = activeRealPlayers.filter(
+          (player) => !connectedUserIds.has(Number(player.userId)),
+        );
+
+        for (const missingPlayer of missingRealPlayers) {
+          const latestState = await ludoService.getMatchState(matchId);
+
+          if (latestState?.match?.status !== "playing") {
+            matchState = latestState;
+
+            break;
+          }
+
+          const playerStillActive = latestState.players.some(
+            (player) =>
+              !player.isBot &&
+              Number(player.userId) === Number(missingPlayer.userId) &&
+              ["waiting", "ready", "playing", "disconnected"].includes(
+                String(player.status || "").toLowerCase(),
+              ),
+          );
+
+          if (!playerStillActive) {
+            matchState = latestState;
+
+            continue;
+          }
+
+          /*
+           * Forfeit করার ঠিক আগেও socket
+           * আবার connect হয়েছে কি না দেখা হবে।
+           */
+          const reconnected = await hasConnectedUserSocket(
+            matchId,
+            Number(missingPlayer.userId),
+          );
+
+          if (reconnected) {
+            matchState = latestState;
+
+            continue;
+          }
+
+          const result = await ludoService.forfeitPlayer(
+            matchId,
+            Number(missingPlayer.userId),
+          );
+
+          matchState = result.matchState;
+
+          namespace.to(roomName).emit("player:forfeited", {
+            matchId,
+
+            userId: Number(missingPlayer.userId),
+
+            matchPlayerId: result.forfeitedPlayerId,
+
+            reason: "server_restart_timeout",
+
+            completed: result.completed,
+          });
+
+          namespace.to(roomName).emit("match:state", result.matchState);
+
+          if (result.completed) {
+            clearTurnTimer(matchId);
+
+            namespace.to(roomName).emit("match:completed", {
+              match: result.matchState.match,
+
+              players: result.matchState.players,
+            });
+
+            break;
+          }
+        }
+
+        if (matchState?.match?.status === "playing") {
+          inspectBotTurn(matchState);
+        }
+      } catch (error) {
+        console.error("LUDO RESTART MATCH RECOVERY ERROR:", {
+          matchId,
+
+          message: error.message || "Unknown recovery error.",
+        });
+      }
+    }
   }
 
   /* ========================================
@@ -902,6 +1042,20 @@ function initializeLudoSocket(io) {
       }
     });
   });
+
+  const restartRecoveryTimer = setTimeout(() => {
+    recoverPlayingMatchesAfterRestart().catch((error) => {
+      console.error("LUDO RESTART RECOVERY ERROR:", error);
+    });
+  }, RESTART_RECOVERY_GRACE_MS);
+
+  /*
+   * Recovery timer server shutdown
+   * আটকে রাখবে না।
+   */
+  if (typeof restartRecoveryTimer.unref === "function") {
+    restartRecoveryTimer.unref();
+  }
 
   console.log("✅ New Ludo Socket.IO initialized");
 }
