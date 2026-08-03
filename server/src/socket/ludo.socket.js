@@ -349,15 +349,41 @@ function initializeLudoSocket(io) {
     const key = getDisconnectKey(matchId, userId);
 
     if (!disconnectTimers.has(key)) {
-      return;
+      return false;
     }
 
     clearTimeout(disconnectTimers.get(key));
 
     disconnectTimers.delete(key);
+
+    return true;
   }
 
-  function scheduleDisconnectForfeit(matchId, userId) {
+  async function hasConnectedUserSocket(
+    matchId,
+    userId,
+    excludedSocketId = null,
+  ) {
+    const validMatchId = parsePositiveInteger(matchId);
+
+    const validUserId = parsePositiveInteger(userId);
+
+    if (!validMatchId || !validUserId) {
+      return false;
+    }
+
+    const roomName = getMatchRoomName(validMatchId);
+
+    const connectedSockets = await namespace.in(roomName).fetchSockets();
+
+    return connectedSockets.some(
+      (connectedSocket) =>
+        connectedSocket.id !== excludedSocketId &&
+        Number(connectedSocket.user?.id) === validUserId,
+    );
+  }
+
+  function scheduleDisconnectForfeit(matchId, userId, excludedSocketId = null) {
     const validMatchId = parsePositiveInteger(matchId);
 
     const validUserId = parsePositiveInteger(userId);
@@ -374,6 +400,21 @@ function initializeLudoSocket(io) {
       disconnectTimers.delete(key);
 
       try {
+        /*
+         * Grace timer শেষ হওয়ার সময়ও
+         * আরেকটি connected socket আছে
+         * কি না server আবার যাচাই করবে।
+         */
+        const stillConnected = await hasConnectedUserSocket(
+          validMatchId,
+          validUserId,
+          excludedSocketId,
+        );
+
+        if (stillConnected) {
+          return;
+        }
+
         const result = await ludoService.forfeitPlayer(
           validMatchId,
           validUserId,
@@ -407,12 +448,6 @@ function initializeLudoSocket(io) {
           inspectBotTurn(result.matchState);
         }
       } catch (error) {
-        /*
-         * Match ইতোমধ্যে complete,
-         * player reconnect অথবা আগে
-         * forfeit হলে error ignore নয়,
-         * log রাখা হবে।
-         */
         console.error("LUDO DISCONNECT FORFEIT ERROR:", error);
       }
     }, DISCONNECT_GRACE_MS);
@@ -811,7 +846,7 @@ function initializeLudoSocket(io) {
          Disconnect
       ==================================== */
 
-    socket.on("disconnect", (reason) => {
+    socket.on("disconnect", async (reason) => {
       console.log(`🔌 Ludo disconnected: User ${socket.user.id}; ${reason}`);
 
       const matchId = parsePositiveInteger(socket.data.matchId);
@@ -820,17 +855,51 @@ function initializeLudoSocket(io) {
         return;
       }
 
-      namespace
-        .to(getMatchRoomName(matchId))
-        .emit("match:player-disconnected", {
+      const userId = parsePositiveInteger(socket.user.id);
+
+      if (!userId) {
+        return;
+      }
+
+      const roomName = getMatchRoomName(matchId);
+
+      try {
+        /*
+         * একই user-এর অন্য tab/device
+         * match room-এ connected থাকলে
+         * disconnect forfeit শুরু হবে না।
+         */
+        const anotherSocketConnected = await hasConnectedUserSocket(
+          matchId,
+          userId,
+          socket.id,
+        );
+
+        if (anotherSocketConnected) {
+          clearDisconnectTimer(matchId, userId);
+
+          return;
+        }
+
+        namespace.to(roomName).emit("match:player-disconnected", {
           matchId,
 
-          userId: socket.user.id,
+          userId,
 
           reconnectSeconds: DISCONNECT_GRACE_MS / 1000,
         });
 
-      scheduleDisconnectForfeit(matchId, socket.user.id);
+        scheduleDisconnectForfeit(matchId, userId, socket.id);
+      } catch (error) {
+        console.error("LUDO DISCONNECT CHECK ERROR:", error);
+
+        /*
+         * Socket check সাময়িকভাবে fail হলেও
+         * grace timer ছাড়া সঙ্গে সঙ্গে
+         * player forfeit করা হবে না।
+         */
+        scheduleDisconnectForfeit(matchId, userId, socket.id);
+      }
     });
   });
 
