@@ -3659,3 +3659,191 @@ button {
       ) !important;
   }
 }
+
+/* =========================================================
+   TEEN PATTI — NO TOP-CENTER PLAYER
+========================================================= */
+
+/*
+ * Desktop:
+ * চারটি opponent seat table-এর
+ * বাম ও ডান perimeter-এ থাকবে।
+ */
+
+.tp-stage .table-area .tp-seat-1 {
+  top: 62% !important;
+  left: -3% !important;
+  right: auto !important;
+
+  transform:
+    translateY(-50%) !important;
+}
+
+.tp-stage .table-area .tp-seat-2 {
+  top: 27% !important;
+  left: -3% !important;
+  right: auto !important;
+
+  transform:
+    translateY(-50%) !important;
+}
+
+.tp-stage .table-area .tp-seat-3 {
+  top: 27% !important;
+  right: -3% !important;
+  left: auto !important;
+
+  transform:
+    translateY(-50%) !important;
+}
+
+.tp-stage .table-area .tp-seat-4 {
+  top: 62% !important;
+  right: -3% !important;
+  left: auto !important;
+
+  transform:
+    translateY(-50%) !important;
+}
+
+/*
+ * Top-center seat বাদ যাওয়ায় pot সবসময়
+ * table-এর top-center-এ থাকবে।
+ */
+.tp-stage .table-area #pot {
+  top: 8% !important;
+  right: auto !important;
+  left: 50% !important;
+
+  transform:
+    translateX(-50%) !important;
+}
+
+/* =========================================================
+   MOBILE LANDSCAPE SIDE SEATS
+========================================================= */
+
+@media (orientation: landscape) and (max-height: 520px) {
+
+  .tp-stage .table-area .tp-seat-1 {
+    top: 63% !important;
+    left: -5% !important;
+  }
+
+  .tp-stage .table-area .tp-seat-2 {
+    top: 29% !important;
+    left: -5% !important;
+  }
+
+  .tp-stage .table-area .tp-seat-3 {
+    top: 29% !important;
+    right: -5% !important;
+  }
+
+  .tp-stage .table-area .tp-seat-4 {
+    top: 63% !important;
+    right: -5% !important;
+  }
+
+  /*
+   * Heads-up match-এ একমাত্র opponent
+   * বাম পাশের মাঝামাঝি থাকবে।
+   */
+  .tp-stage
+  .table-area[data-opponent-count="1"]
+  .tp-seat-1 {
+    top: 45% !important;
+    left: -5% !important;
+  }
+
+  /*
+   * দুই opponent বাম ও ডান পাশে
+   * একই উচ্চতায় থাকবে।
+   */
+  .tp-stage
+  .table-area[data-opponent-count="2"]
+  .tp-seat-1,
+  .tp-stage
+  .table-area[data-opponent-count="2"]
+  .tp-seat-4 {
+    top: 45% !important;
+  }
+
+  /*
+   * তিন opponent:
+   * দুইজন বামে, একজন ডানে।
+   */
+  .tp-stage
+  .table-area[data-opponent-count="3"]
+  .tp-seat-1 {
+    top: 63% !important;
+  }
+
+  .tp-stage
+  .table-area[data-opponent-count="3"]
+  .tp-seat-2 {
+    top: 29% !important;
+    left: -5% !important;
+    right: auto !important;
+
+    transform:
+      translateY(-50%) !important;
+  }
+
+  .tp-stage
+  .table-area[data-opponent-count="3"]
+  .tp-seat-4 {
+    top: 45% !important;
+  }
+
+  .tp-stage .table-area #pot {
+    top: 8% !important;
+    right: auto !important;
+    left: 50% !important;
+
+    transform:
+      translateX(-50%) !important;
+  }
+}
+
+/* Very short mobile */
+
+@media (orientation: landscape) and (max-height: 380px) {
+
+  .tp-stage .table-area .tp-seat-1,
+  .tp-stage
+  .table-area[data-opponent-count="3"]
+  .tp-seat-1 {
+    top: 64% !important;
+  }
+
+  .tp-stage .table-area .tp-seat-2,
+  .tp-stage
+  .table-area[data-opponent-count="3"]
+  .tp-seat-2 {
+    top: 28% !important;
+  }
+
+  .tp-stage .table-area .tp-seat-3 {
+    top: 28% !important;
+  }
+
+  .tp-stage .table-area .tp-seat-4 {
+    top: 64% !important;
+  }
+
+  .tp-stage
+  .table-area[data-opponent-count="1"]
+  .tp-seat-1,
+  .tp-stage
+  .table-area[data-opponent-count="2"]
+  .tp-seat-1,
+  .tp-stage
+  .table-area[data-opponent-count="2"]
+  .tp-seat-4,
+  .tp-stage
+  .table-area[data-opponent-count="3"]
+  .tp-seat-4 {
+    top: 45% !important;
+  }
+}

@@ -892,11 +892,26 @@
      * 4 = right
      * 5 = local bottom
      */
+    /*
+     * Teen Patti visual seat plan:
+     *
+     * Seat 1 = left-lower
+     * Seat 2 = left-upper
+     * Seat 3 = right-upper
+     * Seat 4 = right-lower
+     * Seat 5 = local player bottom
+     *
+     * কোনো opponent top-center-এ থাকবে না।
+     */
     const visualSeatPlans = {
       0: [],
-      1: [2],
+
+      1: [1],
+
       2: [1, 4],
+
       3: [1, 2, 4],
+
       4: [1, 2, 3, 4],
     };
 
