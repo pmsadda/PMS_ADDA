@@ -2459,3 +2459,404 @@ button:focus{
 }
 
 /* LOTTERY LOBBY CARD END */
+
+/* ==========================================
+   PMS CARROM LOBBY CARD
+========================================== */
+
+.carrom-lobby-card {
+    position: relative;
+
+    border-color:
+        rgba(45, 211, 155, 0.28);
+
+    background:
+        radial-gradient(
+            circle at 85% 10%,
+            rgba(246, 198, 79, 0.13),
+            transparent 35%
+        ),
+        linear-gradient(
+            145deg,
+            #12353a,
+            #081b20
+        );
+}
+
+.carrom-lobby-card::after {
+    position: absolute;
+    right: -45px;
+    bottom: -65px;
+    z-index: 0;
+
+    width: 165px;
+    height: 165px;
+
+    content: "";
+
+    pointer-events: none;
+
+    border:
+        27px solid
+        rgba(255, 255, 255, 0.025);
+
+    border-radius: 50%;
+}
+
+.carrom-lobby-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Mini Carrom Board */
+
+.carrom-lobby-art {
+    position: relative;
+
+    display: grid;
+    place-items: center;
+
+    width: 100px;
+    height: 100px;
+
+    flex: 0 0 100px;
+
+    overflow: hidden;
+
+    border:
+        9px solid
+        #865023;
+
+    border-radius: 17px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            transparent 0 14%,
+            #733128 15% 17%,
+            transparent 18% 28%,
+            rgba(115, 49, 40, 0.2) 29% 31%,
+            transparent 32%
+        ),
+        linear-gradient(
+            145deg,
+            #ffe6a7,
+            #d8a252
+        );
+
+    box-shadow:
+        inset 0 0 0 3px
+        rgba(87, 39, 20, 0.34),
+        inset 0 0 18px
+        rgba(85, 36, 16, 0.17),
+        0 13px 27px
+        rgba(0, 0, 0, 0.34);
+
+    transform:
+        rotate(-3deg);
+
+    transition:
+        transform 200ms ease;
+}
+
+.carrom-lobby-card:hover
+.carrom-lobby-art {
+    transform:
+        rotate(2deg)
+        scale(1.04);
+}
+
+.carrom-lobby-art::before,
+.carrom-lobby-art::after {
+    position: absolute;
+    right: 17%;
+    left: 17%;
+
+    height: 2px;
+
+    content: "";
+
+    border-radius: 999px;
+
+    background:
+        rgba(112, 45, 36, 0.76);
+}
+
+.carrom-lobby-art::before {
+    top: 18%;
+}
+
+.carrom-lobby-art::after {
+    bottom: 18%;
+}
+
+/* Pockets */
+
+.carrom-lobby-pocket {
+    position: absolute;
+    z-index: 2;
+
+    width: 16px;
+    height: 16px;
+
+    border:
+        3px solid
+        rgba(88, 38, 25, 0.42);
+
+    border-radius: 50%;
+
+    background:
+        #25110e;
+
+    box-shadow:
+        inset 0 2px 4px
+        rgba(0, 0, 0, 0.76);
+}
+
+.carrom-lobby-art .pocket-one {
+    top: -4px;
+    left: -4px;
+}
+
+.carrom-lobby-art .pocket-two {
+    top: -4px;
+    right: -4px;
+}
+
+.carrom-lobby-art .pocket-three {
+    bottom: -4px;
+    left: -4px;
+}
+
+.carrom-lobby-art .pocket-four {
+    right: -4px;
+    bottom: -4px;
+}
+
+/* Coins */
+
+.carrom-lobby-coin,
+.carrom-lobby-striker {
+    position: absolute;
+    z-index: 3;
+
+    display: block;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 3px 5px
+        rgba(0, 0, 0, 0.35);
+}
+
+.carrom-lobby-coin {
+    width: 14px;
+    height: 14px;
+
+    border:
+        2px solid
+        rgba(255, 255, 255, 0.3);
+}
+
+.carrom-lobby-art .coin-one {
+    top: 43%;
+    left: 40%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #ffffff,
+            #d9ceb2 70%
+        );
+
+    animation:
+        carromLobbyCoin
+        2.8s ease-in-out infinite;
+}
+
+.carrom-lobby-art .coin-two {
+    top: 43%;
+    left: 53%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #596366,
+            #13191b 70%
+        );
+
+    animation:
+        carromLobbyCoin
+        2.8s ease-in-out 250ms infinite;
+}
+
+.carrom-lobby-art .coin-three {
+    top: 55%;
+    left: 46.5%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #ff8b96,
+            #b9233a 70%
+        );
+
+    animation:
+        carromLobbyCoin
+        2.8s ease-in-out 500ms infinite;
+}
+
+.carrom-lobby-striker {
+    bottom: 10%;
+    left: 39%;
+
+    width: 22px;
+    height: 22px;
+
+    border:
+        3px solid
+        rgba(255, 255, 255, 0.78);
+
+    background:
+        radial-gradient(
+            circle,
+            #61e3b5 0 25%,
+            #138e6e 28% 52%,
+            #f8e9b7 55%
+        );
+
+    animation:
+        carromLobbyStriker
+        1.8s ease-in-out infinite;
+}
+
+@keyframes carromLobbyCoin {
+    0%,
+    100% {
+        transform:
+            translateY(0);
+    }
+
+    50% {
+        transform:
+            translateY(-4px);
+    }
+}
+
+@keyframes carromLobbyStriker {
+    0%,
+    100% {
+        transform:
+            translateX(0);
+    }
+
+    50% {
+        transform:
+            translateX(8px);
+    }
+}
+
+/* Features and Button */
+
+.carrom-lobby-features {
+    display: flex;
+    flex-wrap: wrap;
+
+    margin:
+        10px 0 11px;
+    gap: 6px;
+}
+
+.carrom-lobby-features span {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 5px 7px;
+    gap: 4px;
+
+    color: #b9d7d2;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    border:
+        1px solid
+        rgba(45, 211, 155, 0.17);
+
+    border-radius: 999px;
+
+    background:
+        rgba(45, 211, 155, 0.055);
+}
+
+.carrom-lobby-features i {
+    color: #2dd39b;
+}
+
+.carrom-play-btn {
+    color: #102017 !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            #73e6bd,
+            #25b987
+        ) !important;
+
+    box-shadow:
+        0 8px 20px
+        rgba(45, 211, 155, 0.2) !important;
+}
+
+.carrom-play-btn:hover:not(:disabled) {
+    filter:
+        brightness(1.08);
+}
+
+@media (min-width: 900px) {
+    .carrom-lobby-art {
+        width: 140px;
+        height: 140px;
+
+        flex-basis: 140px;
+
+        border-width: 12px;
+        border-radius: 21px;
+    }
+
+    .carrom-lobby-pocket {
+        width: 21px;
+        height: 21px;
+    }
+
+    .carrom-lobby-coin {
+        width: 18px;
+        height: 18px;
+    }
+
+    .carrom-lobby-striker {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+@media (max-width: 899px) {
+    .carrom-lobby-features {
+        justify-content: center;
+    }
+}
+
+@media (
+    prefers-reduced-motion: reduce
+) {
+    .carrom-lobby-coin,
+    .carrom-lobby-striker {
+        animation: none;
+    }
+
+    .carrom-lobby-art {
+        transition: none;
+    }
+}
+
+/* CARROM LOBBY CARD END */

@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="theme-color"
+        content="#061317">
+
+    <title>PMS ADDA | Carrom</title>
+
+    <script src="../js/app-config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/carrom-table.css">
+</head>
+
+<body>
+
+    <main class="carrom-app">
+
+        <!-- Header -->
+
+        <header class="carrom-game-header">
+
+            <button
+                id="backButton"
+                class="carrom-icon-button"
+                type="button"
+                aria-label="Go back">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+            </button>
+
+            <section class="carrom-brand">
+
+                <img
+                    class="carrom-brand-logo"
+                    src="../assets/logo/logo.png"
+                    alt="PMS ADDA">
+
+                <div class="carrom-brand-copy">
+
+                    <h1>PMS ADDA CARROM</h1>
+
+                    <div class="carrom-match-meta">
+
+                        <span id="entryAmount">
+                            Entry: ৳0.00
+                        </span>
+
+                        <span>•</span>
+
+                        <span id="playerMode">
+                            Players: 2
+                        </span>
+
+                        <span>•</span>
+
+                        <span id="serviceCharge">
+                            Charge: 0%
+                        </span>
+
+                        <span>•</span>
+
+                        <span id="matchCode">
+                            Demo Match
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <section class="carrom-header-actions">
+
+                <div class="carrom-wallet-box">
+
+                    <span>Balance</span>
+
+                    <strong id="walletBalance">
+                        ৳0.00
+                    </strong>
+
+                </div>
+
+                <button
+                    id="soundButton"
+                    class="carrom-icon-button"
+                    type="button"
+                    aria-label="Toggle sound">
+
+                    <i class="fa-solid fa-volume-high"></i>
+
+                </button>
+
+                <button
+                    id="settingsButton"
+                    class="carrom-icon-button"
+                    type="button"
+                    aria-label="Game settings">
+
+                    <i class="fa-solid fa-gear"></i>
+
+                </button>
+
+            </section>
+
+        </header>
+
+        <!-- Main Game Stage -->
+
+        <section
+            id="gameStage"
+            class="carrom-game-stage">
+
+            <!-- Player Seat 1 -->
+
+            <article
+                id="playerPanel1"
+                class="carrom-player-panel seat-one is-current"
+                data-seat="1">
+
+                <div class="carrom-player-avatar">
+
+                    <img
+                        id="playerAvatar1"
+                        src="../assets/images/default-avatar.png"
+                        alt="Player one">
+
+                    <span class="carrom-connection-dot"></span>
+
+                </div>
+
+                <div class="carrom-player-info">
+
+                    <span id="playerTeam1">
+                        TEAM GOLD
+                    </span>
+
+                    <strong id="playerName1">
+                        You
+                    </strong>
+
+                    <small id="playerScore1">
+                        Score: 0
+                    </small>
+
+                </div>
+
+                <div
+                    id="turnTimer1"
+                    class="carrom-turn-timer">
+                    20
+                </div>
+
+            </article>
+
+            <!-- Player Seat 2 -->
+
+            <article
+                id="playerPanel2"
+                class="carrom-player-panel seat-two"
+                data-seat="2">
+
+                <div class="carrom-player-avatar">
+
+                    <img
+                        id="playerAvatar2"
+                        src="../assets/images/default-avatar.png"
+                        alt="Player two">
+
+                    <span class="carrom-connection-dot"></span>
+
+                </div>
+
+                <div class="carrom-player-info">
+
+                    <span id="playerTeam2">
+                        TEAM GREEN
+                    </span>
+
+                    <strong id="playerName2">
+                        Waiting...
+                    </strong>
+
+                    <small id="playerScore2">
+                        Score: 0
+                    </small>
+
+                </div>
+
+                <div
+                    id="turnTimer2"
+                    class="carrom-turn-timer">
+                    20
+                </div>
+
+            </article>
+
+            <!-- Player Seat 3 -->
+
+            <article
+                id="playerPanel3"
+                class="carrom-player-panel seat-three"
+                data-seat="3">
+
+                <div class="carrom-player-avatar">
+
+                    <img
+                        id="playerAvatar3"
+                        src="../assets/images/default-avatar.png"
+                        alt="Player three">
+
+                    <span class="carrom-connection-dot"></span>
+
+                </div>
+
+                <div class="carrom-player-info">
+
+                    <span id="playerTeam3">
+                        TEAM GOLD
+                    </span>
+
+                    <strong id="playerName3">
+                        Waiting...
+                    </strong>
+
+                    <small id="playerScore3">
+                        Score: 0
+                    </small>
+
+                </div>
+
+                <div
+                    id="turnTimer3"
+                    class="carrom-turn-timer">
+                    20
+                </div>
+
+            </article>
+
+            <!-- Player Seat 4 -->
+
+            <article
+                id="playerPanel4"
+                class="carrom-player-panel seat-four"
+                data-seat="4">
+
+                <div class="carrom-player-avatar">
+
+                    <img
+                        id="playerAvatar4"
+                        src="../assets/images/default-avatar.png"
+                        alt="Player four">
+
+                    <span class="carrom-connection-dot"></span>
+
+                </div>
+
+                <div class="carrom-player-info">
+
+                    <span id="playerTeam4">
+                        TEAM GREEN
+                    </span>
+
+                    <strong id="playerName4">
+                        Waiting...
+                    </strong>
+
+                    <small id="playerScore4">
+                        Score: 0
+                    </small>
+
+                </div>
+
+                <div
+                    id="turnTimer4"
+                    class="carrom-turn-timer">
+                    20
+                </div>
+
+            </article>
+
+            <!-- Score Board -->
+
+            <section class="carrom-score-board">
+
+                <div class="carrom-team-score team-gold">
+
+                    <span>GOLD</span>
+
+                    <strong id="goldTeamScore">
+                        0
+                    </strong>
+
+                </div>
+
+                <div class="carrom-score-center">
+
+                    <span>ROUND</span>
+
+                    <strong id="roundNumber">
+                        1
+                    </strong>
+
+                </div>
+
+                <div class="carrom-team-score team-green">
+
+                    <span>GREEN</span>
+
+                    <strong id="greenTeamScore">
+                        0
+                    </strong>
+
+                </div>
+
+            </section>
+
+            <!-- Carrom Board -->
+
+            <section class="carrom-board-zone">
+
+                <div class="carrom-board-glow"></div>
+
+                <div
+                    id="carromBoard"
+                    class="carrom-board"
+                    aria-label="Interactive Carrom board">
+
+                    <canvas
+                        id="carromCanvas"
+                        aria-label="Carrom coins and striker">
+                    </canvas>
+
+                    <div
+                        id="boardMessage"
+                        class="carrom-board-message">
+                        Drag the striker to aim
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Controls -->
+
+            <aside class="carrom-controls">
+
+                <div
+                    id="turnStatus"
+                    class="carrom-turn-status">
+
+                    <span class="carrom-live-dot"></span>
+
+                    <strong>Your Turn</strong>
+
+                    <small>
+                        Aim and select power
+                    </small>
+
+                </div>
+
+                <div class="carrom-power-control">
+
+                    <div class="carrom-control-heading">
+
+                        <span>
+                            <i class="fa-solid fa-gauge-high"></i>
+                            STRIKE POWER
+                        </span>
+
+                        <strong id="powerValue">
+                            50%
+                        </strong>
+
+                    </div>
+
+                    <input
+                        id="powerRange"
+                        type="range"
+                        min="10"
+                        max="100"
+                        value="50"
+                        step="1"
+                        aria-label="Strike power">
+
+                    <div class="carrom-power-labels">
+
+                        <span>Soft</span>
+
+                        <span>Powerful</span>
+
+                    </div>
+
+                </div>
+
+                <div class="carrom-control-buttons">
+
+                    <button
+                        id="resetAimButton"
+                        class="carrom-secondary-button"
+                        type="button">
+
+                        <i class="fa-solid fa-rotate-left"></i>
+
+                        Reset Aim
+
+                    </button>
+
+                    <button
+                        id="shootButton"
+                        class="carrom-shoot-button"
+                        type="button">
+
+                        <i class="fa-solid fa-bullseye"></i>
+
+                        STRIKE
+
+                    </button>
+
+                </div>
+
+                <p class="carrom-control-help">
+
+                    <i class="fa-solid fa-hand-pointer"></i>
+
+                    Board-এ touch বা mouse drag করে direction ঠিক করুন।
+
+                </p>
+
+            </aside>
+
+            <!-- Matchmaking Overlay -->
+
+            <section
+                id="matchmakingOverlay"
+                class="carrom-overlay"
+                hidden>
+
+                <div class="carrom-overlay-card">
+
+                    <div class="carrom-search-animation">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+                    <span class="carrom-overlay-label">
+                        MATCHMAKING
+                    </span>
+
+                    <h2>Finding Carrom Players</h2>
+
+                    <p id="matchmakingMessage">
+                        Waiting for real players...
+                    </p>
+
+                    <strong id="matchmakingTimer">
+                        20
+                    </strong>
+
+                    <div class="carrom-player-count">
+
+                        <span id="joinedPlayers">
+                            1
+                        </span>
+
+                        <span>/</span>
+
+                        <span id="maximumPlayers">
+                            2
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Reconnecting Overlay -->
+
+            <section
+                id="reconnectingOverlay"
+                class="carrom-overlay"
+                hidden>
+
+                <div class="carrom-overlay-card">
+
+                    <i class="fa-solid fa-wifi carrom-large-icon"></i>
+
+                    <span class="carrom-overlay-label">
+                        CONNECTION
+                    </span>
+
+                    <h2>Reconnecting...</h2>
+
+                    <p>
+                        আপনার চলমান Carrom match পুনরুদ্ধার করা হচ্ছে।
+                    </p>
+
+                </div>
+
+            </section>
+
+            <!-- Winner Overlay -->
+
+            <section
+                id="winnerOverlay"
+                class="carrom-overlay carrom-winner-overlay"
+                hidden>
+
+                <div class="carrom-overlay-card carrom-winner-card">
+
+                    <div class="carrom-winner-crown">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+
+                    <span class="carrom-overlay-label">
+                        MATCH WINNER
+                    </span>
+
+                    <h2 id="winnerName">
+                        Team Gold
+                    </h2>
+
+                    <p id="winnerMessage">
+                        Congratulations! Excellent striking.
+                    </p>
+
+                    <div class="carrom-winner-prize">
+
+                        <span>Prize Won</span>
+
+                        <strong id="winnerPrize">
+                            ৳0.00
+                        </strong>
+
+                    </div>
+
+                    <button
+                        id="returnLobbyButton"
+                        class="carrom-modal-primary-button"
+                        type="button">
+
+                        Return to Lobby
+
+                    </button>
+
+                </div>
+
+            </section>
+
+        </section>
+
+        <!-- Footer -->
+
+        <footer class="carrom-game-footer">
+
+            <section>
+
+                <button
+                    id="emojiButton"
+                    class="carrom-footer-button"
+                    type="button">
+
+                    <i class="fa-regular fa-face-smile"></i>
+                    Emoji
+
+                </button>
+
+                <button
+                    id="messageButton"
+                    class="carrom-footer-button"
+                    type="button">
+
+                    <i class="fa-regular fa-comment-dots"></i>
+                    Message
+
+                </button>
+
+            </section>
+
+            <div class="carrom-server-status">
+
+                <span
+                    id="liveStatusDot"
+                    class="carrom-live-dot">
+                </span>
+
+                <span id="liveStatusText">
+                    Frontend Demo
+                </span>
+
+            </div>
+
+            <section>
+
+                <button
+                    id="rulesButton"
+                    class="carrom-footer-button"
+                    type="button">
+
+                    <i class="fa-solid fa-book-open"></i>
+                    Rules
+
+                </button>
+
+                <button
+                    id="exitButton"
+                    class="carrom-footer-button is-danger"
+                    type="button">
+
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Exit
+
+                </button>
+
+            </section>
+
+        </footer>
+
+        <!-- Rules Modal -->
+
+        <section
+            id="rulesModal"
+            class="carrom-modal"
+            hidden>
+
+            <div class="carrom-modal-card">
+
+                <button
+                    id="closeRulesButton"
+                    class="carrom-modal-close"
+                    type="button"
+                    aria-label="Close rules">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+                <span class="carrom-overlay-label">
+                    GAME RULES
+                </span>
+
+                <h2>How to Play</h2>
+
+                <ol class="carrom-rule-list">
+
+                    <li>
+                        নিজের turn-এ striker-এর position ও aim নির্বাচন করুন।
+                    </li>
+
+                    <li>
+                        Power ঠিক করে Strike button চাপুন।
+                    </li>
+
+                    <li>
+                        নিজের coin pocket করলে আবার turn পাবেন।
+                    </li>
+
+                    <li>
+                        Queen pocket করার পর নিজের আরেকটি coin দিয়ে cover করতে হবে।
+                    </li>
+
+                    <li>
+                        যে player বা team আগে সব coin pocket করবে, সে winner।
+                    </li>
+
+                </ol>
+
+            </div>
+
+        </section>
+
+        <!-- Exit Confirmation Modal -->
+
+        <section
+            id="exitModal"
+            class="carrom-modal"
+            hidden>
+
+            <div class="carrom-modal-card carrom-exit-card">
+
+                <div class="carrom-warning-icon">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                </div>
+
+                <h2>Exit Carrom Match?</h2>
+
+                <p>
+                    Match শুরু হওয়ার পরে exit করলে match forfeit হতে পারে।
+                </p>
+
+                <div class="carrom-modal-actions">
+
+                    <button
+                        id="cancelExitButton"
+                        class="carrom-secondary-button"
+                        type="button">
+                        Stay
+                    </button>
+
+                    <button
+                        id="confirmExitButton"
+                        class="carrom-danger-button"
+                        type="button">
+                        Exit Match
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Toast -->
+
+        <div
+            id="carromToast"
+            class="carrom-toast"
+            role="status"
+            aria-live="polite">
+
+            <i
+                id="carromToastIcon"
+                class="fa-solid fa-circle-info">
+            </i>
+
+            <span id="carromToastMessage"></span>
+
+        </div>
+
+    </main>
+
+    <script src="../js/carrom/carrom-engine.js"></script>
+
+    <script>
+        (() => {
+            const loadCarromGame = () => {
+                const gameScript =
+                    document.createElement("script");
+
+                gameScript.src =
+                    "../js/carrom/carrom-game.js";
+
+                document.body.appendChild(gameScript);
+            };
+
+            const socketScript =
+                document.createElement("script");
+
+            socketScript.src =
+                window.APP_CONFIG.server(
+                    "/socket.io/socket.io.js",
+                );
+
+            socketScript.onload =
+                loadCarromGame;
+
+            socketScript.onerror = () => {
+                console.error(
+                    "Failed to load the Socket.IO client.",
+                );
+
+                loadCarromGame();
+            };
+
+            document.body.appendChild(
+                socketScript,
+            );
+        })();
+    </script>
+
+</body>
+
+</html>

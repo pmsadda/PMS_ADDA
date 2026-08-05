@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="theme-color"
+        content="#07161b">
+
+    <title>PMS ADDA | Carrom Rooms</title>
+
+    <script src="../js/app-config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/teenpatti-rooms.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/carrom-rooms.css">
+</head>
+
+<body>
+
+    <div class="tp-rooms-app carrom-rooms-app">
+
+        <!-- Header -->
+
+        <header class="tp-rooms-header carrom-rooms-header">
+
+            <button
+                type="button"
+                class="tp-back-button"
+                id="backBtn"
+                aria-label="Back to lobby">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+
+            <div class="tp-header-title">
+
+                <h1>
+                    <i class="fa-solid fa-circle-dot"></i>
+                    Carrom
+                </h1>
+
+                <p>
+                    Choose a room and challenge real players
+                </p>
+
+            </div>
+
+            <div class="tp-wallet-box">
+
+                <span>Available Balance</span>
+
+                <strong>
+                    ৳<span id="walletBalance">0.00</span>
+                </strong>
+
+                <button
+                    type="button"
+                    id="refreshBalanceBtn"
+                    aria-label="Refresh wallet balance">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+
+            </div>
+
+        </header>
+
+        <!-- Main Content -->
+
+        <main class="tp-rooms-main carrom-rooms-main">
+
+            <!-- Hero -->
+
+            <section class="carrom-hero">
+
+                <div class="carrom-hero-copy">
+
+                    <span class="carrom-hero-label">
+                        <i class="fa-solid fa-bolt"></i>
+                        REAL-TIME MULTIPLAYER
+                    </span>
+
+                    <h2>
+                        Strike, Score
+                        <span>& Win</span>
+                    </h2>
+
+                    <p>
+                        আপনার পছন্দের entry room বেছে নিয়ে real player-এর
+                        সঙ্গে Carrom খেলুন।
+                    </p>
+
+                    <div class="carrom-feature-list">
+
+                        <span>
+                            <i class="fa-solid fa-shield-halved"></i>
+                            Server-controlled match
+                        </span>
+
+                        <span>
+                            <i class="fa-solid fa-wifi"></i>
+                            Live multiplayer
+                        </span>
+
+                        <span>
+                            <i class="fa-solid fa-trophy"></i>
+                            Automatic prize
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div
+                    class="carrom-mini-board"
+                    aria-hidden="true">
+
+                    <span class="carrom-pocket pocket-top-left"></span>
+                    <span class="carrom-pocket pocket-top-right"></span>
+                    <span class="carrom-pocket pocket-bottom-left"></span>
+                    <span class="carrom-pocket pocket-bottom-right"></span>
+
+                    <span class="carrom-mini-coin coin-black coin-one"></span>
+                    <span class="carrom-mini-coin coin-white coin-two"></span>
+                    <span class="carrom-mini-coin coin-red coin-three"></span>
+                    <span class="carrom-mini-coin coin-black coin-four"></span>
+                    <span class="carrom-mini-coin coin-white coin-five"></span>
+
+                    <span class="carrom-mini-striker"></span>
+
+                </div>
+
+            </section>
+
+            <!-- Room Heading -->
+
+            <section class="tp-room-heading">
+
+                <div>
+
+                    <span class="tp-section-label">
+                        CARROM TABLE
+                    </span>
+
+                    <h2>Choose Entry Amount</h2>
+
+                    <p>
+                        Player mode নির্বাচন করুন। প্রতিটি room-এ entry fee,
+                        service charge এবং সম্ভাব্য prize দেখানো হবে।
+                    </p>
+
+                </div>
+
+                <div class="tp-rule-badge">
+
+                    <i class="fa-solid fa-users"></i>
+
+                    <span>
+                        2 or 4 players
+                    </span>
+
+                </div>
+
+            </section>
+
+            <!-- Player Mode -->
+
+            <section
+                id="carromPlayerMode"
+                class="carrom-player-mode"
+                aria-label="Select Carrom player mode">
+
+                <div class="carrom-mode-copy">
+
+                    <span>PLAYER MODE</span>
+
+                    <strong>
+                        কতজন নিয়ে খেলবেন?
+                    </strong>
+
+                </div>
+
+                <div class="carrom-mode-buttons">
+
+                    <button
+                        type="button"
+                        class="carrom-mode-button is-active"
+                        data-player-mode="2"
+                        aria-pressed="true">
+
+                        <i class="fa-solid fa-user-group"></i>
+
+                        <span>
+                            <strong>2 Players</strong>
+                            <small>Head-to-head</small>
+                        </span>
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="carrom-mode-button"
+                        data-player-mode="4"
+                        aria-pressed="false">
+
+                        <i class="fa-solid fa-users"></i>
+
+                        <span>
+                            <strong>4 Players</strong>
+                            <small>Multiplayer battle</small>
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+            <!-- Dynamic Service Charge Information -->
+
+            <section
+                class="carrom-fee-information"
+                id="feeInformation">
+
+                <div class="carrom-fee-icon">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+
+                <div class="carrom-fee-copy">
+
+                    <span>Transparent Prize Calculation</span>
+
+                    <p>
+                        Room join করার আগেই entry fee, total pot,
+                        service charge এবং winner prize দেখতে পারবেন।
+                    </p>
+
+                </div>
+
+                <div class="carrom-fee-rate">
+
+                    <small>Service Charge</small>
+
+                    <strong id="serviceChargePreview">
+                        --%
+                    </strong>
+
+                    <span>
+                        Admin controlled
+                    </span>
+
+                </div>
+
+            </section>
+
+            <!-- Room Grid -->
+
+            <section
+                class="tp-room-grid carrom-room-grid"
+                id="roomGrid"
+                aria-label="Carrom entry rooms">
+
+                <!-- Rooms will be rendered using JavaScript -->
+
+            </section>
+
+            <!-- Empty State -->
+
+            <section
+                class="carrom-empty-state"
+                id="emptyState"
+                hidden>
+
+                <i class="fa-solid fa-chess-board"></i>
+
+                <h3>No Carrom rooms available</h3>
+
+                <p>
+                    এই মুহূর্তে কোনো Carrom room চালু নেই।
+                    কিছুক্ষণ পরে আবার চেষ্টা করুন।
+                </p>
+
+                <button
+                    type="button"
+                    id="retryRoomsBtn">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    Try Again
+                </button>
+
+            </section>
+
+            <!-- Game Rules -->
+
+            <section class="carrom-rules">
+
+                <div class="carrom-rules-heading">
+
+                    <span>QUICK RULES</span>
+
+                    <h2>How Carrom Matches Work</h2>
+
+                </div>
+
+                <div class="carrom-rule-grid">
+
+                    <article class="carrom-rule-card">
+
+                        <div>
+                            <i class="fa-solid fa-door-open"></i>
+                        </div>
+
+                        <strong>1. Join Room</strong>
+
+                        <p>
+                            Entry amount এবং player mode দেখে room join করুন।
+                        </p>
+
+                    </article>
+
+                    <article class="carrom-rule-card">
+
+                        <div>
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+
+                        <strong>2. Matchmaking</strong>
+
+                        <p>
+                            প্রয়োজনীয় real player পাওয়া গেলে match শুরু হবে।
+                        </p>
+
+                    </article>
+
+                    <article class="carrom-rule-card">
+
+                        <div>
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+
+                        <strong>3. Strike Coins</strong>
+
+                        <p>
+                            Aim ও power নির্বাচন করে নিজের turn-এ strike করুন।
+                        </p>
+
+                    </article>
+
+                    <article class="carrom-rule-card">
+
+                        <div>
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+
+                        <strong>4. Win Prize</strong>
+
+                        <p>
+                            Service charge বাদ দিয়ে winner-এর wallet-এ prize যাবে।
+                        </p>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- Loading Overlay -->
+
+        <div
+            class="tp-loader-overlay"
+            id="loaderOverlay"
+            aria-hidden="true">
+
+            <div class="tp-loader-content">
+
+                <div class="tp-loader"></div>
+
+                <p id="loaderMessage">
+                    Loading Carrom rooms...
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Toast -->
+
+        <div
+            class="tp-toast"
+            id="toast"
+            role="status"
+            aria-live="polite">
+
+            <i
+                class="fa-solid fa-circle-info"
+                id="toastIcon"></i>
+
+            <span id="toastMessage"></span>
+
+        </div>
+
+    </div>
+
+    <script src="../js/carrom-rooms.js"></script>
+
+</body>
+
+</html>

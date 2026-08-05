@@ -113,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     teenPattiButton: document.getElementById("teenPattiBtn"),
     pokerButton: document.getElementById("pokerBtn"),
     ludoButton: document.getElementById("ludoBtn"),
+    carromButton: document.getElementById("carromBtn"),
     lotteryButton: document.getElementById("lotteryBtn"),
 
     settingsButton: document.getElementById("settingsBtn"),
@@ -738,6 +739,11 @@ document.addEventListener("DOMContentLoaded", () => {
         gameType: "ludo",
         button: DOM.ludoButton,
       },
+
+      {
+  gameType: "carrom",
+  button: DOM.carromButton,
+},
     ];
 
     gameConfigs.forEach(({ gameType, button }) => {
@@ -1506,6 +1512,10 @@ document.addEventListener("DOMContentLoaded", () => {
   DOM.ludoButton?.addEventListener("click", () =>
     navigateTo("./ludo-rooms.html"),
   );
+
+  DOM.carromButton?.addEventListener("click", () =>
+  navigateTo("./carrom-rooms.html"),
+);
 
   DOM.lotteryButton?.addEventListener("click", () =>
     navigateTo("./lottery.html"),

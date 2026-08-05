@@ -1,0 +1,2534 @@
+/* ==========================================
+   PMS ADDA CARROM TABLE
+========================================== */
+
+:root {
+    --carrom-bg: #041014;
+    --carrom-panel: #0b252a;
+    --carrom-panel-light: #12363c;
+    --carrom-gold: #f5c650;
+    --carrom-gold-dark: #d8901e;
+    --carrom-green: #2bd59a;
+    --carrom-red: #ed5963;
+    --carrom-white: #f7f2e5;
+    --carrom-muted: #9bb1b5;
+    --carrom-border: rgba(245, 198, 80, 0.2);
+    --header-height: 88px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-width: 320px;
+
+    color-scheme: dark;
+
+    background: var(--carrom-bg);
+}
+
+body {
+    min-width: 320px;
+    min-height: 100vh;
+
+    margin: 0;
+
+    overflow-x: hidden;
+
+    color: #ffffff;
+
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background:
+        radial-gradient(
+            circle at 50% 5%,
+            rgba(43, 213, 154, 0.12),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 5% 90%,
+            rgba(245, 198, 80, 0.11),
+            transparent 28%
+        ),
+        linear-gradient(
+            145deg,
+            #02090c,
+            #082026 55%,
+            #030b0e
+        );
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline:
+        3px solid
+        rgba(245, 198, 80, 0.4);
+
+    outline-offset: 3px;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.carrom-app {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    min-height: 100vh;
+
+    overflow: hidden;
+}
+
+/* ==========================================
+   GAME HEADER
+========================================== */
+
+.carrom-game-header {
+    position: relative;
+    z-index: 40;
+
+    display: grid;
+    grid-template-columns:
+        auto minmax(0, 1fr) auto;
+    align-items: center;
+
+    min-height: var(--header-height);
+
+    padding: 13px 22px;
+    gap: 15px;
+
+    border-bottom:
+        1px solid
+        rgba(245, 198, 80, 0.15);
+
+    background:
+        rgba(2, 10, 13, 0.94);
+
+    box-shadow:
+        0 12px 35px
+        rgba(0, 0, 0, 0.3);
+
+    backdrop-filter:
+        blur(18px);
+}
+
+.carrom-icon-button {
+    display: grid;
+    place-items: center;
+
+    width: 46px;
+    height: 46px;
+
+    padding: 0;
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.13);
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.09),
+            rgba(255, 255, 255, 0.035)
+        );
+
+    transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        color 160ms ease;
+}
+
+.carrom-icon-button:hover {
+    color: var(--carrom-gold);
+
+    border-color:
+        rgba(245, 198, 80, 0.38);
+
+    transform:
+        translateY(-2px);
+}
+
+.carrom-brand {
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+    gap: 12px;
+}
+
+.carrom-brand-logo {
+    width: 51px;
+    height: 51px;
+
+    flex: 0 0 51px;
+
+    object-fit: contain;
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe58b,
+            #d99420
+        );
+
+    box-shadow:
+        0 8px 20px
+        rgba(245, 198, 80, 0.18);
+}
+
+.carrom-brand-copy {
+    min-width: 0;
+}
+
+.carrom-brand-copy h1 {
+    margin: 0 0 5px;
+
+    overflow: hidden;
+
+    color: #ffffff;
+
+    font-size: 17px;
+    font-weight: 950;
+
+    letter-spacing: 0.4px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.carrom-match-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    color: var(--carrom-muted);
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.carrom-match-meta > span:nth-child(even) {
+    color:
+        rgba(255, 255, 255, 0.25);
+}
+
+.carrom-header-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+.carrom-wallet-box {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 122px;
+
+    padding: 9px 13px;
+
+    border:
+        1px solid
+        rgba(245, 198, 80, 0.2);
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(245, 198, 80, 0.1),
+            rgba(255, 255, 255, 0.035)
+        );
+}
+
+.carrom-wallet-box span {
+    color: var(--carrom-muted);
+
+    font-size: 9px;
+    font-weight: 750;
+}
+
+.carrom-wallet-box strong {
+    margin-top: 2px;
+
+    color: var(--carrom-gold);
+
+    font-size: 15px;
+    font-weight: 950;
+}
+
+/* ==========================================
+   GAME STAGE
+========================================== */
+
+.carrom-game-stage {
+    position: relative;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        270px;
+    align-items: center;
+
+    min-height:
+        calc(
+            100vh -
+            var(--header-height) -
+            67px
+        );
+
+    padding:
+        104px
+        28px
+        100px
+        250px;
+    gap: 25px;
+
+    overflow: hidden;
+}
+
+.carrom-game-stage::before {
+    content: "";
+
+    position: absolute;
+    top: 4%;
+    left: 24%;
+
+    width: 52%;
+    height: 92%;
+
+    pointer-events: none;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(43, 213, 154, 0.08),
+            transparent 68%
+        );
+}
+
+/* ==========================================
+   PLAYER PANELS
+========================================== */
+
+.carrom-player-panel {
+    position: absolute;
+    z-index: 12;
+
+    display: grid;
+    grid-template-columns:
+        auto minmax(0, 1fr) auto;
+    align-items: center;
+
+    width: 205px;
+    min-height: 76px;
+
+    padding: 10px;
+    gap: 9px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(16, 52, 58, 0.97),
+            rgba(5, 21, 25, 0.98)
+        );
+
+    box-shadow:
+        0 14px 34px
+        rgba(0, 0, 0, 0.32);
+
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        transform 180ms ease,
+        opacity 180ms ease;
+}
+
+.carrom-player-panel.is-current {
+    border-color:
+        rgba(245, 198, 80, 0.68);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(245, 198, 80, 0.08),
+        0 17px 38px
+        rgba(0, 0, 0, 0.4);
+}
+
+.carrom-player-panel.is-current::after {
+    content: "YOUR TURN";
+
+    position: absolute;
+    right: 11px;
+    bottom: -9px;
+
+    padding: 4px 8px;
+
+    color: #1b2209;
+
+    font-size: 7px;
+    font-weight: 950;
+
+    letter-spacing: 0.8px;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe683,
+            #d99b21
+        );
+}
+
+.carrom-player-panel.is-disconnected {
+    opacity: 0.56;
+
+    filter: grayscale(0.5);
+}
+
+.carrom-player-panel.is-empty {
+    opacity: 0.52;
+}
+
+.seat-one {
+    top: 26px;
+    left: 24px;
+}
+
+.seat-two {
+    bottom: 25px;
+    left: 24px;
+}
+
+.seat-three {
+    top: 26px;
+    right: 315px;
+}
+
+.seat-four {
+    right: 315px;
+    bottom: 25px;
+}
+
+.carrom-player-avatar {
+    position: relative;
+
+    width: 49px;
+    height: 49px;
+
+    flex: 0 0 49px;
+}
+
+.carrom-player-avatar img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    border:
+        3px solid
+        rgba(255, 255, 255, 0.22);
+
+    border-radius: 15px;
+
+    background: #18353a;
+}
+
+.carrom-player-panel.is-current
+.carrom-player-avatar img {
+    border-color:
+        var(--carrom-gold);
+}
+
+.carrom-connection-dot {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+
+    width: 13px;
+    height: 13px;
+
+    border:
+        3px solid
+        #0b262b;
+
+    border-radius: 50%;
+
+    background: var(--carrom-green);
+
+    box-shadow:
+        0 0 10px
+        rgba(43, 213, 154, 0.5);
+}
+
+.is-disconnected
+.carrom-connection-dot {
+    background:
+        var(--carrom-red);
+
+    box-shadow:
+        0 0 10px
+        rgba(237, 89, 99, 0.45);
+}
+
+.carrom-player-info {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    gap: 2px;
+}
+
+.carrom-player-info > span {
+    color: var(--carrom-gold);
+
+    font-size: 7px;
+    font-weight: 950;
+
+    letter-spacing: 0.8px;
+}
+
+.carrom-player-info > strong {
+    overflow: hidden;
+
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.carrom-player-info > small {
+    color: var(--carrom-muted);
+
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.carrom-turn-timer {
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 950;
+
+    border:
+        3px solid
+        rgba(255, 255, 255, 0.13);
+
+    border-radius: 50%;
+
+    background:
+        rgba(0, 0, 0, 0.2);
+}
+
+.is-current
+.carrom-turn-timer {
+    color: #17200b;
+
+    border-color:
+        rgba(255, 255, 255, 0.58);
+
+    background:
+        var(--carrom-gold);
+
+    box-shadow:
+        0 0 18px
+        rgba(245, 198, 80, 0.28);
+}
+
+/* ==========================================
+   TEAM SCORE BOARD
+========================================== */
+
+.carrom-score-board {
+    position: absolute;
+    top: 23px;
+    left: 50%;
+    z-index: 11;
+
+    display: grid;
+    grid-template-columns:
+        85px 62px 85px;
+    align-items: stretch;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.11);
+
+    border-radius: 16px;
+
+    background:
+        rgba(4, 18, 22, 0.96);
+
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.28);
+
+    transform:
+        translateX(-50%);
+}
+
+.carrom-team-score,
+.carrom-score-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 58px;
+    padding: 7px;
+}
+
+.carrom-team-score span,
+.carrom-score-center span {
+    font-size: 7px;
+    font-weight: 950;
+
+    letter-spacing: 0.8px;
+}
+
+.carrom-team-score strong {
+    margin-top: 2px;
+
+    font-size: 20px;
+    font-weight: 950;
+}
+
+.team-gold {
+    color: var(--carrom-gold);
+
+    background:
+        rgba(245, 198, 80, 0.08);
+}
+
+.team-green {
+    color: var(--carrom-green);
+
+    background:
+        rgba(43, 213, 154, 0.08);
+}
+
+.carrom-score-center {
+    color: var(--carrom-muted);
+
+    border-right:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-left:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+.carrom-score-center strong {
+    margin-top: 2px;
+
+    color: #ffffff;
+
+    font-size: 16px;
+}
+
+/* ==========================================
+   CARROM BOARD ZONE
+========================================== */
+
+.carrom-board-zone {
+    position: relative;
+    z-index: 5;
+
+    grid-column: 1;
+
+    display: grid;
+    place-items: center;
+
+    width: 100%;
+    min-width: 0;
+}
+
+.carrom-board-glow {
+    position: absolute;
+
+    width:
+        min(69vh, 680px);
+    max-width: 94%;
+
+    aspect-ratio: 1;
+
+    pointer-events: none;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(245, 198, 80, 0.18),
+            rgba(43, 213, 154, 0.06) 44%,
+            transparent 70%
+        );
+
+    filter:
+        blur(28px);
+}
+
+.carrom-board {
+    position: relative;
+
+    width:
+        min(67vh, 660px);
+    max-width: 94%;
+
+    aspect-ratio: 1;
+
+    padding: 17px;
+
+    touch-action: none;
+    user-select: none;
+
+    border:
+        5px solid
+        #77401f;
+
+    border-radius: 26px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #bd7936,
+            #73401f
+        );
+
+    box-shadow:
+        inset 0 0 0 4px
+        rgba(255, 222, 147, 0.34),
+        inset 0 0 24px
+        rgba(37, 12, 5, 0.55),
+        0 28px 65px
+        rgba(0, 0, 0, 0.46);
+
+    transform:
+        translateZ(0);
+}
+
+.carrom-board::before {
+    content: "";
+
+    position: absolute;
+    inset: 6px;
+
+    z-index: 0;
+
+    pointer-events: none;
+
+    border:
+        1px solid
+        rgba(255, 232, 178, 0.24);
+
+    border-radius: 19px;
+}
+
+#carromCanvas {
+    position: relative;
+    z-index: 2;
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    cursor: crosshair;
+
+    border:
+        2px solid
+        rgba(77, 35, 23, 0.62);
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f7dfa5,
+            #dba95e
+        );
+
+    box-shadow:
+        inset 0 0 35px
+        rgba(80, 34, 15, 0.18);
+}
+
+.carrom-board.is-aiming
+#carromCanvas {
+    cursor: grabbing;
+}
+
+.carrom-board.is-moving
+#carromCanvas {
+    cursor: wait;
+}
+
+.carrom-board-message {
+    position: absolute;
+    bottom: 31px;
+    left: 50%;
+    z-index: 5;
+
+    max-width:
+        calc(100% - 80px);
+
+    padding: 7px 12px;
+
+    overflow: hidden;
+
+    color: #ffffff;
+
+    font-size: 9px;
+    font-weight: 850;
+
+    pointer-events: none;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.16);
+
+    border-radius: 999px;
+
+    background:
+        rgba(29, 16, 11, 0.72);
+
+    box-shadow:
+        0 8px 18px
+        rgba(0, 0, 0, 0.22);
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    backdrop-filter:
+        blur(8px);
+
+    transform:
+        translateX(-50%);
+}
+
+.carrom-board-message.is-success {
+    color: #07261d;
+
+    border-color:
+        rgba(255, 255, 255, 0.35);
+
+    background:
+        rgba(80, 225, 171, 0.94);
+}
+
+.carrom-board-message.is-error {
+    color: #ffffff;
+
+    background:
+        rgba(201, 48, 59, 0.92);
+}
+
+/* ==========================================
+   GAME CONTROLS
+========================================== */
+
+.carrom-controls {
+    position: relative;
+    z-index: 10;
+
+    grid-column: 2;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+
+    padding: 20px;
+    gap: 16px;
+
+    border:
+        1px solid
+        rgba(245, 198, 80, 0.18);
+
+    border-radius: 24px;
+
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgba(245, 198, 80, 0.1),
+            transparent 33%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(14, 48, 53, 0.98),
+            rgba(4, 19, 23, 0.99)
+        );
+
+    box-shadow:
+        0 20px 46px
+        rgba(0, 0, 0, 0.34);
+}
+
+.carrom-turn-status {
+    display: grid;
+    grid-template-columns:
+        auto minmax(0, 1fr);
+    align-items: center;
+
+    padding: 13px;
+    gap: 2px 9px;
+
+    border:
+        1px solid
+        rgba(43, 213, 154, 0.2);
+
+    border-radius: 15px;
+
+    background:
+        rgba(43, 213, 154, 0.07);
+}
+
+.carrom-turn-status
+.carrom-live-dot {
+    grid-row:
+        1 / span 2;
+}
+
+.carrom-turn-status strong {
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.carrom-turn-status small {
+    color: var(--carrom-muted);
+
+    font-size: 9px;
+}
+
+.carrom-live-dot {
+    display: inline-block;
+
+    width: 9px;
+    height: 9px;
+
+    flex: 0 0 9px;
+
+    border-radius: 50%;
+
+    background:
+        var(--carrom-green);
+
+    box-shadow:
+        0 0 0 5px
+        rgba(43, 213, 154, 0.1),
+        0 0 12px
+        rgba(43, 213, 154, 0.45);
+
+    animation:
+        carromLivePulse
+        1.7s ease-in-out infinite;
+}
+
+.carrom-live-dot.is-offline {
+    background:
+        var(--carrom-red);
+
+    box-shadow:
+        0 0 0 5px
+        rgba(237, 89, 99, 0.1);
+}
+
+@keyframes carromLivePulse {
+    0%,
+    100% {
+        opacity: 1;
+
+        transform:
+            scale(1);
+    }
+
+    50% {
+        opacity: 0.58;
+
+        transform:
+            scale(0.82);
+    }
+}
+
+/* Power Control */
+
+.carrom-power-control {
+    padding: 15px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 16px;
+
+    background:
+        rgba(0, 0, 0, 0.14);
+}
+
+.carrom-control-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+    gap: 10px;
+}
+
+.carrom-control-heading span {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    color: #dbe5e6;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 0.7px;
+}
+
+.carrom-control-heading i {
+    color:
+        var(--carrom-gold);
+}
+
+.carrom-control-heading strong {
+    color:
+        var(--carrom-gold);
+
+    font-size: 13px;
+    font-weight: 950;
+}
+
+#powerRange {
+    width: 100%;
+    height: 8px;
+
+    margin: 0;
+
+    cursor: pointer;
+
+    appearance: none;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--carrom-green),
+            var(--carrom-gold) 55%,
+            var(--carrom-red)
+        );
+}
+
+#powerRange::-webkit-slider-thumb {
+    width: 23px;
+    height: 23px;
+
+    cursor: grab;
+
+    appearance: none;
+
+    border:
+        4px solid
+        #f8edc8;
+
+    border-radius: 50%;
+
+    background:
+        #9e4b25;
+
+    box-shadow:
+        0 4px 10px
+        rgba(0, 0, 0, 0.35);
+}
+
+#powerRange::-moz-range-thumb {
+    width: 17px;
+    height: 17px;
+
+    cursor: grab;
+
+    border:
+        4px solid
+        #f8edc8;
+
+    border-radius: 50%;
+
+    background:
+        #9e4b25;
+
+    box-shadow:
+        0 4px 10px
+        rgba(0, 0, 0, 0.35);
+}
+
+#powerRange:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.42;
+}
+
+.carrom-power-labels {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 7px;
+
+    color: var(--carrom-muted);
+
+    font-size: 8px;
+    font-weight: 700;
+}
+
+/* Control Buttons */
+
+.carrom-control-buttons {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 0.8fr)
+        minmax(0, 1.2fr);
+
+    gap: 9px;
+}
+
+.carrom-secondary-button,
+.carrom-shoot-button,
+.carrom-danger-button,
+.carrom-modal-primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 45px;
+
+    padding: 10px 14px;
+    gap: 7px;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    border-radius: 13px;
+
+    transition:
+        transform 160ms ease,
+        filter 160ms ease,
+        border-color 160ms ease;
+}
+
+.carrom-secondary-button {
+    color: #d4e1e2;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    background:
+        rgba(255, 255, 255, 0.055);
+}
+
+.carrom-secondary-button:hover {
+    border-color:
+        rgba(245, 198, 80, 0.38);
+
+    transform:
+        translateY(-2px);
+}
+
+.carrom-shoot-button,
+.carrom-modal-primary-button {
+    color: #17200b;
+
+    border:
+        1px solid
+        rgba(255, 240, 182, 0.66);
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe783,
+            #dc9b21
+        );
+
+    box-shadow:
+        0 10px 24px
+        rgba(245, 198, 80, 0.2);
+}
+
+.carrom-shoot-button:hover:not(:disabled),
+.carrom-modal-primary-button:hover {
+    filter:
+        brightness(1.08);
+
+    transform:
+        translateY(-2px);
+}
+
+.carrom-shoot-button:disabled,
+.carrom-secondary-button:disabled {
+    color:
+        rgba(255, 255, 255, 0.42);
+
+    cursor: not-allowed;
+
+    border-color:
+        rgba(255, 255, 255, 0.08);
+
+    background:
+        rgba(255, 255, 255, 0.075);
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+.carrom-shoot-button.is-charging i {
+    animation:
+        carromTargetSpin
+        900ms linear infinite;
+}
+
+@keyframes carromTargetSpin {
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+.carrom-control-help {
+    margin: 0;
+
+    color: var(--carrom-muted);
+
+    font-size: 9px;
+    line-height: 1.5;
+
+    text-align: center;
+}
+
+.carrom-control-help i {
+    margin-right: 4px;
+
+    color: var(--carrom-gold);
+}
+
+/* ==========================================
+   MATCH/WINNER OVERLAYS
+========================================== */
+
+.carrom-overlay,
+.carrom-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+
+    display: grid;
+    place-items: center;
+
+    padding: 20px;
+
+    background:
+        rgba(1, 7, 9, 0.82);
+
+    backdrop-filter:
+        blur(13px);
+}
+
+.carrom-overlay-card,
+.carrom-modal-card {
+    position: relative;
+
+    width:
+        min(100%, 430px);
+
+    padding: 34px 28px;
+
+    overflow: hidden;
+
+    text-align: center;
+
+    border:
+        1px solid
+        rgba(245, 198, 80, 0.25);
+
+    border-radius: 25px;
+
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgba(245, 198, 80, 0.13),
+            transparent 34%
+        ),
+        linear-gradient(
+            145deg,
+            #10333a,
+            #061a1f
+        );
+
+    box-shadow:
+        0 30px 75px
+        rgba(0, 0, 0, 0.55);
+}
+
+.carrom-overlay-card::before,
+.carrom-modal-card::before {
+    content: "";
+
+    position: absolute;
+    top: -95px;
+    right: -95px;
+
+    width: 210px;
+    height: 210px;
+
+    pointer-events: none;
+
+    border:
+        30px solid
+        rgba(255, 255, 255, 0.025);
+
+    border-radius: 50%;
+}
+
+.carrom-overlay-label {
+    position: relative;
+    z-index: 2;
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--carrom-gold);
+
+    font-size: 9px;
+    font-weight: 950;
+
+    letter-spacing: 1.6px;
+}
+
+.carrom-overlay-card h2,
+.carrom-modal-card h2 {
+    position: relative;
+    z-index: 2;
+
+    margin: 0 0 10px;
+
+    color: #ffffff;
+
+    font-size: 24px;
+    font-weight: 950;
+}
+
+.carrom-overlay-card > p,
+.carrom-modal-card > p {
+    position: relative;
+    z-index: 2;
+
+    margin: 0;
+
+    color: var(--carrom-muted);
+
+    font-size: 11px;
+    line-height: 1.65;
+}
+
+.carrom-large-icon {
+    position: relative;
+    z-index: 2;
+
+    margin-bottom: 17px;
+
+    color: var(--carrom-green);
+
+    font-size: 45px;
+
+    animation:
+        carromConnectionPulse
+        1.4s ease-in-out infinite;
+}
+
+@keyframes carromConnectionPulse {
+    0%,
+    100% {
+        opacity: 1;
+
+        transform:
+            scale(1);
+    }
+
+    50% {
+        opacity: 0.45;
+
+        transform:
+            scale(0.9);
+    }
+}
+
+/* Matchmaking Animation */
+
+.carrom-search-animation {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 54px;
+
+    margin-bottom: 15px;
+    gap: 8px;
+}
+
+.carrom-search-animation span {
+    width: 16px;
+    height: 16px;
+
+    border:
+        3px solid
+        rgba(255, 255, 255, 0.6);
+
+    border-radius: 50%;
+
+    background:
+        var(--carrom-gold);
+
+    box-shadow:
+        0 5px 10px
+        rgba(0, 0, 0, 0.32);
+
+    animation:
+        carromSearchBounce
+        1s ease-in-out infinite;
+}
+
+.carrom-search-animation span:nth-child(2) {
+    background:
+        #f7f2e5;
+
+    animation-delay:
+        160ms;
+}
+
+.carrom-search-animation span:nth-child(3) {
+    background:
+        #171e20;
+
+    animation-delay:
+        320ms;
+}
+
+@keyframes carromSearchBounce {
+    0%,
+    100% {
+        transform:
+            translateY(0);
+    }
+
+    50% {
+        transform:
+            translateY(-15px);
+    }
+}
+
+#matchmakingTimer {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+    place-items: center;
+
+    width: 64px;
+    height: 64px;
+
+    margin: 18px auto 12px;
+
+    color: #17200b;
+
+    font-size: 21px;
+    font-weight: 950;
+
+    border:
+        5px solid
+        rgba(255, 255, 255, 0.52);
+
+    border-radius: 50%;
+
+    background:
+        var(--carrom-gold);
+
+    box-shadow:
+        0 0 28px
+        rgba(245, 198, 80, 0.24);
+}
+
+.carrom-player-count {
+    position: relative;
+    z-index: 2;
+
+    display: inline-flex;
+    align-items: center;
+
+    padding: 7px 12px;
+    gap: 5px;
+
+    color: #d9e5e6;
+
+    font-size: 11px;
+    font-weight: 850;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.05);
+}
+
+/* Winner Card */
+
+.carrom-winner-card {
+    border-color:
+        rgba(245, 198, 80, 0.55);
+
+    background:
+        radial-gradient(
+            circle at 50% 0,
+            rgba(245, 198, 80, 0.25),
+            transparent 37%
+        ),
+        linear-gradient(
+            145deg,
+            #173b3c,
+            #071b20
+        );
+}
+
+.carrom-winner-crown {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+    place-items: center;
+
+    width: 78px;
+    height: 78px;
+
+    margin:
+        0 auto 18px;
+
+    color: #422404;
+
+    font-size: 35px;
+
+    border:
+        5px solid
+        rgba(255, 255, 255, 0.55);
+
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffed9f,
+            #e3a522
+        );
+
+    box-shadow:
+        0 0 35px
+        rgba(245, 198, 80, 0.28);
+
+    animation:
+        carromWinnerCrown
+        2s ease-in-out infinite;
+}
+
+@keyframes carromWinnerCrown {
+    0%,
+    100% {
+        transform:
+            translateY(0)
+            rotate(-3deg);
+    }
+
+    50% {
+        transform:
+            translateY(-8px)
+            rotate(3deg);
+    }
+}
+
+.carrom-winner-prize {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+
+    margin: 20px 0;
+    padding: 15px;
+
+    border:
+        1px solid
+        rgba(245, 198, 80, 0.25);
+
+    border-radius: 16px;
+
+    background:
+        rgba(245, 198, 80, 0.08);
+}
+
+.carrom-winner-prize span {
+    color: var(--carrom-muted);
+
+    font-size: 9px;
+    font-weight: 750;
+}
+
+.carrom-winner-prize strong {
+    margin-top: 3px;
+
+    color: var(--carrom-gold);
+
+    font-size: 27px;
+    font-weight: 950;
+}
+
+.carrom-modal-primary-button {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+}
+
+/* ==========================================
+   RULES AND EXIT MODALS
+========================================== */
+
+.carrom-modal-card {
+    text-align: left;
+}
+
+.carrom-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 4;
+
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.06);
+}
+
+.carrom-rule-list {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+
+    margin:
+        19px 0 0;
+    padding-left: 21px;
+    gap: 11px;
+
+    color: #c9d8da;
+
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.carrom-rule-list li::marker {
+    color: var(--carrom-gold);
+
+    font-weight: 900;
+}
+
+.carrom-exit-card {
+    text-align: center;
+}
+
+.carrom-warning-icon {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+    place-items: center;
+
+    width: 68px;
+    height: 68px;
+
+    margin:
+        0 auto 17px;
+
+    color: #ffffff;
+
+    font-size: 28px;
+
+    border-radius: 21px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f36f77,
+            #b92c3b
+        );
+
+    box-shadow:
+        0 14px 30px
+        rgba(237, 89, 99, 0.2);
+}
+
+.carrom-modal-actions {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    margin-top: 21px;
+    gap: 10px;
+}
+
+.carrom-danger-button {
+    color: #ffffff;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.18);
+
+    background:
+        linear-gradient(
+            145deg,
+            #ef6670,
+            #b72d3b
+        );
+
+    box-shadow:
+        0 10px 24px
+        rgba(237, 89, 99, 0.18);
+}
+
+/* ==========================================
+   GAME FOOTER
+========================================== */
+
+.carrom-game-footer {
+    position: relative;
+    z-index: 35;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+
+    min-height: 67px;
+
+    padding: 10px 22px;
+    gap: 14px;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    background:
+        rgba(2, 10, 13, 0.94);
+
+    backdrop-filter:
+        blur(16px);
+}
+
+.carrom-game-footer > section {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+}
+
+.carrom-game-footer > section:last-child {
+    justify-content: flex-end;
+}
+
+.carrom-footer-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 39px;
+
+    padding: 8px 12px;
+    gap: 6px;
+
+    color: #c8d8da;
+
+    font-size: 9px;
+    font-weight: 850;
+
+    cursor: pointer;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    transition:
+        transform 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease;
+}
+
+.carrom-footer-button:hover {
+    color: var(--carrom-gold);
+
+    border-color:
+        rgba(245, 198, 80, 0.35);
+
+    transform:
+        translateY(-2px);
+}
+
+.carrom-footer-button.is-danger {
+    color: #ff9fa6;
+
+    border-color:
+        rgba(237, 89, 99, 0.18);
+
+    background:
+        rgba(237, 89, 99, 0.07);
+}
+
+.carrom-server-status {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 7px 12px;
+    gap: 8px;
+
+    color: var(--carrom-muted);
+
+    font-size: 9px;
+    font-weight: 750;
+
+    border:
+        1px solid
+        rgba(43, 213, 154, 0.14);
+
+    border-radius: 999px;
+
+    background:
+        rgba(43, 213, 154, 0.055);
+}
+
+/* ==========================================
+   TOAST
+========================================== */
+
+.carrom-toast {
+    position: fixed;
+    right: 22px;
+    bottom: 84px;
+    z-index: 150;
+
+    display: flex;
+    align-items: center;
+
+    max-width:
+        min(390px, calc(100vw - 30px));
+
+    padding: 12px 15px;
+    gap: 9px;
+
+    color: #e7f0f1;
+
+    font-size: 10px;
+    font-weight: 750;
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.13);
+
+    border-radius: 13px;
+
+    background:
+        rgba(8, 32, 37, 0.97);
+
+    box-shadow:
+        0 16px 38px
+        rgba(0, 0, 0, 0.4);
+
+    transform:
+        translateY(15px);
+
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+.carrom-toast.is-visible {
+    opacity: 1;
+
+    transform:
+        translateY(0);
+}
+
+.carrom-toast.is-success {
+    border-color:
+        rgba(43, 213, 154, 0.35);
+}
+
+.carrom-toast.is-success i {
+    color: var(--carrom-green);
+}
+
+.carrom-toast.is-error {
+    border-color:
+        rgba(237, 89, 99, 0.4);
+}
+
+.carrom-toast.is-error i {
+    color: var(--carrom-red);
+}
+
+/* ==========================================
+   RESPONSIVE TABLE LAYOUT
+========================================== */
+
+@media (max-width: 1400px) {
+    .carrom-game-stage {
+        grid-template-columns:
+            minmax(0, 1fr)
+            245px;
+
+        padding-right: 20px;
+        padding-left: 225px;
+        gap: 18px;
+    }
+
+    .carrom-player-panel {
+        width: 185px;
+    }
+
+    .seat-three,
+    .seat-four {
+        right: 280px;
+    }
+
+    .carrom-controls {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 1150px) {
+    .carrom-game-stage {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        align-items: start;
+
+        min-height: auto;
+
+        padding:
+            88px
+            20px
+            30px;
+        gap: 12px;
+    }
+
+    .carrom-player-panel {
+        position: relative;
+        inset: auto;
+
+        width: 100%;
+        max-width: none;
+
+        transform: none;
+    }
+
+    .seat-one,
+    .seat-three {
+        justify-self: stretch;
+    }
+
+    .seat-two,
+    .seat-four {
+        justify-self: stretch;
+    }
+
+    .carrom-score-board {
+        top: 17px;
+    }
+
+    .carrom-board-zone {
+        grid-column:
+            1 / -1;
+
+        margin-top: 7px;
+    }
+
+    .carrom-board,
+    .carrom-board-glow {
+        width:
+            min(72vw, 690px);
+        max-width: 100%;
+    }
+
+    .carrom-controls {
+        grid-column:
+            1 / -1;
+
+        width:
+            min(100%, 690px);
+
+        justify-self: center;
+
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 820px) {
+    :root {
+        --header-height: 76px;
+    }
+
+    .carrom-game-header {
+        min-height:
+            var(--header-height);
+
+        padding:
+            10px 13px;
+        gap: 9px;
+    }
+
+    .carrom-icon-button {
+        width: 41px;
+        height: 41px;
+
+        border-radius: 12px;
+    }
+
+    .carrom-brand-logo {
+        width: 43px;
+        height: 43px;
+
+        flex-basis: 43px;
+
+        border-radius: 12px;
+    }
+
+    .carrom-brand-copy h1 {
+        font-size: 13px;
+    }
+
+    .carrom-match-meta {
+        max-width: 470px;
+
+        font-size: 8px;
+    }
+
+    .carrom-wallet-box {
+        min-width: 102px;
+
+        padding:
+            7px 9px;
+    }
+
+    .carrom-wallet-box strong {
+        font-size: 12px;
+    }
+
+    .carrom-header-actions
+    .carrom-icon-button:last-child {
+        display: none;
+    }
+
+    .carrom-game-stage {
+        padding-right: 13px;
+        padding-left: 13px;
+    }
+
+    .carrom-player-panel {
+        min-height: 68px;
+
+        padding: 8px;
+        gap: 7px;
+
+        border-radius: 15px;
+    }
+
+    .carrom-player-avatar {
+        width: 42px;
+        height: 42px;
+
+        flex-basis: 42px;
+    }
+
+    .carrom-player-avatar img {
+        border-radius: 12px;
+    }
+
+    .carrom-turn-timer {
+        width: 30px;
+        height: 30px;
+
+        font-size: 9px;
+    }
+
+    .carrom-board,
+    .carrom-board-glow {
+        width:
+            min(94vw, 670px);
+    }
+
+    .carrom-board {
+        padding: 13px;
+
+        border-width: 4px;
+        border-radius: 22px;
+    }
+
+    #carromCanvas {
+        border-radius: 10px;
+    }
+
+    .carrom-controls {
+        width: 100%;
+
+        border-radius: 20px;
+    }
+
+    .carrom-game-footer {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        padding:
+            9px 13px;
+    }
+
+    .carrom-server-status {
+        grid-column:
+            1 / -1;
+        grid-row: 1;
+
+        justify-self: center;
+    }
+
+    .carrom-game-footer > section {
+        grid-row: 2;
+    }
+
+    .carrom-game-footer
+    > section:last-child {
+        grid-column: 2;
+    }
+}
+
+@media (max-width: 600px) {
+    .carrom-game-header {
+        grid-template-columns:
+            auto minmax(0, 1fr) auto;
+    }
+
+    .carrom-brand-logo {
+        display: none;
+    }
+
+    .carrom-brand-copy h1 {
+        font-size: 11px;
+    }
+
+    .carrom-match-meta {
+        gap: 3px;
+
+        font-size: 7px;
+    }
+
+    .carrom-match-meta
+    > span:nth-child(6),
+    .carrom-match-meta
+    > span:nth-child(7) {
+        display: none;
+    }
+
+    .carrom-header-actions {
+        gap: 5px;
+    }
+
+    .carrom-header-actions
+    .carrom-icon-button {
+        display: none;
+    }
+
+    .carrom-wallet-box {
+        min-width: 88px;
+
+        padding:
+            6px 8px;
+    }
+
+    .carrom-wallet-box span {
+        font-size: 7px;
+    }
+
+    .carrom-wallet-box strong {
+        font-size: 10px;
+    }
+
+    .carrom-game-stage {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        padding:
+            79px
+            9px
+            21px;
+        gap: 8px;
+    }
+
+    .carrom-score-board {
+        top: 10px;
+
+        grid-template-columns:
+            72px 51px 72px;
+
+        border-radius: 13px;
+    }
+
+    .carrom-team-score,
+    .carrom-score-center {
+        min-height: 51px;
+
+        padding: 5px;
+    }
+
+    .carrom-team-score strong {
+        font-size: 17px;
+    }
+
+    .carrom-score-center strong {
+        font-size: 13px;
+    }
+
+    .carrom-player-panel {
+        grid-template-columns:
+            auto minmax(0, 1fr);
+
+        min-width: 0;
+        min-height: 60px;
+
+        padding: 7px;
+    }
+
+    .carrom-player-avatar {
+        width: 37px;
+        height: 37px;
+
+        flex-basis: 37px;
+    }
+
+    .carrom-player-info > span {
+        font-size: 6px;
+    }
+
+    .carrom-player-info > strong {
+        font-size: 9px;
+    }
+
+    .carrom-player-info > small {
+        font-size: 7px;
+    }
+
+    .carrom-turn-timer {
+        position: absolute;
+        top: -5px;
+        right: -4px;
+
+        width: 24px;
+        height: 24px;
+
+        font-size: 7px;
+
+        border-width: 2px;
+    }
+
+    .carrom-player-panel.is-current::after {
+        right: 5px;
+        bottom: -7px;
+
+        padding:
+            3px 6px;
+
+        font-size: 5px;
+    }
+
+    .carrom-board {
+        width: 100%;
+
+        padding: 9px;
+
+        border-width: 3px;
+        border-radius: 17px;
+    }
+
+    .carrom-board-glow {
+        width: 94%;
+    }
+
+    .carrom-board-message {
+        bottom: 20px;
+
+        max-width:
+            calc(100% - 45px);
+
+        padding:
+            5px 8px;
+
+        font-size: 7px;
+    }
+
+    .carrom-controls {
+        padding: 14px;
+        gap: 11px;
+    }
+
+    .carrom-control-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .carrom-secondary-button,
+    .carrom-shoot-button {
+        min-height: 43px;
+    }
+
+    .carrom-game-footer {
+        min-height: 62px;
+
+        gap: 7px;
+    }
+
+    .carrom-footer-button {
+        min-height: 35px;
+
+        padding:
+            7px 9px;
+
+        font-size: 8px;
+    }
+
+    .carrom-footer-button span {
+        display: none;
+    }
+
+    .carrom-server-status {
+        padding:
+            5px 9px;
+
+        font-size: 7px;
+    }
+
+    .carrom-toast {
+        right: 10px;
+        bottom: 108px;
+        left: 10px;
+
+        max-width: none;
+    }
+
+    .carrom-overlay,
+    .carrom-modal {
+        padding: 13px;
+    }
+
+    .carrom-overlay-card,
+    .carrom-modal-card {
+        padding:
+            29px 20px;
+
+        border-radius: 21px;
+    }
+
+    .carrom-overlay-card h2,
+    .carrom-modal-card h2 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 390px) {
+    .carrom-game-stage {
+        padding-right: 6px;
+        padding-left: 6px;
+    }
+
+    .carrom-player-avatar {
+        width: 33px;
+        height: 33px;
+
+        flex-basis: 33px;
+    }
+
+    .carrom-player-info > strong {
+        max-width: 80px;
+    }
+
+    .carrom-board {
+        padding: 7px;
+    }
+
+    .carrom-controls {
+        padding: 11px;
+
+        border-radius: 17px;
+    }
+
+    .carrom-power-control {
+        padding: 12px;
+    }
+
+    .carrom-footer-button {
+        padding:
+            7px 8px;
+    }
+}
+
+/* Short Desktop Screens */
+
+@media (
+    max-height: 780px
+) and (
+    min-width: 1151px
+) {
+    .carrom-board,
+    .carrom-board-glow {
+        width:
+            min(57vh, 570px);
+    }
+
+    .carrom-game-stage {
+        padding-top: 91px;
+        padding-bottom: 86px;
+    }
+
+    .carrom-player-panel {
+        min-height: 66px;
+    }
+
+    .carrom-player-avatar {
+        width: 42px;
+        height: 42px;
+
+        flex-basis: 42px;
+    }
+
+    .carrom-controls {
+        padding: 15px;
+        gap: 11px;
+    }
+}
+
+/* ==========================================
+   REDUCED MOTION
+========================================== */
+
+@media (
+    prefers-reduced-motion: reduce
+) {
+    .carrom-live-dot,
+    .carrom-search-animation span,
+    .carrom-large-icon,
+    .carrom-winner-crown,
+    .carrom-shoot-button.is-charging i {
+        animation: none;
+    }
+
+    .carrom-icon-button,
+    .carrom-player-panel,
+    .carrom-secondary-button,
+    .carrom-shoot-button,
+    .carrom-footer-button,
+    .carrom-toast {
+        transition: none;
+    }
+}

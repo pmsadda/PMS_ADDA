@@ -1,0 +1,1663 @@
+/* ==========================================
+   PMS ADDA CARROM ROOM SELECTION
+========================================== */
+
+:root {
+    --carrom-background: #061317;
+    --carrom-panel: #0c2428;
+    --carrom-panel-light: #123238;
+    --carrom-gold: #f6c64f;
+    --carrom-orange: #e99b24;
+    --carrom-green: #2ed49b;
+    --carrom-red: #ef5b64;
+    --carrom-white: #f8f4e9;
+    --carrom-muted: #9eb4b8;
+    --carrom-border: rgba(246, 198, 79, 0.2);
+}
+
+.carrom-rooms-app {
+    min-height: 100vh;
+
+    color: #ffffff;
+
+    background:
+        radial-gradient(
+            circle at 90% 5%,
+            rgba(46, 212, 155, 0.14),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 8% 90%,
+            rgba(246, 198, 79, 0.13),
+            transparent 30%
+        ),
+        linear-gradient(
+            145deg,
+            #030b0e,
+            #092127 52%,
+            #040d10
+        );
+}
+
+.carrom-rooms-app .tp-rooms-header {
+    border-bottom:
+        1px solid
+        rgba(246, 198, 79, 0.14);
+
+    background:
+        rgba(3, 12, 15, 0.94);
+
+    backdrop-filter:
+        blur(18px);
+}
+
+.carrom-rooms-app .tp-header-title h1 {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.carrom-rooms-app .tp-header-title h1 i {
+    color: var(--carrom-gold);
+
+    filter:
+        drop-shadow(
+            0 0 8px
+            rgba(246, 198, 79, 0.35)
+        );
+}
+
+.carrom-rooms-app .tp-wallet-box {
+    border-color:
+        rgba(246, 198, 79, 0.2);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(246, 198, 79, 0.1),
+            rgba(255, 255, 255, 0.04)
+        );
+}
+
+.carrom-rooms-app .tp-wallet-box strong {
+    color: var(--carrom-gold);
+}
+
+.carrom-rooms-main {
+    position: relative;
+}
+
+/* ==========================================
+   CARROM HERO
+========================================== */
+
+.carrom-hero {
+    position: relative;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.15fr)
+        minmax(280px, 0.85fr);
+    align-items: center;
+
+    min-height: 350px;
+
+    margin-bottom: 34px;
+    padding: 44px 52px;
+    gap: 40px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(246, 198, 79, 0.24);
+
+    border-radius: 30px;
+
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(46, 212, 155, 0.16),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 90% 80%,
+            rgba(246, 198, 79, 0.14),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(10, 43, 47, 0.98),
+            rgba(4, 17, 21, 0.98)
+        );
+
+    box-shadow:
+        0 24px 65px
+        rgba(0, 0, 0, 0.38);
+}
+
+.carrom-hero::before {
+    content: "";
+
+    position: absolute;
+    top: -160px;
+    right: -110px;
+
+    width: 420px;
+    height: 420px;
+
+    border:
+        55px solid
+        rgba(255, 255, 255, 0.025);
+
+    border-radius: 50%;
+}
+
+.carrom-hero::after {
+    content: "";
+
+    position: absolute;
+    bottom: -100px;
+    left: 34%;
+
+    width: 260px;
+    height: 260px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(246, 198, 79, 0.07),
+            transparent 66%
+        );
+}
+
+.carrom-hero-copy {
+    position: relative;
+    z-index: 2;
+}
+
+.carrom-hero-label {
+    display: inline-flex;
+    align-items: center;
+
+    margin-bottom: 20px;
+    padding: 9px 14px;
+    gap: 8px;
+
+    color: var(--carrom-gold);
+
+    font-size: 11px;
+    font-weight: 900;
+
+    letter-spacing: 1.5px;
+
+    border:
+        1px solid
+        rgba(246, 198, 79, 0.28);
+
+    border-radius: 999px;
+
+    background:
+        rgba(246, 198, 79, 0.08);
+}
+
+.carrom-hero-copy h2 {
+    max-width: 620px;
+
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size:
+        clamp(42px, 5vw, 72px);
+    font-weight: 950;
+    line-height: 0.96;
+
+    letter-spacing: -2.5px;
+}
+
+.carrom-hero-copy h2 span {
+    display: block;
+
+    margin-top: 8px;
+
+    color: var(--carrom-gold);
+}
+
+.carrom-hero-copy p {
+    max-width: 610px;
+
+    margin: 24px 0 0;
+
+    color: #b9cdcf;
+
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+.carrom-feature-list {
+    display: flex;
+    flex-wrap: wrap;
+
+    margin-top: 24px;
+    gap: 10px;
+}
+
+.carrom-feature-list span {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 9px 12px;
+    gap: 7px;
+
+    color: #dce8e9;
+
+    font-size: 12px;
+    font-weight: 750;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+}
+
+.carrom-feature-list i {
+    color: var(--carrom-green);
+}
+
+/* ==========================================
+   MINI CARROM BOARD
+========================================== */
+
+.carrom-mini-board {
+    position: relative;
+    z-index: 2;
+
+    width: min(100%, 340px);
+    aspect-ratio: 1;
+
+    justify-self: center;
+
+    border:
+        18px solid
+        #9a5b24;
+
+    border-radius: 22px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            transparent 0 16%,
+            #5e261e 16.5% 17.5%,
+            transparent 18% 28%,
+            rgba(94, 38, 30, 0.22) 28.5% 29.5%,
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #f8dea0,
+            #dca95e
+        );
+
+    box-shadow:
+        inset 0 0 0 5px
+        rgba(74, 30, 18, 0.48),
+        inset 0 0 35px
+        rgba(89, 42, 18, 0.2),
+        0 25px 45px
+        rgba(0, 0, 0, 0.38);
+
+    transform:
+        rotate(4deg);
+}
+
+.carrom-mini-board::before,
+.carrom-mini-board::after {
+    content: "";
+
+    position: absolute;
+    left: 15%;
+    right: 15%;
+
+    height: 3px;
+
+    border-radius: 999px;
+
+    background:
+        #722d25;
+
+    box-shadow:
+        0 0 0 6px
+        rgba(114, 45, 37, 0.09);
+}
+
+.carrom-mini-board::before {
+    top: 16%;
+}
+
+.carrom-mini-board::after {
+    bottom: 16%;
+}
+
+.carrom-pocket {
+    position: absolute;
+    z-index: 3;
+
+    width: 34px;
+    height: 34px;
+
+    border:
+        5px solid
+        rgba(70, 27, 20, 0.38);
+
+    border-radius: 50%;
+
+    background:
+        #24100e;
+
+    box-shadow:
+        inset 0 4px 6px
+        rgba(0, 0, 0, 0.8);
+}
+
+.pocket-top-left {
+    top: -8px;
+    left: -8px;
+}
+
+.pocket-top-right {
+    top: -8px;
+    right: -8px;
+}
+
+.pocket-bottom-left {
+    bottom: -8px;
+    left: -8px;
+}
+
+.pocket-bottom-right {
+    right: -8px;
+    bottom: -8px;
+}
+
+.carrom-mini-coin,
+.carrom-mini-striker {
+    position: absolute;
+
+    display: block;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 5px 8px
+        rgba(0, 0, 0, 0.32);
+}
+
+.carrom-mini-coin {
+    z-index: 4;
+
+    width: 29px;
+    height: 29px;
+
+    border:
+        3px solid
+        rgba(255, 255, 255, 0.22);
+}
+
+.coin-black {
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #566066,
+            #111719 68%
+        );
+}
+
+.coin-white {
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #ffffff,
+            #ddd5bc 68%
+        );
+}
+
+.coin-red {
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #ff8b8b,
+            #bd2635 68%
+        );
+}
+
+.coin-one {
+    top: 44%;
+    left: 43%;
+
+    animation:
+        carromCoinFloat
+        3.4s ease-in-out infinite;
+}
+
+.coin-two {
+    top: 44%;
+    left: 52%;
+
+    animation:
+        carromCoinFloat
+        3.4s ease-in-out 300ms infinite;
+}
+
+.coin-three {
+    top: 53%;
+    left: 47.5%;
+
+    animation:
+        carromCoinFloat
+        3.4s ease-in-out 600ms infinite;
+}
+
+.coin-four {
+    top: 35%;
+    left: 48%;
+
+    animation:
+        carromCoinFloat
+        3.4s ease-in-out 900ms infinite;
+}
+
+.coin-five {
+    top: 53%;
+    left: 38.5%;
+
+    animation:
+        carromCoinFloat
+        3.4s ease-in-out 1.2s infinite;
+}
+
+.carrom-mini-striker {
+    z-index: 4;
+    bottom: 12%;
+    left: 43%;
+
+    width: 48px;
+    height: 48px;
+
+    border:
+        5px solid
+        rgba(255, 255, 255, 0.72);
+
+    background:
+        radial-gradient(
+            circle,
+            #2ed49b 0 28%,
+            #0a8c6c 30% 48%,
+            #f8ecbd 50%
+        );
+
+    animation:
+        carromStrikerPulse
+        2s ease-in-out infinite;
+}
+
+@keyframes carromCoinFloat {
+    0%,
+    100% {
+        transform:
+            translateY(0)
+            rotate(0);
+    }
+
+    50% {
+        transform:
+            translateY(-6px)
+            rotate(8deg);
+    }
+}
+
+@keyframes carromStrikerPulse {
+    0%,
+    100% {
+        transform:
+            scale(1);
+    }
+
+    50% {
+        transform:
+            scale(1.08);
+    }
+}
+
+/* ==========================================
+   PLAYER MODE
+========================================== */
+
+.carrom-player-mode {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+    padding: 18px 20px;
+    gap: 18px;
+
+    border:
+        1px solid
+        var(--carrom-border);
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(14, 48, 53, 0.97),
+            rgba(5, 21, 25, 0.98)
+        );
+
+    box-shadow:
+        0 14px 34px
+        rgba(0, 0, 0, 0.28);
+}
+
+.carrom-mode-copy {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.carrom-mode-copy span {
+    color: var(--carrom-gold);
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 1.5px;
+}
+
+.carrom-mode-copy strong {
+    color: #ffffff;
+
+    font-size: 16px;
+}
+
+.carrom-mode-buttons {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(165px, 1fr));
+
+    gap: 10px;
+}
+
+.carrom-mode-button {
+    display: flex;
+    align-items: center;
+
+    min-height: 58px;
+
+    padding: 9px 16px;
+    gap: 11px;
+
+    color: #afc4c7;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.11);
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #13373d,
+            #071c21
+        );
+
+    transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        color 160ms ease,
+        background 160ms ease;
+}
+
+.carrom-mode-button:hover {
+    transform:
+        translateY(-2px);
+
+    border-color:
+        rgba(246, 198, 79, 0.42);
+}
+
+.carrom-mode-button.is-active {
+    color: #17200b;
+
+    border-color:
+        rgba(255, 226, 119, 0.88);
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe68a,
+            #e9a927
+        );
+
+    box-shadow:
+        0 8px 22px
+        rgba(246, 198, 79, 0.2);
+}
+
+.carrom-mode-button > i {
+    width: 22px;
+
+    font-size: 19px;
+
+    text-align: center;
+}
+
+.carrom-mode-button > span {
+    display: flex;
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+.carrom-mode-button strong {
+    font-size: 13px;
+}
+
+.carrom-mode-button small {
+    opacity: 0.72;
+
+    font-size: 10px;
+}
+
+/* ==========================================
+   SERVICE CHARGE INFORMATION
+========================================== */
+
+.carrom-fee-information {
+    display: grid;
+    grid-template-columns:
+        auto minmax(0, 1fr) auto;
+    align-items: center;
+
+    margin-bottom: 26px;
+    padding: 17px 19px;
+    gap: 14px;
+
+    border:
+        1px solid
+        rgba(46, 212, 155, 0.2);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(46, 212, 155, 0.09),
+            rgba(255, 255, 255, 0.025)
+        );
+}
+
+.carrom-fee-icon {
+    display: grid;
+    place-items: center;
+
+    width: 46px;
+    height: 46px;
+
+    color: #08271f;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #66e9bc,
+            #24b889
+        );
+
+    box-shadow:
+        0 8px 18px
+        rgba(46, 212, 155, 0.18);
+}
+
+.carrom-fee-copy {
+    min-width: 0;
+}
+
+.carrom-fee-copy span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.carrom-fee-copy p {
+    margin: 0;
+
+    color: var(--carrom-muted);
+
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.carrom-fee-rate {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    min-width: 115px;
+}
+
+.carrom-fee-rate small {
+    color: var(--carrom-muted);
+
+    font-size: 9px;
+    font-weight: 750;
+}
+
+.carrom-fee-rate strong {
+    margin: 2px 0;
+
+    color: var(--carrom-gold);
+
+    font-size: 22px;
+    font-weight: 950;
+}
+
+.carrom-fee-rate span {
+    color: var(--carrom-green);
+
+    font-size: 9px;
+    font-weight: 800;
+}
+
+/* ==========================================
+   CARROM ROOM GRID
+========================================== */
+
+.carrom-room-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    margin-bottom: 34px;
+    gap: 18px;
+}
+
+.carrom-room-card {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    min-height: 390px;
+
+    padding: 20px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(246, 198, 79, 0.16);
+
+    border-radius: 24px;
+
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgba(246, 198, 79, 0.1),
+            transparent 30%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(15, 53, 58, 0.98),
+            rgba(5, 22, 26, 0.99)
+        );
+
+    box-shadow:
+        0 18px 42px
+        rgba(0, 0, 0, 0.28);
+
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.carrom-room-card::before {
+    content: "";
+
+    position: absolute;
+    top: -70px;
+    right: -70px;
+
+    width: 170px;
+    height: 170px;
+
+    border:
+        28px solid
+        rgba(255, 255, 255, 0.025);
+
+    border-radius: 50%;
+}
+
+.carrom-room-card:hover {
+    transform:
+        translateY(-5px);
+
+    border-color:
+        rgba(246, 198, 79, 0.42);
+
+    box-shadow:
+        0 24px 52px
+        rgba(0, 0, 0, 0.36);
+}
+
+.carrom-room-card.is-disabled {
+    opacity: 0.64;
+}
+
+.carrom-room-card.is-disabled:hover {
+    transform: none;
+}
+
+/* Room Header */
+
+.carrom-room-card-header {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+.carrom-room-identity {
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+    gap: 11px;
+}
+
+.carrom-room-icon {
+    position: relative;
+
+    display: grid;
+    place-items: center;
+
+    width: 54px;
+    height: 54px;
+
+    flex: 0 0 54px;
+
+    color: #39200a;
+
+    border:
+        3px solid
+        rgba(255, 255, 255, 0.36);
+
+    border-radius: 17px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe28a,
+            #dda028
+        );
+
+    box-shadow:
+        0 8px 20px
+        rgba(246, 198, 79, 0.2);
+}
+
+.carrom-room-icon::before,
+.carrom-room-icon::after {
+    content: "";
+
+    position: absolute;
+
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 2px 4px
+        rgba(0, 0, 0, 0.35);
+}
+
+.carrom-room-icon::before {
+    top: 10px;
+    left: 10px;
+
+    background: #171d1e;
+}
+
+.carrom-room-icon::after {
+    right: 10px;
+    bottom: 10px;
+
+    background: #f8f3de;
+}
+
+.carrom-room-icon i {
+    position: relative;
+    z-index: 2;
+
+    color: #c3303f;
+
+    font-size: 16px;
+}
+
+.carrom-room-name {
+    min-width: 0;
+}
+
+.carrom-room-name span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--carrom-gold);
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 1.2px;
+}
+
+.carrom-room-name h3 {
+    margin: 0;
+
+    overflow: hidden;
+
+    color: #ffffff;
+
+    font-size: 17px;
+    font-weight: 900;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.carrom-room-status {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 7px 9px;
+    gap: 6px;
+
+    color: var(--carrom-green);
+
+    font-size: 9px;
+    font-weight: 900;
+
+    border:
+        1px solid
+        rgba(46, 212, 155, 0.2);
+
+    border-radius: 999px;
+
+    background:
+        rgba(46, 212, 155, 0.08);
+}
+
+.carrom-room-status::before {
+    content: "";
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background:
+        currentColor;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(46, 212, 155, 0.1);
+}
+
+.carrom-room-status.is-closed {
+    color: var(--carrom-red);
+
+    border-color:
+        rgba(239, 91, 100, 0.2);
+
+    background:
+        rgba(239, 91, 100, 0.08);
+}
+
+/* Entry Amount */
+
+.carrom-room-price {
+    position: relative;
+    z-index: 2;
+
+    margin-top: 20px;
+    padding: 18px;
+
+    text-align: center;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 18px;
+
+    background:
+        rgba(0, 0, 0, 0.14);
+}
+
+.carrom-room-price small {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--carrom-muted);
+
+    font-size: 10px;
+    font-weight: 750;
+}
+
+.carrom-room-price strong {
+    color: var(--carrom-gold);
+
+    font-size: 36px;
+    font-weight: 950;
+
+    letter-spacing: -1px;
+}
+
+.carrom-room-price span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #d7e3e4;
+
+    font-size: 10px;
+}
+
+/* Calculation */
+
+.carrom-room-calculation {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    margin-top: 13px;
+    gap: 8px;
+}
+
+.carrom-room-stat {
+    min-width: 0;
+
+    padding: 10px 6px;
+
+    text-align: center;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+}
+
+.carrom-room-stat small {
+    display: block;
+
+    margin-bottom: 4px;
+
+    overflow: hidden;
+
+    color: var(--carrom-muted);
+
+    font-size: 8px;
+    font-weight: 750;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.carrom-room-stat strong {
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.carrom-room-stat.is-prize strong {
+    color: var(--carrom-green);
+}
+
+/* Fee Breakdown */
+
+.carrom-room-fee-row {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 12px;
+    padding: 9px 11px;
+    gap: 10px;
+
+    color: var(--carrom-muted);
+
+    font-size: 9px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(246, 198, 79, 0.055);
+}
+
+.carrom-room-fee-row span {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 5px;
+}
+
+.carrom-room-fee-row i {
+    color: var(--carrom-gold);
+}
+
+.carrom-room-fee-row strong {
+    color: #f2d98d;
+
+    font-size: 10px;
+}
+
+/* Join Button */
+
+.carrom-join-button {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 48px;
+
+    margin-top: auto;
+    padding: 11px 16px;
+    gap: 8px;
+
+    color: #16210b;
+
+    font-size: 12px;
+    font-weight: 950;
+
+    cursor: pointer;
+
+    border: 0;
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffe37d,
+            #e9a421
+        );
+
+    box-shadow:
+        0 10px 23px
+        rgba(246, 198, 79, 0.18);
+
+    transition:
+        transform 160ms ease,
+        filter 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.carrom-join-button:hover:not(:disabled) {
+    transform:
+        translateY(-2px);
+
+    filter:
+        brightness(1.07);
+
+    box-shadow:
+        0 14px 28px
+        rgba(246, 198, 79, 0.25);
+}
+
+.carrom-join-button:active:not(:disabled) {
+    transform:
+        translateY(0)
+        scale(0.99);
+}
+
+.carrom-join-button:disabled {
+    color: rgba(255, 255, 255, 0.5);
+
+    cursor: not-allowed;
+
+    background:
+        rgba(255, 255, 255, 0.1);
+
+    box-shadow: none;
+}
+
+.carrom-join-button.is-loading i {
+    animation:
+        carromButtonSpin
+        800ms linear infinite;
+}
+
+@keyframes carromButtonSpin {
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
+.carrom-empty-state {
+    margin-bottom: 34px;
+    padding: 50px 24px;
+
+    text-align: center;
+
+    border:
+        1px dashed
+        rgba(246, 198, 79, 0.26);
+
+    border-radius: 24px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.carrom-empty-state[hidden] {
+    display: none;
+}
+
+.carrom-empty-state > i {
+    margin-bottom: 14px;
+
+    color: var(--carrom-gold);
+
+    font-size: 42px;
+}
+
+.carrom-empty-state h3 {
+    margin: 0 0 8px;
+
+    color: #ffffff;
+
+    font-size: 19px;
+}
+
+.carrom-empty-state p {
+    max-width: 470px;
+
+    margin: 0 auto;
+
+    color: var(--carrom-muted);
+
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.carrom-empty-state button {
+    margin-top: 18px;
+    padding: 11px 17px;
+
+    color: #17200b;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    border: 0;
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe37d,
+            #e9a421
+        );
+}
+
+/* ==========================================
+   QUICK RULES
+========================================== */
+
+.carrom-rules {
+    margin-bottom: 38px;
+    padding: 30px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 26px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(9, 38, 43, 0.94),
+            rgba(4, 18, 22, 0.96)
+        );
+}
+
+.carrom-rules-heading {
+    margin-bottom: 22px;
+}
+
+.carrom-rules-heading > span {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: var(--carrom-gold);
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 1.6px;
+}
+
+.carrom-rules-heading h2 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.carrom-rule-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 13px;
+}
+
+.carrom-rule-card {
+    min-width: 0;
+    padding: 18px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: 17px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+}
+
+.carrom-rule-card > div {
+    display: grid;
+    place-items: center;
+
+    width: 39px;
+    height: 39px;
+
+    margin-bottom: 13px;
+
+    color: #17200b;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe584,
+            #dca027
+        );
+}
+
+.carrom-rule-card strong {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+}
+
+.carrom-rule-card p {
+    margin: 0;
+
+    color: var(--carrom-muted);
+
+    font-size: 10px;
+    line-height: 1.65;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+========================================== */
+
+@media (max-width: 1100px) {
+    .carrom-hero {
+        grid-template-columns:
+            minmax(0, 1fr)
+            290px;
+
+        padding:
+            38px 34px;
+    }
+
+    .carrom-room-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .carrom-rule-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 820px) {
+    .carrom-hero {
+        grid-template-columns: 1fr;
+
+        padding:
+            34px 25px;
+    }
+
+    .carrom-hero-copy {
+        text-align: center;
+    }
+
+    .carrom-hero-copy p {
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .carrom-feature-list {
+        justify-content: center;
+    }
+
+    .carrom-mini-board {
+        width:
+            min(82vw, 310px);
+    }
+
+    .carrom-player-mode {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .carrom-mode-buttons {
+        width: 100%;
+    }
+}
+
+@media (max-width: 650px) {
+    .carrom-hero {
+        min-height: auto;
+
+        margin-bottom: 24px;
+        padding:
+            28px 18px;
+
+        border-radius: 22px;
+    }
+
+    .carrom-hero-copy h2 {
+        font-size:
+            clamp(38px, 13vw, 54px);
+
+        letter-spacing: -1.5px;
+    }
+
+    .carrom-hero-copy p {
+        font-size: 13px;
+    }
+
+    .carrom-feature-list span {
+        flex: 1 1 145px;
+        justify-content: center;
+    }
+
+    .carrom-mini-board {
+        border-width: 14px;
+        border-radius: 18px;
+    }
+
+    .carrom-room-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .carrom-room-card {
+        min-height: 370px;
+    }
+
+    .carrom-fee-information {
+        grid-template-columns:
+            auto minmax(0, 1fr);
+    }
+
+    .carrom-fee-rate {
+        grid-column:
+            1 / -1;
+
+        align-items: center;
+
+        padding-top: 11px;
+
+        border-top:
+            1px solid
+            rgba(255, 255, 255, 0.07);
+    }
+
+    .carrom-rule-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .carrom-rules {
+        padding: 23px 17px;
+        border-radius: 21px;
+    }
+}
+
+@media (max-width: 480px) {
+    .carrom-mode-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .carrom-mode-button {
+        min-height: 54px;
+    }
+
+    .carrom-room-card {
+        padding: 17px;
+        border-radius: 20px;
+    }
+
+    .carrom-room-price strong {
+        font-size: 32px;
+    }
+
+    .carrom-room-calculation {
+        gap: 5px;
+    }
+
+    .carrom-room-stat {
+        padding:
+            9px 3px;
+    }
+
+    .carrom-room-stat strong {
+        font-size: 11px;
+    }
+
+    .carrom-rules-heading h2 {
+        font-size: 21px;
+    }
+}
+
+/* ==========================================
+   ACCESSIBILITY
+========================================== */
+
+.carrom-mode-button:focus-visible,
+.carrom-join-button:focus-visible,
+.carrom-empty-state button:focus-visible {
+    outline:
+        3px solid
+        rgba(246, 198, 79, 0.42);
+
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .carrom-mini-coin,
+    .carrom-mini-striker,
+    .carrom-join-button.is-loading i {
+        animation: none;
+    }
+
+    .carrom-room-card,
+    .carrom-mode-button,
+    .carrom-join-button {
+        transition: none;
+    }
+}
