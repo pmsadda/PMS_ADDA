@@ -737,6 +737,186 @@
 
     </div>
 
+        <!-- =====================================
+         Live Lottery Draw Animation
+    ====================================== -->
+
+    <div
+      class="lottery-draw-animation-overlay"
+      id="lotteryDrawAnimationOverlay"
+      aria-hidden="true">
+
+      <section
+        class="lottery-draw-animation-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawAnimationTitle">
+
+        <div class="draw-animation-glow"></div>
+
+        <header class="draw-animation-header">
+
+          <div>
+
+            <span class="draw-animation-label">
+
+              <i class="fa-solid fa-shield-halved"></i>
+
+              LIVE FAIR DRAW
+
+            </span>
+
+            <h2 id="drawAnimationTitle">
+              PMS Lottery Draw
+            </h2>
+
+            <p id="drawAnimationCode">
+              Preparing secure ticket shuffle
+            </p>
+
+          </div>
+
+          <span
+            class="draw-live-indicator">
+
+            <i></i>
+
+            LIVE
+
+          </span>
+
+        </header>
+
+        <!-- Ticket Shuffle Stage -->
+
+        <div
+          class="draw-shuffle-stage"
+          id="drawShuffleStage">
+
+          <div class="shuffle-machine">
+
+            <div class="shuffle-machine-ring ring-one"></div>
+
+            <div class="shuffle-machine-ring ring-two"></div>
+
+            <div class="shuffle-machine-center">
+
+              <i class="fa-solid fa-shuffle"></i>
+
+            </div>
+
+          </div>
+
+          <div
+            class="shuffle-ticket-track"
+            id="drawShuffleTrack">
+          </div>
+
+          <div class="shuffle-scan-line"></div>
+
+        </div>
+
+        <div
+          class="draw-animation-status"
+          id="drawAnimationStatus">
+
+          <span class="draw-status-spinner"></span>
+
+          <div>
+
+            <strong>
+              Securely shuffling tickets...
+            </strong>
+
+            <p>
+              Cryptographic fair selection is running
+            </p>
+
+          </div>
+
+        </div>
+
+        <!-- Sequential Winner Reveal -->
+
+        <div
+          class="draw-winner-reveal-stage"
+          id="drawWinnerRevealStage"
+          hidden>
+
+          <div class="winner-reveal-heading">
+
+            <span>
+              OFFICIAL RESULT
+            </span>
+
+            <h3>
+              Congratulations Winners!
+            </h3>
+
+          </div>
+
+          <div
+            class="draw-winner-reveal-grid"
+            id="drawWinnerRevealGrid">
+          </div>
+
+        </div>
+
+        <!-- Private Winner Notification -->
+
+        <div
+          class="personal-winner-notice"
+          id="personalWinnerNotice"
+          hidden>
+
+          <div class="personal-winner-icon">
+
+            <i class="fa-solid fa-trophy"></i>
+
+          </div>
+
+          <div>
+
+            <span>
+              YOU ARE A WINNER!
+            </span>
+
+            <h3 id="personalWinnerTitle">
+              Congratulations!
+            </h3>
+
+            <p id="personalWinnerMessage">
+              You won a Lottery prize.
+            </p>
+
+            <strong id="personalWinnerPrize">
+              ৳0.00
+            </strong>
+
+            <small id="personalWinnerTicket">
+              Winning Ticket
+            </small>
+
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          class="close-draw-animation-btn"
+          id="closeDrawAnimationBtn"
+          hidden>
+
+          <i class="fa-solid fa-circle-check"></i>
+
+          View Lottery Results
+
+        </button>
+
+      </section>
+
+    </div>
+
     <!-- Loading Overlay -->
 
     <div
@@ -774,6 +954,8 @@
     </div>
 
   </div>
+
+   <script src="/socket.io/socket.io.js"></script>
 
   <script src="../js/lottery.js"></script>
 

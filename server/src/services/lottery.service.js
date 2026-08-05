@@ -5224,8 +5224,13 @@ async function settleSelectedLotteryWinners(
       drawCode:
         draw.draw_code,
 
-      drawTitle:
+            drawTitle:
         draw.draw_title,
+
+      winnerUserId:
+        Number(
+          winnerUser.id,
+        ),
 
       prizeRank:
         prize.rank,
@@ -5263,12 +5268,21 @@ async function settleSelectedLotteryWinners(
 async function executeAdminFairDraw(
   adminId,
   drawId,
+  options = {},
 ) {
   const validDrawId =
     parsePositiveInteger(
       drawId,
       "Draw ID",
     );
+
+      const onDrawingStarted =
+    typeof options
+      .onDrawingStarted ===
+    "function"
+      ? options
+          .onDrawingStarted
+      : null;
 
   const connection =
     await pool.getConnection();
@@ -5639,6 +5653,57 @@ async function executeAdminFairDraw(
         },
       },
     );
+
+        /*
+     * Socket animation event financial transaction-কে
+     * ব্যর্থ করতে পারবে না।
+     */
+    if (onDrawingStarted) {
+      try {
+        await onDrawingStarted({
+          drawId:
+            validDrawId,
+
+          drawCode:
+            draw.draw_code,
+
+          drawTitle:
+            draw.draw_title,
+
+          ticketCount:
+            lockedTickets.length,
+
+                   uniquePlayerCount,
+
+          /*
+           * Animation-এর জন্য সর্বোচ্চ 60টি real sold ticket।
+           * বড় draw-এর সব ticket socket-এ পাঠানো হবে না।
+           */
+          ticketPreview:
+            lockedTickets
+              .slice(
+                0,
+                60,
+              )
+              .map(
+                (ticket) =>
+                  ticket
+                    .ticket_code,
+              ),
+
+          animationDurationMs:
+            9000,
+
+          revealIntervalMs:
+            2200,
+        });
+      } catch (socketError) {
+        console.error(
+          "LOTTERY DRAW START SOCKET ERROR:",
+          socketError,
+        );
+      }
+    }
 
     /*
      * তিন winner payout।

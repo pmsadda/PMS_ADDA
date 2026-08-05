@@ -17,6 +17,12 @@ const { initializePokerSocket } = require("./src/socket/poker.socket");
 
 const { initializeSupportSocket } = require("./src/socket/support.socket");
 
+const {
+  initializeLotterySocket,
+} = require(
+  "./src/socket/lottery.socket",
+);
+
 const PORT = Number(process.env.PORT) || 5000;
 
 const HOST = process.env.HOST || "0.0.0.0";
@@ -64,6 +70,7 @@ initializeTeenPattiSocket(io);
 initializeLudoSocket(io);
 initializePokerSocket(io);
 initializeSupportSocket(io);
+initializeLotterySocket(io);
 
 /*
  * Server start।

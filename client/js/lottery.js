@@ -82,6 +82,75 @@ document.addEventListener("DOMContentLoaded", () => {
     cancelRefundAmount: document.getElementById("cancelRefundAmount"),
 
     confirmCancelTicketBtn: document.getElementById("confirmCancelTicketBtn"),
+          lotteryDrawAnimationOverlay:
+        document.getElementById(
+          "lotteryDrawAnimationOverlay",
+        ),
+
+      drawAnimationTitle:
+        document.getElementById(
+          "drawAnimationTitle",
+        ),
+
+      drawAnimationCode:
+        document.getElementById(
+          "drawAnimationCode",
+        ),
+
+      drawShuffleStage:
+        document.getElementById(
+          "drawShuffleStage",
+        ),
+
+      drawShuffleTrack:
+        document.getElementById(
+          "drawShuffleTrack",
+        ),
+
+      drawAnimationStatus:
+        document.getElementById(
+          "drawAnimationStatus",
+        ),
+
+      drawWinnerRevealStage:
+        document.getElementById(
+          "drawWinnerRevealStage",
+        ),
+
+      drawWinnerRevealGrid:
+        document.getElementById(
+          "drawWinnerRevealGrid",
+        ),
+
+      personalWinnerNotice:
+        document.getElementById(
+          "personalWinnerNotice",
+        ),
+
+      personalWinnerTitle:
+        document.getElementById(
+          "personalWinnerTitle",
+        ),
+
+      personalWinnerMessage:
+        document.getElementById(
+          "personalWinnerMessage",
+        ),
+
+      personalWinnerPrize:
+        document.getElementById(
+          "personalWinnerPrize",
+        ),
+
+      personalWinnerTicket:
+        document.getElementById(
+          "personalWinnerTicket",
+        ),
+
+      closeDrawAnimationBtn:
+        document.getElementById(
+          "closeDrawAnimationBtn",
+        ),
 
     loaderOverlay: document.getElementById("loaderOverlay"),
 
@@ -130,6 +199,35 @@ document.addEventListener("DOMContentLoaded", () => {
     countdownTimer: null,
 
     toastTimer: null,
+          socket:
+        null,
+
+      socketConnected:
+        false,
+
+      activeDrawEvent:
+        null,
+
+      completedDrawEvent:
+        null,
+
+      winnerNotification:
+        null,
+
+              drawAnimationStartedAt:
+        0,
+
+      drawAnimationTimer:
+        null,
+
+      winnerRevealTimers:
+        [],
+
+      drawAnimationRunning:
+        false,
+
+      completedAnimationDrawId:
+        null,
   };
 
   /* ======================================
@@ -1917,22 +2015,1089 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+      elements.closeDrawAnimationBtn
+      .addEventListener(
+        "click",
+        () => {
+          closeDrawAnimation();
+
+          elements.winnerList
+            ?.scrollIntoView({
+              behavior:
+                "smooth",
+
+              block:
+                "start",
+            });
+        },
+      );
+
   window.addEventListener("beforeunload", () => {
+            clearDrawAnimationTimers();
     if (state.countdownTimer) {
       window.clearInterval(state.countdownTimer);
     }
   });
+
+          if (
+          state.socket
+        ) {
+          state.socket.disconnect();
+        }
+
+            /* ======================================
+       Live Draw Animation Helpers
+    ====================================== */
+
+    function clearDrawAnimationTimers() {
+      if (
+        state.drawAnimationTimer
+      ) {
+        window.clearTimeout(
+          state.drawAnimationTimer,
+        );
+
+        state.drawAnimationTimer =
+          null;
+      }
+
+      state.winnerRevealTimers
+        .forEach(
+          (timer) => {
+            window.clearTimeout(
+              timer,
+            );
+          },
+        );
+
+      state.winnerRevealTimers =
+        [];
+    }
+
+    function removeDrawConfetti() {
+      elements
+        .lotteryDrawAnimationOverlay
+        .querySelectorAll(
+          ".draw-confetti",
+        )
+        .forEach(
+          (confetti) =>
+            confetti.remove(),
+        );
+    }
+
+    function resetDrawAnimationUI() {
+      clearDrawAnimationTimers();
+
+      removeDrawConfetti();
+
+      elements.drawShuffleStage
+        .hidden = false;
+
+      elements.drawAnimationStatus
+        .hidden = false;
+
+      elements.drawWinnerRevealStage
+        .hidden = true;
+
+      elements.personalWinnerNotice
+        .hidden = true;
+
+      elements.closeDrawAnimationBtn
+        .hidden = true;
+
+      elements.drawShuffleTrack
+        .replaceChildren();
+
+      elements.drawWinnerRevealGrid
+        .replaceChildren();
+
+      elements.drawAnimationStatus
+        .innerHTML = `
+          <span class="draw-status-spinner"></span>
+
+          <div>
+
+            <strong>
+              Securely shuffling tickets...
+            </strong>
+
+            <p>
+              Cryptographic fair selection is running
+            </p>
+
+          </div>
+        `;
+    }
+
+    function createShuffleTicketElements(
+      ticketPreview,
+    ) {
+      const tickets =
+        Array.isArray(
+          ticketPreview,
+        )
+          ? ticketPreview
+              .filter(Boolean)
+              .slice(
+                0,
+                18,
+              )
+          : [];
+
+      const visibleTickets =
+        tickets.length
+          ? tickets
+          : [
+              "SECURE-TICKET-01",
+              "SECURE-TICKET-02",
+              "SECURE-TICKET-03",
+              "SECURE-TICKET-04",
+              "SECURE-TICKET-05",
+              "SECURE-TICKET-06",
+            ];
+
+      const fragment =
+        document
+          .createDocumentFragment();
+
+      visibleTickets.forEach(
+        (
+          ticketCode,
+          index,
+        ) => {
+          const ticket =
+            document.createElement(
+              "span",
+            );
+
+          const angle =
+            (
+              360 /
+              visibleTickets.length
+            ) *
+            index;
+
+          const delay =
+            -(
+              index *
+              0.13
+            );
+
+          const duration =
+            2.1 +
+            (
+              index %
+              5
+            ) *
+              0.17;
+
+          ticket.className =
+            "shuffle-ticket-chip";
+
+          ticket.textContent =
+            String(
+              ticketCode,
+            );
+
+          ticket.style
+            .setProperty(
+              "--ticket-angle",
+              `${angle}deg`,
+            );
+
+          ticket.style
+            .setProperty(
+              "--ticket-delay",
+              `${delay}s`,
+            );
+
+          ticket.style
+            .setProperty(
+              "--ticket-duration",
+              `${duration}s`,
+            );
+
+          fragment.appendChild(
+            ticket,
+          );
+        },
+      );
+
+      elements.drawShuffleTrack
+        .replaceChildren(
+          fragment,
+        );
+    }
+
+    function openDrawAnimation(
+      payload = {},
+    ) {
+      resetDrawAnimationUI();
+
+      state.activeDrawEvent =
+        payload;
+
+            state.completedDrawEvent =
+        null;
+
+      state.winnerNotification =
+        null;
+
+      state.drawAnimationStartedAt =
+        Date.now();
+
+      state.drawAnimationRunning =
+        true;
+
+      state.completedAnimationDrawId =
+        null;
+
+      elements.drawAnimationTitle
+        .textContent =
+        payload.drawTitle ||
+        "PMS Lottery Draw";
+
+      elements.drawAnimationCode
+        .textContent =
+        payload.drawCode ||
+        "Secure fair draw";
+
+      createShuffleTicketElements(
+        payload.ticketPreview,
+      );
+
+      elements
+        .lotteryDrawAnimationOverlay
+        .classList.add(
+          "is-visible",
+        );
+
+      elements
+        .lotteryDrawAnimationOverlay
+        .setAttribute(
+          "aria-hidden",
+          "false",
+        );
+
+      document.body.style
+        .overflow =
+        "hidden";
+    }
+
+    function createDrawConfetti() {
+      const colors = [
+        "#facc15",
+        "#fb7185",
+        "#a78bfa",
+        "#38bdf8",
+        "#4ade80",
+        "#f97316",
+      ];
+
+      const fragment =
+        document
+          .createDocumentFragment();
+
+      for (
+        let index = 0;
+        index < 46;
+        index += 1
+      ) {
+        const confetti =
+          document.createElement(
+            "span",
+          );
+
+        confetti.className =
+          "draw-confetti";
+
+        confetti.style
+          .setProperty(
+            "--confetti-left",
+            `${
+              Math.random() *
+              100
+            }%`,
+          );
+
+        confetti.style
+          .setProperty(
+            "--confetti-delay",
+            `${
+              Math.random() *
+              1.2
+            }s`,
+          );
+
+        confetti.style
+          .setProperty(
+            "--confetti-color",
+            colors[
+              index %
+              colors.length
+            ],
+          );
+
+        fragment.appendChild(
+          confetti,
+        );
+      }
+
+      elements
+        .lotteryDrawAnimationOverlay
+        .querySelector(
+          ".lottery-draw-animation-card",
+        )
+        ?.appendChild(
+          fragment,
+        );
+
+      window.setTimeout(
+        removeDrawConfetti,
+        4500,
+      );
+    }
+
+    function closeDrawAnimation() {
+      clearDrawAnimationTimers();
+
+      removeDrawConfetti();
+
+      state.drawAnimationRunning =
+        false;
+
+      state.activeDrawEvent =
+        null;
+
+      state.completedDrawEvent =
+        null;
+
+      state.winnerNotification =
+        null;
+
+      elements
+        .lotteryDrawAnimationOverlay
+        .classList.remove(
+          "is-visible",
+        );
+
+      elements
+        .lotteryDrawAnimationOverlay
+        .setAttribute(
+          "aria-hidden",
+          "true",
+        );
+
+      document.body.style
+        .overflow =
+        "";
+    }
+
+        function getRevealRankLabel(
+      prizeRank,
+    ) {
+      const rank =
+        Number(
+          prizeRank,
+        );
+
+      if (rank === 1) {
+        return "1st Winner";
+      }
+
+      if (rank === 2) {
+        return "2nd Winner";
+      }
+
+      return "3rd Winner";
+    }
+
+    function getRevealRankIcon(
+      prizeRank,
+    ) {
+      const rank =
+        Number(
+          prizeRank,
+        );
+
+      if (rank === 1) {
+        return "fa-crown";
+      }
+
+      if (rank === 2) {
+        return "fa-medal";
+      }
+
+      return "fa-award";
+    }
+
+    function createWinnerRevealCard(
+      winner,
+    ) {
+      const rank =
+        Number(
+          winner.prizeRank,
+        );
+
+      const card =
+        document.createElement(
+          "article",
+        );
+
+      card.className =
+        `winner-reveal-card rank-${rank}`;
+
+      card.innerHTML = `
+        <span class="winner-reveal-rank">
+
+          <i class="fa-solid ${getRevealRankIcon(
+            rank,
+          )}"></i>
+
+          ${escapeHtml(
+            getRevealRankLabel(
+              rank,
+            ),
+          )}
+
+        </span>
+
+        <h4>
+          ${escapeHtml(
+            winner.winnerName ||
+              "Lottery Winner",
+          )}
+        </h4>
+
+        <p>
+          ${escapeHtml(
+            winner.winnerUid ||
+              "-",
+          )}
+        </p>
+
+        <span class="winner-reveal-ticket">
+          ${escapeHtml(
+            winner.ticketCode ||
+              "-",
+          )}
+        </span>
+
+        <strong class="winner-reveal-prize">
+          ৳${formatMoney(
+            winner.prizeAmount,
+          )}
+        </strong>
+
+        <em class="winner-reveal-message">
+          ${escapeHtml(
+            winner.winnerMessage ||
+              "Congratulations on your Lottery win!",
+          )}
+        </em>
+      `;
+
+      return card;
+    }
+
+    function showPersonalWinnerNotification(
+      notification,
+    ) {
+      if (!notification) {
+        return;
+      }
+
+      elements.personalWinnerTitle
+        .textContent =
+        `Congratulations, ${
+          notification
+            .winnerName ||
+          "Winner"
+        }!`;
+
+      elements.personalWinnerMessage
+        .textContent =
+        notification
+          .winnerMessage ||
+        `You won ${getRevealRankLabel(
+          notification.prizeRank,
+        )}.`;
+
+      elements.personalWinnerPrize
+        .textContent =
+        `৳${formatMoney(
+          notification
+            .prizeAmount,
+        )}`;
+
+      elements.personalWinnerTicket
+        .textContent =
+        `Winning Ticket: ${
+          notification
+            .ticketCode ||
+          "-"
+        }`;
+
+      elements.personalWinnerNotice
+        .hidden = false;
+
+      showToast(
+        notification
+          .winnerMessage ||
+          "Congratulations! You won a Lottery prize.",
+        "success",
+      );
+    }
+
+    async function refreshLotteryAfterDraw() {
+      await Promise.allSettled([
+        loadLatestUserData(),
+
+        loadDraws(),
+
+        loadTickets({
+          page: 1,
+        }),
+
+        loadWinners(),
+      ]);
+
+      updateBalanceUI();
+
+      renderDraws();
+
+      renderTickets();
+
+      renderWinners();
+
+      renderSummary();
+    }
+
+    function revealCompletedLotteryDraw(
+      payload,
+    ) {
+      const drawId =
+        Number(
+          payload?.drawId,
+        );
+
+      if (
+        !Number.isInteger(
+          drawId,
+        ) ||
+        drawId < 1
+      ) {
+        return;
+      }
+
+      if (
+        Number(
+          state
+            .completedAnimationDrawId,
+        ) ===
+        drawId
+      ) {
+        return;
+      }
+
+      state.completedAnimationDrawId =
+        drawId;
+
+      clearDrawAnimationTimers();
+
+      elements.drawShuffleStage
+        .hidden = true;
+
+      elements.drawAnimationStatus
+        .hidden = true;
+
+      elements.drawWinnerRevealStage
+        .hidden = false;
+
+      elements.drawWinnerRevealGrid
+        .replaceChildren();
+
+      const winners =
+        Array.isArray(
+          payload.winners,
+        )
+          ? [
+              ...payload.winners,
+            ].sort(
+              (
+                firstWinner,
+                secondWinner,
+              ) =>
+                Number(
+                  firstWinner
+                    .prizeRank,
+                ) -
+                Number(
+                  secondWinner
+                    .prizeRank,
+                ),
+            )
+          : [];
+
+      if (!winners.length) {
+        elements.drawWinnerRevealGrid
+          .innerHTML = `
+            <div class="lottery-empty-state">
+
+              <i class="fa-solid fa-circle-exclamation"></i>
+
+              <h3>
+                Result unavailable
+              </h3>
+
+              <p>
+                Refresh the page to load the completed result.
+              </p>
+
+            </div>
+          `;
+
+        elements.closeDrawAnimationBtn
+          .hidden = false;
+
+        refreshLotteryAfterDraw();
+
+        return;
+      }
+
+      const revealInterval =
+        Math.max(
+          1200,
+          Number(
+            state
+              .activeDrawEvent
+              ?.revealIntervalMs ||
+              2200,
+          ),
+        );
+
+      winners.forEach(
+        (
+          winner,
+          index,
+        ) => {
+          const timer =
+            window.setTimeout(
+              () => {
+                const card =
+                  createWinnerRevealCard(
+                    winner,
+                  );
+
+                elements
+                  .drawWinnerRevealGrid
+                  .appendChild(
+                    card,
+                  );
+
+                window
+                  .requestAnimationFrame(
+                    () => {
+                      card.classList
+                        .add(
+                          "is-revealed",
+                        );
+                    },
+                  );
+
+                if (index === 0) {
+                  createDrawConfetti();
+                }
+              },
+              index *
+                revealInterval,
+            );
+
+          state.winnerRevealTimers
+            .push(
+              timer,
+            );
+        },
+      );
+
+      const finishTimer =
+        window.setTimeout(
+          () => {
+            const privateNotice =
+              state
+                .winnerNotification;
+
+            if (
+              privateNotice &&
+              Number(
+                privateNotice
+                  .drawId,
+              ) ===
+                drawId
+            ) {
+              showPersonalWinnerNotification(
+                privateNotice,
+              );
+            }
+
+            elements
+              .closeDrawAnimationBtn
+              .hidden = false;
+
+            state
+              .drawAnimationRunning =
+              false;
+
+            createDrawConfetti();
+
+            refreshLotteryAfterDraw();
+          },
+          winners.length *
+            revealInterval +
+            850,
+        );
+
+      state.winnerRevealTimers
+        .push(
+          finishTimer,
+        );
+    }
+
+    function queueCompletedLotteryDraw(
+      payload,
+    ) {
+      const drawId =
+        Number(
+          payload?.drawId,
+        );
+
+      if (
+        !Number.isInteger(
+          drawId,
+        ) ||
+        drawId < 1
+      ) {
+        return;
+      }
+
+      if (
+        !state
+          .drawAnimationRunning ||
+        Number(
+          state
+            .activeDrawEvent
+            ?.drawId,
+        ) !==
+          drawId
+      ) {
+        openDrawAnimation({
+          drawId,
+
+          drawCode:
+            payload.drawCode,
+
+          drawTitle:
+            payload.winners?.[0]
+              ?.drawTitle ||
+            "PMS Lottery Draw",
+
+          ticketPreview:
+            [],
+
+          animationDurationMs:
+            3500,
+
+          revealIntervalMs:
+            2200,
+        });
+      }
+
+      state.completedDrawEvent =
+        payload;
+
+      const animationDuration =
+        Math.max(
+          3000,
+          Number(
+            state
+              .activeDrawEvent
+              ?.animationDurationMs ||
+              9000,
+          ),
+        );
+
+      const elapsed =
+        Math.max(
+          0,
+          Date.now() -
+            state
+              .drawAnimationStartedAt,
+        );
+
+      const remainingDelay =
+        Math.max(
+          0,
+          animationDuration -
+            elapsed,
+        );
+
+      if (
+        state.drawAnimationTimer
+      ) {
+        window.clearTimeout(
+          state.drawAnimationTimer,
+        );
+      }
+
+      state.drawAnimationTimer =
+        window.setTimeout(
+          () => {
+            state.drawAnimationTimer =
+              null;
+
+            revealCompletedLotteryDraw(
+              payload,
+            );
+          },
+          remainingDelay,
+        );
+    }
+
+      /* ======================================
+       Real-time Lottery Socket
+    ====================================== */
+
+    function initializeLotterySocket() {
+      if (
+        typeof window.io !==
+        "function"
+      ) {
+        console.error(
+          "Lottery Socket.IO client is unavailable.",
+        );
+
+        return;
+      }
+
+      const token =
+        getAccessToken();
+
+      if (!token) {
+        return;
+      }
+
+      const socket =
+        window.io(
+          `${window.APP_CONFIG.SERVER_URL}/lottery`,
+          {
+            auth: {
+              token,
+            },
+
+            transports: [
+              "websocket",
+              "polling",
+            ],
+
+            reconnection:
+              true,
+
+            reconnectionAttempts:
+              Infinity,
+
+            reconnectionDelay:
+              1000,
+
+            reconnectionDelayMax:
+              5000,
+
+            timeout:
+              15000,
+          },
+        );
+
+      state.socket =
+        socket;
+
+      socket.on(
+        "connect",
+        () => {
+          state.socketConnected =
+            true;
+
+          console.log(
+            "Lottery socket connected:",
+            socket.id,
+          );
+        },
+      );
+
+      socket.on(
+        "disconnect",
+        (reason) => {
+          state.socketConnected =
+            false;
+
+          console.warn(
+            "Lottery socket disconnected:",
+            reason,
+          );
+        },
+      );
+
+      socket.on(
+        "connect_error",
+        (error) => {
+          state.socketConnected =
+            false;
+
+          console.error(
+            "Lottery socket connection error:",
+            error.message,
+          );
+        },
+      );
+
+      socket.on(
+        "lottery:connected",
+        (payload) => {
+          console.log(
+            "Lottery real-time connection ready:",
+            payload,
+          );
+        },
+      );
+
+           socket.on(
+        "lottery:draw-started",
+        (payload) => {
+          const draw =
+            state.draws.find(
+              (item) =>
+                Number(
+                  item.drawId,
+                ) ===
+                Number(
+                  payload.drawId,
+                ),
+            );
+
+          if (draw) {
+            draw.status =
+              "drawing";
+
+            draw.remainingSeconds =
+              0;
+
+            draw.countdownDeadline =
+              null;
+
+            renderDraws();
+
+            refreshCountdownUI();
+          }
+
+          openDrawAnimation(
+            payload,
+          );
+
+          console.log(
+            "Lottery draw started:",
+            payload,
+          );
+        },
+      );
+
+            socket.on(
+        "lottery:draw-completed",
+        (payload) => {
+          queueCompletedLotteryDraw(
+            payload,
+          );
+
+          console.log(
+            "Lottery draw completed:",
+            payload,
+          );
+        },
+      );
+
+           socket.on(
+        "lottery:draw-failed",
+        (payload) => {
+          if (
+            state.drawAnimationRunning
+          ) {
+            closeDrawAnimation();
+          }
+
+          state.activeDrawEvent =
+            null;
+
+          state.completedDrawEvent =
+            null;
+
+          showToast(
+            payload.message ||
+              "Lottery draw failed.",
+            "error",
+          );
+
+          loadDraws();
+
+          console.error(
+            "Lottery draw failed:",
+            payload,
+          );
+        },
+      );
+
+            socket.on(
+        "lottery:winner-notification",
+        (payload) => {
+          state.winnerNotification =
+            payload;
+
+          if (
+            Number(
+              state
+                .completedAnimationDrawId,
+            ) ===
+              Number(
+                payload.drawId,
+              ) &&
+            !elements
+              .closeDrawAnimationBtn
+              .hidden
+          ) {
+            showPersonalWinnerNotification(
+              payload,
+            );
+          }
+
+          console.log(
+            "Private Lottery winner notification:",
+            payload,
+          );
+        },
+      );
+
+    }
+
 
   /* ======================================
        Initialization
     ====================================== */
 
   async function initializeLottery() {
-    if (!initializeUser()) {
-      return;
-    }
+         if (!initializeUser()) {
+        return;
+      }
 
-    updateBalanceUI();
+      initializeLotterySocket();
+
+      updateBalanceUI();
 
     renderDraws();
 

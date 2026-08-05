@@ -5,6 +5,15 @@ const lotteryService =
     "../services/lottery.service",
   );
 
+  const {
+  emitLotteryDrawStarted,
+  emitLotteryDrawCompleted,
+  emitLotteryDrawFailed,
+  emitLotteryWinnerNotification,
+} = require(
+  "../socket/lottery.socket",
+);
+
 function sendAdminLotteryError(
   response,
   error,
@@ -258,13 +267,171 @@ async function executeFairDraw(
   request,
   response,
 ) {
+  const io =
+    request.app.get(
+      "io",
+    );
+
+  const requestedDrawId =
+    Number.parseInt(
+      request.params.drawId,
+      10,
+    );
+
+  let drawStarted =
+    false;
+
   try {
     const data =
       await lotteryService
         .executeAdminFairDraw(
           request.user.id,
           request.params.drawId,
+          {
+            onDrawingStarted:
+              async (
+                startPayload,
+              ) => {
+                drawStarted =
+                  true;
+
+                if (io) {
+                  emitLotteryDrawStarted(
+                    io,
+                    startPayload,
+                  );
+                }
+              },
+          },
         );
+
+    if (
+      io &&
+      !data.alreadyCompleted
+    ) {
+      const publicWinners =
+        Array.isArray(
+          data.winners,
+        )
+          ? data.winners.map(
+              (winner) => ({
+                drawId:
+                  winner.drawId,
+
+                drawCode:
+                  winner.drawCode,
+
+                drawTitle:
+                  winner.drawTitle,
+
+                prizeRank:
+                  winner.prizeRank,
+
+                ticketCode:
+                  winner.ticketCode,
+
+                winnerUid:
+                  winner.winnerUid,
+
+                winnerName:
+                  winner.winnerName,
+
+                prizePercent:
+                  winner.prizePercent,
+
+                prizeAmount:
+                  winner.prizeAmount,
+
+                winnerMessage:
+                  winner.winnerMessage,
+              }),
+            )
+          : [];
+
+      emitLotteryDrawCompleted(
+        io,
+        {
+          drawId:
+            data.drawId,
+
+          drawCode:
+            data.drawCode,
+
+          status:
+            data.status,
+
+          winners:
+            publicWinners,
+
+          ticketSetHash:
+            data.ticketSetHash,
+
+          shuffleProofHash:
+            data
+              .shuffleProofHash,
+
+          revealedSeed:
+            data.revealedSeed,
+
+          drawnAt:
+            data.drawnAt,
+        },
+      );
+
+      for (
+        const winner of
+        data.winners || []
+      ) {
+        const winnerUserId =
+          Number(
+            winner
+              .winnerUserId,
+          );
+
+        if (
+          !Number.isInteger(
+            winnerUserId,
+          ) ||
+          winnerUserId < 1
+        ) {
+          continue;
+        }
+
+        emitLotteryWinnerNotification(
+          io,
+          winnerUserId,
+          {
+            drawId:
+              winner.drawId,
+
+            drawCode:
+              winner.drawCode,
+
+            drawTitle:
+              winner.drawTitle,
+
+            prizeRank:
+              winner.prizeRank,
+
+            ticketCode:
+              winner.ticketCode,
+
+            winnerUid:
+              winner.winnerUid,
+
+            winnerName:
+              winner.winnerName,
+
+            prizeAmount:
+              winner.prizeAmount,
+
+            winnerMessage:
+              winner
+                .winnerMessage,
+          },
+        );
+      }
+    }
 
     return response
       .status(200)
@@ -279,6 +446,31 @@ async function executeFairDraw(
         data,
       });
   } catch (error) {
+    if (
+      io &&
+      drawStarted
+    ) {
+      emitLotteryDrawFailed(
+        io,
+        {
+          drawId:
+            Number.isInteger(
+              requestedDrawId,
+            )
+              ? requestedDrawId
+              : null,
+
+          code:
+            error.code ||
+            "LOTTERY_DRAW_FAILED",
+
+          message:
+            error.message ||
+            "Lottery draw failed.",
+        },
+      );
+    }
+
     console.error(
       "EXECUTE FAIR LOTTERY DRAW ERROR:",
       error,
