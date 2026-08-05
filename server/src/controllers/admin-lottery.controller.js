@@ -72,6 +72,46 @@ async function getDraws(
 }
 
 /* ==========================================
+   Get Admin Lottery Draw Details
+========================================== */
+
+async function getDrawDetails(
+  request,
+  response,
+) {
+  try {
+    const data =
+      await lotteryService
+        .getAdminLotteryDrawDetails(
+          request.params.drawId,
+          request.query,
+        );
+
+    return response
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Admin lottery draw details loaded successfully.",
+
+        data,
+      });
+  } catch (error) {
+    console.error(
+      "GET ADMIN LOTTERY DRAW DETAILS ERROR:",
+      error,
+    );
+
+    return sendAdminLotteryError(
+      response,
+      error,
+      "Unable to load lottery draw details.",
+    );
+  }
+}
+
+/* ==========================================
    Create Draft Draw
 ========================================== */
 
@@ -254,6 +294,7 @@ async function executeFairDraw(
 
 module.exports = {
   getDraws,
+  getDrawDetails,
   createDraw,
   openDraw,
   cancelAdminDraw,

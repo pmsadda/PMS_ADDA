@@ -32,6 +32,11 @@ router.get(
   controller.getDraws,
 );
 
+router.get(
+  "/draws/:drawId",
+  controller.getDrawDetails,
+);
+
 router.post(
   "/draws",
   controller.createDraw,

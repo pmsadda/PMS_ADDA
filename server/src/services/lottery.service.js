@@ -2843,6 +2843,448 @@ async function getAdminLotteryDraws(
   };
 }
 
+async function getAdminLotteryDrawDetails(
+  drawId,
+  options = {},
+) {
+  const validDrawId =
+    parsePositiveInteger(
+      drawId,
+      "Draw ID",
+    );
+
+  const page =
+    Math.max(
+      1,
+      Number.parseInt(
+        String(
+          options.page ||
+            "1",
+        ),
+        10,
+      ) || 1,
+    );
+
+  const limit =
+    parseListLimit(
+      options.limit,
+      50,
+      100,
+    );
+
+  const offset =
+    (page - 1) *
+    limit;
+
+  const [drawRows] =
+    await pool.query(
+      `
+        SELECT
+          ld.*,
+
+          creator.uid AS
+            creator_uid,
+
+          creator.full_name AS
+            creator_name,
+
+          0 AS
+            my_ticket_count,
+
+          GREATEST(
+            0,
+            TIMESTAMPDIFF(
+              SECOND,
+              UTC_TIMESTAMP(),
+              ld.countdown_ends_at
+            )
+          ) AS
+            remaining_seconds,
+
+          (
+            SELECT
+              COUNT(
+                DISTINCT
+                lt.user_id
+              )
+
+            FROM lottery_tickets lt
+
+            WHERE
+              lt.draw_id =
+                ld.id
+
+              AND lt.status IN (
+                'active',
+                'locked',
+                'winner',
+                'non_winner'
+              )
+          ) AS
+            unique_player_count,
+
+          (
+            SELECT
+              COUNT(*)
+
+            FROM lottery_winners lw
+
+            WHERE
+              lw.draw_id =
+                ld.id
+
+              AND
+                lw.settlement_status =
+                  'completed'
+          ) AS
+            winner_count
+
+        FROM lottery_draws ld
+
+        INNER JOIN users creator
+          ON creator.id =
+             ld.created_by
+
+        WHERE ld.id = ?
+
+        LIMIT 1
+      `,
+      [
+        validDrawId,
+      ],
+    );
+
+  const drawRow =
+    drawRows[0] || null;
+
+  if (!drawRow) {
+    throw createServiceError(
+      "Lottery draw was not found.",
+      404,
+      "LOTTERY_DRAW_NOT_FOUND",
+    );
+  }
+
+  const [ticketCountRows] =
+    await pool.query(
+      `
+        SELECT
+          COUNT(*) AS total
+
+        FROM lottery_tickets
+
+        WHERE draw_id = ?
+      `,
+      [
+        validDrawId,
+      ],
+    );
+
+  const ticketTotal =
+    Number(
+      ticketCountRows[0]
+        ?.total || 0,
+    );
+
+  const [ticketRows] =
+    await pool.query(
+      `
+        SELECT
+          lt.*,
+
+          ld.draw_code,
+          ld.draw_title,
+
+          ld.status AS
+            draw_status,
+
+          buyer.uid AS
+            buyer_uid,
+
+          buyer.full_name AS
+            buyer_name,
+
+          buyer.phone AS
+            buyer_phone
+
+        FROM lottery_tickets lt
+
+        INNER JOIN lottery_draws ld
+          ON ld.id =
+             lt.draw_id
+
+        INNER JOIN users buyer
+          ON buyer.id =
+             lt.user_id
+
+        WHERE lt.draw_id = ?
+
+        ORDER BY
+          lt.id DESC
+
+        LIMIT ${limit}
+        OFFSET ${offset}
+      `,
+      [
+        validDrawId,
+      ],
+    );
+
+  const tickets =
+    ticketRows.map(
+      (row) => ({
+        ...mapTicketRow(
+          row,
+        ),
+
+        purchaseTransactionId:
+          row
+            .purchase_transaction_id,
+
+        refundTransactionId:
+          row
+            .refund_transaction_id ||
+          null,
+
+        buyer: {
+          userId:
+            Number(
+              row.user_id,
+            ),
+
+          uid:
+            row.buyer_uid ||
+            null,
+
+          name:
+            row.buyer_name ||
+            null,
+
+          phone:
+            row.buyer_phone ||
+            null,
+        },
+      }),
+    );
+
+  const [winnerRows] =
+    await pool.query(
+      `
+        SELECT
+          lw.*,
+          ld.draw_code,
+          ld.draw_title
+
+        FROM lottery_winners lw
+
+        INNER JOIN lottery_draws ld
+          ON ld.id =
+             lw.draw_id
+
+        WHERE lw.draw_id = ?
+
+        ORDER BY
+          lw.prize_rank ASC
+      `,
+      [
+        validDrawId,
+      ],
+    );
+
+  const [revenueRows] =
+    await pool.query(
+      `
+        SELECT
+          id,
+          revenue_key,
+          ticket_id,
+          user_id,
+          revenue_type,
+          gross_amount,
+          revenue_percent,
+          revenue_amount,
+          related_transaction_id,
+          description,
+          created_at
+
+        FROM lottery_revenue_history
+
+        WHERE draw_id = ?
+
+        ORDER BY id ASC
+      `,
+      [
+        validDrawId,
+      ],
+    );
+
+  const [statusRows] =
+    await pool.query(
+      `
+        SELECT
+          status,
+          COUNT(*) AS total
+
+        FROM lottery_tickets
+
+        WHERE draw_id = ?
+
+        GROUP BY status
+      `,
+      [
+        validDrawId,
+      ],
+    );
+
+  const ticketStatusCounts =
+    {};
+
+  for (
+    const row of statusRows
+  ) {
+    ticketStatusCounts[
+      String(row.status)
+    ] =
+      Number(
+        row.total || 0,
+      );
+  }
+
+  return {
+    draw: {
+      ...mapDrawRow(
+        drawRow,
+      ),
+
+      uniquePlayerCount:
+        Number(
+          drawRow
+            .unique_player_count ||
+            0,
+        ),
+
+      winnerCount:
+        Number(
+          drawRow
+            .winner_count ||
+            0,
+        ),
+
+      cancellationReason:
+        drawRow
+          .cancellation_reason ||
+        null,
+
+      cancelledAt:
+        drawRow
+          .cancelled_at ||
+        null,
+
+      createdBy: {
+        userId:
+          Number(
+            drawRow.created_by,
+          ),
+
+        uid:
+          drawRow
+            .creator_uid ||
+          null,
+
+        name:
+          drawRow
+            .creator_name ||
+          null,
+      },
+    },
+
+    tickets,
+
+    winners:
+      winnerRows.map(
+        mapWinnerRow,
+      ),
+
+    revenue:
+      revenueRows.map(
+        (row) => ({
+          revenueId:
+            Number(row.id),
+
+          revenueKey:
+            row.revenue_key,
+
+          ticketId:
+            row.ticket_id ===
+              null
+              ? null
+              : Number(
+                  row.ticket_id,
+                ),
+
+          userId:
+            row.user_id ===
+              null
+              ? null
+              : Number(
+                  row.user_id,
+                ),
+
+          type:
+            row.revenue_type,
+
+          grossAmount:
+            parseMoney(
+              row.gross_amount,
+            ),
+
+          percent:
+            parseMoney(
+              row
+                .revenue_percent,
+            ),
+
+          amount:
+            parseMoney(
+              row.revenue_amount,
+            ),
+
+          relatedTransactionId:
+            row
+              .related_transaction_id ||
+            null,
+
+          description:
+            row.description ||
+            null,
+
+          createdAt:
+            row.created_at ||
+            null,
+        }),
+      ),
+
+    ticketStatusCounts,
+
+    pagination: {
+      page,
+
+      limit,
+
+      total:
+        ticketTotal,
+
+      totalPages:
+        Math.max(
+          1,
+          Math.ceil(
+            ticketTotal /
+            limit,
+          ),
+        ),
+    },
+  };
+}
 /* ==========================================
    Admin Draw Validation
 ========================================== */
@@ -5515,6 +5957,7 @@ module.exports = {
   getMyTickets,
   getRecentWinners,
   getAdminLotteryDraws,
+  getAdminLotteryDrawDetails,
   purchaseTickets,
   cancelTicket,
   cancelAdminDraw,
