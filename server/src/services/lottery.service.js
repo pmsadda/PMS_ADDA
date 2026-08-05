@@ -3573,6 +3573,1613 @@ async function openAdminDraw(adminId, drawId) {
 }
 
 /* ==========================================
+   Deterministic Fair Shuffle
+========================================== */
+
+function buildLotteryTicketSetHash(tickets) {
+  return sha256Hex(
+    canonicalizeJson(
+      tickets.map((ticket) => ({
+        ticketId:
+          Number(ticket.id),
+
+        ticketCode:
+          ticket.ticket_code,
+
+        userId:
+          Number(ticket.user_id),
+
+        ticketPrice:
+          parseMoney(
+            ticket.ticket_price,
+          ),
+      })),
+    ),
+  );
+}
+
+function createDeterministicRandomInteger(
+  serverSeed,
+  context,
+) {
+  let counter = 0;
+
+  let randomBlock =
+    Buffer.alloc(0);
+
+  let blockOffset = 0;
+
+  function nextUInt32() {
+    if (
+      blockOffset + 4 >
+      randomBlock.length
+    ) {
+      randomBlock =
+        crypto
+          .createHmac(
+            "sha256",
+            serverSeed,
+          )
+          .update(
+            String(context),
+          )
+          .update("|")
+          .update(
+            String(counter),
+          )
+          .digest();
+
+      counter += 1;
+
+      blockOffset = 0;
+    }
+
+    const value =
+      randomBlock.readUInt32BE(
+        blockOffset,
+      );
+
+    blockOffset += 4;
+
+    return value;
+  }
+
+  return function nextInteger(
+    maxExclusive,
+  ) {
+    const maximum =
+      Number(maxExclusive);
+
+    if (
+      !Number.isInteger(
+        maximum,
+      ) ||
+      maximum < 1
+    ) {
+      throw createServiceError(
+        "Lottery shuffle range is invalid.",
+        500,
+        "LOTTERY_SHUFFLE_RANGE_INVALID",
+      );
+    }
+
+    if (maximum === 1) {
+      return 0;
+    }
+
+    const uint32Range =
+      0x100000000;
+
+    const acceptanceLimit =
+      Math.floor(
+        uint32Range / maximum,
+      ) * maximum;
+
+    let randomValue;
+
+    do {
+      randomValue =
+        nextUInt32();
+    } while (
+      randomValue >=
+      acceptanceLimit
+    );
+
+    return (
+      randomValue %
+      maximum
+    );
+  };
+}
+
+function shuffleLotteryTickets(
+  tickets,
+  serverSeed,
+  context,
+) {
+  const shuffledTickets = [
+    ...tickets,
+  ];
+
+  const nextInteger =
+    createDeterministicRandomInteger(
+      serverSeed,
+      context,
+    );
+
+  for (
+    let index =
+      shuffledTickets.length - 1;
+    index > 0;
+    index -= 1
+  ) {
+    const replacementIndex =
+      nextInteger(
+        index + 1,
+      );
+
+    [
+      shuffledTickets[index],
+      shuffledTickets[
+        replacementIndex
+      ],
+    ] = [
+      shuffledTickets[
+        replacementIndex
+      ],
+      shuffledTickets[index],
+    ];
+  }
+
+  return shuffledTickets;
+}
+
+function selectDistinctLotteryWinners(
+  shuffledTickets,
+) {
+  const selectedWinners = [];
+
+  const selectedUserIds =
+    new Set();
+
+  for (
+    const ticket of
+    shuffledTickets
+  ) {
+    const userId =
+      Number(ticket.user_id);
+
+    if (
+      selectedUserIds.has(
+        userId,
+      )
+    ) {
+      continue;
+    }
+
+    selectedUserIds.add(
+      userId,
+    );
+
+    selectedWinners.push(
+      ticket,
+    );
+
+    if (
+      selectedWinners.length ===
+      3
+    ) {
+      break;
+    }
+  }
+
+  if (
+    selectedWinners.length !==
+    3
+  ) {
+    throw createServiceError(
+      "At least three unique players are required for the lottery draw.",
+      409,
+      "LOTTERY_UNIQUE_WINNERS_REQUIRED",
+    );
+  }
+
+  return selectedWinners;
+}
+
+function prepareLotteryFairSelection(
+  draw,
+  lockedTickets,
+) {
+  const validDrawId =
+    Number(draw.id);
+
+  const calculatedTicketSetHash =
+    buildLotteryTicketSetHash(
+      lockedTickets,
+    );
+
+  if (
+    calculatedTicketSetHash !==
+    String(
+      draw.ticket_set_hash ||
+        "",
+    )
+  ) {
+    throw createServiceError(
+      "Lottery ticket set verification failed.",
+      500,
+      "LOTTERY_TICKET_SET_HASH_MISMATCH",
+    );
+  }
+
+  const serverSeed =
+    decryptServerSeed(
+      draw
+        .server_seed_ciphertext,
+    );
+
+  const calculatedSeedCommitment =
+    sha256Hex(serverSeed);
+
+  if (
+    calculatedSeedCommitment !==
+    String(
+      draw.seed_commitment ||
+        "",
+    )
+  ) {
+    throw createServiceError(
+      "Lottery seed commitment verification failed.",
+      500,
+      "LOTTERY_SEED_COMMITMENT_MISMATCH",
+    );
+  }
+
+  const algorithm =
+    "PMS_LOTTERY_HMAC_FY_V1";
+
+  const shuffleContext =
+    canonicalizeJson({
+      algorithm,
+
+      drawId:
+        validDrawId,
+
+      drawCode:
+        draw.draw_code,
+
+      seedCommitment:
+        draw.seed_commitment,
+
+      ticketSetHash:
+        calculatedTicketSetHash,
+    });
+
+  const shuffledTickets =
+    shuffleLotteryTickets(
+      lockedTickets,
+      serverSeed,
+      shuffleContext,
+    );
+
+  const selectedWinnerTickets =
+    selectDistinctLotteryWinners(
+      shuffledTickets,
+    );
+
+  const shuffleProofHash =
+    sha256Hex(
+      canonicalizeJson({
+        algorithm,
+
+        drawId:
+          validDrawId,
+
+        drawCode:
+          draw.draw_code,
+
+        seedCommitment:
+          draw.seed_commitment,
+
+        ticketSetHash:
+          calculatedTicketSetHash,
+
+        shuffledTicketIds:
+          shuffledTickets.map(
+            (ticket) =>
+              Number(ticket.id),
+          ),
+
+        winnerTicketIds:
+          selectedWinnerTickets.map(
+            (ticket) =>
+              Number(ticket.id),
+          ),
+      }),
+    );
+
+  const grossAmount =
+    parseMoney(
+      lockedTickets.reduce(
+        (
+          total,
+          ticket,
+        ) =>
+          total +
+          parseMoney(
+            ticket.ticket_price,
+          ),
+        0,
+      ),
+    );
+
+  const prizeDefinitions = [
+    {
+      rank: 1,
+
+      percent:
+        parseMoney(
+          draw
+            .first_prize_percent,
+        ),
+
+      amount:
+        calculateAmountByPercent(
+          grossAmount,
+          draw
+            .first_prize_percent,
+        ),
+    },
+
+    {
+      rank: 2,
+
+      percent:
+        parseMoney(
+          draw
+            .second_prize_percent,
+        ),
+
+      amount:
+        calculateAmountByPercent(
+          grossAmount,
+          draw
+            .second_prize_percent,
+        ),
+    },
+
+    {
+      rank: 3,
+
+      percent:
+        parseMoney(
+          draw
+            .third_prize_percent,
+        ),
+
+      amount:
+        calculateAmountByPercent(
+          grossAmount,
+          draw
+            .third_prize_percent,
+        ),
+    },
+  ];
+
+  const totalPrizeAmount =
+    parseMoney(
+      prizeDefinitions.reduce(
+        (
+          total,
+          prize,
+        ) =>
+          total +
+          prize.amount,
+        0,
+      ),
+    );
+
+  const serviceChargeAmount =
+    calculateAmountByPercent(
+      grossAmount,
+      draw
+        .service_charge_percent,
+    );
+
+  return {
+    algorithm,
+
+    calculatedTicketSetHash,
+
+    selectedWinnerTickets,
+
+    shuffledTickets,
+
+    shuffleProofHash,
+
+    revealedSeed:
+      serverSeed.toString(
+        "hex",
+      ),
+
+    grossAmount,
+
+    prizeDefinitions,
+
+    totalPrizeAmount,
+
+    serviceChargeAmount,
+  };
+}
+
+async function settleSelectedLotteryWinners(
+  connection,
+  {
+    admin,
+    draw,
+    lockedTickets,
+    selectedWinnerTickets,
+    prizeDefinitions,
+  },
+) {
+  const validDrawId =
+    Number(draw.id);
+
+  const winnerUserIds =
+    selectedWinnerTickets
+      .map(
+        (ticket) =>
+          Number(
+            ticket.user_id,
+          ),
+      )
+      .sort(
+        (
+          firstId,
+          secondId,
+        ) =>
+          firstId -
+          secondId,
+      );
+
+  const placeholders =
+    winnerUserIds
+      .map(() => "?")
+      .join(", ");
+
+  const [winnerUserRows] =
+    await connection.query(
+      `
+        SELECT
+          id,
+          uid,
+          full_name,
+          wallet_balance,
+          account_status
+
+        FROM users
+
+        WHERE id IN (
+          ${placeholders}
+        )
+
+        ORDER BY id ASC
+
+        FOR UPDATE
+      `,
+      winnerUserIds,
+    );
+
+  if (
+    winnerUserRows.length !==
+    3
+  ) {
+    throw createServiceError(
+      "One or more lottery winners could not be locked.",
+      409,
+      "LOTTERY_WINNER_USER_MISSING",
+    );
+  }
+
+  const winnerUsers =
+    new Map(
+      winnerUserRows.map(
+        (user) => [
+          Number(user.id),
+          user,
+        ],
+      ),
+    );
+
+  const [
+    nonWinnerUpdateResult,
+  ] =
+    await connection.query(
+      `
+        UPDATE lottery_tickets
+
+        SET
+          status =
+            'non_winner',
+
+          winner_rank =
+            NULL,
+
+          prize_amount =
+            0.00,
+
+          resulted_at =
+            UTC_TIMESTAMP()
+
+        WHERE draw_id = ?
+          AND status =
+              'locked'
+      `,
+      [
+        validDrawId,
+      ],
+    );
+
+  if (
+    Number(
+      nonWinnerUpdateResult
+        .affectedRows,
+    ) !==
+    lockedTickets.length
+  ) {
+    throw createServiceError(
+      "Lottery ticket results could not be prepared.",
+      409,
+      "LOTTERY_TICKET_RESULT_PREPARE_FAILED",
+    );
+  }
+
+  const winnerResults = [];
+
+  for (
+    let index = 0;
+    index <
+    selectedWinnerTickets.length;
+    index += 1
+  ) {
+    const ticket =
+      selectedWinnerTickets[
+        index
+      ];
+
+    const prize =
+      prizeDefinitions[
+        index
+      ];
+
+    const winnerUser =
+      winnerUsers.get(
+        Number(
+          ticket.user_id,
+        ),
+      );
+
+    if (
+      !winnerUser ||
+      String(
+        winnerUser
+          .account_status,
+      ) !== "active"
+    ) {
+      throw createServiceError(
+        "A selected lottery winner account is not active.",
+        409,
+        "LOTTERY_WINNER_ACCOUNT_INACTIVE",
+      );
+    }
+
+    const balanceBefore =
+      parseMoney(
+        winnerUser
+          .wallet_balance,
+      );
+
+    const balanceAfter =
+      parseMoney(
+        balanceBefore +
+          prize.amount,
+      );
+
+    const payoutTransactionId =
+      createLotteryWalletTransactionId(
+        `LTWIN${prize.rank}`,
+      );
+
+    const winnerMessage =
+      `Congratulations! You won rank ${prize.rank} in ${draw.draw_code}.`;
+
+    const [
+      walletUpdateResult,
+    ] =
+      await connection.query(
+        `
+          UPDATE users
+
+          SET
+            wallet_balance =
+              wallet_balance + ?
+
+          WHERE id = ?
+            AND account_status =
+                'active'
+        `,
+        [
+          prize.amount,
+
+          Number(
+            winnerUser.id,
+          ),
+        ],
+      );
+
+    if (
+      Number(
+        walletUpdateResult
+          .affectedRows,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Lottery winner payout could not be credited.",
+        409,
+        "LOTTERY_WINNER_PAYOUT_FAILED",
+      );
+    }
+
+    await connection.query(
+      `
+        INSERT INTO wallet_transactions (
+          transaction_id,
+          user_id,
+          transaction_type,
+          direction,
+          amount,
+          balance_before,
+          balance_after,
+          status,
+          reference_type,
+          reference_id,
+          description,
+          created_by
+        )
+        VALUES (
+          ?,
+          ?,
+          'game_win',
+          'credit',
+          ?,
+          ?,
+          ?,
+          'completed',
+          'lottery_draw',
+          ?,
+          ?,
+          ?
+        )
+      `,
+      [
+        payoutTransactionId,
+
+        Number(
+          winnerUser.id,
+        ),
+
+        prize.amount,
+
+        balanceBefore,
+
+        balanceAfter,
+
+        String(
+          validDrawId,
+        ),
+
+        `Lottery ${draw.draw_code} rank ${prize.rank} prize for ticket ${ticket.ticket_code}`,
+
+        Number(
+          admin.id,
+        ),
+      ],
+    );
+
+    const [
+      ticketUpdateResult,
+    ] =
+      await connection.query(
+        `
+          UPDATE lottery_tickets
+
+          SET
+            status =
+              'winner',
+
+            winner_rank = ?,
+
+            prize_amount = ?,
+
+            resulted_at =
+              UTC_TIMESTAMP()
+
+          WHERE id = ?
+            AND draw_id = ?
+            AND status =
+                'non_winner'
+        `,
+        [
+          prize.rank,
+
+          prize.amount,
+
+          Number(
+            ticket.id,
+          ),
+
+          validDrawId,
+        ],
+      );
+
+    if (
+      Number(
+        ticketUpdateResult
+          .affectedRows,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Lottery winning ticket could not be updated.",
+        409,
+        "LOTTERY_WINNING_TICKET_UPDATE_FAILED",
+      );
+    }
+
+    await connection.query(
+      `
+        INSERT INTO lottery_winners (
+          draw_id,
+          prize_rank,
+          ticket_id,
+          user_id,
+          winner_uid,
+          winner_name,
+          ticket_code_snapshot,
+          prize_percent,
+          prize_amount,
+          settlement_status,
+          payout_transaction_id,
+          payout_balance_before,
+          payout_balance_after,
+          winner_message,
+          settled_at,
+          announced_at
+        )
+        VALUES (
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          'completed',
+          ?,
+          ?,
+          ?,
+          ?,
+          UTC_TIMESTAMP(),
+          UTC_TIMESTAMP()
+        )
+      `,
+      [
+        validDrawId,
+
+        prize.rank,
+
+        Number(
+          ticket.id,
+        ),
+
+        Number(
+          winnerUser.id,
+        ),
+
+        winnerUser.uid,
+
+        winnerUser.full_name,
+
+        ticket.ticket_code,
+
+        prize.percent,
+
+        prize.amount,
+
+        payoutTransactionId,
+
+        balanceBefore,
+
+        balanceAfter,
+
+        winnerMessage,
+      ],
+    );
+
+    await appendLotteryAuditEvent(
+      connection,
+      {
+        drawId:
+          validDrawId,
+
+        ticketId:
+          Number(
+            ticket.id,
+          ),
+
+        actorType:
+          "system",
+
+        eventType:
+          "WINNER_PAID",
+
+        eventData: {
+          prizeRank:
+            prize.rank,
+
+          ticketCode:
+            ticket
+              .ticket_code,
+
+          winnerUserId:
+            Number(
+              winnerUser.id,
+            ),
+
+          prizePercent:
+            prize.percent,
+
+          prizeAmount:
+            prize.amount,
+
+          payoutTransactionId,
+        },
+      },
+    );
+
+    winnerUser.wallet_balance =
+      balanceAfter;
+
+    winnerResults.push({
+      drawId:
+        validDrawId,
+
+      drawCode:
+        draw.draw_code,
+
+      drawTitle:
+        draw.draw_title,
+
+      prizeRank:
+        prize.rank,
+
+      ticketCode:
+        ticket.ticket_code,
+
+      winnerUid:
+        winnerUser.uid,
+
+      winnerName:
+        winnerUser.full_name,
+
+      prizePercent:
+        prize.percent,
+
+      prizeAmount:
+        prize.amount,
+
+      winnerMessage,
+
+      payoutTransactionId,
+
+      payoutBalanceBefore:
+        balanceBefore,
+
+      payoutBalanceAfter:
+        balanceAfter,
+    });
+  }
+
+  return winnerResults;
+}
+
+async function executeAdminFairDraw(
+  adminId,
+  drawId,
+) {
+  const validDrawId =
+    parsePositiveInteger(
+      drawId,
+      "Draw ID",
+    );
+
+  const connection =
+    await pool.getConnection();
+
+  let transactionStarted =
+    false;
+
+  try {
+    await connection
+      .beginTransaction();
+
+    transactionStarted = true;
+
+    const admin =
+      await getLockedLotteryAdmin(
+        adminId,
+        connection,
+      );
+
+    const [drawRows] =
+      await connection.query(
+        `
+          SELECT
+            ld.*,
+
+            GREATEST(
+              0,
+              TIMESTAMPDIFF(
+                SECOND,
+                UTC_TIMESTAMP(),
+                ld.countdown_ends_at
+              )
+            ) AS remaining_seconds
+
+          FROM lottery_draws ld
+
+          WHERE ld.id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+        [
+          validDrawId,
+        ],
+      );
+
+    const draw =
+      drawRows[0] || null;
+
+    if (!draw) {
+      throw createServiceError(
+        "Lottery draw was not found.",
+        404,
+        "LOTTERY_DRAW_NOT_FOUND",
+      );
+    }
+
+    /*
+     * একই draw button পুনরায় চাপলে
+     * দ্বিতীয়বার prize দেওয়া হবে না।
+     */
+    if (
+      String(draw.status) ===
+      "completed"
+    ) {
+      const [
+        completedWinnerRows,
+      ] =
+        await connection.query(
+          `
+            SELECT
+              lw.*,
+              ld.draw_code,
+              ld.draw_title
+
+            FROM lottery_winners lw
+
+            INNER JOIN lottery_draws ld
+              ON ld.id =
+                 lw.draw_id
+
+            WHERE lw.draw_id = ?
+              AND lw.settlement_status =
+                  'completed'
+
+            ORDER BY
+              lw.prize_rank ASC
+          `,
+          [
+            validDrawId,
+          ],
+        );
+
+      if (
+        completedWinnerRows.length !==
+        3
+      ) {
+        throw createServiceError(
+          "Completed lottery draw winner data is inconsistent.",
+          500,
+          "LOTTERY_COMPLETED_WINNER_INTEGRITY_ERROR",
+        );
+      }
+
+      await connection.commit();
+
+      transactionStarted =
+        false;
+
+      return {
+        alreadyCompleted:
+          true,
+
+        drawId:
+          validDrawId,
+
+        drawCode:
+          draw.draw_code,
+
+        status:
+          "completed",
+
+        winners:
+          completedWinnerRows.map(
+            mapWinnerRow,
+          ),
+
+        ticketSetHash:
+          draw.ticket_set_hash,
+
+        shuffleProofHash:
+          draw
+            .shuffle_proof_hash,
+
+        revealedSeed:
+          draw.revealed_seed,
+
+        drawnAt:
+          draw.drawn_at ||
+          null,
+      };
+    }
+
+    if (
+      ![
+        "countdown",
+        "ready_to_draw",
+      ].includes(
+        String(draw.status),
+      )
+    ) {
+      throw createServiceError(
+        "This lottery draw is not ready to run.",
+        409,
+        "LOTTERY_DRAW_NOT_READY",
+      );
+    }
+
+    const remainingSeconds =
+      Number(
+        draw.remaining_seconds ||
+          0,
+      );
+
+    if (
+      remainingSeconds > 0
+    ) {
+      throw createServiceError(
+        `Lottery countdown has ${remainingSeconds} seconds remaining.`,
+        409,
+        "LOTTERY_COUNTDOWN_ACTIVE",
+      );
+    }
+
+    /*
+     * Unfinished draw-এর জন্য আগে থেকে
+     * winner row থাকা নিরাপদ নয়।
+     */
+    const [
+      existingWinnerRows,
+    ] =
+      await connection.query(
+        `
+          SELECT
+            COUNT(*) AS total
+
+          FROM lottery_winners
+
+          WHERE draw_id = ?
+        `,
+        [
+          validDrawId,
+        ],
+      );
+
+    if (
+      Number(
+        existingWinnerRows[0]
+          ?.total || 0,
+      ) !== 0
+    ) {
+      throw createServiceError(
+        "Lottery winner records already exist for this unfinished draw.",
+        500,
+        "LOTTERY_WINNER_STATE_CONFLICT",
+      );
+    }
+
+    const [lockedTickets] =
+      await connection.query(
+        `
+          SELECT
+            id,
+            ticket_code,
+            user_id,
+            ticket_price
+
+          FROM lottery_tickets
+
+          WHERE draw_id = ?
+            AND status =
+                'locked'
+            AND turnover_applied =
+                1
+
+          ORDER BY
+            ticket_code ASC,
+            id ASC
+
+          FOR UPDATE
+        `,
+        [
+          validDrawId,
+        ],
+      );
+
+    const targetTicketQuantity =
+      Number(
+        draw
+          .target_ticket_quantity ||
+          0,
+      );
+
+    if (
+      targetTicketQuantity < 3 ||
+      lockedTickets.length !==
+        targetTicketQuantity ||
+      Number(
+        draw
+          .active_ticket_count ||
+          0,
+      ) !==
+        targetTicketQuantity
+    ) {
+      throw createServiceError(
+        "Locked lottery ticket set is incomplete.",
+        409,
+        "LOTTERY_LOCKED_TICKET_SET_INCOMPLETE",
+      );
+    }
+
+    const uniquePlayerCount =
+      new Set(
+        lockedTickets.map(
+          (ticket) =>
+            Number(
+              ticket.user_id,
+            ),
+        ),
+      ).size;
+
+    if (
+      uniquePlayerCount <
+      Number(
+        draw
+          .minimum_unique_players ||
+          3,
+      )
+    ) {
+      throw createServiceError(
+        "Lottery draw does not have enough unique players.",
+        409,
+        "LOTTERY_MINIMUM_PLAYERS_REQUIRED",
+      );
+    }
+
+    /*
+     * Seed, commitment, ticket-set hash,
+     * deterministic shuffle এবং prize হিসাব।
+     */
+    const fairSelection =
+      prepareLotteryFairSelection(
+        draw,
+        lockedTickets,
+      );
+
+    const [
+      drawingUpdateResult,
+    ] =
+      await connection.query(
+        `
+          UPDATE lottery_draws
+
+          SET
+            status =
+              'drawing',
+
+            state_version =
+              state_version + 1
+
+          WHERE id = ?
+            AND status IN (
+              'countdown',
+              'ready_to_draw'
+            )
+        `,
+        [
+          validDrawId,
+        ],
+      );
+
+    if (
+      Number(
+        drawingUpdateResult
+          .affectedRows,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Lottery draw could not enter drawing state.",
+        409,
+        "LOTTERY_DRAW_START_FAILED",
+      );
+    }
+
+    await appendLotteryAuditEvent(
+      connection,
+      {
+        drawId:
+          validDrawId,
+
+        actorType:
+          "admin",
+
+        actorUserId:
+          Number(admin.id),
+
+        eventType:
+          "FAIR_DRAW_STARTED",
+
+        eventData: {
+          algorithm:
+            fairSelection
+              .algorithm,
+
+          ticketCount:
+            lockedTickets.length,
+
+          uniquePlayerCount,
+
+          ticketSetHash:
+            fairSelection
+              .calculatedTicketSetHash,
+
+          seedCommitment:
+            draw
+              .seed_commitment,
+        },
+      },
+    );
+
+    /*
+     * তিন winner payout।
+     * Prize turnover বাড়াবে না।
+     */
+    const winnerResults =
+      await settleSelectedLotteryWinners(
+        connection,
+        {
+          admin,
+
+          draw,
+
+          lockedTickets,
+
+          selectedWinnerTickets:
+            fairSelection
+              .selectedWinnerTickets,
+
+          prizeDefinitions:
+            fairSelection
+              .prizeDefinitions,
+        },
+      );
+
+    /*
+     * Platform-এর 10% service revenue।
+     */
+    await connection.query(
+      `
+        INSERT INTO lottery_revenue_history (
+          revenue_key,
+          draw_id,
+          ticket_id,
+          user_id,
+          revenue_type,
+          gross_amount,
+          revenue_percent,
+          revenue_amount,
+          related_transaction_id,
+          description
+        )
+        VALUES (
+          ?,
+          ?,
+          NULL,
+          NULL,
+          'draw_service_charge',
+          ?,
+          ?,
+          ?,
+          NULL,
+          ?
+        )
+      `,
+      [
+        `DRAW_SERVICE:${validDrawId}`,
+
+        validDrawId,
+
+        fairSelection
+          .grossAmount,
+
+        parseMoney(
+          draw
+            .service_charge_percent,
+        ),
+
+        fairSelection
+          .serviceChargeAmount,
+
+        `Lottery ${draw.draw_code} service charge`,
+      ],
+    );
+
+    const drawnAt =
+      new Date();
+
+    const [
+      drawCompleteResult,
+    ] =
+      await connection.query(
+        `
+          UPDATE lottery_draws
+
+          SET
+            status =
+              'completed',
+
+            gross_sales_amount = ?,
+
+            total_prize_amount = ?,
+
+            first_prize_amount = ?,
+
+            second_prize_amount = ?,
+
+            third_prize_amount = ?,
+
+            service_charge_amount = ?,
+
+            shuffle_proof_hash = ?,
+
+            revealed_seed = ?,
+
+            drawn_at = ?,
+
+            state_version =
+              state_version + 1
+
+          WHERE id = ?
+            AND status =
+                'drawing'
+        `,
+        [
+          fairSelection
+            .grossAmount,
+
+          fairSelection
+            .totalPrizeAmount,
+
+          fairSelection
+            .prizeDefinitions[0]
+            .amount,
+
+          fairSelection
+            .prizeDefinitions[1]
+            .amount,
+
+          fairSelection
+            .prizeDefinitions[2]
+            .amount,
+
+          fairSelection
+            .serviceChargeAmount,
+
+          fairSelection
+            .shuffleProofHash,
+
+          fairSelection
+            .revealedSeed,
+
+          formatMysqlDateTime(
+            drawnAt,
+          ),
+
+          validDrawId,
+        ],
+      );
+
+    if (
+      Number(
+        drawCompleteResult
+          .affectedRows,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Lottery draw could not be completed.",
+        409,
+        "LOTTERY_DRAW_COMPLETE_FAILED",
+      );
+    }
+
+    await appendLotteryAuditEvent(
+      connection,
+      {
+        drawId:
+          validDrawId,
+
+        actorType:
+          "system",
+
+        eventType:
+          "FAIR_DRAW_COMPLETED",
+
+        eventData: {
+          algorithm:
+            fairSelection
+              .algorithm,
+
+          grossAmount:
+            fairSelection
+              .grossAmount,
+
+          totalPrizeAmount:
+            fairSelection
+              .totalPrizeAmount,
+
+          serviceChargeAmount:
+            fairSelection
+              .serviceChargeAmount,
+
+          ticketSetHash:
+            fairSelection
+              .calculatedTicketSetHash,
+
+          shuffleProofHash:
+            fairSelection
+              .shuffleProofHash,
+
+          revealedSeed:
+            fairSelection
+              .revealedSeed,
+
+          winners:
+            winnerResults.map(
+              (winner) => ({
+                prizeRank:
+                  winner
+                    .prizeRank,
+
+                ticketCode:
+                  winner
+                    .ticketCode,
+
+                winnerUid:
+                  winner
+                    .winnerUid,
+
+                prizeAmount:
+                  winner
+                    .prizeAmount,
+              }),
+            ),
+        },
+      },
+    );
+
+    await connection.commit();
+
+    transactionStarted =
+      false;
+
+    return {
+      alreadyCompleted:
+        false,
+
+      drawId:
+        validDrawId,
+
+      drawCode:
+        draw.draw_code,
+
+      status:
+        "completed",
+
+      algorithm:
+        fairSelection
+          .algorithm,
+
+      grossAmount:
+        fairSelection
+          .grossAmount,
+
+      totalPrizeAmount:
+        fairSelection
+          .totalPrizeAmount,
+
+      serviceChargeAmount:
+        fairSelection
+          .serviceChargeAmount,
+
+      winners:
+        winnerResults,
+
+      ticketSetHash:
+        fairSelection
+          .calculatedTicketSetHash,
+
+      shuffleProofHash:
+        fairSelection
+          .shuffleProofHash,
+
+      revealedSeed:
+        fairSelection
+          .revealedSeed,
+
+      drawnAt:
+        drawnAt.toISOString(),
+    };
+  } catch (error) {
+    if (
+      transactionStarted
+    ) {
+      await connection
+        .rollback();
+    }
+
+    if (
+      error.code ===
+      "ER_DUP_ENTRY"
+    ) {
+      throw createServiceError(
+        "Lottery draw settlement already exists.",
+        409,
+        "LOTTERY_DRAW_ALREADY_SETTLED",
+      );
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+/* ==========================================
    Service Exports
 ========================================== */
 
@@ -3589,4 +5196,5 @@ module.exports = {
   cancelAdminDraw,
   createAdminDraw,
   openAdminDraw,
+  executeAdminFairDraw,
 };

@@ -171,8 +171,51 @@ async function cancelAdminDraw(
   }
 }
 
+/* ==========================================
+   Execute Cryptographic Fair Draw
+========================================== */
+
+async function executeFairDraw(
+  request,
+  response,
+) {
+  try {
+    const data =
+      await lotteryService
+        .executeAdminFairDraw(
+          request.user.id,
+          request.params.drawId,
+        );
+
+    return response
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          data.alreadyCompleted
+            ? "Lottery draw was already completed."
+            : "Fair lottery draw completed and prizes paid successfully.",
+
+        data,
+      });
+  } catch (error) {
+    console.error(
+      "EXECUTE FAIR LOTTERY DRAW ERROR:",
+      error,
+    );
+
+    return sendAdminLotteryError(
+      response,
+      error,
+      "Unable to execute fair lottery draw.",
+    );
+  }
+}
+
 module.exports = {
   createDraw,
   openDraw,
   cancelAdminDraw,
+  executeFairDraw,
 };

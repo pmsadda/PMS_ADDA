@@ -36,7 +36,12 @@ router.patch(
   "/draws/:drawId/open",
   controller.openDraw,
 );
+/* Run Fair Draw and Pay Winners */
 
+router.patch(
+  "/draws/:drawId/draw",
+  controller.executeFairDraw,
+);
 /* Cancel Draw and Refund Eligible Tickets */
 
 router.patch(
