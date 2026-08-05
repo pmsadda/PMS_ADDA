@@ -417,8 +417,14 @@ function mapDrawRow(row) {
   const projectedGross = parseMoney(ticketPrice * targetQuantity);
 
   const storedGross = parseMoney(row.gross_sales_amount);
-
-  const grossAmount = storedGross > 0 ? storedGross : projectedGross;
+  const grossAmount =
+  ["cancelled", "failed"].includes(
+    String(row.status || ""),
+  )
+    ? storedGross
+    : storedGross > 0
+      ? storedGross
+      : projectedGross;
 
   const firstPercent = parseMoney(row.first_prize_percent);
 
