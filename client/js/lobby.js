@@ -113,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     teenPattiButton: document.getElementById("teenPattiBtn"),
     pokerButton: document.getElementById("pokerBtn"),
     ludoButton: document.getElementById("ludoBtn"),
+    lotteryButton: document.getElementById("lotteryBtn"),
 
     settingsButton: document.getElementById("settingsBtn"),
   };
@@ -1437,22 +1438,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.addEventListener("keydown", (event) => {
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") {
-        return;
-      }
+  document.addEventListener(
+  "keydown",
+  (event) => {
+    if (event.key !== "Escape") {
+      return;
+    }
 
-      closeModal(DOM.notificationModal);
+    closeModal(
+      DOM.notificationModal,
+    );
 
-      closeModal(DOM.referralModal);
+    closeModal(
+      DOM.referralModal,
+    );
 
-      closeModal(DOM.logoutModal);
-    });
-
-    closeModal(DOM.notificationModal);
-    closeModal(DOM.logoutModal);
-  });
+    closeModal(
+      DOM.logoutModal,
+    );
+  },
+);
 
   /* =========================================================
      REFRESH BUTTON
@@ -1500,6 +1505,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   DOM.ludoButton?.addEventListener("click", () =>
     navigateTo("./ludo-rooms.html"),
+  );
+
+  DOM.lotteryButton?.addEventListener("click", () =>
+    navigateTo("./lottery.html"),
   );
 
   /* =========================================================

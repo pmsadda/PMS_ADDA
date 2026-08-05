@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="theme-color"
+    content="#120826">
+
+  <title>PMS ADDA | Lottery</title>
+
+  <script src="../js/app-config.js"></script>
+  <script src="../js/auth-guard.js"></script>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+  <link
+    rel="stylesheet"
+    href="../css/common.css">
+
+  <link
+    rel="stylesheet"
+    href="../css/lottery.css">
+</head>
+
+<body>
+
+  <div
+    class="lottery-app"
+    id="lotteryApp">
+
+    <!-- Header -->
+
+    <header class="lottery-header">
+
+      <button
+        type="button"
+        class="lottery-back-button"
+        id="backBtn"
+        aria-label="Back to lobby">
+
+        <i class="fa-solid fa-arrow-left"></i>
+
+      </button>
+
+      <div class="lottery-header-title">
+
+        <span class="lottery-header-icon">
+          <i class="fa-solid fa-ticket"></i>
+        </span>
+
+        <div>
+
+          <h1>PMS Lottery</h1>
+
+          <p>
+            Fair draw • Unique tickets
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="lottery-wallet">
+
+        <span>Available Balance</span>
+
+        <strong>
+          ৳<span id="walletBalance">0.00</span>
+        </strong>
+
+        <button
+          type="button"
+          id="refreshBalanceBtn"
+          aria-label="Refresh wallet balance">
+
+          <i class="fa-solid fa-rotate"></i>
+
+        </button>
+
+      </div>
+
+    </header>
+
+    <main class="lottery-main">
+
+      <!-- Hero -->
+
+      <section class="lottery-hero">
+
+        <div class="lottery-hero-content">
+
+          <span class="lottery-eyebrow">
+            <i class="fa-solid fa-shield-halved"></i>
+            SECURE & FAIR LOTTERY
+          </span>
+
+          <h2>
+            Buy Your Lucky Ticket
+          </h2>
+
+          <p>
+            প্রতিটি ticket number lifetime unique।
+            Target ticket বিক্রি হলে countdown শুরু হবে।
+          </p>
+
+          <div class="lottery-price-pills">
+
+            <span>৳20</span>
+            <span>৳50</span>
+            <span>৳100</span>
+
+          </div>
+
+        </div>
+
+        <div
+          class="lottery-hero-ticket"
+          aria-hidden="true">
+
+          <div class="hero-ticket-crown">
+            <i class="fa-solid fa-crown"></i>
+          </div>
+
+          <small>PMS ADDA</small>
+
+          <strong>LUCKY DRAW</strong>
+
+          <span>WIN BIG</span>
+
+          <div class="hero-ticket-number">
+            000000000000
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Summary -->
+
+      <section class="lottery-summary">
+
+        <article>
+
+          <span class="summary-icon is-live">
+            <i class="fa-solid fa-bolt"></i>
+          </span>
+
+          <div>
+
+            <small>Active Draws</small>
+
+            <strong id="activeDrawCount">0</strong>
+
+          </div>
+
+        </article>
+
+        <article>
+
+          <span class="summary-icon is-ticket">
+            <i class="fa-solid fa-ticket"></i>
+          </span>
+
+          <div>
+
+            <small>My Active Tickets</small>
+
+            <strong id="myActiveTicketCount">0</strong>
+
+          </div>
+
+        </article>
+
+        <article>
+
+          <span class="summary-icon is-winner">
+            <i class="fa-solid fa-trophy"></i>
+          </span>
+
+          <div>
+
+            <small>Recent Winners</small>
+
+            <strong id="recentWinnerCount">0</strong>
+
+          </div>
+
+        </article>
+
+      </section>
+
+      <!-- Rules -->
+
+      <section class="lottery-rules">
+
+        <div class="lottery-section-heading">
+
+          <div>
+
+            <span class="section-label">
+              HOW IT WORKS
+            </span>
+
+            <h2>Simple Lottery Rules</h2>
+
+          </div>
+
+          <span class="fair-badge">
+            <i class="fa-solid fa-fingerprint"></i>
+            Verifiable Draw
+          </span>
+
+        </div>
+
+        <div class="lottery-rule-grid">
+
+          <article>
+
+            <span>01</span>
+
+            <i class="fa-solid fa-ticket-simple"></i>
+
+            <h3>Buy Ticket</h3>
+
+            <p>
+              ৳20, ৳50 অথবা ৳100 draw থেকে ticket কিনুন।
+            </p>
+
+          </article>
+
+          <article>
+
+            <span>02</span>
+
+            <i class="fa-solid fa-hourglass-half"></i>
+
+            <h3>Wait for Countdown</h3>
+
+            <p>
+              Target পূর্ণ হলে সব ticket lock হয়ে countdown চলবে।
+            </p>
+
+          </article>
+
+          <article>
+
+            <span>03</span>
+
+            <i class="fa-solid fa-shuffle"></i>
+
+            <h3>Fair Shuffle</h3>
+
+            <p>
+              Server seed এবং ticket set দিয়ে fair shuffle হবে।
+            </p>
+
+          </article>
+
+          <article>
+
+            <span>04</span>
+
+            <i class="fa-solid fa-medal"></i>
+
+            <h3>Three Winners</h3>
+
+            <p>
+              তিনজন আলাদা player প্রথম, দ্বিতীয় ও তৃতীয় prize পাবেন।
+            </p>
+
+          </article>
+
+        </div>
+
+      </section>
+
+      <!-- Available Draws -->
+
+      <section
+        class="lottery-draw-section"
+        id="availableDrawsSection">
+
+        <div class="lottery-section-heading">
+
+          <div>
+
+            <span class="section-label">
+              LIVE LOTTERY
+            </span>
+
+            <h2>Available Draws</h2>
+
+            <p>
+              আপনার পছন্দের ticket price নির্বাচন করুন।
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="section-refresh-button"
+            id="refreshDrawsBtn">
+
+            <i class="fa-solid fa-rotate"></i>
+            Refresh
+
+          </button>
+
+        </div>
+
+        <div
+          class="lottery-price-filter"
+          id="priceFilter"
+          aria-label="Filter lottery draws">
+
+          <button
+            type="button"
+            class="is-active"
+            data-ticket-price="all"
+            aria-pressed="true">
+
+            All
+
+          </button>
+
+          <button
+            type="button"
+            data-ticket-price="20"
+            aria-pressed="false">
+
+            ৳20
+
+          </button>
+
+          <button
+            type="button"
+            data-ticket-price="50"
+            aria-pressed="false">
+
+            ৳50
+
+          </button>
+
+          <button
+            type="button"
+            data-ticket-price="100"
+            aria-pressed="false">
+
+            ৳100
+
+          </button>
+
+        </div>
+
+        <div
+          class="lottery-draw-grid"
+          id="drawGrid"
+          aria-live="polite">
+
+          <div class="lottery-empty-state">
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            <h3>Loading Lottery Draws</h3>
+
+            <p>Please wait...</p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- My Tickets -->
+
+      <section
+        class="my-ticket-section"
+        id="myTicketsSection">
+
+        <div class="lottery-section-heading">
+
+          <div>
+
+            <span class="section-label">
+              MY LOTTERY
+            </span>
+
+            <h2>My Tickets</h2>
+
+            <p>
+              আপনার active, locked এবং পুরোনো ticket দেখুন।
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="section-refresh-button"
+            id="refreshTicketsBtn">
+
+            <i class="fa-solid fa-rotate"></i>
+            Refresh
+
+          </button>
+
+        </div>
+
+        <div
+          class="my-ticket-grid"
+          id="myTicketGrid"
+          aria-live="polite">
+
+          <div class="lottery-empty-state">
+
+            <i class="fa-solid fa-ticket"></i>
+
+            <h3>No Tickets Loaded</h3>
+
+            <p>
+              আপনার কেনা ticket এখানে দেখা যাবে।
+            </p>
+
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          class="load-more-button"
+          id="loadMoreTicketsBtn"
+          hidden>
+
+          Load More Tickets
+
+        </button>
+
+      </section>
+
+      <!-- Recent Winners -->
+
+      <section
+        class="lottery-winner-section"
+        id="winnerSection">
+
+        <div class="lottery-section-heading">
+
+          <div>
+
+            <span class="section-label">
+              WINNER BOARD
+            </span>
+
+            <h2>Recent Winners</h2>
+
+            <p>
+              সম্প্রতি prize পাওয়া lucky players।
+            </p>
+
+          </div>
+
+        </div>
+
+        <div
+          class="lottery-winner-list"
+          id="winnerList"
+          aria-live="polite">
+
+          <div class="lottery-empty-state">
+
+            <i class="fa-solid fa-trophy"></i>
+
+            <h3>No Winner Yet</h3>
+
+            <p>
+              প্রথম completed draw-এর winner এখানে দেখা যাবে।
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Fairness Information -->
+
+      <section class="lottery-fairness">
+
+        <span class="fairness-icon">
+          <i class="fa-solid fa-shield-heart"></i>
+        </span>
+
+        <div>
+
+          <h2>Fair Draw Protection</h2>
+
+          <p>
+            Admin কোনো winner select করতে পারে না।
+            Draw-এর আগে seed commitment প্রকাশ হয় এবং
+            draw complete বা cancel হলে seed verify করা যায়।
+          </p>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Purchase Modal -->
+
+    <div
+      class="lottery-modal"
+      id="purchaseModal"
+      aria-hidden="true">
+
+      <div
+        class="lottery-modal-backdrop"
+        data-close-purchase-modal>
+      </div>
+
+      <section
+        class="lottery-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="purchaseModalTitle">
+
+        <button
+          type="button"
+          class="modal-close-button"
+          id="closePurchaseModalBtn"
+          aria-label="Close purchase window">
+
+          <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+        <span class="modal-ticket-icon">
+          <i class="fa-solid fa-ticket"></i>
+        </span>
+
+        <h2 id="purchaseModalTitle">
+          Buy Lottery Ticket
+        </h2>
+
+        <p id="purchaseDrawTitle">
+          Selected Lottery Draw
+        </p>
+
+        <div class="purchase-summary">
+
+          <div>
+
+            <span>Ticket Price</span>
+
+            <strong>
+              ৳<span id="purchaseTicketPrice">0.00</span>
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>Available Tickets</span>
+
+            <strong id="purchaseRemainingTickets">0</strong>
+
+          </div>
+
+        </div>
+
+        <label
+          class="quantity-label"
+          for="ticketQuantity">
+
+          Ticket Quantity
+
+        </label>
+
+        <div class="quantity-selector">
+
+          <button
+            type="button"
+            id="decreaseQuantityBtn"
+            aria-label="Decrease quantity">
+
+            <i class="fa-solid fa-minus"></i>
+
+          </button>
+
+          <input
+            type="number"
+            id="ticketQuantity"
+            value="1"
+            min="1"
+            max="10"
+            inputmode="numeric">
+
+          <button
+            type="button"
+            id="increaseQuantityBtn"
+            aria-label="Increase quantity">
+
+            <i class="fa-solid fa-plus"></i>
+
+          </button>
+
+        </div>
+
+        <div class="purchase-total">
+
+          <span>Total Payment</span>
+
+          <strong>
+            ৳<span id="purchaseTotalAmount">0.00</span>
+          </strong>
+
+        </div>
+
+        <p class="purchase-warning">
+
+          <i class="fa-solid fa-circle-info"></i>
+
+          Countdown শুরু হওয়ার আগে player ticket cancel করলে
+          20% fee কেটে 80% refund হবে।
+
+        </p>
+
+        <button
+          type="button"
+          class="modal-primary-button"
+          id="confirmPurchaseBtn">
+
+          <i class="fa-solid fa-lock"></i>
+
+          Confirm Purchase
+
+        </button>
+
+      </section>
+
+    </div>
+
+    <!-- Cancel Ticket Modal -->
+
+    <div
+      class="lottery-modal"
+      id="cancelTicketModal"
+      aria-hidden="true">
+
+      <div
+        class="lottery-modal-backdrop"
+        data-close-cancel-modal>
+      </div>
+
+      <section
+        class="lottery-modal-card is-danger"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancelModalTitle">
+
+        <button
+          type="button"
+          class="modal-close-button"
+          id="closeCancelModalBtn"
+          aria-label="Close cancellation window">
+
+          <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+        <span class="modal-ticket-icon is-danger">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </span>
+
+        <h2 id="cancelModalTitle">
+          Cancel This Ticket?
+        </h2>
+
+        <p>
+          Ticket:
+          <strong id="cancelTicketCode">-</strong>
+        </p>
+
+        <div class="cancel-refund-summary">
+
+          <div>
+
+            <span>Ticket Price</span>
+
+            <strong>
+              ৳<span id="cancelTicketPrice">0.00</span>
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>Cancellation Fee</span>
+
+            <strong class="danger-text">
+              -৳<span id="cancelFeeAmount">0.00</span>
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>You Will Receive</span>
+
+            <strong class="success-text">
+              ৳<span id="cancelRefundAmount">0.00</span>
+            </strong>
+
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-danger-button"
+          id="confirmCancelTicketBtn">
+
+          <i class="fa-solid fa-ban"></i>
+
+          Cancel Ticket & Refund
+
+        </button>
+
+      </section>
+
+    </div>
+
+    <!-- Loading Overlay -->
+
+    <div
+      class="lottery-loader-overlay"
+      id="loaderOverlay"
+      aria-hidden="true">
+
+      <div class="lottery-loader-card">
+
+        <span class="lottery-loader"></span>
+
+        <p id="loaderMessage">
+          Please wait...
+        </p>
+
+      </div>
+
+    </div>
+
+    <!-- Toast -->
+
+    <div
+      class="lottery-toast"
+      id="toast"
+      role="status"
+      aria-live="polite">
+
+      <i
+        class="fa-solid fa-circle-info"
+        id="toastIcon">
+      </i>
+
+      <span id="toastMessage"></span>
+
+    </div>
+
+  </div>
+
+  <script src="../js/lottery.js"></script>
+
+</body>
+
+</html>

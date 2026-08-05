@@ -2285,3 +2285,177 @@ button:focus{
         max-height: 72vh;
     }
 }
+
+/* ==========================================
+   PMS LOTTERY LOBBY CARD
+========================================== */
+
+.lottery-game-card {
+  position: relative;
+
+  border-color:
+    rgba(255, 209, 72, 0.32);
+
+  background:
+    radial-gradient(
+      circle at 85% 14%,
+      rgba(255, 213, 79, 0.15),
+      transparent 31%
+    ),
+    linear-gradient(
+      145deg,
+      #261044,
+      #150923
+    );
+}
+
+.lottery-game-card::after {
+  position: absolute;
+  z-index: 0;
+  right: -30px;
+  bottom: -55px;
+
+  width: 145px;
+  height: 145px;
+
+  content: "";
+
+  border:
+    24px solid
+    rgba(255, 255, 255, 0.025);
+
+  border-radius: 50%;
+}
+
+.lottery-game-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.lottery-game-art {
+  position: relative;
+
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+
+  width: 100px;
+  height: 100px;
+
+  color: #361900;
+  font-size: 37px;
+
+  transform:
+    rotate(-3deg);
+
+  border:
+    4px double
+    rgba(91, 40, 0, 0.35);
+
+  border-radius: 17px;
+
+  background:
+    radial-gradient(
+      circle at 20% 18%,
+      rgba(255, 255, 255, 0.62),
+      transparent 24%
+    ),
+    linear-gradient(
+      145deg,
+      #fff1a2,
+      #f1b631 58%,
+      #d78414
+    );
+
+  box-shadow:
+    0 12px 28px
+    rgba(0, 0, 0, 0.32);
+}
+
+.lottery-game-art::before,
+.lottery-game-art::after {
+  position: absolute;
+  top: 50%;
+
+  width: 18px;
+  height: 18px;
+
+  content: "";
+
+  transform:
+    translateY(-50%);
+
+  border-radius: 50%;
+
+  background: #20102f;
+}
+
+.lottery-game-art::before {
+  left: -12px;
+}
+
+.lottery-game-art::after {
+  right: -12px;
+}
+
+.lottery-game-art > i {
+  transform:
+    rotate(7deg);
+}
+
+.lottery-game-art > strong {
+  position: absolute;
+  right: 9px;
+  bottom: 7px;
+
+  font-size: 18px;
+}
+
+.lottery-art-crown {
+  position: absolute;
+  top: 6px;
+  left: 9px;
+
+  font-size: 16px;
+}
+
+.lottery-play-btn {
+  color: #2a1400 !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffea91,
+      #dfa01f
+    ) !important;
+
+  box-shadow:
+    0 8px 20px
+    rgba(255, 191, 41, 0.2);
+}
+
+@media (min-width: 900px) {
+
+  .lottery-game-art {
+    width: 140px;
+    height: 140px;
+
+    font-size: 48px;
+  }
+
+  .lottery-art-crown {
+    top: 9px;
+    left: 13px;
+
+    font-size: 21px;
+  }
+
+  .lottery-game-art > strong {
+    right: 13px;
+    bottom: 9px;
+
+    font-size: 23px;
+  }
+}
+
+/* LOTTERY LOBBY CARD END */
