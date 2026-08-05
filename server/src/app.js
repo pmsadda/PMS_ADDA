@@ -45,6 +45,10 @@ const pokerRoutes = require("./routes/poker.routes");
 
 const ludoRoutes = require("./routes/ludo.routes");
 
+const lotteryRoutes = require("./routes/lottery.routes");
+
+const adminLotteryRoutes = require("./routes/admin-lottery.routes");
+
 const app = express();
 
 /*
@@ -270,6 +274,11 @@ app.use("/api/teenpatti", teenPattiRoutes);
 app.use("/api/poker", pokerRoutes);
 
 app.use("/api/ludo", ludoRoutes);
+
+app.use("/api/lottery", lotteryRoutes);
+
+app.use("/api/admin/lottery", adminLotteryRoutes);
+
 app.use("/api/support", supportRoutes);
 
 /* ==========================
