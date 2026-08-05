@@ -205,6 +205,123 @@ async function getRecentWinners(
 }
 
 /* ==========================================
+   Purchase Lottery Tickets
+========================================== */
+
+async function purchaseTickets(
+  request,
+  response,
+) {
+  try {
+    const data =
+      await lotteryService.purchaseTickets(
+        request.user.id,
+        request.params.drawId,
+        {
+          quantity:
+            request.body?.quantity,
+
+          requestKey:
+            request.body?.requestKey,
+        },
+      );
+
+    return response
+      .status(
+        data.alreadyProcessed
+          ? 200
+          : 201,
+      )
+      .json({
+        success: true,
+
+        message:
+          data.alreadyProcessed
+            ? "Existing lottery ticket purchase loaded successfully."
+            : "Lottery ticket purchase completed successfully.",
+
+        data,
+      });
+  } catch (error) {
+    console.error(
+      "LOTTERY TICKET PURCHASE ERROR:",
+      error,
+    );
+
+    return response
+      .status(
+        error.statusCode ||
+          error.status ||
+          500,
+      )
+      .json({
+        success: false,
+
+        code:
+          error.code ||
+          "LOTTERY_PURCHASE_ERROR",
+
+        message:
+          error.message ||
+          "Lottery ticket purchase failed.",
+      });
+  }
+}
+
+/* ==========================================
+   Cancel Lottery Ticket
+========================================== */
+
+async function cancelTicket(
+  request,
+  response,
+) {
+  try {
+    const data =
+      await lotteryService.cancelTicket(
+        request.user.id,
+        request.params.ticketId,
+      );
+
+    return response
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          data.alreadyCancelled
+            ? "Existing ticket cancellation loaded successfully."
+            : "Lottery ticket cancelled and refund completed successfully.",
+
+        data,
+      });
+  } catch (error) {
+    console.error(
+      "LOTTERY TICKET CANCEL ERROR:",
+      error,
+    );
+
+    return response
+      .status(
+        error.statusCode ||
+          error.status ||
+          500,
+      )
+      .json({
+        success: false,
+
+        code:
+          error.code ||
+          "LOTTERY_CANCEL_ERROR",
+
+        message:
+          error.message ||
+          "Lottery ticket cancellation failed.",
+      });
+  }
+}
+
+/* ==========================================
    Controller Exports
 ========================================== */
 
@@ -213,4 +330,6 @@ module.exports = {
   getDrawDetails,
   getMyTickets,
   getRecentWinners,
+  purchaseTickets,
+    cancelTicket,
 };

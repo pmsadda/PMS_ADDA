@@ -57,5 +57,21 @@ router.get(
   controller.getDrawDetails,
 );
 
+/* Purchase Lottery Tickets */
+
+router.post(
+  "/draws/:drawId/tickets",
+  requireAuth,
+  controller.purchaseTickets,
+);
+
+/* Cancel Lottery Ticket */
+
+router.post(
+  "/tickets/:ticketId/cancel",
+  requireAuth,
+  controller.cancelTicket,
+);
+
 module.exports =
   router;

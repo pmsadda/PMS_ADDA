@@ -116,7 +116,63 @@ async function openDraw(
   }
 }
 
+/* ==========================================
+   Cancel Lottery Draw
+========================================== */
+
+async function cancelAdminDraw(
+  request,
+  response,
+) {
+  try {
+    const data =
+      await lotteryService
+        .cancelAdminDraw(
+          request.user.id,
+          request.params.drawId,
+          request.body?.reason,
+        );
+
+    return response
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          data.alreadyCancelled
+            ? "Lottery draw was already cancelled."
+            : "Lottery draw cancelled and all eligible tickets refunded successfully.",
+
+        data,
+      });
+  } catch (error) {
+    console.error(
+      "ADMIN LOTTERY DRAW CANCEL ERROR:",
+      error,
+    );
+
+    return response
+      .status(
+        error.statusCode ||
+          error.status ||
+          500,
+      )
+      .json({
+        success: false,
+
+        code:
+          error.code ||
+          "ADMIN_LOTTERY_CANCEL_ERROR",
+
+        message:
+          error.message ||
+          "Lottery draw cancellation failed.",
+      });
+  }
+}
+
 module.exports = {
   createDraw,
   openDraw,
+  cancelAdminDraw,
 };

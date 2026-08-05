@@ -37,5 +37,12 @@ router.patch(
   controller.openDraw,
 );
 
+/* Cancel Draw and Refund Eligible Tickets */
+
+router.patch(
+  "/draws/:drawId/cancel",
+  controller.cancelAdminDraw,
+);
+
 module.exports =
   router;

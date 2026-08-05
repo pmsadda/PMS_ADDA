@@ -452,6 +452,8 @@ function mapDrawRow(row) {
 
   const completed = isCompletedDraw(status);
 
+  const seedCanBeRevealed = completed || status === "cancelled";
+
   return {
     drawId: Number(row.id),
 
@@ -534,7 +536,7 @@ function mapDrawRow(row) {
 
       shuffleProofHash: completed ? row.shuffle_proof_hash || null : null,
 
-      revealedSeed: completed ? row.revealed_seed || null : null,
+      revealedSeed: seedCanBeRevealed ? row.revealed_seed || null : null,
     },
 
     timeline: {
@@ -593,7 +595,8 @@ function mapTicketRow(row) {
 
     cancellationReason: row.cancellation_reason || null,
 
-    canCancel: ticketStatus === "active" && drawStatus === "selling",
+    canCancel:
+      ticketStatus === "active" && ["selling", "paused"].includes(drawStatus),
 
     purchasedAt: row.purchased_at || null,
 
@@ -1028,6 +1031,1495 @@ async function getRecentWinners(requestedLimit = 20) {
 }
 
 /* ==========================================
+   Player Ticket Purchase
+========================================== */
+
+function normalizePurchaseRequestKey(value) {
+  const requestKey = String(value || "").trim();
+
+  if (
+    requestKey.length < 16 ||
+    requestKey.length > 80 ||
+    !/^[a-zA-Z0-9._:-]+$/.test(requestKey)
+  ) {
+    throw createServiceError(
+      "A valid ticket purchase request key is required.",
+      400,
+      "INVALID_PURCHASE_REQUEST_KEY",
+    );
+  }
+
+  return requestKey;
+}
+
+function createLotteryWalletTransactionId(prefix = "LT") {
+  const timePart = Date.now().toString(36).toUpperCase();
+
+  const randomPart = crypto.randomBytes(6).toString("hex").toUpperCase();
+
+  return `${prefix}-${timePart}-${randomPart}`;
+}
+
+function mapPurchasedTicketRow(row) {
+  return {
+    ticketId: Number(row.id),
+
+    ticketCode: row.ticket_code,
+
+    drawId: Number(row.draw_id),
+
+    ticketPrice: parseMoney(row.ticket_price),
+
+    status: String(row.status),
+
+    turnoverApplied: Number(row.turnover_applied || 0) === 1,
+
+    turnoverAmount: parseMoney(row.turnover_amount),
+
+    purchasedAt: row.purchased_at || null,
+
+    lockedAt: row.locked_at || null,
+    refundAmount: parseMoney(row.refund_amount),
+
+    cancellationFeeAmount: parseMoney(row.cancellation_fee_amount),
+
+    cancellationSource: row.cancellation_source || null,
+
+    cancelledAt: row.cancelled_at || null,
+
+    refundedAt: row.refunded_at || null,
+  };
+}
+
+async function purchaseTickets(userId, drawId, input = {}) {
+  const validUserId = parsePositiveInteger(userId, "User ID");
+
+  const validDrawId = parsePositiveInteger(drawId, "Draw ID");
+
+  const quantity = parseBoundedInteger(
+    input.quantity,
+    "Ticket quantity",
+    1,
+    10,
+  );
+
+  const requestKey = normalizePurchaseRequestKey(input.requestKey);
+
+  const connection = await pool.getConnection();
+
+  let transactionStarted = false;
+
+  try {
+    await connection.beginTransaction();
+
+    transactionStarted = true;
+
+    /*
+     * INSERT IGNORE prevents the same browser request
+     * from charging the player twice.
+     */
+    const [batchInsertResult] = await connection.query(
+      `
+          INSERT IGNORE INTO lottery_purchase_batches (
+            request_key,
+            draw_id,
+            user_id,
+            ticket_quantity,
+            total_amount,
+            status
+          )
+          VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            0.00,
+            'processing'
+          )
+        `,
+      [requestKey, validDrawId, validUserId, quantity],
+    );
+
+    const newBatchCreated = Number(batchInsertResult.affectedRows) === 1;
+
+    const [batchRows] = await connection.query(
+      `
+          SELECT
+            *
+
+          FROM lottery_purchase_batches
+
+          WHERE request_key = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+      [requestKey],
+    );
+
+    const purchaseBatch = batchRows[0] || null;
+
+    if (!purchaseBatch) {
+      throw createServiceError(
+        "Ticket purchase request could not be created.",
+        409,
+        "PURCHASE_BATCH_CREATE_FAILED",
+      );
+    }
+
+    if (
+      Number(purchaseBatch.draw_id) !== validDrawId ||
+      Number(purchaseBatch.user_id) !== validUserId ||
+      Number(purchaseBatch.ticket_quantity) !== quantity
+    ) {
+      throw createServiceError(
+        "This purchase request key has already been used.",
+        409,
+        "PURCHASE_REQUEST_KEY_REUSED",
+      );
+    }
+
+    /*
+     * A completed request is returned again without
+     * charging the wallet a second time.
+     */
+    if (!newBatchCreated && String(purchaseBatch.status) === "completed") {
+      const [existingTicketRows] = await connection.query(
+        `
+            SELECT
+              *
+
+            FROM lottery_tickets
+
+            WHERE purchase_batch_id = ?
+
+            ORDER BY id ASC
+          `,
+        [purchaseBatch.id],
+      );
+
+      const expectedTicketQuantity = Number(purchaseBatch.ticket_quantity);
+
+      if (existingTicketRows.length !== expectedTicketQuantity) {
+        throw createServiceError(
+          "Completed lottery purchase ticket count is inconsistent.",
+          500,
+          "LOTTERY_PURCHASE_INTEGRITY_ERROR",
+        );
+      }
+
+      const [retryDrawRows] = await connection.query(
+        `
+            SELECT
+              status,
+              countdown_ends_at,
+
+              GREATEST(
+                0,
+                TIMESTAMPDIFF(
+                  SECOND,
+                  UTC_TIMESTAMP(),
+                  countdown_ends_at
+                )
+              ) AS remaining_seconds
+
+            FROM lottery_draws
+
+            WHERE id = ?
+
+            LIMIT 1
+          `,
+        [validDrawId],
+      );
+
+      const retryDraw = retryDrawRows[0] || null;
+
+      const retryDrawStatus = String(retryDraw?.status || "");
+
+      const [currentUserRows] = await connection.query(
+        `
+            SELECT
+              wallet_balance
+
+            FROM users
+
+            WHERE id = ?
+
+            LIMIT 1
+          `,
+        [validUserId],
+      );
+
+      await connection.commit();
+
+      transactionStarted = false;
+
+      return {
+        alreadyProcessed: true,
+
+        requestKey,
+
+        purchaseBatchId: Number(purchaseBatch.id),
+
+        quantity: Number(purchaseBatch.ticket_quantity),
+
+        totalAmount: parseMoney(purchaseBatch.total_amount),
+
+        walletBalance: parseMoney(currentUserRows[0]?.wallet_balance),
+
+        tickets: existingTicketRows.map(mapPurchasedTicketRow),
+
+        countdownStarted: [
+          "countdown",
+          "ready_to_draw",
+          "drawing",
+          "completed",
+        ].includes(retryDrawStatus),
+
+        countdownEndsAt: retryDraw?.countdown_ends_at || null,
+
+        remainingSeconds: Number(retryDraw?.remaining_seconds || 0),
+      };
+    }
+
+    if (!newBatchCreated) {
+      throw createServiceError(
+        "This ticket purchase is currently being processed.",
+        409,
+        "PURCHASE_REQUEST_PROCESSING",
+      );
+    }
+
+    const [drawRows] = await connection.query(
+      `
+          SELECT
+            *
+
+          FROM lottery_draws
+
+          WHERE id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+      [validDrawId],
+    );
+
+    const draw = drawRows[0] || null;
+
+    if (!draw) {
+      throw createServiceError(
+        "Lottery draw was not found.",
+        404,
+        "LOTTERY_DRAW_NOT_FOUND",
+      );
+    }
+
+    if (String(draw.status) !== "selling") {
+      throw createServiceError(
+        "Lottery tickets are not currently available for this draw.",
+        409,
+        "LOTTERY_DRAW_NOT_SELLING",
+      );
+    }
+
+    const ticketPrice = parseMoney(draw.ticket_price);
+
+    if (!ALLOWED_TICKET_PRICES.includes(ticketPrice)) {
+      throw createServiceError(
+        "Lottery ticket price is invalid.",
+        500,
+        "LOTTERY_TICKET_PRICE_INVALID",
+      );
+    }
+
+    const targetQuantity = Number(draw.target_ticket_quantity);
+
+    const maximumPerUser = Number(draw.max_tickets_per_user);
+
+    const minimumUniquePlayers = Number(draw.minimum_unique_players);
+
+    const [ticketSummaryRows] = await connection.query(
+      `
+          SELECT
+            COUNT(*) AS active_ticket_count,
+
+            COUNT(
+              DISTINCT user_id
+            ) AS unique_player_count,
+
+            COALESCE(
+              SUM(ticket_price),
+              0
+            ) AS gross_amount
+
+          FROM lottery_tickets
+
+          WHERE draw_id = ?
+            AND status = 'active'
+        `,
+      [validDrawId],
+    );
+
+    const ticketSummary = ticketSummaryRows[0] || {};
+
+    const activeTicketCount = Number(ticketSummary.active_ticket_count || 0);
+
+    const uniquePlayerCount = Number(ticketSummary.unique_player_count || 0);
+
+    const remainingTickets = targetQuantity - activeTicketCount;
+
+    if (remainingTickets < 1) {
+      throw createServiceError(
+        "All lottery tickets have already been sold.",
+        409,
+        "LOTTERY_SOLD_OUT",
+      );
+    }
+
+    if (quantity > remainingTickets) {
+      throw createServiceError(
+        `Only ${remainingTickets} lottery ticket(s) are currently available.`,
+        409,
+        "LOTTERY_QUANTITY_EXCEEDS_REMAINING",
+      );
+    }
+
+    const [userTicketRows] = await connection.query(
+      `
+          SELECT
+            COUNT(*) AS total
+
+          FROM lottery_tickets
+
+          WHERE draw_id = ?
+            AND user_id = ?
+            AND status = 'active'
+        `,
+      [validDrawId, validUserId],
+    );
+
+    const existingUserTicketCount = Number(userTicketRows[0]?.total || 0);
+
+    if (existingUserTicketCount + quantity > maximumPerUser) {
+      const availableForUser = Math.max(
+        0,
+        maximumPerUser - existingUserTicketCount,
+      );
+
+      throw createServiceError(
+        `You can buy only ${availableForUser} more ticket(s) in this draw.`,
+        409,
+        "LOTTERY_USER_TICKET_LIMIT",
+      );
+    }
+
+    const willReachTarget = activeTicketCount + quantity === targetQuantity;
+
+    if (willReachTarget) {
+      const userAlreadyParticipating = existingUserTicketCount > 0;
+
+      const finalUniquePlayerCount =
+        uniquePlayerCount + (userAlreadyParticipating ? 0 : 1);
+
+      if (finalUniquePlayerCount < minimumUniquePlayers) {
+        throw createServiceError(
+          `At least ${minimumUniquePlayers} different players are required before the final ticket can be sold.`,
+          409,
+          "LOTTERY_MINIMUM_PLAYERS_REQUIRED",
+        );
+      }
+    }
+
+    const [userRows] = await connection.query(
+      `
+          SELECT
+            id,
+            uid,
+            full_name,
+            account_status,
+            wallet_balance
+
+          FROM users
+
+          WHERE id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+      [validUserId],
+    );
+
+    const user = userRows[0] || null;
+
+    if (!user) {
+      throw createServiceError(
+        "Player account was not found.",
+        404,
+        "LOTTERY_PLAYER_NOT_FOUND",
+      );
+    }
+
+    if (String(user.account_status).trim().toLowerCase() !== "active") {
+      throw createServiceError(
+        "Your account is not active.",
+        403,
+        "LOTTERY_PLAYER_NOT_ACTIVE",
+      );
+    }
+
+    const totalAmount = parseMoney(ticketPrice * quantity);
+
+    const balanceBefore = parseMoney(user.wallet_balance);
+
+    if (balanceBefore < totalAmount) {
+      throw createServiceError(
+        `Minimum ৳${totalAmount.toFixed(2)} wallet balance is required.`,
+        409,
+        "LOTTERY_INSUFFICIENT_BALANCE",
+      );
+    }
+
+    const balanceAfter = parseMoney(balanceBefore - totalAmount);
+
+    const [walletUpdateResult] = await connection.query(
+      `
+          UPDATE users
+
+          SET
+            wallet_balance =
+              wallet_balance - ?
+
+          WHERE id = ?
+            AND account_status = 'active'
+            AND wallet_balance >= ?
+        `,
+      [totalAmount, validUserId, totalAmount],
+    );
+
+    if (Number(walletUpdateResult.affectedRows) !== 1) {
+      throw createServiceError(
+        "Lottery ticket payment could not be completed.",
+        409,
+        "LOTTERY_WALLET_DEBIT_FAILED",
+      );
+    }
+
+
+
+    const purchasedTickets = [];
+
+    for (let ticketIndex = 0; ticketIndex < quantity; ticketIndex += 1) {
+      let insertedTicket = null;
+
+      for (let attempt = 1; attempt <= 10; attempt += 1) {
+        const ticketCode = generateTicketCode();
+
+        const purchaseTransactionId = createLotteryWalletTransactionId("LTBUY");
+
+        try {
+          const [ticketInsertResult] = await connection.query(
+            `
+                INSERT INTO lottery_tickets (
+                  ticket_code,
+                  draw_id,
+                  user_id,
+                  purchase_batch_id,
+                  ticket_price,
+                  status,
+                  turnover_applied,
+                  turnover_amount,
+                  purchase_transaction_id
+                )
+                VALUES (
+                  ?,
+                  ?,
+                  ?,
+                  ?,
+                  ?,
+                  'active',
+                  0,
+                  0.00,
+                  ?
+                )
+              `,
+            [
+              ticketCode,
+              validDrawId,
+              validUserId,
+              purchaseBatch.id,
+              ticketPrice,
+              purchaseTransactionId,
+            ],
+          );
+
+          insertedTicket = {
+            ticketId: Number(ticketInsertResult.insertId),
+
+            ticketCode,
+
+            purchaseTransactionId,
+          };
+
+          break;
+        } catch (error) {
+          const duplicateTicketCode =
+            error.code === "ER_DUP_ENTRY" &&
+            String(error.message || "").includes("uq_lottery_ticket_code");
+
+          if (duplicateTicketCode && attempt < 10) {
+            continue;
+          }
+
+          throw error;
+        }
+      }
+
+      if (!insertedTicket) {
+        throw createServiceError(
+          "A unique lottery ticket number could not be generated.",
+          500,
+          "LOTTERY_TICKET_CODE_GENERATION_FAILED",
+        );
+      }
+
+      const transactionBalanceBefore = parseMoney(
+        balanceBefore - ticketPrice * ticketIndex,
+      );
+
+      const transactionBalanceAfter = parseMoney(
+        transactionBalanceBefore - ticketPrice,
+      );
+
+      await connection.query(
+        `
+          INSERT INTO wallet_transactions (
+            transaction_id,
+            user_id,
+            transaction_type,
+            direction,
+            amount,
+            balance_before,
+            balance_after,
+            status,
+            reference_type,
+            reference_id,
+            description,
+            created_by
+          )
+          VALUES (
+            ?,
+            ?,
+            'game_buy_in',
+            'debit',
+            ?,
+            ?,
+            ?,
+            'completed',
+            'lottery_ticket',
+            ?,
+            ?,
+            NULL
+          )
+        `,
+        [
+          insertedTicket.purchaseTransactionId,
+
+          validUserId,
+
+          ticketPrice,
+
+          transactionBalanceBefore,
+
+          transactionBalanceAfter,
+
+          String(insertedTicket.ticketId),
+
+          `Lottery draw ${draw.draw_code} ticket ${insertedTicket.ticketCode} purchase`,
+        ],
+      );
+
+      await appendLotteryAuditEvent(connection, {
+        drawId: validDrawId,
+
+        ticketId: insertedTicket.ticketId,
+
+        actorType: "player",
+
+        actorUserId: validUserId,
+
+        eventType: "TICKET_PURCHASED",
+
+        eventData: {
+          requestKey,
+
+          purchaseBatchId: Number(purchaseBatch.id),
+
+          ticketCode: insertedTicket.ticketCode,
+
+          ticketPrice,
+        },
+      });
+
+      purchasedTickets.push(insertedTicket);
+    }
+
+    const newActiveTicketCount = activeTicketCount + quantity;
+
+    const newGrossAmount = parseMoney(
+      Number(ticketSummary.gross_amount || 0) + totalAmount,
+    );
+
+    let countdownStarted = false;
+
+    let countdownEndsAt = null;
+
+    if (newActiveTicketCount === targetQuantity) {
+      const [lockedTicketRows] = await connection.query(
+        `
+            SELECT
+              id,
+              ticket_code,
+              user_id,
+              ticket_price
+
+            FROM lottery_tickets
+
+            WHERE draw_id = ?
+              AND status = 'active'
+
+            ORDER BY
+              ticket_code ASC,
+              id ASC
+
+            FOR UPDATE
+          `,
+        [validDrawId],
+      );
+
+      const ticketSetHash = sha256Hex(
+        canonicalizeJson(
+          lockedTicketRows.map((ticket) => ({
+            ticketId: Number(ticket.id),
+
+            ticketCode: ticket.ticket_code,
+
+            userId: Number(ticket.user_id),
+
+            ticketPrice: parseMoney(ticket.ticket_price),
+          })),
+        ),
+      );
+
+      const [turnoverRows] = await connection.query(
+        `
+            SELECT
+              user_id,
+
+              COALESCE(
+                SUM(ticket_price),
+                0
+              ) AS turnover_amount
+
+            FROM lottery_tickets
+
+            WHERE draw_id = ?
+              AND status = 'active'
+              AND turnover_applied = 0
+
+            GROUP BY user_id
+
+            FOR UPDATE
+          `,
+        [validDrawId],
+      );
+
+      for (const turnoverRow of turnoverRows) {
+        const turnoverAmount = parseMoney(turnoverRow.turnover_amount);
+
+        const [turnoverUpdateResult] = await connection.query(
+          `
+              UPDATE users
+
+              SET
+                turnover_amount =
+                  turnover_amount + ?
+
+              WHERE id = ?
+            `,
+          [turnoverAmount, Number(turnoverRow.user_id)],
+        );
+
+        if (Number(turnoverUpdateResult.affectedRows) !== 1) {
+          throw createServiceError(
+            "Lottery turnover could not be applied.",
+            409,
+            "LOTTERY_TURNOVER_APPLY_FAILED",
+          );
+        }
+      }
+
+      const countdownSeconds = Number(draw.countdown_seconds);
+
+      const countdownStartDate = new Date();
+
+      const countdownEndDate = new Date(
+        countdownStartDate.getTime() + countdownSeconds * 1000,
+      );
+
+      countdownEndsAt = countdownEndDate.toISOString();
+
+      const firstPrizeAmount = calculateAmountByPercent(
+        newGrossAmount,
+        draw.first_prize_percent,
+      );
+
+      const secondPrizeAmount = calculateAmountByPercent(
+        newGrossAmount,
+        draw.second_prize_percent,
+      );
+
+      const thirdPrizeAmount = calculateAmountByPercent(
+        newGrossAmount,
+        draw.third_prize_percent,
+      );
+
+      const serviceChargeAmount = calculateAmountByPercent(
+        newGrossAmount,
+        draw.service_charge_percent,
+      );
+
+      const totalPrizeAmount = parseMoney(
+        firstPrizeAmount + secondPrizeAmount + thirdPrizeAmount,
+      );
+
+      const [ticketLockResult] = await connection.query(
+        `
+            UPDATE lottery_tickets
+
+            SET
+              status = 'locked',
+              turnover_applied = 1,
+              turnover_amount =
+                ticket_price,
+              locked_at = ?
+
+            WHERE draw_id = ?
+              AND status = 'active'
+              AND turnover_applied = 0
+          `,
+        [formatMysqlDateTime(countdownStartDate), validDrawId],
+      );
+
+      if (Number(ticketLockResult.affectedRows) !== targetQuantity) {
+        throw createServiceError(
+          "Lottery ticket set could not be locked.",
+          409,
+          "LOTTERY_TICKET_LOCK_FAILED",
+        );
+      }
+
+      const [drawLockResult] = await connection.query(
+        `
+            UPDATE lottery_draws
+
+            SET
+              status = 'countdown',
+              active_ticket_count = ?,
+              gross_sales_amount = ?,
+              total_prize_amount = ?,
+              first_prize_amount = ?,
+              second_prize_amount = ?,
+              third_prize_amount = ?,
+              service_charge_amount = ?,
+              ticket_set_hash = ?,
+              sold_out_at = ?,
+              countdown_started_at = ?,
+              countdown_ends_at = ?,
+              state_version =
+                state_version + 1
+
+            WHERE id = ?
+              AND status = 'selling'
+          `,
+        [
+          newActiveTicketCount,
+          newGrossAmount,
+          totalPrizeAmount,
+          firstPrizeAmount,
+          secondPrizeAmount,
+          thirdPrizeAmount,
+          serviceChargeAmount,
+          ticketSetHash,
+          formatMysqlDateTime(countdownStartDate),
+          formatMysqlDateTime(countdownStartDate),
+          formatMysqlDateTime(countdownEndDate),
+          validDrawId,
+        ],
+      );
+
+      if (Number(drawLockResult.affectedRows) !== 1) {
+        throw createServiceError(
+          "Lottery countdown could not be started.",
+          409,
+          "LOTTERY_COUNTDOWN_START_FAILED",
+        );
+      }
+
+      await appendLotteryAuditEvent(connection, {
+        drawId: validDrawId,
+
+        actorType: "system",
+
+        eventType: "TICKET_SET_LOCKED",
+
+        eventData: {
+          activeTicketCount: newActiveTicketCount,
+
+          uniquePlayerCount:
+            uniquePlayerCount + (existingUserTicketCount > 0 ? 0 : 1),
+
+          grossAmount: newGrossAmount,
+
+          ticketSetHash,
+
+          countdownSeconds,
+
+          countdownEndsAt,
+        },
+      });
+
+      countdownStarted = true;
+    } else {
+      const [drawUpdateResult] = await connection.query(
+        `
+            UPDATE lottery_draws
+
+            SET
+              active_ticket_count = ?,
+              gross_sales_amount = ?,
+              state_version =
+                state_version + 1
+
+            WHERE id = ?
+              AND status = 'selling'
+          `,
+        [newActiveTicketCount, newGrossAmount, validDrawId],
+      );
+
+      if (Number(drawUpdateResult.affectedRows) !== 1) {
+        throw createServiceError(
+          "Lottery draw ticket count could not be updated.",
+          409,
+          "LOTTERY_DRAW_UPDATE_FAILED",
+        );
+      }
+    }
+
+    const [batchAmountUpdateResult] = await connection.query(
+      `
+          UPDATE lottery_purchase_batches
+
+          SET
+            total_amount = ?
+
+          WHERE id = ?
+            AND status = 'processing'
+        `,
+      [totalAmount, purchaseBatch.id],
+    );
+
+    if (Number(batchAmountUpdateResult.affectedRows) !== 1) {
+      throw createServiceError(
+        "Lottery purchase amount could not be recorded.",
+        409,
+        "PURCHASE_BATCH_AMOUNT_UPDATE_FAILED",
+      );
+    }
+
+          const [batchCompleteResult] =
+      await connection.query(
+        `
+          UPDATE lottery_purchase_batches
+
+          SET
+            status = 'completed',
+            completed_at =
+              UTC_TIMESTAMP()
+
+          WHERE id = ?
+            AND status = 'processing'
+        `,
+        [purchaseBatch.id],
+      );
+
+
+    if (Number(batchCompleteResult.affectedRows) !== 1) {
+      throw createServiceError(
+        "Ticket purchase could not be completed.",
+        409,
+        "PURCHASE_BATCH_COMPLETE_FAILED",
+      );
+    }
+
+    const [completedTicketRows] = await connection.query(
+      `
+          SELECT
+            *
+
+          FROM lottery_tickets
+
+          WHERE purchase_batch_id = ?
+
+          ORDER BY id ASC
+        `,
+      [purchaseBatch.id],
+    );
+
+    await connection.commit();
+
+    transactionStarted = false;
+
+    return {
+      alreadyProcessed: false,
+
+      requestKey,
+
+      purchaseBatchId: Number(purchaseBatch.id),
+
+      quantity,
+
+      totalAmount,
+
+      walletBalance: balanceAfter,
+
+      tickets: completedTicketRows.map(mapPurchasedTicketRow),
+
+      countdownStarted,
+
+      countdownEndsAt,
+    };
+  } catch (error) {
+    if (transactionStarted) {
+      await connection.rollback();
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+/* ==========================================
+   Player Ticket Cancellation
+========================================== */
+
+async function cancelTicket(userId, ticketId) {
+  const validUserId = parsePositiveInteger(userId, "User ID");
+
+  const validTicketId = parsePositiveInteger(ticketId, "Ticket ID");
+
+  const connection = await pool.getConnection();
+
+  let transactionStarted = false;
+
+  try {
+    await connection.beginTransaction();
+
+    transactionStarted = true;
+
+    /*
+     * First identify the ticket's draw.
+     * The draw row will then be locked before
+     * locking the ticket to keep lock order safe.
+     */
+    const [identityRows] = await connection.query(
+      `
+          SELECT
+            id,
+            draw_id,
+            user_id
+
+          FROM lottery_tickets
+
+          WHERE id = ?
+
+          LIMIT 1
+        `,
+      [validTicketId],
+    );
+
+    const ticketIdentity = identityRows[0] || null;
+
+    if (!ticketIdentity) {
+      throw createServiceError(
+        "Lottery ticket was not found.",
+        404,
+        "LOTTERY_TICKET_NOT_FOUND",
+      );
+    }
+
+    if (Number(ticketIdentity.user_id) !== validUserId) {
+      throw createServiceError(
+        "This lottery ticket does not belong to you.",
+        403,
+        "LOTTERY_TICKET_NOT_OWNED",
+      );
+    }
+
+    const validDrawId = Number(ticketIdentity.draw_id);
+
+    const [drawRows] = await connection.query(
+      `
+          SELECT
+            *
+
+          FROM lottery_draws
+
+          WHERE id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+      [validDrawId],
+    );
+
+    const draw = drawRows[0] || null;
+
+    if (!draw) {
+      throw createServiceError(
+        "Lottery draw was not found.",
+        404,
+        "LOTTERY_DRAW_NOT_FOUND",
+      );
+    }
+
+    const [ticketRows] = await connection.query(
+      `
+          SELECT
+            *
+
+          FROM lottery_tickets
+
+          WHERE id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+      [validTicketId],
+    );
+
+    const ticket = ticketRows[0] || null;
+
+    if (!ticket) {
+      throw createServiceError(
+        "Lottery ticket was not found.",
+        404,
+        "LOTTERY_TICKET_NOT_FOUND",
+      );
+    }
+
+    if (Number(ticket.user_id) !== validUserId) {
+      throw createServiceError(
+        "This lottery ticket does not belong to you.",
+        403,
+        "LOTTERY_TICKET_NOT_OWNED",
+      );
+    }
+
+    /*
+     * Repeated cancel request will return the
+     * previous result without refunding twice.
+     */
+    if (
+      String(ticket.status) === "cancelled" &&
+      String(ticket.cancellation_source) === "player" &&
+      ticket.refund_transaction_id
+    ) {
+      const [currentUserRows] = await connection.query(
+        `
+            SELECT
+              wallet_balance
+
+            FROM users
+
+            WHERE id = ?
+
+            LIMIT 1
+          `,
+        [validUserId],
+      );
+
+      await connection.commit();
+
+      transactionStarted = false;
+
+      return {
+        alreadyCancelled: true,
+
+        refundAmount: parseMoney(ticket.refund_amount),
+
+        cancellationFeeAmount: parseMoney(ticket.cancellation_fee_amount),
+
+        walletBalance: parseMoney(currentUserRows[0]?.wallet_balance),
+
+        ticket: mapPurchasedTicketRow(ticket),
+      };
+    }
+
+    if (!["selling", "paused"].includes(String(draw.status))) {
+      throw createServiceError(
+        "This ticket can no longer be cancelled because the lottery countdown has started.",
+        409,
+        "LOTTERY_CANCELLATION_CLOSED",
+      );
+    }
+
+    if (String(ticket.status) !== "active") {
+      throw createServiceError(
+        "Only an active lottery ticket can be cancelled.",
+        409,
+        "LOTTERY_TICKET_NOT_ACTIVE",
+      );
+    }
+
+    if (Number(ticket.turnover_applied || 0) === 1) {
+      throw createServiceError(
+        "A locked lottery ticket cannot be cancelled.",
+        409,
+        "LOTTERY_TICKET_ALREADY_LOCKED",
+      );
+    }
+
+    const ticketPrice = parseMoney(ticket.ticket_price);
+
+    const cancellationFeePercent = parseMoney(draw.cancellation_fee_percent);
+
+    const cancellationFeeAmount = calculateAmountByPercent(
+      ticketPrice,
+      cancellationFeePercent,
+    );
+
+    const refundAmount = parseMoney(ticketPrice - cancellationFeeAmount);
+
+    if (refundAmount < 0 || refundAmount > ticketPrice) {
+      throw createServiceError(
+        "Lottery ticket refund calculation is invalid.",
+        500,
+        "LOTTERY_REFUND_INVALID",
+      );
+    }
+
+    const [userRows] = await connection.query(
+      `
+          SELECT
+            id,
+            wallet_balance
+
+          FROM users
+
+          WHERE id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+      [validUserId],
+    );
+
+    const user = userRows[0] || null;
+
+    if (!user) {
+      throw createServiceError(
+        "Player account was not found.",
+        404,
+        "LOTTERY_PLAYER_NOT_FOUND",
+      );
+    }
+
+    const balanceBefore = parseMoney(user.wallet_balance);
+
+    const balanceAfter = parseMoney(balanceBefore + refundAmount);
+
+    const refundTransactionId = createLotteryWalletTransactionId("LTREF");
+
+    const [walletUpdateResult] = await connection.query(
+      `
+          UPDATE users
+
+          SET
+            wallet_balance =
+              wallet_balance + ?
+
+          WHERE id = ?
+        `,
+      [refundAmount, validUserId],
+    );
+
+    if (Number(walletUpdateResult.affectedRows) !== 1) {
+      throw createServiceError(
+        "Lottery ticket refund could not be credited.",
+        409,
+        "LOTTERY_REFUND_CREDIT_FAILED",
+      );
+    }
+
+    await connection.query(
+      `
+        INSERT INTO wallet_transactions (
+          transaction_id,
+          user_id,
+          transaction_type,
+          direction,
+          amount,
+          balance_before,
+          balance_after,
+          status,
+          reference_type,
+          reference_id,
+          description,
+          created_by
+        )
+        VALUES (
+          ?,
+          ?,
+          'game_cash_out',
+          'credit',
+          ?,
+          ?,
+          ?,
+          'completed',
+          'lottery_ticket',
+          ?,
+          ?,
+          NULL
+        )
+      `,
+      [
+        refundTransactionId,
+        validUserId,
+        refundAmount,
+        balanceBefore,
+        balanceAfter,
+        String(validTicketId),
+        `Lottery ticket ${ticket.ticket_code} cancellation refund`,
+      ],
+    );
+
+    const cancellationDate = new Date();
+
+    const [ticketUpdateResult] = await connection.query(
+      `
+          UPDATE lottery_tickets
+
+          SET
+            status = 'cancelled',
+            refund_transaction_id = ?,
+            refund_amount = ?,
+            cancellation_fee_amount = ?,
+            cancellation_source =
+              'player',
+            cancelled_by_user_id = ?,
+            cancellation_reason =
+              'Cancelled by player before countdown',
+            cancelled_at = ?,
+            refunded_at = ?
+
+          WHERE id = ?
+            AND user_id = ?
+            AND status = 'active'
+            AND turnover_applied = 0
+        `,
+      [
+        refundTransactionId,
+        refundAmount,
+        cancellationFeeAmount,
+        validUserId,
+        formatMysqlDateTime(cancellationDate),
+        formatMysqlDateTime(cancellationDate),
+        validTicketId,
+        validUserId,
+      ],
+    );
+
+    if (Number(ticketUpdateResult.affectedRows) !== 1) {
+      throw createServiceError(
+        "Lottery ticket cancellation could not be completed.",
+        409,
+        "LOTTERY_TICKET_CANCEL_FAILED",
+      );
+    }
+
+    /*
+     * The retained 20% cancellation fee is stored
+     * separately as platform revenue.
+     */
+    await connection.query(
+      `
+        INSERT INTO lottery_revenue_history (
+          revenue_key,
+          draw_id,
+          ticket_id,
+          user_id,
+          revenue_type,
+          gross_amount,
+          revenue_percent,
+          revenue_amount,
+          related_transaction_id,
+          description
+        )
+        VALUES (
+          ?,
+          ?,
+          ?,
+          ?,
+          'ticket_cancellation_fee',
+          ?,
+          ?,
+          ?,
+          ?,
+          ?
+        )
+      `,
+      [
+        `TICKET-CANCEL-FEE-${validTicketId}`,
+        validDrawId,
+        validTicketId,
+        validUserId,
+        ticketPrice,
+        cancellationFeePercent,
+        cancellationFeeAmount,
+        refundTransactionId,
+        `Cancellation fee for lottery ticket ${ticket.ticket_code}`,
+      ],
+    );
+
+    const [summaryRows] = await connection.query(
+      `
+          SELECT
+            COUNT(*) AS active_ticket_count,
+
+            COALESCE(
+              SUM(ticket_price),
+              0
+            ) AS gross_amount
+
+          FROM lottery_tickets
+
+          WHERE draw_id = ?
+            AND status = 'active'
+        `,
+      [validDrawId],
+    );
+
+    const activeTicketCount = Number(summaryRows[0]?.active_ticket_count || 0);
+
+    const grossAmount = parseMoney(summaryRows[0]?.gross_amount);
+
+    const [drawUpdateResult] = await connection.query(
+      `
+          UPDATE lottery_draws
+
+          SET
+            active_ticket_count = ?,
+            cancelled_ticket_count =
+              cancelled_ticket_count + 1,
+            gross_sales_amount = ?,
+            state_version =
+              state_version + 1
+
+          WHERE id = ?
+            AND status IN (
+              'selling',
+              'paused'
+            )
+        `,
+      [activeTicketCount, grossAmount, validDrawId],
+    );
+
+    if (Number(drawUpdateResult.affectedRows) !== 1) {
+      throw createServiceError(
+        "Lottery draw totals could not be updated.",
+        409,
+        "LOTTERY_DRAW_CANCEL_UPDATE_FAILED",
+      );
+    }
+
+    await appendLotteryAuditEvent(connection, {
+      drawId: validDrawId,
+
+      ticketId: validTicketId,
+
+      actorType: "player",
+
+      actorUserId: validUserId,
+
+      eventType: "TICKET_CANCELLED",
+
+      eventData: {
+        ticketCode: ticket.ticket_code,
+
+        ticketPrice,
+
+        refundAmount,
+
+        cancellationFeePercent,
+
+        cancellationFeeAmount,
+
+        turnoverApplied: false,
+
+        activeTicketCount,
+
+        grossAmount,
+      },
+    });
+
+    const [updatedTicketRows] = await connection.query(
+      `
+          SELECT
+            *
+
+          FROM lottery_tickets
+
+          WHERE id = ?
+
+          LIMIT 1
+        `,
+      [validTicketId],
+    );
+
+    await connection.commit();
+
+    transactionStarted = false;
+
+    return {
+      alreadyCancelled: false,
+
+      refundAmount,
+
+      cancellationFeeAmount,
+
+      walletBalance: balanceAfter,
+
+      ticket: mapPurchasedTicketRow(updatedTicketRows[0]),
+    };
+  } catch (error) {
+    if (transactionStarted) {
+      await connection.rollback();
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+/* ==========================================
    Admin Draw Validation
 ========================================== */
 
@@ -1247,6 +2739,522 @@ async function getLockedLotteryAdmin(adminId, connection) {
   }
 
   return admin;
+}
+
+/* ==========================================
+   Admin Full Draw Cancellation
+========================================== */
+
+async function cancelAdminDraw(adminId, drawId, reason) {
+  const validAdminId = parsePositiveInteger(adminId, "Admin ID");
+
+  const validDrawId = parsePositiveInteger(drawId, "Draw ID");
+
+  const cancellationReason = String(reason || "").trim();
+
+  if (cancellationReason.length < 5 || cancellationReason.length > 255) {
+    throw createServiceError(
+      "Cancellation reason must be between 5 and 255 characters.",
+      400,
+      "INVALID_DRAW_CANCELLATION_REASON",
+    );
+  }
+
+  const connection = await pool.getConnection();
+
+  let transactionStarted = false;
+
+  try {
+    await connection.beginTransaction();
+
+    transactionStarted = true;
+
+    /*
+     * Lock draw first so purchase, player cancellation
+     * and admin cancellation cannot run together.
+     */
+    const [drawRows] = await connection.query(
+      `
+          SELECT
+            *
+
+          FROM lottery_draws
+
+          WHERE id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+      [validDrawId],
+    );
+
+    const draw = drawRows[0] || null;
+
+    if (!draw) {
+      throw createServiceError(
+        "Lottery draw was not found.",
+        404,
+        "LOTTERY_DRAW_NOT_FOUND",
+      );
+    }
+
+    const admin = await getLockedLotteryAdmin(validAdminId, connection);
+
+    if (String(draw.status) === "cancelled") {
+      await connection.commit();
+
+      transactionStarted = false;
+
+      return {
+        alreadyCancelled: true,
+
+        drawId: validDrawId,
+
+        drawCode: draw.draw_code,
+
+        status: "cancelled",
+
+        refundedTicketCount: 0,
+
+        totalRefundAmount: 0,
+
+        turnoverReversed: 0,
+
+        cancellationReason: draw.cancellation_reason || null,
+
+        cancelledAt: draw.cancelled_at || null,
+      };
+    }
+
+    const cancellableStatuses = [
+      "draft",
+      "selling",
+      "paused",
+      "sold_out",
+      "countdown",
+      "ready_to_draw",
+      "failed",
+    ];
+
+    if (!cancellableStatuses.includes(String(draw.status))) {
+      throw createServiceError(
+        "This lottery draw can no longer be cancelled.",
+        409,
+        "LOTTERY_DRAW_CANNOT_BE_CANCELLED",
+      );
+    }
+
+    const [refundableTicketRows] = await connection.query(
+      `
+          SELECT
+            *
+
+          FROM lottery_tickets
+
+          WHERE draw_id = ?
+            AND status IN (
+              'active',
+              'locked'
+            )
+
+          ORDER BY
+            user_id ASC,
+            id ASC
+
+          FOR UPDATE
+        `,
+      [validDrawId],
+    );
+
+    /*
+     * Lock all affected users in the same order.
+     */
+    const refundableUserIds = [
+      ...new Set(refundableTicketRows.map((ticket) => Number(ticket.user_id))),
+    ].sort((firstId, secondId) => firstId - secondId);
+
+    const lockedUsers = new Map();
+
+    if (refundableUserIds.length > 0) {
+      const placeholders = refundableUserIds.map(() => "?").join(",");
+
+      const [userRows] = await connection.query(
+        `
+            SELECT
+              id,
+              wallet_balance,
+              turnover_amount
+
+            FROM users
+
+            WHERE id IN (
+              ${placeholders}
+            )
+
+            ORDER BY id ASC
+
+            FOR UPDATE
+          `,
+        refundableUserIds,
+      );
+
+      for (const user of userRows) {
+        lockedUsers.set(Number(user.id), {
+          id: Number(user.id),
+
+          walletBalance: parseMoney(user.wallet_balance),
+
+          turnoverAmount: parseMoney(user.turnover_amount),
+        });
+      }
+
+      if (lockedUsers.size !== refundableUserIds.length) {
+        throw createServiceError(
+          "One or more lottery players could not be locked for refund.",
+          409,
+          "LOTTERY_REFUND_PLAYER_MISSING",
+        );
+      }
+    }
+
+    let totalRefundAmount = 0;
+
+    let turnoverReversed = 0;
+
+    for (const ticket of refundableTicketRows) {
+      const ticketUserId = Number(ticket.user_id);
+
+      const lockedUser = lockedUsers.get(ticketUserId);
+
+      if (!lockedUser) {
+        throw createServiceError(
+          "Lottery refund player was not found.",
+          409,
+          "LOTTERY_REFUND_PLAYER_MISSING",
+        );
+      }
+
+      const ticketPrice = parseMoney(ticket.ticket_price);
+
+      const ticketTurnoverApplied = Number(ticket.turnover_applied || 0) === 1;
+
+      const ticketTurnoverAmount = ticketTurnoverApplied
+        ? parseMoney(ticket.turnover_amount || ticketPrice)
+        : 0;
+
+      const balanceBefore = lockedUser.walletBalance;
+
+      const balanceAfter = parseMoney(balanceBefore + ticketPrice);
+
+      const turnoverBefore = lockedUser.turnoverAmount;
+
+      const turnoverAfter = parseMoney(
+        Math.max(0, turnoverBefore - ticketTurnoverAmount),
+      );
+
+      const refundTransactionId = createLotteryWalletTransactionId("LTAREF");
+
+      const [walletUpdateResult] = await connection.query(
+        `
+            UPDATE users
+
+            SET
+              wallet_balance =
+                wallet_balance + ?,
+
+              turnover_amount =
+                GREATEST(
+                  0,
+                  turnover_amount - ?
+                )
+
+            WHERE id = ?
+          `,
+        [ticketPrice, ticketTurnoverAmount, ticketUserId],
+      );
+
+      if (Number(walletUpdateResult.affectedRows) !== 1) {
+        throw createServiceError(
+          "Admin lottery refund could not be credited.",
+          409,
+          "LOTTERY_ADMIN_REFUND_FAILED",
+        );
+      }
+
+      await connection.query(
+        `
+          INSERT INTO wallet_transactions (
+            transaction_id,
+            user_id,
+            transaction_type,
+            direction,
+            amount,
+            balance_before,
+            balance_after,
+            status,
+            reference_type,
+            reference_id,
+            description,
+            created_by
+          )
+          VALUES (
+            ?,
+            ?,
+            'game_cash_out',
+            'credit',
+            ?,
+            ?,
+            ?,
+            'completed',
+            'lottery_draw_cancel',
+            ?,
+            ?,
+            ?
+          )
+        `,
+        [
+          refundTransactionId,
+          ticketUserId,
+          ticketPrice,
+          balanceBefore,
+          balanceAfter,
+          String(ticket.id),
+          `Full refund for cancelled lottery draw ${draw.draw_code}, ticket ${ticket.ticket_code}`,
+          Number(admin.id),
+        ],
+      );
+
+      const refundDate = new Date();
+
+      const [ticketUpdateResult] = await connection.query(
+        `
+            UPDATE lottery_tickets
+
+            SET
+              status =
+                'admin_refunded',
+              refund_transaction_id = ?,
+              refund_amount = ?,
+              cancellation_fee_amount =
+                0.00,
+              cancellation_source =
+                'admin',
+              cancelled_by_user_id = ?,
+              cancellation_reason = ?,
+              cancelled_at = ?,
+              refunded_at = ?
+
+            WHERE id = ?
+              AND status IN (
+                'active',
+                'locked'
+              )
+          `,
+        [
+          refundTransactionId,
+          ticketPrice,
+          Number(admin.id),
+          cancellationReason,
+          formatMysqlDateTime(refundDate),
+          formatMysqlDateTime(refundDate),
+          Number(ticket.id),
+        ],
+      );
+
+      if (Number(ticketUpdateResult.affectedRows) !== 1) {
+        throw createServiceError(
+          "Lottery ticket could not be marked as admin refunded.",
+          409,
+          "LOTTERY_ADMIN_TICKET_UPDATE_FAILED",
+        );
+      }
+
+      await appendLotteryAuditEvent(connection, {
+        drawId: validDrawId,
+
+        ticketId: Number(ticket.id),
+
+        actorType: "admin",
+
+        actorUserId: Number(admin.id),
+
+        eventType: "TICKET_ADMIN_REFUNDED",
+
+        eventData: {
+          ticketCode: ticket.ticket_code,
+
+          userId: ticketUserId,
+
+          refundAmount: ticketPrice,
+
+          turnoverReversed: ticketTurnoverAmount,
+
+          previousStatus: String(ticket.status),
+
+          newStatus: "admin_refunded",
+        },
+      });
+
+      lockedUser.walletBalance = balanceAfter;
+
+      lockedUser.turnoverAmount = turnoverAfter;
+
+      totalRefundAmount = parseMoney(totalRefundAmount + ticketPrice);
+
+      turnoverReversed = parseMoney(turnoverReversed + ticketTurnoverAmount);
+    }
+
+    /*
+     * Reveal the cancelled draw seed so the public
+     * commitment can still be independently verified.
+     */
+    const serverSeed = decryptServerSeed(draw.server_seed_ciphertext);
+
+    const calculatedCommitment = sha256Hex(serverSeed);
+
+    if (calculatedCommitment !== String(draw.seed_commitment || "")) {
+      throw createServiceError(
+        "Lottery draw seed commitment verification failed.",
+        500,
+        "LOTTERY_SEED_COMMITMENT_MISMATCH",
+      );
+    }
+
+    const revealedSeed = serverSeed.toString("hex");
+
+    const [cancelledCountRows] = await connection.query(
+      `
+          SELECT
+            COUNT(*) AS total
+
+          FROM lottery_tickets
+
+          WHERE draw_id = ?
+            AND status IN (
+              'cancelled',
+              'admin_refunded'
+            )
+        `,
+      [validDrawId],
+    );
+
+    const cancelledTicketCount = Number(cancelledCountRows[0]?.total || 0);
+
+    const cancelledAt = new Date();
+
+    const [drawUpdateResult] = await connection.query(
+      `
+          UPDATE lottery_draws
+
+          SET
+            status = 'cancelled',
+            active_ticket_count = 0,
+            cancelled_ticket_count = ?,
+            gross_sales_amount = 0.00,
+            total_prize_amount = 0.00,
+            first_prize_amount = 0.00,
+            second_prize_amount = 0.00,
+            third_prize_amount = 0.00,
+            service_charge_amount = 0.00,
+            revealed_seed = ?,
+            cancelled_at = ?,
+            cancellation_reason = ?,
+            state_version =
+              state_version + 1
+
+          WHERE id = ?
+            AND status IN (
+              'draft',
+              'selling',
+              'paused',
+              'sold_out',
+              'countdown',
+              'ready_to_draw',
+              'failed'
+            )
+        `,
+      [
+        cancelledTicketCount,
+        revealedSeed,
+        formatMysqlDateTime(cancelledAt),
+        cancellationReason,
+        validDrawId,
+      ],
+    );
+
+    if (Number(drawUpdateResult.affectedRows) !== 1) {
+      throw createServiceError(
+        "Lottery draw cancellation could not be completed.",
+        409,
+        "LOTTERY_ADMIN_DRAW_CANCEL_FAILED",
+      );
+    }
+
+    await appendLotteryAuditEvent(connection, {
+      drawId: validDrawId,
+
+      actorType: "admin",
+
+      actorUserId: Number(admin.id),
+
+      eventType: "DRAW_CANCELLED",
+
+      eventData: {
+        previousStatus: String(draw.status),
+
+        newStatus: "cancelled",
+
+        cancellationReason,
+
+        refundedTicketCount: refundableTicketRows.length,
+
+        totalRefundAmount,
+
+        turnoverReversed,
+
+        playerCancelledTicketsRefunded: false,
+
+        revealedSeed,
+
+        seedCommitment: draw.seed_commitment,
+      },
+    });
+
+    await connection.commit();
+
+    transactionStarted = false;
+
+    return {
+      alreadyCancelled: false,
+
+      drawId: validDrawId,
+
+      drawCode: draw.draw_code,
+
+      status: "cancelled",
+
+      refundedTicketCount: refundableTicketRows.length,
+
+      totalRefundAmount,
+
+      turnoverReversed,
+
+      cancellationReason,
+
+      cancelledAt: cancelledAt.toISOString(),
+
+      revealedSeed,
+    };
+  } catch (error) {
+    if (transactionStarted) {
+      await connection.rollback();
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 /* ==========================================
@@ -1576,6 +3584,9 @@ module.exports = {
   getDrawDetails,
   getMyTickets,
   getRecentWinners,
+  purchaseTickets,
+  cancelTicket,
+  cancelAdminDraw,
   createAdminDraw,
   openAdminDraw,
 };
