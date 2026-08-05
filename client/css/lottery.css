@@ -4003,3 +4003,15 @@ input:focus-visible {
   font-style: normal;
   line-height: 1.55;
 }
+
+.winner-wishing-message {
+  grid-column:
+    2 / -1;
+
+  margin: 5px 0 0;
+
+  color: #c4b5fd;
+
+  font-size: 12px;
+  line-height: 1.5;
+}

@@ -40,6 +40,24 @@ router.get(
 );
 
 /*
+ * Current user Lottery winner notifications
+ */
+router.get(
+  "/notifications",
+  requireAuth,
+  controller.getMyNotifications,
+);
+
+/*
+ * Mark a winner notification as read
+ */
+router.patch(
+  "/notifications/:drawId/read",
+  requireAuth,
+  controller.markNotificationRead,
+);
+
+/*
  * Available and recent draws
  */
 router.get(

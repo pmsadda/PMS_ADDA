@@ -322,6 +322,88 @@ async function cancelTicket(
 }
 
 /* ==========================================
+   Get My Lottery Notifications
+========================================== */
+
+async function getMyNotifications(
+  request,
+  response,
+) {
+  try {
+    const data =
+      await lotteryService
+        .getMyLotteryNotifications(
+          request.user.id,
+          request.query,
+        );
+
+    return response
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Lottery notifications loaded successfully.",
+
+        data,
+      });
+  } catch (error) {
+    console.error(
+      "GET LOTTERY NOTIFICATIONS ERROR:",
+      error,
+    );
+
+    return sendControllerError(
+      response,
+      error,
+      "Unable to load Lottery notifications.",
+    );
+  }
+}
+
+/* ==========================================
+   Mark Lottery Notification Read
+========================================== */
+
+async function markNotificationRead(
+  request,
+  response,
+) {
+  try {
+    const notification =
+      await lotteryService
+        .markLotteryNotificationRead(
+          request.user.id,
+          request.params.drawId,
+        );
+
+    return response
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Lottery notification marked as read.",
+
+        data: {
+          notification,
+        },
+      });
+  } catch (error) {
+    console.error(
+      "MARK LOTTERY NOTIFICATION READ ERROR:",
+      error,
+    );
+
+    return sendControllerError(
+      response,
+      error,
+      "Unable to update Lottery notification.",
+    );
+  }
+}
+
+/* ==========================================
    Controller Exports
 ========================================== */
 
@@ -330,6 +412,8 @@ module.exports = {
   getDrawDetails,
   getMyTickets,
   getRecentWinners,
+  getMyNotifications,
+  markNotificationRead,
   purchaseTickets,
-    cancelTicket,
+  cancelTicket,
 };

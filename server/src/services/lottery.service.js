@@ -6010,6 +6010,326 @@ async function executeAdminFairDraw(
 }
 
 /* ==========================================
+   Player Lottery Winner Notifications
+========================================== */
+
+async function getMyLotteryNotifications(
+  userId,
+  options = {},
+) {
+  const validUserId =
+    parsePositiveInteger(
+      userId,
+      "User ID",
+    );
+
+  const limit =
+    parseListLimit(
+      options.limit,
+      20,
+      50,
+    );
+
+  const unreadOnly =
+    [
+      "1",
+      "true",
+      "yes",
+    ].includes(
+      String(
+        options.unreadOnly ||
+          "",
+      )
+        .trim()
+        .toLowerCase(),
+    );
+
+  const whereConditions = [
+    "lw.user_id = ?",
+    "lw.settlement_status = 'completed'",
+  ];
+
+  const queryParameters = [
+    validUserId,
+  ];
+
+  if (unreadOnly) {
+    whereConditions.push(
+      "lw.notification_read_at IS NULL",
+    );
+  }
+
+  const whereSql =
+    whereConditions.join(
+      " AND ",
+    );
+
+  const [
+    countRows,
+  ] =
+    await pool.query(
+      `
+        SELECT
+          COUNT(*) AS total
+
+        FROM lottery_winners lw
+
+        WHERE ${whereSql}
+      `,
+      queryParameters,
+    );
+
+  const [
+    unreadRows,
+  ] =
+    await pool.query(
+      `
+        SELECT
+          COUNT(*) AS total
+
+        FROM lottery_winners lw
+
+        WHERE lw.user_id = ?
+          AND lw.settlement_status =
+              'completed'
+          AND lw.notification_read_at
+              IS NULL
+      `,
+      [
+        validUserId,
+      ],
+    );
+
+  const [
+    notificationRows,
+  ] =
+    await pool.query(
+      `
+        SELECT
+          lw.id AS notification_id,
+          lw.draw_id,
+          lw.prize_rank,
+          lw.winner_uid,
+          lw.winner_name,
+          lw.ticket_code_snapshot,
+          lw.prize_percent,
+          lw.prize_amount,
+          lw.winner_message,
+          lw.notification_read_at,
+          lw.announced_at,
+          lw.created_at,
+
+          ld.draw_code,
+          ld.draw_title,
+          ld.drawn_at
+
+        FROM lottery_winners lw
+
+        INNER JOIN lottery_draws ld
+          ON ld.id =
+             lw.draw_id
+
+        WHERE ${whereSql}
+
+        ORDER BY
+          lw.created_at DESC,
+          lw.id DESC
+
+        LIMIT ${limit}
+      `,
+      queryParameters,
+    );
+
+  return {
+    notifications:
+      notificationRows.map(
+        (row) => ({
+          notificationId:
+            Number(
+              row.notification_id,
+            ),
+
+          type:
+            "lottery_win",
+
+          drawId:
+            Number(
+              row.draw_id,
+            ),
+
+          drawCode:
+            row.draw_code,
+
+          drawTitle:
+            row.draw_title,
+
+          prizeRank:
+            Number(
+              row.prize_rank,
+            ),
+
+          ticketCode:
+            row
+              .ticket_code_snapshot,
+
+          winnerUid:
+            row.winner_uid,
+
+          winnerName:
+            row.winner_name,
+
+          prizePercent:
+            parseMoney(
+              row.prize_percent,
+            ),
+
+          prizeAmount:
+            parseMoney(
+              row.prize_amount,
+            ),
+
+          winnerMessage:
+            row.winner_message,
+
+          isRead:
+            Boolean(
+              row
+                .notification_read_at,
+            ),
+
+          readAt:
+            row
+              .notification_read_at ||
+            null,
+
+          announcedAt:
+            row.announced_at ||
+            null,
+
+          drawnAt:
+            row.drawn_at ||
+            null,
+
+          createdAt:
+            row.created_at ||
+            null,
+        })),
+    total:
+      Number(
+        countRows[0]
+          ?.total || 0,
+      ),
+
+    unreadCount:
+      Number(
+        unreadRows[0]
+          ?.total || 0,
+      ),
+  };
+}
+
+async function markLotteryNotificationRead(
+  userId,
+  drawId,
+) {
+  const validUserId =
+    parsePositiveInteger(
+      userId,
+      "User ID",
+    );
+
+  const validDrawId =
+    parsePositiveInteger(
+      drawId,
+      "Draw ID",
+    );
+
+  const [
+    updateResult,
+  ] =
+    await pool.query(
+      `
+        UPDATE lottery_winners
+
+        SET
+          notification_read_at =
+            COALESCE(
+              notification_read_at,
+              UTC_TIMESTAMP()
+            )
+
+        WHERE draw_id = ?
+          AND user_id = ?
+          AND settlement_status =
+              'completed'
+      `,
+      [
+        validDrawId,
+        validUserId,
+      ],
+    );
+
+  const [
+    notificationRows,
+  ] =
+    await pool.query(
+      `
+        SELECT
+          id AS notification_id,
+          draw_id,
+          notification_read_at
+
+        FROM lottery_winners
+
+        WHERE draw_id = ?
+          AND user_id = ?
+          AND settlement_status =
+              'completed'
+
+        LIMIT 1
+      `,
+      [
+        validDrawId,
+        validUserId,
+      ],
+    );
+
+  const notification =
+    notificationRows[0] ||
+    null;
+
+      if (!notification) {
+    throw createServiceError(
+      "Lottery winner notification was not found.",
+      404,
+      "LOTTERY_NOTIFICATION_NOT_FOUND",
+    );
+  }
+
+  return {
+    notificationId:
+      Number(
+        notification
+          ?.notification_id,
+      ),
+
+    drawId:
+      Number(
+        notification
+          ?.draw_id,
+      ),
+
+    isRead:
+      true,
+
+    readAt:
+      notification
+        ?.notification_read_at ||
+      null,
+  };
+}
+
+/* ==========================================
    Service Exports
 ========================================== */
 
@@ -6021,6 +6341,8 @@ module.exports = {
   getDrawDetails,
   getMyTickets,
   getRecentWinners,
+    getMyLotteryNotifications,
+  markLotteryNotificationRead,
   getAdminLotteryDraws,
   getAdminLotteryDrawDetails,
   purchaseTickets,

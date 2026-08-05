@@ -211,6 +211,18 @@ document.addEventListener("DOMContentLoaded", () => {
       completedDrawEvent:
         null,
 
+              notifications:
+        [],
+
+      unreadNotificationCount:
+        0,
+
+      isLoadingNotifications:
+        false,
+
+      activeNotificationDrawId:
+        null,
+
       winnerNotification:
         null,
 
@@ -1338,6 +1350,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <strong class="winner-prize">
               ৳${formatMoney(winner.prizeAmount)}
             </strong>
+
+                        <p class="winner-wishing-message">
+              ${escapeHtml(
+                winner.winnerMessage ||
+                  "Congratulations on your Lottery win!",
+              )}
+            </p>
           `;
 
       fragment.appendChild(row);
@@ -2008,17 +2027,43 @@ document.addEventListener("DOMContentLoaded", () => {
       Promise.allSettled([
         loadLatestUserData(),
         loadDraws(),
-        loadTickets({
-          page: 1,
-        }),
-      ]);
+                   loadTickets({
+              page: 1,
+            }),
+
+            loadLotteryNotifications(),
+          ]);
     }
   });
 
-      elements.closeDrawAnimationBtn
+         elements.closeDrawAnimationBtn
       .addEventListener(
         "click",
-        () => {
+        async () => {
+          const drawId =
+            Number(
+              state.activeNotificationDrawId ||
+              state.winnerNotification?.drawId,
+            );
+
+          let markedRead =
+            true;
+
+          if (
+            Number.isInteger(
+              drawId,
+            ) &&
+            drawId > 0
+          ) {
+            markedRead =
+              await markWinnerNotificationRead(
+                drawId,
+              );
+          }
+
+          state.activeNotificationDrawId =
+            null;
+
           closeDrawAnimation();
 
           elements.winnerList
@@ -2029,6 +2074,13 @@ document.addEventListener("DOMContentLoaded", () => {
               block:
                 "start",
             });
+
+          if (markedRead) {
+            window.setTimeout(
+              showNextUnreadLotteryNotification,
+              350,
+            );
+          }
         },
       );
 
@@ -2560,7 +2612,9 @@ document.addEventListener("DOMContentLoaded", () => {
           page: 1,
         }),
 
-        loadWinners(),
+               loadWinners(),
+
+        loadLotteryNotifications(),
       ]);
 
       updateBalanceUI();
@@ -2864,6 +2918,225 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
+        /* ======================================
+       Persistent Winner Notifications
+    ====================================== */
+
+    async function loadLotteryNotifications() {
+      if (
+        state
+          .isLoadingNotifications
+      ) {
+        return;
+      }
+
+      state.isLoadingNotifications =
+        true;
+
+      try {
+        const result =
+          await apiRequest(
+            "/lottery/notifications?limit=20",
+          );
+
+        state.notifications =
+          Array.isArray(
+            result
+              ?.data
+              ?.notifications,
+          )
+            ? result
+                .data
+                .notifications
+            : [];
+
+        state.unreadNotificationCount =
+          Number(
+            result
+              ?.data
+              ?.unreadCount ||
+              0,
+          );
+      } catch (error) {
+        console.error(
+          "Load Lottery notifications error:",
+          error,
+        );
+
+        state.notifications =
+          [];
+
+        state.unreadNotificationCount =
+          0;
+      } finally {
+        state.isLoadingNotifications =
+          false;
+      }
+    }
+
+    async function markWinnerNotificationRead(
+      drawId,
+    ) {
+      const validDrawId =
+        Number(
+          drawId,
+        );
+
+      if (
+        !Number.isInteger(
+          validDrawId,
+        ) ||
+        validDrawId < 1
+      ) {
+                return false;
+      }
+
+      try {
+        await apiRequest(
+          `/lottery/notifications/${validDrawId}/read`,
+          {
+            method:
+              "PATCH",
+          },
+        );
+
+        state.notifications =
+          state.notifications.map(
+            (notification) =>
+              Number(
+                notification
+                  .drawId,
+              ) ===
+                validDrawId
+                ? {
+                    ...notification,
+
+                    isRead:
+                      true,
+
+                    readAt:
+                      new Date()
+                        .toISOString(),
+                  }
+                : notification,
+          );
+
+        state.unreadNotificationCount =
+          state.notifications.filter(
+            (notification) =>
+              !notification.isRead,
+          ).length;
+                  return true;
+      } catch (error) {
+        console.error(
+          "Mark Lottery notification read error:",
+          error,
+        );
+                return false;
+      }
+    }
+
+    function showStoredWinnerNotification(
+      notification,
+    ) {
+      if (!notification) {
+        return;
+      }
+
+      resetDrawAnimationUI();
+
+      state.winnerNotification =
+        notification;
+
+      state.activeNotificationDrawId =
+        Number(
+          notification.drawId,
+        );
+
+      state.completedAnimationDrawId =
+        Number(
+          notification.drawId,
+        );
+
+      state.drawAnimationRunning =
+        false;
+
+      elements.drawAnimationTitle
+        .textContent =
+        notification
+          .drawTitle ||
+        "PMS Lottery Winner";
+
+      elements.drawAnimationCode
+        .textContent =
+        notification
+          .drawCode ||
+        "Winner notification";
+
+      elements.drawShuffleStage
+        .hidden = true;
+
+      elements.drawAnimationStatus
+        .hidden = true;
+
+      elements.drawWinnerRevealStage
+        .hidden = true;
+
+      showPersonalWinnerNotification(
+        notification,
+      );
+
+      elements.closeDrawAnimationBtn
+        .hidden = false;
+
+      elements
+        .lotteryDrawAnimationOverlay
+        .classList.add(
+          "is-visible",
+        );
+
+      elements
+        .lotteryDrawAnimationOverlay
+        .setAttribute(
+          "aria-hidden",
+          "false",
+        );
+
+      document.body.style
+        .overflow =
+        "hidden";
+
+      createDrawConfetti();
+    }
+
+    function showNextUnreadLotteryNotification() {
+      if (
+        state.drawAnimationRunning ||
+        elements
+          .lotteryDrawAnimationOverlay
+          .getAttribute(
+            "aria-hidden",
+          ) ===
+          "false"
+      ) {
+        return;
+      }
+
+      const notification =
+        state.notifications.find(
+          (item) =>
+            !item.isRead,
+        );
+
+      if (!notification) {
+        return;
+      }
+
+      showStoredWinnerNotification(
+        notification,
+      );
+    }
+
       /* ======================================
        Real-time Lottery Socket
     ====================================== */
@@ -3116,8 +3389,10 @@ document.addEventListener("DOMContentLoaded", () => {
         loadTickets({
           page: 1,
         }),
-        loadWinners(),
-      ]);
+                 loadWinners(),
+
+          loadLotteryNotifications(),
+        ]);
 
       updateBalanceUI();
 
@@ -3128,11 +3403,16 @@ document.addEventListener("DOMContentLoaded", () => {
       renderWinners();
 
       renderSummary();
-    } finally {
-      hideLoader();
-    }
+         } finally {
+        hideLoader();
+      }
 
-    window.setInterval(() => {
+      window.setTimeout(
+        showNextUnreadLotteryNotification,
+        350,
+      );
+
+      window.setInterval(() => {
       if (document.visibilityState === "visible" && !state.isLoadingDraws) {
         loadDraws();
       }
