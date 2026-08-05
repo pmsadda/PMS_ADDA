@@ -6,7 +6,7 @@
 
 const LOTTERY_API_URL =
   APP_CONFIG.api(
-    "/admin/lottery",
+    "/admin/lottery/draws",
   );
 
 const state = {
