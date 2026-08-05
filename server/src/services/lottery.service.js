@@ -2520,9 +2520,326 @@ async function cancelTicket(userId, ticketId) {
 }
 
 /* ==========================================
-   Admin Draw Validation
+   Admin Lottery Draw List
 ========================================== */
 
+async function getAdminLotteryDraws(
+  options = {},
+) {
+  const page =
+    Math.max(
+      1,
+      Number.parseInt(
+        String(
+          options.page ||
+            "1",
+        ),
+        10,
+      ) || 1,
+    );
+
+  const limit =
+    parseListLimit(
+      options.limit,
+      20,
+      100,
+    );
+
+  const offset =
+    (page - 1) *
+    limit;
+
+  const requestedStatus =
+    String(
+      options.status ||
+        "",
+    )
+      .trim()
+      .toLowerCase();
+
+  const allDrawStatuses = [
+    "draft",
+    "selling",
+    "paused",
+    "sold_out",
+    "countdown",
+    "ready_to_draw",
+    "drawing",
+    "completed",
+    "cancelling",
+    "cancelled",
+    "failed",
+  ];
+
+  if (
+    requestedStatus &&
+    !allDrawStatuses.includes(
+      requestedStatus,
+    )
+  ) {
+    throw createServiceError(
+      "Lottery draw status filter is invalid.",
+      400,
+      "INVALID_LOTTERY_STATUS_FILTER",
+    );
+  }
+
+  const requestedTicketPrice =
+    options.ticketPrice ===
+      undefined ||
+    options.ticketPrice ===
+      null ||
+    options.ticketPrice ===
+      ""
+      ? null
+      : parseMoney(
+          options.ticketPrice,
+        );
+
+  if (
+    requestedTicketPrice !==
+      null &&
+    !ALLOWED_TICKET_PRICES.includes(
+      requestedTicketPrice,
+    )
+  ) {
+    throw createServiceError(
+      "Lottery ticket price filter is invalid.",
+      400,
+      "INVALID_LOTTERY_PRICE_FILTER",
+    );
+  }
+
+  const search =
+    String(
+      options.search ||
+        "",
+    )
+      .trim()
+      .slice(
+        0,
+        100,
+      );
+
+  const whereConditions = [];
+
+  const queryParameters = [];
+
+  if (requestedStatus) {
+    whereConditions.push(
+      "ld.status = ?",
+    );
+
+    queryParameters.push(
+      requestedStatus,
+    );
+  }
+
+  if (
+    requestedTicketPrice !==
+    null
+  ) {
+    whereConditions.push(
+      "ld.ticket_price = ?",
+    );
+
+    queryParameters.push(
+      requestedTicketPrice,
+    );
+  }
+
+  if (search) {
+    whereConditions.push(
+      "(ld.draw_code LIKE ? OR ld.draw_title LIKE ?)",
+    );
+
+    const searchPattern =
+      `%${search}%`;
+
+    queryParameters.push(
+      searchPattern,
+      searchPattern,
+    );
+  }
+
+  const whereSql =
+    whereConditions.length
+      ? `WHERE ${whereConditions.join(
+          " AND ",
+        )}`
+      : "";
+
+  const [countRows] =
+    await pool.query(
+      `
+        SELECT
+          COUNT(*) AS total
+
+        FROM lottery_draws ld
+
+        ${whereSql}
+      `,
+      queryParameters,
+    );
+
+  const total =
+    Number(
+      countRows[0]
+        ?.total || 0,
+    );
+
+  const [drawRows] =
+    await pool.query(
+      `
+        SELECT
+          ld.*,
+
+          creator.uid AS
+            creator_uid,
+
+          creator.full_name AS
+            creator_name,
+
+          0 AS
+            my_ticket_count,
+
+          GREATEST(
+            0,
+            TIMESTAMPDIFF(
+              SECOND,
+              UTC_TIMESTAMP(),
+              ld.countdown_ends_at
+            )
+          ) AS
+            remaining_seconds,
+
+          (
+            SELECT
+              COUNT(
+                DISTINCT
+                lt.user_id
+              )
+
+            FROM lottery_tickets lt
+
+            WHERE
+              lt.draw_id =
+                ld.id
+
+              AND lt.status IN (
+                'active',
+                'locked',
+                'winner',
+                'non_winner'
+              )
+          ) AS
+            unique_player_count,
+
+          (
+            SELECT
+              COUNT(*)
+
+            FROM lottery_winners lw
+
+            WHERE
+              lw.draw_id =
+                ld.id
+
+              AND
+                lw.settlement_status =
+                  'completed'
+          ) AS
+            winner_count
+
+        FROM lottery_draws ld
+
+        INNER JOIN users creator
+          ON creator.id =
+             ld.created_by
+
+        ${whereSql}
+
+        ORDER BY
+          ld.id DESC
+
+        LIMIT ${limit}
+        OFFSET ${offset}
+      `,
+      queryParameters,
+    );
+
+  const draws =
+    drawRows.map(
+      (row) => ({
+        ...mapDrawRow(
+          row,
+        ),
+
+        uniquePlayerCount:
+          Number(
+            row
+              .unique_player_count ||
+              0,
+          ),
+
+        winnerCount:
+          Number(
+            row
+              .winner_count ||
+              0,
+          ),
+
+        cancellationReason:
+          row
+            .cancellation_reason ||
+          null,
+
+        cancelledAt:
+          row.cancelled_at ||
+          null,
+
+        createdBy: {
+          userId:
+            Number(
+              row.created_by,
+            ),
+
+          uid:
+            row.creator_uid ||
+            null,
+
+          name:
+            row.creator_name ||
+            null,
+        },
+      }),
+    );
+
+  return {
+    draws,
+
+    pagination: {
+      page,
+
+      limit,
+
+      total,
+
+      totalPages:
+        Math.max(
+          1,
+          Math.ceil(
+            total /
+            limit,
+          ),
+        ),
+    },
+  };
+}
+
+/* ==========================================
+   Admin Draw Validation
+========================================== */
 function parseBoundedInteger(value, fieldName, minimum, maximum) {
   const parsed = Number.parseInt(String(value), 10);
 
@@ -5191,6 +5508,7 @@ module.exports = {
   getDrawDetails,
   getMyTickets,
   getRecentWinners,
+  getAdminLotteryDraws,
   purchaseTickets,
   cancelTicket,
   cancelAdminDraw,

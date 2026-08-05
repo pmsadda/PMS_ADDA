@@ -27,6 +27,11 @@ router.use(
   requireAdmin,
 );
 
+router.get(
+  "/draws",
+  controller.getDraws,
+);
+
 router.post(
   "/draws",
   controller.createDraw,
