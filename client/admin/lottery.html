@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="theme-color"
+    content="#111827">
+
+  <title>
+    Lottery Control | PMS ADDA
+  </title>
+
+  <script src="../js/app-config.js"></script>
+  <script src="../js/auth-guard.js"></script>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+  <link
+    rel="stylesheet"
+    href="../css/common.css">
+
+  <link
+    rel="stylesheet"
+    href="../css/admin-lottery.css">
+</head>
+
+<body>
+
+  <!-- Sidebar Overlay -->
+
+  <div
+    class="sidebar-overlay"
+    id="sidebarOverlay">
+  </div>
+
+  <!-- Admin Sidebar -->
+
+  <aside
+    class="sidebar"
+    id="sidebar">
+
+    <div class="sidebar-header">
+
+      <div class="brand-logo">
+        <i class="fa-solid fa-ticket"></i>
+      </div>
+
+      <div>
+
+        <h2>PMS ADDA</h2>
+
+        <p>Admin Panel</p>
+
+      </div>
+
+      <button
+        type="button"
+        class="sidebar-close-btn"
+        id="sidebarCloseBtn"
+        aria-label="Close sidebar">
+
+        <i class="fa-solid fa-xmark"></i>
+
+      </button>
+
+    </div>
+
+    <nav class="sidebar-menu">
+
+      <a
+        href="dashboard.html"
+        class="menu-item">
+
+        <i class="fa-solid fa-chart-line"></i>
+
+        <span>Dashboard</span>
+
+      </a>
+
+      <a
+        href="users.html"
+        class="menu-item">
+
+        <i class="fa-solid fa-users"></i>
+
+        <span>Users</span>
+
+      </a>
+
+      <a
+        href="deposits.html"
+        class="menu-item">
+
+        <i class="fa-solid fa-money-bill-transfer"></i>
+
+        <span>Deposits</span>
+
+      </a>
+
+      <a
+        href="withdrawals.html"
+        class="menu-item">
+
+        <i class="fa-solid fa-wallet"></i>
+
+        <span>Withdrawals</span>
+
+      </a>
+
+      <a
+        href="transactions.html"
+        class="menu-item">
+
+        <i class="fa-solid fa-receipt"></i>
+
+        <span>Transactions</span>
+
+      </a>
+
+      <a
+        href="games.html"
+        class="menu-item">
+
+        <i class="fa-solid fa-gamepad"></i>
+
+        <span>Game Management</span>
+
+      </a>
+
+      <a
+        href="lottery.html"
+        class="menu-item active">
+
+        <i class="fa-solid fa-ticket"></i>
+
+        <span>Lottery Control</span>
+
+      </a>
+
+      <a
+        href="bots.html"
+        class="menu-item">
+
+        <i class="fa-solid fa-robot"></i>
+
+        <span>Bots</span>
+
+      </a>
+
+      <a
+        href="support.html"
+        class="menu-item">
+
+        <i class="fa-solid fa-headset"></i>
+
+        <span>Support</span>
+
+      </a>
+
+    </nav>
+
+    <div class="sidebar-footer">
+
+      <button
+        type="button"
+        class="logout-btn"
+        id="logoutBtn">
+
+        <i class="fa-solid fa-right-from-bracket"></i>
+
+        <span>Logout</span>
+
+      </button>
+
+    </div>
+
+  </aside>
+
+  <!-- Main Content -->
+
+  <main class="main-content">
+
+    <header class="topbar">
+
+      <div class="topbar-left">
+
+        <button
+          type="button"
+          class="menu-toggle-btn"
+          id="sidebarOpenBtn"
+          aria-label="Open sidebar">
+
+          <i class="fa-solid fa-bars"></i>
+
+        </button>
+
+        <div>
+
+          <h1>Lottery Control</h1>
+
+          <p>
+            Create, monitor and run cryptographic fair draws
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="topbar-right">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          id="refreshDrawsBtn">
+
+          <i class="fa-solid fa-rotate"></i>
+
+          Refresh
+
+        </button>
+
+        <div class="admin-profile">
+
+          <div class="admin-avatar">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+
+          <div class="admin-info">
+
+            <strong id="adminName">
+              Admin
+            </strong>
+
+            <span>Administrator</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </header>
+
+    <section class="page-content">
+
+      <!-- Summary Cards -->
+
+      <div class="summary-grid">
+
+        <article class="summary-card">
+
+          <div class="summary-icon is-total">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+
+          <div>
+
+            <p>Total Draws</p>
+
+            <h3 id="totalDraws">0</h3>
+
+          </div>
+
+        </article>
+
+        <article class="summary-card">
+
+          <div class="summary-icon is-selling">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+
+          <div>
+
+            <p>Live / Countdown</p>
+
+            <h3 id="liveDraws">0</h3>
+
+          </div>
+
+        </article>
+
+        <article class="summary-card">
+
+          <div class="summary-icon is-completed">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+
+          <div>
+
+            <p>Completed Draws</p>
+
+            <h3 id="completedDraws">0</h3>
+
+          </div>
+
+        </article>
+
+        <article class="summary-card">
+
+          <div class="summary-icon is-revenue">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+
+          <div>
+
+            <p>Draw Service Revenue</p>
+
+            <h3>
+              ৳<span id="serviceRevenue">0.00</span>
+            </h3>
+
+          </div>
+
+        </article>
+
+      </div>
+
+      <!-- Draw Management -->
+
+      <section class="content-card">
+
+        <div class="content-card-header">
+
+          <div>
+
+            <h2>Lottery Draws</h2>
+
+            <p>
+              Search, create and control every Lottery draw
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="primary-btn"
+            id="openCreateDrawBtn">
+
+            <i class="fa-solid fa-plus"></i>
+
+            Create Draw
+
+          </button>
+
+        </div>
+
+        <!-- Filters -->
+
+        <div class="filters-wrapper">
+
+          <div class="search-box">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input
+              type="search"
+              id="drawSearchInput"
+              placeholder="Search draw code or title"
+              autocomplete="off">
+
+          </div>
+
+          <select
+            class="filter-select"
+            id="drawStatusFilter">
+
+            <option value="">
+              All Status
+            </option>
+
+            <option value="draft">
+              Draft
+            </option>
+
+            <option value="selling">
+              Selling
+            </option>
+
+            <option value="countdown">
+              Countdown
+            </option>
+
+            <option value="ready_to_draw">
+              Ready to Draw
+            </option>
+
+            <option value="completed">
+              Completed
+            </option>
+
+            <option value="cancelled">
+              Cancelled
+            </option>
+
+            <option value="failed">
+              Failed
+            </option>
+
+          </select>
+
+          <select
+            class="filter-select"
+            id="ticketPriceFilter">
+
+            <option value="">
+              All Ticket Prices
+            </option>
+
+            <option value="20">
+              ৳20
+            </option>
+
+            <option value="50">
+              ৳50
+            </option>
+
+            <option value="100">
+              ৳100
+            </option>
+
+          </select>
+
+        </div>
+
+        <!-- Draw Table -->
+
+        <div class="table-wrapper">
+
+          <table class="draw-table">
+
+            <thead>
+
+              <tr>
+
+                <th>Draw</th>
+                <th>Price</th>
+                <th>Ticket Sales</th>
+                <th>Players</th>
+                <th>Prize / Revenue</th>
+                <th>Status</th>
+                <th>Timer</th>
+                <th>Actions</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="drawTableBody">
+
+              <tr>
+
+                <td
+                  colspan="8"
+                  class="empty-table-message">
+
+                  Loading Lottery draws...
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <!-- Pagination -->
+
+        <div class="pagination-wrapper">
+
+          <p id="paginationInfo">
+            Showing 0 of 0 draws
+          </p>
+
+          <div class="pagination-buttons">
+
+            <button
+              type="button"
+              class="pagination-btn"
+              id="previousPageBtn"
+              disabled>
+
+              <i class="fa-solid fa-chevron-left"></i>
+
+              Previous
+
+            </button>
+
+            <span id="currentPageText">
+              Page 1
+            </span>
+
+            <button
+              type="button"
+              class="pagination-btn"
+              id="nextPageBtn"
+              disabled>
+
+              Next
+
+              <i class="fa-solid fa-chevron-right"></i>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </section>
+
+  </main>
+
+  <!-- LOT5C-1A END -->
+  <!-- Continue LOT5C-1B below this line -->
+
+    <!-- Create Draw Modal -->
+
+  <div
+    class="modal"
+    id="createDrawModal"
+    aria-hidden="true">
+
+    <section
+      class="modal-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="createDrawModalTitle">
+
+      <div class="modal-header">
+
+        <div>
+
+          <h2 id="createDrawModalTitle">
+            Create Lottery Draw
+          </h2>
+
+          <p>
+            Configure ticket sales, countdown and prize distribution
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close-btn"
+          id="closeCreateDrawModalBtn"
+          aria-label="Close create draw modal">
+
+          <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+      </div>
+
+      <form id="createDrawForm">
+
+        <div class="form-group">
+
+          <label for="drawTitleInput">
+            Draw Title
+          </label>
+
+          <input
+            type="text"
+            id="drawTitleInput"
+            maxlength="120"
+            placeholder="Example: PMS Friday Lucky Draw"
+            required>
+
+        </div>
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label for="ticketPriceInput">
+              Ticket Price
+            </label>
+
+            <select
+              id="ticketPriceInput"
+              required>
+
+              <option value="20">
+                ৳20
+              </option>
+
+              <option value="50">
+                ৳50
+              </option>
+
+              <option value="100">
+                ৳100
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label for="targetQuantityInput">
+              Target Ticket Quantity
+            </label>
+
+            <input
+              type="number"
+              id="targetQuantityInput"
+              min="3"
+              max="100000"
+              value="100"
+              required>
+
+          </div>
+
+        </div>
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label for="maxTicketsPerUserInput">
+              Max Tickets Per User
+            </label>
+
+            <input
+              type="number"
+              id="maxTicketsPerUserInput"
+              min="1"
+              value="10"
+              required>
+
+          </div>
+
+          <div class="form-group">
+
+            <label for="minimumPlayersInput">
+              Minimum Unique Players
+            </label>
+
+            <input
+              type="number"
+              id="minimumPlayersInput"
+              min="3"
+              value="3"
+              required>
+
+          </div>
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="countdownMinutesInput">
+            Draw Countdown (Minutes)
+          </label>
+
+          <input
+            type="number"
+            id="countdownMinutesInput"
+            min="1"
+            max="1440"
+            value="10"
+            required>
+
+          <small>
+            Target ticket quantity পূর্ণ হলে এই countdown শুরু হবে।
+          </small>
+
+        </div>
+
+        <div class="distribution-card">
+
+          <div class="distribution-header">
+
+            <div>
+
+              <h3>Prize Distribution</h3>
+
+              <p>
+                Total percentage must equal 100%
+              </p>
+
+            </div>
+
+            <strong id="distributionTotal">
+              100%
+            </strong>
+
+          </div>
+
+          <div class="distribution-grid">
+
+            <div class="form-group">
+
+              <label for="firstPrizeInput">
+                1st Prize (%)
+              </label>
+
+              <input
+                type="number"
+                id="firstPrizeInput"
+                min="0.01"
+                max="100"
+                step="0.01"
+                value="50"
+                required>
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="secondPrizeInput">
+                2nd Prize (%)
+              </label>
+
+              <input
+                type="number"
+                id="secondPrizeInput"
+                min="0.01"
+                max="100"
+                step="0.01"
+                value="30"
+                required>
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="thirdPrizeInput">
+                3rd Prize (%)
+              </label>
+
+              <input
+                type="number"
+                id="thirdPrizeInput"
+                min="0.01"
+                max="100"
+                step="0.01"
+                value="10"
+                required>
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="serviceChargeInput">
+                Service Charge (%)
+              </label>
+
+              <input
+                type="number"
+                id="serviceChargeInput"
+                min="0"
+                max="100"
+                step="0.01"
+                value="10"
+                required>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="cancellationFeeInput">
+            Player Cancellation Fee (%)
+          </label>
+
+          <input
+            type="number"
+            id="cancellationFeeInput"
+            min="0.01"
+            max="100"
+            step="0.01"
+            value="20"
+            required>
+
+        </div>
+
+        <div class="projected-summary">
+
+          <article>
+
+            <span>Projected Gross</span>
+
+            <strong>
+              ৳<span id="projectedGrossAmount">0.00</span>
+            </strong>
+
+          </article>
+
+          <article>
+
+            <span>Total Prize</span>
+
+            <strong>
+              ৳<span id="projectedPrizeAmount">0.00</span>
+            </strong>
+
+          </article>
+
+          <article>
+
+            <span>Service Revenue</span>
+
+            <strong>
+              ৳<span id="projectedServiceAmount">0.00</span>
+            </strong>
+
+          </article>
+
+        </div>
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="secondary-btn"
+            id="cancelCreateDrawBtn">
+
+            Cancel
+
+          </button>
+
+          <button
+            type="submit"
+            class="primary-btn"
+            id="submitCreateDrawBtn">
+
+            <i class="fa-solid fa-floppy-disk"></i>
+
+            Create Draft
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </section>
+
+  </div>
+
+  <!-- Draw Details Modal -->
+
+  <div
+    class="modal"
+    id="drawDetailsModal"
+    aria-hidden="true">
+
+    <section
+      class="modal-dialog details-modal-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="drawDetailsTitle">
+
+      <div class="modal-header">
+
+        <div>
+
+          <h2 id="drawDetailsTitle">
+            Lottery Draw Details
+          </h2>
+
+          <p id="drawDetailsSubtitle">
+            Loading draw information...
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close-btn"
+          id="closeDrawDetailsModalBtn"
+          aria-label="Close draw details">
+
+          <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+      </div>
+
+      <div
+        class="details-summary-grid"
+        id="drawDetailsSummary">
+      </div>
+
+      <section class="details-section">
+
+        <div class="details-section-header">
+
+          <div>
+
+            <h3>
+              <i class="fa-solid fa-ticket"></i>
+              Tickets & Buyers
+            </h3>
+
+            <p id="detailsTicketCount">
+              0 tickets
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="table-wrapper">
+
+          <table class="details-table">
+
+            <thead>
+
+              <tr>
+
+                <th>Ticket</th>
+                <th>Buyer</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Turnover</th>
+                <th>Refund / Prize</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="detailsTicketTableBody">
+
+              <tr>
+
+                <td
+                  colspan="6"
+                  class="empty-table-message">
+
+                  No tickets found.
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+      <section class="details-section">
+
+        <div class="details-section-header">
+
+          <div>
+
+            <h3>
+              <i class="fa-solid fa-trophy"></i>
+              Winners
+            </h3>
+
+            <p>
+              Cryptographically selected unique winners
+            </p>
+
+          </div>
+
+        </div>
+
+        <div
+          class="winner-grid"
+          id="detailsWinnerGrid">
+
+          <div class="details-empty-state">
+            No winners yet.
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="details-section">
+
+        <div class="details-section-header">
+
+          <div>
+
+            <h3>
+              <i class="fa-solid fa-coins"></i>
+              Revenue
+            </h3>
+
+            <p>
+              Service charges and cancellation fees
+            </p>
+
+          </div>
+
+        </div>
+
+        <div
+          class="revenue-list"
+          id="detailsRevenueList">
+
+          <div class="details-empty-state">
+            No revenue record found.
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="details-section">
+
+        <div class="details-section-header">
+
+          <div>
+
+            <h3>
+              <i class="fa-solid fa-shield-halved"></i>
+              Fair Draw Proof
+            </h3>
+
+            <p>
+              Seed commitment, ticket set and shuffle proof
+            </p>
+
+          </div>
+
+        </div>
+
+        <div
+          class="proof-grid"
+          id="detailsProofGrid">
+        </div>
+
+      </section>
+
+    </section>
+
+  </div>
+
+  <!-- Action Confirmation Modal -->
+
+  <div
+    class="modal"
+    id="actionConfirmModal"
+    aria-hidden="true">
+
+    <section
+      class="modal-dialog small-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="actionConfirmTitle">
+
+      <div
+        class="action-modal-icon"
+        id="actionModalIcon">
+
+        <i class="fa-solid fa-circle-exclamation"></i>
+
+      </div>
+
+      <h2 id="actionConfirmTitle">
+        Confirm Action
+      </h2>
+
+      <p id="actionConfirmMessage">
+        Are you sure?
+      </p>
+
+      <div
+        class="form-group cancel-reason-group"
+        id="cancelReasonGroup"
+        hidden>
+
+        <label for="cancelReasonInput">
+          Cancellation Reason
+        </label>
+
+        <textarea
+          id="cancelReasonInput"
+          rows="4"
+          maxlength="255"
+          placeholder="Explain why this draw is being cancelled">
+        </textarea>
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          id="cancelActionBtn">
+
+          Go Back
+
+        </button>
+
+        <button
+          type="button"
+          class="primary-btn"
+          id="confirmActionBtn">
+
+          Confirm
+
+        </button>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- Loader -->
+
+  <div
+    class="page-loader hidden"
+    id="pageLoader">
+
+    <div class="loader-spinner"></div>
+
+    <p id="loaderMessage">
+      Please wait...
+    </p>
+
+  </div>
+
+  <!-- Toast -->
+
+  <div
+    class="toast-container"
+    id="toastContainer">
+  </div>
+
+  <script src="../js/admin-lottery.js"></script>
+
+</body>
+
+</html>
