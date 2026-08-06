@@ -12,59 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const API_TIMEOUT_MS = 15000;
 
-  /*
-   * Backend তৈরি হলে এই demo rooms API থেকে আসবে।
-   */
-  const DEMO_ROOMS = [
-    {
-      id: 1,
-      roomCode: "CARROM-20",
-      roomName: "Starter Board",
-      entryAmount: 20,
-      serviceChargePercent: 10,
-      status: "active",
-    },
-    {
-      id: 2,
-      roomCode: "CARROM-50",
-      roomName: "Classic Board",
-      entryAmount: 50,
-      serviceChargePercent: 10,
-      status: "active",
-    },
-    {
-      id: 3,
-      roomCode: "CARROM-100",
-      roomName: "Pro Board",
-      entryAmount: 100,
-      serviceChargePercent: 10,
-      status: "active",
-    },
-    {
-      id: 4,
-      roomCode: "CARROM-200",
-      roomName: "Master Board",
-      entryAmount: 200,
-      serviceChargePercent: 10,
-      status: "active",
-    },
-    {
-      id: 5,
-      roomCode: "CARROM-500",
-      roomName: "Champion Board",
-      entryAmount: 500,
-      serviceChargePercent: 10,
-      status: "active",
-    },
-    {
-      id: 6,
-      roomCode: "CARROM-1000",
-      roomName: "Royal Board",
-      entryAmount: 1000,
-      serviceChargePercent: 10,
-      status: "active",
-    },
-  ];
 
   /* ==================================
      DOM Elements
@@ -813,27 +760,146 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateServiceChargePreview();
   }
+async function loadAvailableRooms() {
+  if (state.isLoadingRooms) {
+    return;
+  }
 
-  function loadDemoRooms() {
-    state.isLoadingRooms = true;
+  state.isLoadingRooms = true;
 
-    showLoader(
-      "Loading Carrom rooms...",
+  state.rooms = [];
+
+  elements.emptyState.hidden =
+    true;
+
+  renderRooms();
+
+  showLoader(
+    `Loading ${state.playerMode}-player Carrom rooms...`,
+  );
+
+  try {
+    const result =
+      await apiRequest(
+        `/carrom/rooms?playerMode=${encodeURIComponent(
+          state.playerMode,
+        )}`,
+      );
+
+    const rooms =
+      Array.isArray(
+        result?.data?.rooms,
+      )
+        ? result.data.rooms
+        : [];
+
+    state.rooms =
+      rooms
+        .map((room) => ({
+          id:
+            Number(room.id),
+
+          roomCode:
+            room.roomCode ||
+            null,
+
+          roomName:
+            room.roomName ||
+            "Carrom Room",
+
+          playerMode:
+            Number(
+              room.playerMode,
+            ),
+
+          entryAmount:
+            Number(
+              room.entryAmount,
+            ),
+
+          serviceChargePercent:
+            Number(
+              room.serviceChargePercent,
+            ),
+
+          matchmakingWaitSeconds:
+            Number(
+              room.matchmakingWaitSeconds ||
+              20,
+            ),
+
+          turnSeconds:
+            Number(
+              room.turnSeconds ||
+              20,
+            ),
+
+          grossPoolAmount:
+            Number(
+              room.grossPoolAmount,
+            ),
+
+          serviceChargeAmount:
+            Number(
+              room.serviceChargeAmount,
+            ),
+
+          prizePoolAmount:
+            Number(
+              room.prizePoolAmount,
+            ),
+
+          winnerCount:
+            Number(
+              room.winnerCount,
+            ),
+
+          prizePerWinner:
+            Number(
+              room.prizePerWinner,
+            ),
+
+          status:
+            room.status ||
+            "active",
+        }))
+        .filter(
+          (room) =>
+            Number.isInteger(
+              room.id,
+            ) &&
+            room.id > 0 &&
+            room.playerMode ===
+              state.playerMode &&
+            Number.isFinite(
+              room.entryAmount,
+            ) &&
+            room.entryAmount > 0 &&
+            Number.isFinite(
+              room.serviceChargePercent,
+            ),
+        );
+  } catch (error) {
+    state.rooms = [];
+
+    console.error(
+      "Load Carrom rooms error:",
+      error,
     );
 
-    window.setTimeout(() => {
-      state.rooms =
-        DEMO_ROOMS.map((room) => ({
-          ...room,
-        }));
+    showToast(
+      error.message ||
+        "Unable to load Carrom rooms",
+      "error",
+    );
+  } finally {
+    state.isLoadingRooms = false;
 
-      state.isLoadingRooms = false;
+    hideLoader();
 
-      hideLoader();
-
-      renderRooms();
-    }, 350);
+    renderRooms();
   }
+}
 
   /* ==================================
      Latest User Data
@@ -1029,12 +1095,12 @@ document.addEventListener("DOMContentLoaded", () => {
             },
           );
 
-        renderRooms();
+       loadAvailableRooms();
 
-        showToast(
-          `${selectedMode}-player Carrom selected`,
-          "success",
-        );
+showToast(
+  `${selectedMode}-player Carrom selected`,
+  "success",
+);
       },
     );
 
@@ -1083,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ?.addEventListener(
       "click",
       () => {
-        loadDemoRooms();
+        loadAvailableRooms();
       },
     );
 
@@ -1097,7 +1163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateBalanceUI();
 
-  loadDemoRooms();
+  loadAvailableRooms();
 
   loadLatestUserData();
 });

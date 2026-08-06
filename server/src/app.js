@@ -44,6 +44,7 @@ const teenPattiRoutes = require("./routes/teenpatti.routes");
 const pokerRoutes = require("./routes/poker.routes");
 
 const ludoRoutes = require("./routes/ludo.routes");
+const carromRoutes = require("./routes/carrom.routes");
 
 const lotteryRoutes = require("./routes/lottery.routes");
 
@@ -274,6 +275,8 @@ app.use("/api/teenpatti", teenPattiRoutes);
 app.use("/api/poker", pokerRoutes);
 
 app.use("/api/ludo", ludoRoutes);
+
+app.use("/api/carrom", carromRoutes);
 
 app.use("/api/lottery", lotteryRoutes);
 
