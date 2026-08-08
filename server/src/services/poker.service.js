@@ -3545,10 +3545,51 @@ async function settlePokerHand(tableId) {
       [totalServiceCharge, totalDistributable, Number(hand.id)],
     );
 
-    await connection.commit();
+   await connection.commit();
 
-    return {
-      success: true,
+/*
+ * প্রকৃত showdown হলে সব remaining
+ * contender-এর cards client-এ পাঠানো হবে।
+ *
+ * Fold করা player-এর private cards
+ * কখনো প্রকাশ করা হবে না।
+ */
+const showdownPlayers =
+  contenders.length > 1
+    ? contenders.map((player) => {
+        const evaluation =
+          evaluations.get(
+            Number(player.id),
+          ) || null;
+
+        return {
+          handPlayerId:
+            Number(player.id),
+
+          tablePlayerId:
+            Number(
+              player.table_player_id,
+            ),
+
+          seatNo:
+            Number(player.seat_no),
+
+          isBot:
+            Boolean(player.is_bot),
+
+          holeCards:
+            parseJsonArray(
+              player.hole_cards,
+            ),
+
+          handRankName:
+            evaluation?.name || null,
+        };
+      })
+    : [];
+
+return {
+  success: true,
 
       alreadySettled: false,
 
@@ -3567,6 +3608,7 @@ async function settlePokerHand(tableId) {
       distributableAmount: totalDistributable,
 
       winners: [...winnerSummary.values()],
+      showdownPlayers,
 
       pots: pots.map((pot) => ({
         potNumber: pot.potNumber,

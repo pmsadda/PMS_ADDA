@@ -4053,3 +4053,18 @@ input {
     bottom: 46px !important;
   }
 }
+
+/* ==========================================
+   POKER RESULT — EXIT REMAINS AVAILABLE
+========================================== */
+
+/*
+ * Winner/countdown overlay visual থাকবে,
+ * কিন্তু নিচের Exit button-এর click আটকাবে না।
+ *
+ * Betting buttons server result phase-এ
+ * JavaScript থেকে disabled থাকে।
+ */
+.winner-overlay {
+  pointer-events: none !important;
+}

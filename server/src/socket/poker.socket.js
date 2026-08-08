@@ -20,6 +20,19 @@ async function publishPokerExitFromHttp(tableId, exitResult) {
 }
 
 const NEXT_HAND_COUNTDOWN_SECONDS = 5;
+/*
+ * Round-end presentation:
+ *
+ * 2 seconds — showdown cards
+ * 2 seconds — winner overlay
+ * 5 seconds — next-hand countdown
+ */
+const SHOWDOWN_CARD_DISPLAY_MS = 2000;
+
+const WINNER_OVERLAY_DISPLAY_MS = 2000;
+
+const ROUND_RESULT_DISPLAY_MS =
+  SHOWDOWN_CARD_DISPLAY_MS + WINNER_OVERLAY_DISPLAY_MS;
 
 function authenticateSocket(socket, next) {
   try {
@@ -548,6 +561,26 @@ function initializePokerSocket(io) {
           }))
         : [],
 
+      /*
+       * শুধু non-folded showdown contenders-এর
+       * cards প্রকাশ করা হচ্ছে।
+       */
+      showdownPlayers: Array.isArray(settlement.showdownPlayers)
+        ? settlement.showdownPlayers.map((player) => ({
+            handPlayerId: player.handPlayerId,
+
+            tablePlayerId: player.tablePlayerId,
+
+            seatNo: player.seatNo,
+
+            isBot: Boolean(player.isBot),
+
+            holeCards: Array.isArray(player.holeCards) ? player.holeCards : [],
+
+            handRankName: player.handRankName || null,
+          }))
+        : [],
+
       pots: settlement.pots,
     };
 
@@ -562,16 +595,18 @@ function initializePokerSocket(io) {
         tableId,
 
         /*
-         * Countdown:
+         * Next-hand countdown:
          * 5 seconds
          */
-        5000,
+        NEXT_HAND_COUNTDOWN_SECONDS * 1000,
 
         /*
-         * Winner overlay:
-         * 2 seconds
+         * Countdown শুরু হওয়ার আগে:
+         *
+         * 2 seconds showdown cards
+         * + 2 seconds winner overlay
          */
-        2000,
+        ROUND_RESULT_DISPLAY_MS,
       );
     }
 

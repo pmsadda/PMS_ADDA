@@ -16,7 +16,11 @@ const POKER_GAME = {
   matchmakingTimer: null,
   turnTimer: null,
   nextHandCountdownTimer: null,
+
+  showdownRevealTimer: null,
+
   winnerOverlayTimer: null,
+
   actionPending: false,
   exitPending: false,
 
@@ -422,52 +426,42 @@ const POKER_GAME = {
       this.handleHandCompleted(settlement);
     });
 
-   this.socket.on(
-  "hand:started",
-  (hand) => {
-    clearTimeout(
-      this.winnerOverlayTimer,
-    );
+    this.socket.on("hand:started", (hand) => {
+      clearTimeout(
+  this.showdownRevealTimer,
+);
 
-    this.winnerOverlayTimer = null;
+clearTimeout(
+  this.winnerOverlayTimer,
+);
 
-    this.clearNextHandCountdown();
+this.showdownRevealTimer = null;
 
-    /*
-     * আগের hand-এর winner এবং opponent
-     * cards নতুন hand শুরুর আগেই সরানো হবে।
-     */
-    this.clearPokerCardsForCountdown();
+this.winnerOverlayTimer = null;
+      this.clearNextHandCountdown();
 
-    console.log(
-      "🃏 Poker hand started:",
-      hand,
-    );
+      /*
+       * আগের hand-এর winner এবং opponent
+       * cards নতুন hand শুরুর আগেই সরানো হবে।
+       */
+      this.clearPokerCardsForCountdown();
 
-    this
-      .getElement("winnerOverlay")
-      ?.setAttribute("hidden", "");
+      console.log("🃏 Poker hand started:", hand);
 
-    document
-      .querySelectorAll(".player-seat")
-      .forEach((seat) => {
-        seat.classList.remove(
-          "is-winner",
-          "is-folded",
-        );
+      this.getElement("winnerOverlay")?.setAttribute("hidden", "");
+
+      document.querySelectorAll(".player-seat").forEach((seat) => {
+        seat.classList.remove("is-winner", "is-folded");
       });
 
-    this.setRoundStatus(
-      `Hand #${hand.handNumber} started`,
-    );
+      this.setRoundStatus(`Hand #${hand.handNumber} started`);
 
-    /*
-     * Server থেকে নতুন personalized
-     * state আবার নেওয়া হবে।
-     */
-    this.requestLatestState();
-  },
-);
+      /*
+       * Server থেকে নতুন personalized
+       * state আবার নেওয়া হবে।
+       */
+      this.requestLatestState();
+    });
 
     this.socket.on("table:error", (error) => {
       console.error("Poker table error:", error);
@@ -546,57 +540,42 @@ const POKER_GAME = {
     return safeCode ? `../assets/cards/${safeCode}.png` : null;
   },
 
- renderCardFace(cardElement, cardCode) {
-  if (!cardElement) {
-    return;
-  }
+  renderCardFace(cardElement, cardCode) {
+    if (!cardElement) {
+      return;
+    }
 
-  const normalizedCode = String(
-    cardCode || "",
-  )
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "");
+    const normalizedCode = String(cardCode || "")
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "");
 
-  /*
-   * Card না থাকলে আগের hand-এর inline
-   * background এবং animation সম্পূর্ণ clear।
-   */
-  if (!normalizedCode) {
-    cardElement.classList.remove(
-      "has-card",
-      "is-revealing",
-      "is-dealing",
-    );
+    /*
+     * Card না থাকলে আগের hand-এর inline
+     * background এবং animation সম্পূর্ণ clear।
+     */
+    if (!normalizedCode) {
+      cardElement.classList.remove("has-card", "is-revealing", "is-dealing");
 
-    delete cardElement.dataset.cardCode;
+      delete cardElement.dataset.cardCode;
 
-    cardElement.style.removeProperty(
-      "background-image",
-    );
+      cardElement.style.removeProperty("background-image");
 
-    return;
-  }
+      return;
+    }
 
-  const previousCode = String(
-    cardElement.dataset.cardCode || "",
-  );
+    const previousCode = String(cardElement.dataset.cardCode || "");
 
-  cardElement.dataset.cardCode =
-    normalizedCode;
+    cardElement.dataset.cardCode = normalizedCode;
 
-  cardElement.classList.add("has-card");
+    cardElement.classList.add("has-card");
 
-  if (
-    previousCode !== normalizedCode ||
-    !cardElement.style.backgroundImage
-  ) {
-    cardElement.style.backgroundImage =
-      `url("${this.getCardImagePath(
+    if (previousCode !== normalizedCode || !cardElement.style.backgroundImage) {
+      cardElement.style.backgroundImage = `url("${this.getCardImagePath(
         normalizedCode,
       )}")`;
-  }
-},
+    }
+  },
 
   getHandPlayerBySeat(seatNo) {
     return (
@@ -698,18 +677,16 @@ const POKER_GAME = {
       const holeCards = seat.querySelectorAll(".hole-card");
 
       /*
- * Live hand-এ শুধু local player's
- * personalized cards render হবে।
- */
-const ownsVisibleCards =
-  Number(handPlayer.tablePlayerId) ===
-  Number(this.tablePlayerId);
+       * Live hand-এ শুধু local player's
+       * personalized cards render হবে।
+       */
+      const ownsVisibleCards =
+        Number(handPlayer.tablePlayerId) === Number(this.tablePlayerId);
 
-const visibleCards =
-  ownsVisibleCards &&
-  Array.isArray(handPlayer.holeCards)
-    ? handPlayer.holeCards
-    : [];
+      const visibleCards =
+        ownsVisibleCards && Array.isArray(handPlayer.holeCards)
+          ? handPlayer.holeCards
+          : [];
 
       holeCards.forEach((cardElement, cardIndex) => {
         const cardCode = visibleCards[cardIndex];
@@ -1135,12 +1112,20 @@ const visibleCards =
     });
   },
 
-  startNextHandCountdown(payload = {}) {
-    clearTimeout(this.winnerOverlayTimer);
+ startNextHandCountdown(payload = {}) {
+  clearTimeout(
+    this.showdownRevealTimer,
+  );
 
-    this.winnerOverlayTimer = null;
+  clearTimeout(
+    this.winnerOverlayTimer,
+  );
 
-    this.clearNextHandCountdown();
+  this.showdownRevealTimer = null;
+
+  this.winnerOverlayTimer = null;
+
+  this.clearNextHandCountdown();
 
     this.clearPokerCardsForCountdown();
 
@@ -1223,80 +1208,233 @@ const visibleCards =
   },
 
   handleHandCompleted(settlement) {
-    const winners = Array.isArray(settlement?.winners)
+  const winners =
+    Array.isArray(settlement?.winners)
       ? settlement.winners
       : [];
 
-    if (winners.length === 0) {
+  const showdownPlayers =
+    Array.isArray(
+      settlement?.showdownPlayers,
+    )
+      ? settlement.showdownPlayers
+      : [];
+
+  if (winners.length === 0) {
+    return;
+  }
+
+  clearInterval(this.turnTimer);
+
+  this.disableActions();
+
+  this.clearNextHandCountdown();
+
+  clearTimeout(
+    this.showdownRevealTimer,
+  );
+
+  clearTimeout(
+    this.winnerOverlayTimer,
+  );
+
+  this.showdownRevealTimer = null;
+
+  this.winnerOverlayTimer = null;
+
+  const overlay =
+    this.getElement("winnerOverlay");
+
+  /*
+   * প্রথম দুই সেকেন্ড overlay থাকবে না।
+   * Table-এর উপর showdown cards দেখা যাবে।
+   */
+  overlay?.setAttribute(
+    "hidden",
+    "",
+  );
+
+  document
+    .querySelectorAll(".player-seat")
+    .forEach((seat) => {
+      seat.classList.remove(
+        "is-winner",
+      );
+    });
+
+  this.revealShowdownCards(
+    showdownPlayers,
+    winners,
+  );
+
+  winners.forEach((winner) => {
+    this.animatePotToWinner(winner);
+  });
+
+  this.setRoundStatus(
+    showdownPlayers.length > 1
+      ? "Showdown"
+      : "Hand completed",
+  );
+
+  /*
+   * Showdown cards দুই সেকেন্ড দেখানোর
+   * পরে winner overlay আসবে।
+   */
+  this.showdownRevealTimer =
+    window.setTimeout(() => {
+      this.showdownRevealTimer = null;
+
+      const crown =
+        overlay?.querySelector(
+          ".winner-crown",
+        );
+
+      const label =
+        overlay?.querySelector(
+          ".winner-card > span",
+        );
+
+      if (crown) {
+        crown.textContent = "👑";
+      }
+
+      if (label) {
+        label.textContent =
+          "HAND WINNER";
+      }
+
+      this.showWinnerOverlay(
+        settlement,
+        winners,
+      );
+
+      /*
+       * সাধারণত server-এর countdown event
+       * এই timer-এর আগেই overlay-কে
+       * countdown screen-এ বদলে দেবে।
+       *
+       * Next hand না হলে এটি fallback hide।
+       */
+      this.winnerOverlayTimer =
+        window.setTimeout(() => {
+          this
+            .getElement(
+              "winnerOverlay",
+            )
+            ?.setAttribute(
+              "hidden",
+              "",
+            );
+
+          this.winnerOverlayTimer =
+            null;
+        }, 2500);
+    }, 2000);
+},
+
+revealShowdownCards(
+  showdownPlayers,
+  winners,
+) {
+  const winnerPlayerIds =
+    new Set(
+      winners.map((winner) =>
+        Number(
+          winner.tablePlayerId,
+        ),
+      ),
+    );
+
+  showdownPlayers.forEach(
+    (player) => {
+      const cards =
+        Array.isArray(
+          player.holeCards,
+        )
+          ? player.holeCards
+          : [];
+
+      if (cards.length !== 2) {
+        return;
+      }
+
+      const seat =
+        this.getSeatElementByServerSeat(
+          player.seatNo,
+        );
+
+      if (!seat) {
+        return;
+      }
+
+      const isWinner =
+        winnerPlayerIds.has(
+          Number(
+            player.tablePlayerId,
+          ),
+        );
+
+      seat.classList.toggle(
+        "is-winner",
+        isWinner,
+      );
+
+      seat
+        .querySelectorAll(
+          ".hole-card",
+        )
+        .forEach(
+          (
+            cardElement,
+            index,
+          ) => {
+            const cardCode =
+              cards[index];
+
+            if (!cardCode) {
+              this.renderCardFace(
+                cardElement,
+                null,
+              );
+
+              return;
+            }
+
+            this.renderCardFace(
+              cardElement,
+              cardCode,
+            );
+
+            cardElement.classList.add(
+              "is-revealing",
+            );
+          },
+        );
+    },
+  );
+},
+
+  revealWinnerCards(winner) {
+    const cards = Array.isArray(winner.holeCards) ? winner.holeCards : [];
+
+    if (cards.length !== 2) {
       return;
     }
 
-    clearInterval(this.turnTimer);
+    const seat = this.getSeatElementByServerSeat(winner.seatNo);
 
-    this.disableActions();
-
-    winners.forEach((winner) => {
-      this.revealWinnerCards(winner);
-
-      this.animatePotToWinner(winner);
-    });
-
-    clearTimeout(this.winnerOverlayTimer);
-
-    const overlay = this.getElement("winnerOverlay");
-
-    const crown = overlay?.querySelector(".winner-crown");
-
-    const label = overlay?.querySelector(".winner-card > span");
-
-    if (crown) {
-      crown.textContent = "👑";
+    if (!seat) {
+      return;
     }
 
-    if (label) {
-      label.textContent = "HAND WINNER";
-    }
+    seat.classList.add("is-winner");
 
-    this.showWinnerOverlay(settlement, winners);
-
-    this.winnerOverlayTimer = window.setTimeout(() => {
-      this.getElement("winnerOverlay")?.setAttribute("hidden", "");
-
-      this.winnerOverlayTimer = null;
-    }, 2000);
-  },
-
-  revealWinnerCards(winner) {
-  const cards =
-    Array.isArray(winner.holeCards)
-      ? winner.holeCards
-      : [];
-
-  if (cards.length !== 2) {
-    return;
-  }
-
-  const seat =
-    this.getSeatElementByServerSeat(
-      winner.seatNo,
-    );
-
-  if (!seat) {
-    return;
-  }
-
-  seat.classList.add("is-winner");
-
-  seat
-    .querySelectorAll(".hole-card")
-    .forEach((cardElement, index) => {
+    seat.querySelectorAll(".hole-card").forEach((cardElement, index) => {
       const cardCode = cards[index];
 
       if (!cardCode) {
-        this.renderCardFace(
-          cardElement,
-          null,
-        );
+        this.renderCardFace(cardElement, null);
 
         return;
       }
@@ -1305,16 +1443,11 @@ const visibleCards =
        * একই renderer ব্যবহার করায়
        * dataset এবং background synchronized থাকবে।
        */
-      this.renderCardFace(
-        cardElement,
-        cardCode,
-      );
+      this.renderCardFace(cardElement, cardCode);
 
-      cardElement.classList.add(
-        "is-revealing",
-      );
+      cardElement.classList.add("is-revealing");
     });
-},
+  },
 
   animatePotToWinner(winner) {
     const table = this.getElement("pokerTable");
