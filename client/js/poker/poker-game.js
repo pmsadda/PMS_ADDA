@@ -422,21 +422,52 @@ const POKER_GAME = {
       this.handleHandCompleted(settlement);
     });
 
-    this.socket.on("hand:started", (hand) => {
-      clearTimeout(this.winnerOverlayTimer);
+   this.socket.on(
+  "hand:started",
+  (hand) => {
+    clearTimeout(
+      this.winnerOverlayTimer,
+    );
 
-      this.winnerOverlayTimer = null;
-      this.clearNextHandCountdown();
-      console.log("🃏 New Poker hand started:", hand);
+    this.winnerOverlayTimer = null;
 
-      this.getElement("winnerOverlay")?.setAttribute("hidden", "");
+    this.clearNextHandCountdown();
 
-      document.querySelectorAll(".player-seat").forEach((seat) => {
-        seat.classList.remove("is-winner", "is-folded");
+    /*
+     * আগের hand-এর winner এবং opponent
+     * cards নতুন hand শুরুর আগেই সরানো হবে।
+     */
+    this.clearPokerCardsForCountdown();
+
+    console.log(
+      "🃏 Poker hand started:",
+      hand,
+    );
+
+    this
+      .getElement("winnerOverlay")
+      ?.setAttribute("hidden", "");
+
+    document
+      .querySelectorAll(".player-seat")
+      .forEach((seat) => {
+        seat.classList.remove(
+          "is-winner",
+          "is-folded",
+        );
       });
 
-      this.setRoundStatus(`Hand #${hand.handNumber} started`);
-    });
+    this.setRoundStatus(
+      `Hand #${hand.handNumber} started`,
+    );
+
+    /*
+     * Server থেকে নতুন personalized
+     * state আবার নেওয়া হবে।
+     */
+    this.requestLatestState();
+  },
+);
 
     this.socket.on("table:error", (error) => {
       console.error("Poker table error:", error);
@@ -515,29 +546,57 @@ const POKER_GAME = {
     return safeCode ? `../assets/cards/${safeCode}.png` : null;
   },
 
-  renderCardFace(cardElement, cardCode) {
-    if (!cardElement) {
-      return;
-    }
+ renderCardFace(cardElement, cardCode) {
+  if (!cardElement) {
+    return;
+  }
 
-    const normalizedCode = String(cardCode || "")
-      .trim()
-      .toUpperCase();
+  const normalizedCode = String(
+    cardCode || "",
+  )
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 
-    const previousCode = cardElement.dataset.cardCode || "";
+  /*
+   * Card না থাকলে আগের hand-এর inline
+   * background এবং animation সম্পূর্ণ clear।
+   */
+  if (!normalizedCode) {
+    cardElement.classList.remove(
+      "has-card",
+      "is-revealing",
+      "is-dealing",
+    );
 
-    cardElement.classList.toggle("has-card", Boolean(normalizedCode));
+    delete cardElement.dataset.cardCode;
 
-    if (previousCode === normalizedCode) {
-      return;
-    }
+    cardElement.style.removeProperty(
+      "background-image",
+    );
 
-    cardElement.dataset.cardCode = normalizedCode;
+    return;
+  }
 
-    cardElement.style.backgroundImage = normalizedCode
-      ? `url("${this.getCardImagePath(normalizedCode)}")`
-      : "";
-  },
+  const previousCode = String(
+    cardElement.dataset.cardCode || "",
+  );
+
+  cardElement.dataset.cardCode =
+    normalizedCode;
+
+  cardElement.classList.add("has-card");
+
+  if (
+    previousCode !== normalizedCode ||
+    !cardElement.style.backgroundImage
+  ) {
+    cardElement.style.backgroundImage =
+      `url("${this.getCardImagePath(
+        normalizedCode,
+      )}")`;
+  }
+},
 
   getHandPlayerBySeat(seatNo) {
     return (
@@ -638,9 +697,19 @@ const POKER_GAME = {
 
       const holeCards = seat.querySelectorAll(".hole-card");
 
-      const visibleCards = Array.isArray(handPlayer.holeCards)
-        ? handPlayer.holeCards
-        : [];
+      /*
+ * Live hand-এ শুধু local player's
+ * personalized cards render হবে।
+ */
+const ownsVisibleCards =
+  Number(handPlayer.tablePlayerId) ===
+  Number(this.tablePlayerId);
+
+const visibleCards =
+  ownsVisibleCards &&
+  Array.isArray(handPlayer.holeCards)
+    ? handPlayer.holeCards
+    : [];
 
       holeCards.forEach((cardElement, cardIndex) => {
         const cardCode = visibleCards[cardIndex];
@@ -1198,34 +1267,54 @@ const POKER_GAME = {
   },
 
   revealWinnerCards(winner) {
-    const cards = Array.isArray(winner.holeCards) ? winner.holeCards : [];
+  const cards =
+    Array.isArray(winner.holeCards)
+      ? winner.holeCards
+      : [];
 
-    if (cards.length !== 2) {
-      return;
-    }
+  if (cards.length !== 2) {
+    return;
+  }
 
-    const seat = this.getSeatElementByServerSeat(winner.seatNo);
+  const seat =
+    this.getSeatElementByServerSeat(
+      winner.seatNo,
+    );
 
-    if (!seat) {
-      return;
-    }
+  if (!seat) {
+    return;
+  }
 
-    seat.classList.add("is-winner");
+  seat.classList.add("is-winner");
 
-    seat.querySelectorAll(".hole-card").forEach((cardElement, index) => {
+  seat
+    .querySelectorAll(".hole-card")
+    .forEach((cardElement, index) => {
       const cardCode = cards[index];
 
       if (!cardCode) {
+        this.renderCardFace(
+          cardElement,
+          null,
+        );
+
         return;
       }
 
-      cardElement.classList.add("has-card", "is-revealing");
-
-      cardElement.style.backgroundImage = `url("${this.getCardImagePath(
+      /*
+       * একই renderer ব্যবহার করায়
+       * dataset এবং background synchronized থাকবে।
+       */
+      this.renderCardFace(
+        cardElement,
         cardCode,
-      )}")`;
+      );
+
+      cardElement.classList.add(
+        "is-revealing",
+      );
     });
-  },
+},
 
   animatePotToWinner(winner) {
     const table = this.getElement("pokerTable");
