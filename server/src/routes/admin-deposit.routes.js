@@ -9,8 +9,9 @@ const {
   rotatePaymentNow,
 
   addPaymentAccount,
-  editPaymentAccount,
-  deletePaymentAccount,
+editPaymentAccount,
+deletePaymentAccount,
+uploadPaymentAccountQr,
 
   getDepositRequests,
   approveDeposit,
@@ -61,9 +62,12 @@ router.get(
   getPaymentManagement,
 );
 
-router.get(
+router.post(
   "/payment-accounts/:accountId/qr",
-  getPaymentAccountQr,
+  requireAuth,
+  requireAdmin,
+  uploadDepositQrImage,
+  uploadPaymentAccountQr,
 );
 
 router.patch(
