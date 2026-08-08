@@ -72,7 +72,7 @@
 })();
 
 /* ==========================================
-   30 MINUTE LOGIN SESSION MANAGER
+   SECURE LOGIN SESSION MANAGER
 ========================================== */
 
 (function initializeAuthSession() {
@@ -259,7 +259,7 @@
       !isPublicAuthPage()
     ) {
       window.alert(
-        "Lobby-তে ৩০ মিনিট সম্পূর্ণ হয়েছে। আবার login করুন।",
+        "আপনার login session শেষ হয়েছে। আবার login করুন।",
       );
     }
 
