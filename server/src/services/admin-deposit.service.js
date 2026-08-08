@@ -51,13 +51,24 @@ async function getAllDepositRequests({
     `
         SELECT
             d.id,
-            d.deposit_id,
-            d.user_id,
-            d.method,
-            d.sender_number,
-            d.transaction_number,
-            d.amount,
-            d.bonus_amount,
+           d.deposit_id,
+d.user_id,
+d.method,
+
+d.assigned_payment_account_id,
+d.receiver_display_name,
+d.receiver_account_identifier,
+d.receiver_account_type,
+
+d.sender_number,
+          d.transaction_number,
+d.amount,
+
+d.payment_asset,
+d.payment_asset_amount,
+d.exchange_rate,
+
+d.bonus_amount,
             d.credited_amount,
             d.is_first_deposit_bonus,
             d.status,
@@ -96,10 +107,56 @@ async function getAllDepositRequests({
     userPhone: row.phone,
     email: row.email,
     currentWalletBalance: Number(row.wallet_balance),
-    method: row.method,
-    senderNumber: row.sender_number,
-    transactionNumber: row.transaction_number,
-    amount: Number(row.amount),
+  method:
+  row.method,
+
+paymentAccountId:
+  row.assigned_payment_account_id ===
+  null
+    ? null
+    : Number(
+        row
+          .assigned_payment_account_id,
+      ),
+
+receiverDisplayName:
+  row.receiver_display_name ||
+  null,
+
+receiverAccountIdentifier:
+  row
+    .receiver_account_identifier ||
+  null,
+
+receiverAccountType:
+  row.receiver_account_type ||
+  null,
+
+senderNumber:
+  row.sender_number,
+
+transactionNumber:
+  row.transaction_number,
+
+amount:
+  Number(row.amount),
+
+paymentAsset:
+  row.payment_asset || "BDT",
+
+paymentAssetAmount:
+  Number(
+    row.payment_asset_amount ||
+      row.amount ||
+      0,
+  ),
+
+exchangeRate:
+  row.exchange_rate === null
+    ? null
+    : Number(
+        row.exchange_rate,
+      ),
 
     bonusAmount: Number(row.bonus_amount || 0),
 

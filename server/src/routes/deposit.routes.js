@@ -3,7 +3,8 @@ const express = require("express");
 const {
     submitDepositRequest,
     getMyDepositHistory,
-    getPaymentMethods
+    getPaymentMethods,
+    getPaymentAccountQr,
 } = require(
     "../controllers/deposit.controller"
 );
@@ -23,6 +24,12 @@ router.get(
   "/payment-methods",
   requireAuth,
   getPaymentMethods,
+);
+
+router.get(
+  "/payment-accounts/:accountId/qr",
+  requireAuth,
+  getPaymentAccountQr,
 );
 
 /* ==========================

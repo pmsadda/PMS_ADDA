@@ -48,7 +48,6 @@
 
             </section>
 
-        
             <section class="deposit-form">
 
                 <h3>Deposit Money</h3>
@@ -97,6 +96,21 @@
 
                         <span>Rocket</span>
                     </button>
+
+                    <button
+                        type="button"
+                        class="payment-card"
+                        data-method="binance"
+                        aria-pressed="false"
+                        disabled>
+                        <span
+                            class="payment-card-icon binance-icon"
+                            aria-hidden="true">
+                            <i class="fa-solid fa-coins"></i>
+                        </span>
+
+                        <span>Binance Pay</span>
+                    </button>
                 </div>
 
                 <p
@@ -114,19 +128,47 @@
 
                 <p class="hint">
 
-                    Minimum Deposit: ৳100
+                    Minimum Deposit: ৳500
 
                 </p>
 
-                <label>Sender Number</label>
+                <div
+                    class="binance-payment-summary"
+                    id="binancePaymentSummary"
+                    hidden>
+                    <div>
+                        <span>Exchange Rate</span>
+
+                        <strong>
+                            ৳<span id="binanceRate">0.00</span>
+                            = 1 USDT
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Send Exactly</span>
+
+                        <strong>
+                            <span id="binancePayableAmount">0.00</span>
+                            USDT
+                        </strong>
+                    </div>
+                </div>
+
+                <label id="senderNumberLabel">
+                    Sender Number
+                </label>
 
                 <input
-                    type="tel"
+                    type="text"
                     id="senderNumber"
                     placeholder="01XXXXXXXXX"
-                    maxlength="11">
+                    maxlength="120"
+                    autocomplete="off">
 
-                <label>Transaction ID</label>
+                <label id="transactionIdLabel">
+                    Transaction ID
+                </label>
 
                 <input
                     type="text"
@@ -160,31 +202,42 @@
                 </div>
 
                 <div
-                class="official-number"
-                id="officialNumberCard">
-                <p id="paymentMethodTitle">
-                    Loading Payment Method
-                </p>
+                    class="official-number"
+                    id="officialNumberCard">
+                    <p id="paymentMethodTitle">
+                        Loading Payment Method
+                    </p>
 
-                <span
-                    class="merchant-account-type"
-                    id="merchantAccountType">
-                    Please wait
-                </span>
+                    <span
+                        class="merchant-account-type"
+                        id="merchantAccountType">
+                        Please wait
+                    </span>
 
-                <h2 id="merchantNumber">
-                    —
-                </h2>
+                    <h2 id="merchantNumber">
+                        —
+                    </h2>
 
-                <button
-                    type="button"
-                    id="copyNumberBtn"
-                    disabled>
-                    <i class="fa-regular fa-copy"></i>
+                    <div
+                        class="payment-qr-wrapper"
+                        id="paymentQrWrapper"
+                        hidden>
+                        <img
+                            id="paymentQrImage"
+                            alt="Official Binance Pay QR Code">
+                    </div>
 
-                    Copy Number
-                </button>
-            </div>
+                    <button
+                        type="button"
+                        id="copyNumberBtn"
+                        disabled>
+                        <i class="fa-regular fa-copy"></i>
+
+                        <span id="copyNumberText">
+                            Copy Number
+                        </span>
+                    </button>
+                </div>
 
                 <button
                     type="button"

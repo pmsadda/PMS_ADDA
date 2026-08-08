@@ -1,4 +1,12 @@
-const { pool } = require("../config/database");
+const {
+  pool,
+} = require("../config/database");
+
+const {
+  resolveCurrentPaymentAccount,
+} = require(
+  "./deposit-payment.service",
+);
 
 /* ==========================
    Generate Deposit ID
@@ -19,56 +27,343 @@ function generateDepositId() {
 async function createDepositRequest({
   userId,
   method,
+  paymentAccountId,
   senderNumber,
   transactionNumber,
   amount,
 }) {
-  const [duplicateRows] = await pool.execute(
-    `
-        SELECT id
-        FROM deposit_requests
-        WHERE transaction_number = ?
-        LIMIT 1
+  const validUserId =
+    Number(userId);
+
+  const validMethod =
+    String(method || "")
+      .trim()
+      .toLowerCase();
+
+  const validAccountId =
+    Number(paymentAccountId);
+
+  const validAmount =
+    Number(amount);
+
+  const connection =
+    await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    /*
+     * একই transaction ID concurrent
+     * request-এও দ্বিতীয়বার ব্যবহার হবে না।
+     */
+    const [duplicateRows] =
+      await connection.execute(
+        `
+          SELECT id
+          FROM deposit_requests
+          WHERE transaction_number = ?
+          LIMIT 1
+          FOR UPDATE
         `,
-    [transactionNumber],
-  );
+        [transactionNumber],
+      );
 
-  if (duplicateRows.length > 0) {
-    const error = new Error("This transaction ID has already been used.");
+    if (
+      duplicateRows.length > 0
+    ) {
+      const error = new Error(
+        "This transaction ID has already been used.",
+      );
 
-    error.statusCode = 409;
+      error.statusCode = 409;
 
-    throw error;
-  }
+      throw error;
+    }
 
-  const depositId = generateDepositId();
+    let assignedAccount = null;
 
-  const [result] = await pool.execute(
-    `
-        INSERT INTO deposit_requests (
+    /*
+     * Frontend যে account দেখিয়েছে তার ID
+     * পাঠালে exact account snapshot হবে।
+     *
+     * Rotation হয়ে গেলেও account active
+     * থাকলে request গ্রহণ করা যাবে।
+     */
+    if (
+      Number.isInteger(
+        validAccountId,
+      ) &&
+      validAccountId > 0
+    ) {
+      const [accountRows] =
+        await connection.query(
+          `
+            SELECT
+              account.id,
+              account.method,
+              account.display_name,
+              account.account_identifier,
+              account.account_type,
+              account.status,
+
+              rotation.bdt_per_usdt
+
+            FROM deposit_payment_accounts
+              AS account
+
+            INNER JOIN
+              deposit_payment_rotation
+              AS rotation
+              ON rotation.method =
+                 account.method
+
+            WHERE account.id = ?
+              AND account.method = ?
+              AND account.status =
+                  'active'
+
+            LIMIT 1
+
+            FOR UPDATE
+          `,
+          [
+            validAccountId,
+            validMethod,
+          ],
+        );
+
+      const account =
+        accountRows[0] || null;
+
+      if (!account) {
+        const error = new Error(
+          "Selected receiving account is no longer available. Refresh and try again.",
+        );
+
+        error.statusCode = 409;
+
+        throw error;
+      }
+
+      assignedAccount = {
+        id:
+          Number(account.id),
+
+        method:
+          account.method,
+
+        displayName:
+          account.display_name,
+
+        accountIdentifier:
+          account
+            .account_identifier,
+
+        accountType:
+          account.account_type,
+
+        bdtPerUsdt:
+          Number(
+            account.bdt_per_usdt ||
+              0,
+          ),
+      };
+    } else {
+      /*
+       * পুরোনো frontend compatibility:
+       * account ID না এলে current rotated
+       * account server resolve করবে।
+       */
+      assignedAccount =
+        await resolveCurrentPaymentAccount(
+          validMethod,
+          connection,
+        );
+    }
+
+    if (!assignedAccount) {
+      const error = new Error(
+        "Selected payment method is currently unavailable.",
+      );
+
+      error.statusCode = 409;
+
+      throw error;
+    }
+
+    const isBinance =
+      validMethod === "binance";
+
+    const exchangeRate =
+      isBinance
+        ? Number(
+            assignedAccount
+              .bdtPerUsdt || 0,
+          )
+        : null;
+
+    if (
+      isBinance &&
+      (
+        !Number.isFinite(
+          exchangeRate,
+        ) ||
+        exchangeRate <= 0
+      )
+    ) {
+      const error = new Error(
+        "Binance exchange rate is not configured correctly.",
+      );
+
+      error.statusCode = 409;
+
+      throw error;
+    }
+
+    const paymentAsset =
+      isBinance
+        ? "USDT"
+        : "BDT";
+
+    const paymentAssetAmount =
+      isBinance
+        ? Number(
+            (
+              validAmount /
+              exchangeRate
+            ).toFixed(8),
+          )
+        : Number(
+            validAmount.toFixed(2),
+          );
+
+    const depositId =
+      generateDepositId();
+
+    const [result] =
+      await connection.execute(
+        `
+          INSERT INTO deposit_requests (
             deposit_id,
             user_id,
             method,
+
+            assigned_payment_account_id,
+            receiver_display_name,
+            receiver_account_identifier,
+            receiver_account_type,
+
             sender_number,
             transaction_number,
-            amount,
-            status
-        )
-        VALUES (?, ?, ?, ?, ?, ?, 'pending')
-        `,
-    [depositId, userId, method, senderNumber, transactionNumber, amount],
-  );
 
-  return {
-    id: result.insertId,
-    depositId,
-    userId,
-    method,
-    senderNumber,
-    transactionNumber,
-    amount: Number(amount),
-    status: "pending",
-  };
+            amount,
+            payment_asset,
+            payment_asset_amount,
+            exchange_rate,
+
+            status
+          )
+          VALUES (
+            ?,
+            ?,
+            ?,
+
+            ?,
+            ?,
+            ?,
+            ?,
+
+            ?,
+            ?,
+
+            ?,
+            ?,
+            ?,
+            ?,
+
+            'pending'
+          )
+        `,
+        [
+          depositId,
+          validUserId,
+          validMethod,
+
+          Number(
+            assignedAccount.id,
+          ),
+
+          assignedAccount
+            .displayName,
+
+          assignedAccount
+            .accountIdentifier,
+
+          assignedAccount
+            .accountType,
+
+          senderNumber,
+          transactionNumber,
+
+          validAmount,
+          paymentAsset,
+          paymentAssetAmount,
+          exchangeRate,
+        ],
+      );
+
+    await connection.commit();
+
+    return {
+      id:
+        Number(result.insertId),
+
+      depositId,
+      userId:
+        validUserId,
+
+      method:
+        validMethod,
+
+      paymentAccountId:
+        Number(
+          assignedAccount.id,
+        ),
+
+      receiverDisplayName:
+        assignedAccount
+          .displayName,
+
+      receiverAccountIdentifier:
+        assignedAccount
+          .accountIdentifier,
+
+      receiverAccountType:
+        assignedAccount
+          .accountType,
+
+      senderNumber,
+      transactionNumber,
+
+      amount:
+        validAmount,
+
+      paymentAsset,
+
+      paymentAssetAmount,
+
+      exchangeRate,
+
+      status:
+        "pending",
+    };
+  } catch (error) {
+    await connection.rollback();
+
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 /* ==========================
@@ -79,12 +374,22 @@ async function getUserDepositRequests(userId) {
   const [rows] = await pool.execute(
     `
         SELECT
-            deposit_id,
-            method,
-            sender_number,
+           deposit_id,
+method,
+
+assigned_payment_account_id,
+receiver_display_name,
+receiver_account_identifier,
+receiver_account_type,
+
+sender_number,
             transaction_number,
             amount,
-            bonus_amount,
+payment_asset,
+payment_asset_amount,
+exchange_rate,
+
+bonus_amount,
             credited_amount,
         is_first_deposit_bonus,
             status,
@@ -100,10 +405,53 @@ async function getUserDepositRequests(userId) {
 
   return rows.map((row) => ({
     depositId: row.deposit_id,
-    method: row.method,
-    senderNumber: row.sender_number,
+    method:
+  row.method,
+
+paymentAccountId:
+  row.assigned_payment_account_id ===
+  null
+    ? null
+    : Number(
+        row
+          .assigned_payment_account_id,
+      ),
+
+receiverDisplayName:
+  row.receiver_display_name ||
+  null,
+
+receiverAccountIdentifier:
+  row
+    .receiver_account_identifier ||
+  null,
+
+receiverAccountType:
+  row.receiver_account_type ||
+  null,
+
+senderNumber:
+  row.sender_number,
     transactionNumber: row.transaction_number,
-    amount: Number(row.amount),
+    amount:
+  Number(row.amount),
+
+paymentAsset:
+  row.payment_asset || "BDT",
+
+paymentAssetAmount:
+  Number(
+    row.payment_asset_amount ||
+      row.amount ||
+      0,
+  ),
+
+exchangeRate:
+  row.exchange_rate === null
+    ? null
+    : Number(
+        row.exchange_rate,
+      ),
 
     bonusAmount: Number(row.bonus_amount || 0),
 

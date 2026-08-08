@@ -58,25 +58,103 @@ document.addEventListener("DOMContentLoaded", () => {
   const emptyState = document.getElementById("emptyState");
 
   /* ==========================
-   Payment Settings Elements
+   Payment Rotation Elements
 ========================== */
 
-  const paymentSettingsForm = document.getElementById(
-    "depositPaymentSettingsForm",
+  const paymentRotationPanel = document.getElementById("paymentRotationPanel");
+
+  const refreshPaymentManagement = document.getElementById(
+    "refreshPaymentManagement",
   );
 
-  const refreshPaymentSettings = document.getElementById(
-    "refreshPaymentSettings",
+  const paymentMethodTabs = document.getElementById("paymentMethodTabs");
+
+  const paymentMethodTabButtons = Array.from(
+    document.querySelectorAll("[data-deposit-method]"),
   );
 
-  const savePaymentSettings = document.getElementById("savePaymentSettings");
+  const paymentRotationMode = document.getElementById("paymentRotationMode");
 
-  const paymentSettingsUpdatedText = document.getElementById(
-    "paymentSettingsUpdatedText",
+  const paymentRotationInterval = document.getElementById(
+    "paymentRotationInterval",
   );
 
-  const paymentSettingCards = Array.from(
-    document.querySelectorAll("[data-payment-method]"),
+  const binanceRateField = document.getElementById("binanceRateField");
+
+  const paymentBdtPerUsdt = document.getElementById("paymentBdtPerUsdt");
+
+  const currentPaymentAccount = document.getElementById(
+    "currentPaymentAccount",
+  );
+
+  const nextRotationText = document.getElementById("nextRotationText");
+
+  const savePaymentRotation = document.getElementById("savePaymentRotation");
+
+  const rotatePaymentNow = document.getElementById("rotatePaymentNow");
+
+  const openPaymentAccountForm = document.getElementById(
+    "openPaymentAccountForm",
+  );
+
+  const paymentAccountForm = document.getElementById("paymentAccountForm");
+
+  const closePaymentAccountForm = document.getElementById(
+    "closePaymentAccountForm",
+  );
+
+  const cancelPaymentAccount = document.getElementById("cancelPaymentAccount");
+
+  const paymentAccountFormTitle = document.getElementById(
+    "paymentAccountFormTitle",
+  );
+
+  const paymentAccountId = document.getElementById("paymentAccountId");
+
+  const paymentAccountMethod = document.getElementById("paymentAccountMethod");
+
+  const paymentAccountDisplayName = document.getElementById(
+    "paymentAccountDisplayName",
+  );
+
+  const paymentAccountIdentifierLabel = document.getElementById(
+    "paymentAccountIdentifierLabel",
+  );
+
+  const paymentAccountIdentifier = document.getElementById(
+    "paymentAccountIdentifier",
+  );
+
+  const paymentAccountType = document.getElementById("paymentAccountType");
+
+  const paymentAccountStatus = document.getElementById("paymentAccountStatus");
+
+  const paymentAccountSortOrder = document.getElementById(
+    "paymentAccountSortOrder",
+  );
+
+  const paymentQrUploadField = document.getElementById("paymentQrUploadField");
+
+  const paymentQrImageInput = document.getElementById("paymentQrImageInput");
+
+  const paymentQrPreview = document.getElementById("paymentQrPreview");
+
+  const paymentQrPreviewImage = document.getElementById(
+    "paymentQrPreviewImage",
+  );
+
+  const savePaymentAccount = document.getElementById("savePaymentAccount");
+
+  const paymentAccountListTitle = document.getElementById(
+    "paymentAccountListTitle",
+  );
+
+  const paymentAccountCount = document.getElementById("paymentAccountCount");
+
+  const paymentAccountList = document.getElementById("paymentAccountList");
+
+  const paymentManagementStatus = document.getElementById(
+    "paymentManagementStatus",
   );
 
   /* ==========================
@@ -169,9 +247,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedDepositId = null;
 
-  let isLoadingPaymentSettings = false;
+  let paymentManagement = {
+  accounts: [],
+  rotations: [],
+};
 
-  let isSavingPaymentSettings = false;
+let selectedPaymentMethod = "bkash";
+
+let editingPaymentAccountId = null;
+
+let isPaymentManagementBusy = false;
+
+let paymentQrPreviewUrl = null;
 
   let toastTimer = null;
 
@@ -319,309 +406,1304 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 /* ==========================
-   Payment Settings
+   Payment Account Management
 ========================== */
 
-function getPaymentField(
-    card,
-    fieldName
-) {
-    return card?.querySelector(
-        `[data-payment-field="${fieldName}"]`
-    );
+const PAYMENT_METHOD_NAMES = Object.freeze({
+  bkash: "bKash",
+  nagad: "Nagad",
+  rocket: "Rocket",
+  binance: "Binance Pay",
+});
+
+function formatPaymentMethodName(method) {
+  return (
+    PAYMENT_METHOD_NAMES[
+      String(method || "").toLowerCase()
+    ] || String(method || "")
+  );
 }
 
-function setPaymentSettingsBusy(isBusy) {
-    paymentSettingCards.forEach((card) => {
-        card
-            .querySelectorAll(
-                "input, select, button"
-            )
-            .forEach((element) => {
-                element.disabled = isBusy;
-            });
-    });
+function normalizePaymentAccount(
+  account,
+  fallbackMethod = "",
+) {
+  return {
+    id: Number(
+      account?.id ||
+      account?.accountId ||
+      account?.paymentAccountId ||
+      0,
+    ),
 
-    if (refreshPaymentSettings) {
-        refreshPaymentSettings.disabled =
-            isBusy;
-    }
+    method: String(
+      account?.method ||
+      fallbackMethod ||
+      "",
+    ).toLowerCase(),
 
-    if (savePaymentSettings) {
-        savePaymentSettings.disabled =
-            isBusy;
+    displayName: String(
+      account?.displayName ||
+      account?.name ||
+      "",
+    ),
 
-        savePaymentSettings.innerHTML =
-            isBusy
-                ? `
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    Saving...
-                `
-                : `
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Save Payment Numbers
-                `;
-    }
+    accountIdentifier: String(
+      account?.accountIdentifier ||
+      account?.accountNumber ||
+      account?.identifier ||
+      "",
+    ),
+
+    accountType: String(
+      account?.accountType ||
+      "personal",
+    ).toLowerCase(),
+
+    status: String(
+      account?.status ||
+      "disabled",
+    ).toLowerCase(),
+
+    sortOrder: Number(
+      account?.sortOrder || 0,
+    ),
+
+    qrImageUrl: String(
+      account?.qrImageUrl ||
+      account?.qrUrl ||
+      "",
+    ),
+
+    isCurrent: Boolean(
+      account?.isCurrent,
+    ),
+
+    updatedAt:
+      account?.updatedAt || null,
+  };
 }
 
-function renderPaymentSettings(
-    paymentMethods = []
+function normalizePaymentRotation(
+  rotation,
+  fallbackMethod = "",
 ) {
-    const settingsByMethod =
-        new Map(
-            paymentMethods.map(
-                (setting) => [
-                    String(
-                        setting.method || ""
-                    ).toLowerCase(),
-                    setting
-                ]
-            )
-        );
+  return {
+    method: String(
+      rotation?.method ||
+      fallbackMethod ||
+      "",
+    ).toLowerCase(),
 
-    paymentSettingCards.forEach((card) => {
+    rotationMode: String(
+      rotation?.rotationMode ||
+      rotation?.mode ||
+      "auto",
+    ).toLowerCase(),
+
+    rotationIntervalMinutes: Number(
+      rotation?.rotationIntervalMinutes ||
+      rotation?.intervalMinutes ||
+      10,
+    ),
+
+    currentAccountId: Number(
+      rotation?.currentAccountId || 0,
+    ),
+
+    bdtPerUsdt: Number(
+      rotation?.bdtPerUsdt ||
+      rotation?.exchangeRate ||
+      0,
+    ),
+
+    lastRotatedAt:
+      rotation?.lastRotatedAt || null,
+
+    nextRotationAt:
+      rotation?.nextRotationAt || null,
+
+    updatedAt:
+      rotation?.updatedAt || null,
+  };
+}
+
+function normalizePaymentManagement(
+  result,
+) {
+  const data =
+  result?.data?.management ||
+  result?.data?.paymentManagement ||
+  result?.data ||
+  {};
+
+  let accounts =
+    data.accounts ||
+    data.paymentAccounts ||
+    [];
+
+ let rotations =
+  data.rotations ||
+  data.paymentRotations ||
+  data.rotationSettings ||
+  [];
+
+  const methodGroups =
+    Array.isArray(data.methods)
+      ? data.methods
+      : [];
+
+  if (
+    !Array.isArray(accounts) ||
+    accounts.length === 0
+  ) {
+    accounts = methodGroups.flatMap(
+      (methodGroup) => {
         const method =
-            String(
-                card.dataset.paymentMethod ||
-                ""
-            ).toLowerCase();
+          String(
+            methodGroup?.method || "",
+          ).toLowerCase();
 
-        const setting =
-            settingsByMethod.get(method);
+        return (
+          methodGroup?.accounts ||
+          methodGroup?.paymentAccounts ||
+          []
+        ).map((account) => ({
+          ...account,
+          method:
+            account?.method || method,
+        }));
+      },
+    );
+  }
 
-        const accountNumberInput =
-            getPaymentField(
-                card,
-                "accountNumber"
-            );
+  if (
+    !Array.isArray(rotations) ||
+    rotations.length === 0
+  ) {
+    rotations = methodGroups
+      .map((methodGroup) => {
+        const method =
+          String(
+            methodGroup?.method || "",
+          ).toLowerCase();
 
-        const accountTypeSelect =
-            getPaymentField(
-                card,
-                "accountType"
-            );
+        const rotation =
+          methodGroup?.rotation ||
+          methodGroup?.paymentRotation;
 
-        const statusSelect =
-            getPaymentField(
-                card,
-                "status"
-            );
-
-        if (accountNumberInput) {
-            accountNumberInput.value =
-                setting?.accountNumber || "";
+        if (!rotation) {
+          return null;
         }
 
-        if (accountTypeSelect) {
-            accountTypeSelect.value =
-                setting?.accountType ||
-                "personal";
-        }
+        return {
+          ...rotation,
+          method:
+            rotation?.method || method,
+        };
+      })
+      .filter(Boolean);
+  }
 
-        if (statusSelect) {
-            statusSelect.value =
-                setting?.status ||
-                "disabled";
-        }
-    });
+  return {
+    accounts: Array.isArray(accounts)
+      ? accounts
+          .map((account) =>
+            normalizePaymentAccount(
+              account,
+            ),
+          )
+          .filter(
+            (account) =>
+              account.id > 0 &&
+              Object.hasOwn(
+                PAYMENT_METHOD_NAMES,
+                account.method,
+              ),
+          )
+      : [],
 
-    const latestUpdatedAt =
-        paymentMethods
-            .map(
-                (setting) =>
-                    setting.updatedAt
-            )
-            .filter(Boolean)
-            .sort()
-            .at(-1);
-
-    if (paymentSettingsUpdatedText) {
-        paymentSettingsUpdatedText.textContent =
-            latestUpdatedAt
-                ? `Last updated: ${
-                    new Date(
-                        latestUpdatedAt
-                    ).toLocaleString(
-                        "en-BD"
-                    )
-                }`
-                : "Payment settings loaded.";
-    }
+    rotations: Array.isArray(rotations)
+      ? rotations.map((rotation) =>
+          normalizePaymentRotation(
+            rotation,
+          ),
+        )
+      : [],
+  };
 }
 
-async function loadPaymentSettings(
-    showSuccessMessage = false
-) {
-    if (isLoadingPaymentSettings) {
-        return;
-    }
-
-    isLoadingPaymentSettings = true;
-
-    setPaymentSettingsBusy(true);
-
-    try {
-        const result =
-            await apiRequest(
-                "/admin/deposits/payment-settings"
-            );
-
-        const paymentMethods =
-            result.data?.paymentMethods ||
-            result.data?.paymentSettings ||
-            [];
-
-        renderPaymentSettings(
-            paymentMethods
-        );
-
-        if (showSuccessMessage) {
-            showToast(
-                "Payment settings refreshed."
-            );
-        }
-    } catch (error) {
-        console.error(
-            "Load payment settings error:",
-            error
-        );
-
-        showToast(error.message);
-
-        if (paymentSettingsUpdatedText) {
-            paymentSettingsUpdatedText
-                .textContent =
-                "Could not load payment settings.";
-        }
-    } finally {
-        isLoadingPaymentSettings = false;
-
-        setPaymentSettingsBusy(false);
-    }
-}
-
-function collectPaymentSettings() {
-    return paymentSettingCards.map(
-        (card) => {
-            const method =
-                String(
-                    card.dataset
-                        .paymentMethod || ""
-                ).toLowerCase();
-
-            const accountNumber =
-                String(
-                    getPaymentField(
-                        card,
-                        "accountNumber"
-                    )?.value || ""
-                )
-                    .replace(/\s+/g, "")
-                    .trim();
-
-            const accountType =
-                getPaymentField(
-                    card,
-                    "accountType"
-                )?.value || "personal";
-
-            const status =
-                getPaymentField(
-                    card,
-                    "status"
-                )?.value || "disabled";
-
-            if (
-                accountNumber &&
-                !/^01\d{9}$/.test(
-                    accountNumber
-                )
-            ) {
-                throw new Error(
-                    `${method.toUpperCase()} number must be a valid 11-digit mobile number.`
-                );
-            }
-
-            if (
-                status === "active" &&
-                !accountNumber
-            ) {
-                throw new Error(
-                    `${method.toUpperCase()} number is required before activating it.`
-                );
-            }
-
-            return {
-                method,
-                accountNumber:
-                    accountNumber || null,
-                accountType,
-                status
-            };
-        }
+function getSelectedPaymentAccounts() {
+  return paymentManagement.accounts
+    .filter(
+      (account) =>
+        account.method ===
+        selectedPaymentMethod,
+    )
+    .sort(
+      (firstAccount, secondAccount) =>
+        firstAccount.sortOrder -
+          secondAccount.sortOrder ||
+        firstAccount.id -
+          secondAccount.id,
     );
 }
 
-async function saveDepositPaymentSettings() {
-    if (isSavingPaymentSettings) {
-        return;
-    }
-
-    let paymentMethods;
-
-    try {
-        paymentMethods =
-            collectPaymentSettings();
-    } catch (error) {
-        showToast(error.message);
-        return;
-    }
-
-    const shouldSave =
-        window.confirm(
-            "Save these deposit payment settings? Active numbers will become available to users."
-        );
-
-    if (!shouldSave) {
-        return;
-    }
-
-    isSavingPaymentSettings = true;
-
-    setPaymentSettingsBusy(true);
-
-    try {
-        await apiRequest(
-            "/admin/deposits/payment-settings",
-            {
-                method: "PATCH",
-
-                body: JSON.stringify({
-                    paymentMethods
-                })
-            }
-        );
-
-        await loadPaymentSettings();
-
-        showToast(
-            "Deposit payment settings saved successfully."
-        );
-    } catch (error) {
-        console.error(
-            "Save payment settings error:",
-            error
-        );
-
-        showToast(error.message);
-    } finally {
-        isSavingPaymentSettings = false;
-
-        setPaymentSettingsBusy(false);
-    }
+function getSelectedPaymentRotation() {
+  return (
+    paymentManagement.rotations.find(
+      (rotation) =>
+        rotation.method ===
+        selectedPaymentMethod,
+    ) ||
+    normalizePaymentRotation(
+      {
+        method: selectedPaymentMethod,
+      },
+      selectedPaymentMethod,
+    )
+  );
 }
 
+function setPaymentManagementBusy(
+  isBusy,
+) {
+  isPaymentManagementBusy = isBusy;
 
+  paymentRotationPanel?.classList.toggle(
+    "is-busy",
+    isBusy,
+  );
+
+  paymentRotationPanel
+    ?.querySelectorAll(
+      "button, input, select",
+    )
+    .forEach((element) => {
+      element.disabled = isBusy;
+    });
+
+  if (refreshPaymentManagement) {
+    refreshPaymentManagement.innerHTML =
+      isBusy
+        ? `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Working...
+          `
+        : `
+            <i class="fa-solid fa-rotate"></i>
+            Refresh
+          `;
+  }
+}
+
+function clearPaymentQrPreview() {
+  if (paymentQrPreviewUrl) {
+    URL.revokeObjectURL(
+      paymentQrPreviewUrl,
+    );
+
+    paymentQrPreviewUrl = null;
+  }
+
+  if (paymentQrPreview) {
+    paymentQrPreview.hidden = true;
+  }
+
+  if (paymentQrPreviewImage) {
+    paymentQrPreviewImage.removeAttribute(
+      "src",
+    );
+  }
+
+  if (paymentQrImageInput) {
+    paymentQrImageInput.value = "";
+  }
+}
+
+function showPaymentQrPreview(source) {
+  if (
+    !paymentQrPreview ||
+    !paymentQrPreviewImage ||
+    !source
+  ) {
+    clearPaymentQrPreview();
+
+    return;
+  }
+
+  paymentQrPreviewImage.src = source;
+
+  paymentQrPreview.hidden = false;
+}
+
+function closePaymentAccountEditor() {
+  editingPaymentAccountId = null;
+
+  paymentAccountForm?.reset();
+
+  if (paymentAccountId) {
+    paymentAccountId.value = "";
+  }
+
+  if (paymentAccountMethod) {
+    paymentAccountMethod.value =
+      selectedPaymentMethod;
+  }
+
+  clearPaymentQrPreview();
+
+  if (paymentAccountForm) {
+    paymentAccountForm.hidden = true;
+  }
+}
+
+function configurePaymentAccountForm(
+  account = null,
+) {
+  const method =
+    account?.method ||
+    selectedPaymentMethod;
+
+  const isBinance =
+    method === "binance";
+
+  editingPaymentAccountId =
+    account?.id || null;
+
+  if (paymentAccountForm) {
+    paymentAccountForm.hidden = false;
+  }
+
+  if (paymentAccountFormTitle) {
+    paymentAccountFormTitle.textContent =
+      account
+        ? "Edit Receiving Account"
+        : "Add New Account";
+  }
+
+  if (paymentAccountId) {
+    paymentAccountId.value =
+      account?.id || "";
+  }
+
+  if (paymentAccountMethod) {
+    paymentAccountMethod.value = method;
+  }
+
+  if (paymentAccountDisplayName) {
+    paymentAccountDisplayName.value =
+      account?.displayName ||
+      `${formatPaymentMethodName(method)} Account`;
+  }
+
+  if (
+    paymentAccountIdentifierLabel
+  ) {
+    paymentAccountIdentifierLabel.textContent =
+      isBinance
+        ? "Binance Pay ID"
+        : "Account Number";
+  }
+
+  if (paymentAccountIdentifier) {
+    paymentAccountIdentifier.value =
+      account?.accountIdentifier || "";
+
+    paymentAccountIdentifier.placeholder =
+      isBinance
+        ? "Enter Binance Pay ID"
+        : "01XXXXXXXXX";
+
+    paymentAccountIdentifier.maxLength =
+      isBinance ? 120 : 11;
+
+    paymentAccountIdentifier.inputMode =
+      isBinance ? "text" : "numeric";
+  }
+
+  if (paymentAccountType) {
+    paymentAccountType.value =
+      isBinance
+        ? "pay_id"
+        : account?.accountType ||
+          "personal";
+
+    paymentAccountType.disabled =
+      isBinance;
+  }
+
+  if (paymentAccountStatus) {
+    paymentAccountStatus.value =
+      account?.status || "active";
+  }
+
+  if (paymentAccountSortOrder) {
+    paymentAccountSortOrder.value =
+      Number(account?.sortOrder || 0);
+  }
+
+  if (paymentQrUploadField) {
+    paymentQrUploadField.hidden =
+      !isBinance;
+  }
+
+  clearPaymentQrPreview();
+
+  if (
+    isBinance &&
+    account?.qrImageUrl
+  ) {
+    showPaymentQrPreview(
+      account.qrImageUrl,
+    );
+  }
+
+  paymentAccountForm?.scrollIntoView({
+    behavior: "smooth",
+    block: "nearest",
+  });
+
+  paymentAccountDisplayName?.focus();
+}
+
+function renderPaymentAccountList() {
+  const accounts =
+    getSelectedPaymentAccounts();
+
+  const rotation =
+    getSelectedPaymentRotation();
+
+  const currentAccount =
+    accounts.find(
+      (account) =>
+        account.id ===
+          rotation.currentAccountId ||
+        account.isCurrent,
+    ) || null;
+
+  if (paymentAccountListTitle) {
+    paymentAccountListTitle.textContent =
+      `${formatPaymentMethodName(
+        selectedPaymentMethod,
+      )} Accounts`;
+  }
+
+  if (paymentAccountCount) {
+    paymentAccountCount.textContent =
+      `${accounts.length} ${
+        accounts.length === 1
+          ? "Account"
+          : "Accounts"
+      }`;
+  }
+
+  if (currentPaymentAccount) {
+    currentPaymentAccount.textContent =
+      currentAccount
+        ? `${
+            currentAccount.displayName
+          } — ${
+            currentAccount.accountIdentifier
+          }`
+        : "No active account selected";
+  }
+
+  if (paymentRotationMode) {
+    paymentRotationMode.value =
+      rotation.rotationMode === "manual"
+        ? "manual"
+        : "auto";
+  }
+
+  if (paymentRotationInterval) {
+    paymentRotationInterval.value =
+      Math.max(
+        1,
+        Number(
+          rotation.rotationIntervalMinutes ||
+          10,
+        ),
+      );
+
+    paymentRotationInterval.disabled =
+      rotation.rotationMode === "manual";
+  }
+
+  const isBinance =
+    selectedPaymentMethod === "binance";
+
+  if (binanceRateField) {
+    binanceRateField.hidden =
+      !isBinance;
+  }
+
+  if (paymentBdtPerUsdt) {
+    paymentBdtPerUsdt.value =
+      isBinance &&
+      rotation.bdtPerUsdt > 0
+        ? rotation.bdtPerUsdt
+        : "";
+  }
+
+  if (nextRotationText) {
+    if (
+      rotation.rotationMode === "manual"
+    ) {
+      nextRotationText.textContent =
+        "Manual mode: account শুধু Rotate Now চাপলে বদলাবে।";
+    } else if (
+      rotation.nextRotationAt
+    ) {
+      nextRotationText.textContent =
+        `Next rotation: ${formatDate(
+          rotation.nextRotationAt,
+        )}`;
+    } else {
+      nextRotationText.textContent =
+        "Auto rotation will start after saving.";
+    }
+  }
+
+  const activeAccountCount =
+    accounts.filter(
+      (account) =>
+        account.status === "active",
+    ).length;
+
+  if (rotatePaymentNow) {
+    rotatePaymentNow.disabled =
+      isPaymentManagementBusy ||
+      activeAccountCount < 2;
+  }
+
+  if (!paymentAccountList) {
+    return;
+  }
+
+  if (accounts.length === 0) {
+    paymentAccountList.innerHTML = `
+      <div class="payment-account-empty">
+        <i class="fa-solid fa-wallet"></i>
+
+        <p>
+          এই method-এর কোনো receiving account নেই।
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+  paymentAccountList.innerHTML =
+    accounts
+      .map((account) => {
+        const isCurrent =
+          account.id ===
+            rotation.currentAccountId ||
+          account.isCurrent;
+
+        return `
+          <article
+            class="
+              payment-account-card
+              ${isCurrent
+                ? "is-current"
+                : ""}
+              ${account.status ===
+              "disabled"
+                ? "is-disabled"
+                : ""}
+            "
+          >
+            <div class="payment-account-card-header">
+
+              <div>
+                <strong>
+                  ${escapeHtml(
+                    account.displayName,
+                  )}
+                </strong>
+
+                <span>
+                  ${escapeHtml(
+                    formatPaymentMethodName(
+                      account.method,
+                    ),
+                  )}
+                </span>
+              </div>
+
+              <span
+                class="
+                  payment-account-status
+                  ${account.status ===
+                  "disabled"
+                    ? "disabled"
+                    : ""}
+                "
+              >
+                ${escapeHtml(
+                  account.status,
+                )}
+              </span>
+
+            </div>
+
+            <div class="payment-account-identifier">
+              ${escapeHtml(
+                account.accountIdentifier,
+              )}
+            </div>
+
+            <div class="payment-account-meta">
+              <span>
+                ${escapeHtml(
+                  account.accountType,
+                )}
+              </span>
+
+              <span>
+                Order:
+                ${Number(
+                  account.sortOrder,
+                )}
+              </span>
+            </div>
+
+            ${
+              isCurrent
+                ? `
+                  <span class="current-account-badge">
+                    <i class="fa-solid fa-circle-check"></i>
+                    Current Account
+                  </span>
+                `
+                : ""
+            }
+
+            <div class="payment-account-actions">
+
+              <button
+                type="button"
+                class="edit-payment-account"
+                data-payment-action="edit"
+                data-account-id="${account.id}"
+              >
+                <i class="fa-solid fa-pen"></i>
+                Edit
+              </button>
+
+              <button
+                type="button"
+                class="delete-payment-account"
+                data-payment-action="delete"
+                data-account-id="${account.id}"
+              >
+                <i class="fa-solid fa-trash"></i>
+                Delete
+              </button>
+
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+}
+
+function renderPaymentManagement() {
+  paymentMethodTabButtons.forEach(
+    (button) => {
+      const isActive =
+        button.dataset.depositMethod ===
+        selectedPaymentMethod;
+
+      button.classList.toggle(
+        "is-active",
+        isActive,
+      );
+
+      button.setAttribute(
+        "aria-selected",
+        String(isActive),
+      );
+    },
+  );
+
+  renderPaymentAccountList();
+
+  if (paymentManagementStatus) {
+    const latestUpdate =
+      [
+        ...paymentManagement.accounts.map(
+          (account) =>
+            account.updatedAt,
+        ),
+
+        ...paymentManagement.rotations.map(
+          (rotation) =>
+            rotation.updatedAt,
+        ),
+      ]
+        .filter(Boolean)
+        .sort()
+        .at(-1);
+
+    paymentManagementStatus.textContent =
+      latestUpdate
+        ? `Last updated: ${formatDate(
+            latestUpdate,
+          )}`
+        : "Payment management loaded.";
+  }
+}
+
+async function loadPaymentManagement(
+  showSuccessMessage = false,
+) {
+  if (isPaymentManagementBusy) {
+    return;
+  }
+
+  setPaymentManagementBusy(true);
+
+  try {
+    const result =
+      await apiRequest(
+        "/admin/deposits/payment-management",
+      );
+
+    paymentManagement =
+      normalizePaymentManagement(
+        result,
+      );
+
+    renderPaymentManagement();
+
+    if (showSuccessMessage) {
+      showToast(
+        "Payment management refreshed.",
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Load payment management error:",
+      error,
+    );
+
+    showToast(error.message);
+
+    if (paymentManagementStatus) {
+      paymentManagementStatus.textContent =
+        "Payment management load করা যায়নি।";
+    }
+  } finally {
+    setPaymentManagementBusy(false);
+
+    renderPaymentManagement();
+  }
+}
+
+async function saveSelectedPaymentRotation() {
+  const rotationMode =
+    paymentRotationMode?.value;
+
+  const rotationIntervalMinutes =
+    Number(
+      paymentRotationInterval?.value,
+    );
+
+  const bdtPerUsdt =
+    Number(
+      paymentBdtPerUsdt?.value || 0,
+    );
+
+  if (
+    !["auto", "manual"].includes(
+      rotationMode,
+    )
+  ) {
+    showToast(
+      "সঠিক rotation mode নির্বাচন করুন।",
+    );
+
+    return;
+  }
+
+  if (
+    !Number.isInteger(
+      rotationIntervalMinutes,
+    ) ||
+    rotationIntervalMinutes < 1 ||
+    rotationIntervalMinutes > 1440
+  ) {
+    showToast(
+      "Rotation time 1 থেকে 1440 মিনিটের মধ্যে দিন।",
+    );
+
+    paymentRotationInterval?.focus();
+
+    return;
+  }
+
+  if (
+    selectedPaymentMethod ===
+      "binance" &&
+    (
+      !Number.isFinite(bdtPerUsdt) ||
+      bdtPerUsdt <= 0
+    )
+  ) {
+    showToast(
+      "সঠিক BDT Per USDT rate দিন।",
+    );
+
+    paymentBdtPerUsdt?.focus();
+
+    return;
+  }
+
+  setPaymentManagementBusy(true);
+
+  try {
+    await apiRequest(
+      `/admin/deposits/payment-management/${
+        encodeURIComponent(
+          selectedPaymentMethod,
+        )
+      }/rotation`,
+      {
+        method: "PATCH",
+
+        body: JSON.stringify({
+          rotationMode,
+
+          rotationIntervalMinutes,
+
+          bdtPerUsdt:
+            selectedPaymentMethod ===
+            "binance"
+              ? bdtPerUsdt
+              : null,
+        }),
+      },
+    );
+
+    showToast(
+      "Rotation settings saved.",
+    );
+  } catch (error) {
+    console.error(
+      "Save rotation error:",
+      error,
+    );
+
+    showToast(error.message);
+  } finally {
+    setPaymentManagementBusy(false);
+
+    await loadPaymentManagement();
+  }
+}
+
+async function rotateSelectedPaymentMethod() {
+  const activeAccounts =
+    getSelectedPaymentAccounts().filter(
+      (account) =>
+        account.status === "active",
+    );
+
+  if (activeAccounts.length < 2) {
+    showToast(
+      "Rotate করতে কমপক্ষে ২টি active account প্রয়োজন।",
+    );
+
+    return;
+  }
+
+  const shouldRotate =
+    window.confirm(
+      `${formatPaymentMethodName(
+        selectedPaymentMethod,
+      )} receiving account এখনই পরিবর্তন করবেন?`,
+    );
+
+  if (!shouldRotate) {
+    return;
+  }
+
+  setPaymentManagementBusy(true);
+
+  try {
+    await apiRequest(
+      `/admin/deposits/payment-management/${
+        encodeURIComponent(
+          selectedPaymentMethod,
+        )
+      }/rotate`,
+      {
+        method: "POST",
+      },
+    );
+
+    showToast(
+      "Receiving account rotated successfully.",
+    );
+  } catch (error) {
+    console.error(
+      "Rotate account error:",
+      error,
+    );
+
+    showToast(error.message);
+  } finally {
+    setPaymentManagementBusy(false);
+
+    await loadPaymentManagement();
+  }
+}
+
+function collectPaymentAccountPayload() {
+  const method =
+    String(
+      paymentAccountMethod?.value ||
+      selectedPaymentMethod,
+    ).toLowerCase();
+
+  const displayName =
+    String(
+      paymentAccountDisplayName?.value ||
+      "",
+    ).trim();
+
+  const accountIdentifier =
+    String(
+      paymentAccountIdentifier?.value ||
+      "",
+    ).trim();
+
+  const accountType =
+    method === "binance"
+      ? "pay_id"
+      : String(
+          paymentAccountType?.value ||
+          "personal",
+        ).toLowerCase();
+
+  const status =
+    String(
+      paymentAccountStatus?.value ||
+      "active",
+    ).toLowerCase();
+
+  const sortOrder =
+    Number(
+      paymentAccountSortOrder?.value ||
+      0,
+    );
+
+  if (
+    !Object.hasOwn(
+      PAYMENT_METHOD_NAMES,
+      method,
+    )
+  ) {
+    throw new Error(
+      "Invalid payment method.",
+    );
+  }
+
+  if (
+    displayName.length < 2 ||
+    displayName.length > 30
+  ) {
+    throw new Error(
+      "Display name 2 থেকে 30 characters-এর মধ্যে দিন।",
+    );
+  }
+
+  if (
+    method === "binance"
+  ) {
+    if (
+      accountIdentifier.length < 3 ||
+      accountIdentifier.length > 120
+    ) {
+      throw new Error(
+        "সঠিক Binance Pay ID দিন।",
+      );
+    }
+  } else if (
+    !/^01\d{9}$/.test(
+      accountIdentifier,
+    )
+  ) {
+    throw new Error(
+      "সঠিক ১১ ডিজিটের account number দিন।",
+    );
+  }
+
+  if (
+    ![
+      "personal",
+      "agent",
+      "merchant",
+      "pay_id",
+    ].includes(accountType)
+  ) {
+    throw new Error(
+      "Invalid account type.",
+    );
+  }
+
+  if (
+    !["active", "disabled"].includes(
+      status,
+    )
+  ) {
+    throw new Error(
+      "Invalid account status.",
+    );
+  }
+
+  if (
+    !Number.isInteger(sortOrder) ||
+    sortOrder < 0 ||
+    sortOrder > 9999
+  ) {
+    throw new Error(
+      "Display order 0 থেকে 9999-এর মধ্যে দিন।",
+    );
+  }
+
+  return {
+    method,
+    displayName,
+    accountIdentifier,
+    accountType,
+    status,
+    sortOrder,
+  };
+}
+
+async function uploadPaymentAccountQr(
+  accountId,
+  file,
+) {
+  if (!file) {
+    return;
+  }
+
+  const formData =
+    new FormData();
+
+  formData.append(
+    "qrImage",
+    file,
+  );
+
+  const response =
+    await fetch(
+      `${API_BASE_URL}/admin/deposits/payment-accounts/${
+        encodeURIComponent(accountId)
+      }/qr`,
+      {
+        method: "POST",
+
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+        },
+
+        body: formData,
+      },
+    );
+
+  const result =
+    await response.json().catch(() => ({
+      success: false,
+      message:
+        "Invalid QR upload response.",
+    }));
+
+  if (response.status === 401) {
+    localStorage.removeItem(
+      "access_token",
+    );
+
+    localStorage.removeItem(
+      "current_user",
+    );
+
+    window.location.replace(
+      "../pages/login.html",
+    );
+
+    throw new Error(
+      "Login session expired.",
+    );
+  }
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.message ||
+      "QR image upload failed.",
+    );
+  }
+}
+
+async function savePaymentAccountRecord() {
+  let payload;
+
+  try {
+    payload =
+      collectPaymentAccountPayload();
+  } catch (error) {
+    showToast(error.message);
+
+    return;
+  }
+
+  const accountId =
+    Number(
+      editingPaymentAccountId ||
+      paymentAccountId?.value ||
+      0,
+    );
+
+  const qrFile =
+    paymentQrImageInput?.files?.[0] ||
+    null;
+
+  if (
+    qrFile &&
+    qrFile.size > 2 * 1024 * 1024
+  ) {
+    showToast(
+      "QR image maximum 2 MB হতে পারবে।",
+    );
+
+    return;
+  }
+
+  setPaymentManagementBusy(true);
+
+  try {
+    const endpoint =
+      accountId > 0
+        ? `/admin/deposits/payment-accounts/${accountId}`
+        : "/admin/deposits/payment-accounts";
+
+    const result =
+      await apiRequest(
+        endpoint,
+        {
+          method:
+            accountId > 0
+              ? "PATCH"
+              : "POST",
+
+          body:
+            JSON.stringify(payload),
+        },
+      );
+
+    const savedAccount =
+      result.data?.account ||
+      result.data?.paymentAccount ||
+      result.data;
+
+    const savedAccountId =
+      Number(
+        savedAccount?.id ||
+        savedAccount?.accountId ||
+        accountId ||
+        0,
+      );
+
+    if (
+      qrFile &&
+      savedAccountId > 0
+    ) {
+      await uploadPaymentAccountQr(
+        savedAccountId,
+        qrFile,
+      );
+    }
+
+    closePaymentAccountEditor();
+
+    showToast(
+      accountId > 0
+        ? "Payment account updated."
+        : "Payment account added.",
+    );
+  } catch (error) {
+    console.error(
+      "Save payment account error:",
+      error,
+    );
+
+    showToast(error.message);
+  } finally {
+    setPaymentManagementBusy(false);
+
+    await loadPaymentManagement();
+  }
+}
+
+async function deletePaymentAccountRecord(
+  accountId,
+) {
+  const account =
+    paymentManagement.accounts.find(
+      (item) =>
+        item.id === accountId,
+    );
+
+  if (!account) {
+    showToast(
+      "Payment account পাওয়া যায়নি।",
+    );
+
+    return;
+  }
+
+  const shouldDelete =
+    window.confirm(
+      `${account.displayName} (${account.accountIdentifier}) delete করবেন?`,
+    );
+
+  if (!shouldDelete) {
+    return;
+  }
+
+  setPaymentManagementBusy(true);
+
+  try {
+    await apiRequest(
+      `/admin/deposits/payment-accounts/${accountId}`,
+      {
+        method: "DELETE",
+      },
+    );
+
+    showToast(
+      "Payment account deleted.",
+    );
+  } catch (error) {
+    console.error(
+      "Delete payment account error:",
+      error,
+    );
+
+    showToast(error.message);
+  } finally {
+    setPaymentManagementBusy(false);
+
+    await loadPaymentManagement();
+  }
+}
 
   /* ==========================
        Summary Render
@@ -857,8 +1939,8 @@ async function saveDepositPaymentSettings() {
     }
   }
 
-  loadDeposits();
-  loadPaymentSettings();
+ loadDeposits();
+loadPaymentManagement();
   /* ==========================
        Find Deposit
     ========================== */
@@ -1011,26 +2093,231 @@ async function saveDepositPaymentSettings() {
     showToast("Filters cleared.");
   });
 
-/* ==========================
-   Payment Settings Events
+ /* ==========================
+   Payment Management Events
 ========================== */
 
-paymentSettingsForm?.addEventListener(
-    "submit",
-    async (event) => {
-        event.preventDefault();
+paymentMethodTabs?.addEventListener(
+  "click",
+  (event) => {
+    const button =
+      event.target.closest(
+        "[data-deposit-method]",
+      );
 
-        await saveDepositPaymentSettings();
+    if (
+      !button ||
+      isPaymentManagementBusy
+    ) {
+      return;
     }
+
+    const method =
+      String(
+        button.dataset.depositMethod ||
+        "",
+      ).toLowerCase();
+
+    if (
+      !Object.hasOwn(
+        PAYMENT_METHOD_NAMES,
+        method,
+      )
+    ) {
+      return;
+    }
+
+    selectedPaymentMethod = method;
+
+    closePaymentAccountEditor();
+
+    renderPaymentManagement();
+  },
 );
 
-refreshPaymentSettings?.addEventListener(
-    "click",
-    async () => {
-        await loadPaymentSettings(true);
+paymentRotationMode?.addEventListener(
+  "change",
+  () => {
+    if (paymentRotationInterval) {
+      paymentRotationInterval.disabled =
+        paymentRotationMode.value ===
+        "manual";
     }
+
+    if (nextRotationText) {
+      nextRotationText.textContent =
+        paymentRotationMode.value ===
+        "manual"
+          ? "Manual mode: account শুধু Rotate Now চাপলে বদলাবে।"
+          : "Save করলে automatic rotation schedule চালু হবে।";
+    }
+  },
 );
 
+refreshPaymentManagement?.addEventListener(
+  "click",
+  async () => {
+    await loadPaymentManagement(true);
+  },
+);
+
+savePaymentRotation?.addEventListener(
+  "click",
+  async () => {
+    await saveSelectedPaymentRotation();
+  },
+);
+
+rotatePaymentNow?.addEventListener(
+  "click",
+  async () => {
+    await rotateSelectedPaymentMethod();
+  },
+);
+
+openPaymentAccountForm?.addEventListener(
+  "click",
+  () => {
+    configurePaymentAccountForm();
+  },
+);
+
+closePaymentAccountForm?.addEventListener(
+  "click",
+  closePaymentAccountEditor,
+);
+
+cancelPaymentAccount?.addEventListener(
+  "click",
+  closePaymentAccountEditor,
+);
+
+paymentAccountForm?.addEventListener(
+  "submit",
+  async (event) => {
+    event.preventDefault();
+
+    await savePaymentAccountRecord();
+  },
+);
+
+paymentAccountList?.addEventListener(
+  "click",
+  async (event) => {
+    const actionButton =
+      event.target.closest(
+        "[data-payment-action]",
+      );
+
+    if (
+      !actionButton ||
+      isPaymentManagementBusy
+    ) {
+      return;
+    }
+
+    const accountId =
+      Number(
+        actionButton.dataset.accountId ||
+        0,
+      );
+
+    if (
+      !Number.isInteger(accountId) ||
+      accountId < 1
+    ) {
+      showToast(
+        "Invalid payment account.",
+      );
+
+      return;
+    }
+
+    const action =
+      actionButton.dataset.paymentAction;
+
+    if (action === "edit") {
+      const account =
+        paymentManagement.accounts.find(
+          (item) =>
+            item.id === accountId,
+        );
+
+      if (!account) {
+        showToast(
+          "Payment account পাওয়া যায়নি।",
+        );
+
+        return;
+      }
+
+      configurePaymentAccountForm(
+        account,
+      );
+
+      return;
+    }
+
+    if (action === "delete") {
+      await deletePaymentAccountRecord(
+        accountId,
+      );
+    }
+  },
+);
+
+paymentQrImageInput?.addEventListener(
+  "change",
+  () => {
+    const file =
+      paymentQrImageInput.files?.[0] ||
+      null;
+
+    clearPaymentQrPreview();
+
+    if (!file) {
+      return;
+    }
+
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+    ];
+
+    if (
+      !allowedTypes.includes(file.type)
+    ) {
+      showToast(
+        "QR image শুধু PNG, JPG অথবা WebP হতে পারবে।",
+      );
+
+      paymentQrImageInput.value = "";
+
+      return;
+    }
+
+    if (
+      file.size >
+      2 * 1024 * 1024
+    ) {
+      showToast(
+        "QR image maximum 2 MB হতে পারবে।",
+      );
+
+      paymentQrImageInput.value = "";
+
+      return;
+    }
+
+    paymentQrPreviewUrl =
+      URL.createObjectURL(file);
+
+    showPaymentQrPreview(
+      paymentQrPreviewUrl,
+    );
+  },
+);
 
   /* ==========================
        Refresh
@@ -1254,6 +2541,7 @@ refreshPaymentSettings?.addEventListener(
     closeModal(approveModal);
     closeModal(rejectModal);
     closeSidebar();
+    closePaymentAccountEditor();
 
     selectedDepositId = null;
   });

@@ -4,7 +4,9 @@ const {
 } = require("../services/deposit.service");
 
 const {
-    getActivePaymentMethods
+    getActivePaymentMethods,
+    getPaymentAccountQr:
+  getPaymentAccountQrFile,
 } = require(
     "../services/deposit-payment.service"
 );
@@ -35,11 +37,19 @@ async function getPaymentMethods(req, res, next) {
    Create Deposit Request
 ========================== */
 
-async function submitDepositRequest(req, res, next) {
+async function submitDepositRequest(
+  req,
+  res,
+  next,
+) {
   try {
-    const { method, senderNumber, transactionNumber, amount } = req.body;
-
-    /* Required Fields */
+    const {
+      method,
+      paymentAccountId,
+      senderNumber,
+      transactionNumber,
+      amount,
+    } = req.body || {};
 
     if (
       !method ||
@@ -49,100 +59,171 @@ async function submitDepositRequest(req, res, next) {
     ) {
       return res.status(400).json({
         success: false,
-        message: "সব Deposit তথ্য সঠিকভাবে দিন।",
+
+        message:
+          "সব Deposit তথ্য সঠিকভাবে দিন।",
       });
     }
 
-    /* Clean Data */
+    const cleanedMethod =
+      String(method)
+        .trim()
+        .toLowerCase();
 
-    const cleanedMethod = String(method).trim().toLowerCase();
+    const cleanedSenderNumber =
+      String(senderNumber)
+        .replace(/\s+/g, "")
+        .trim();
 
-    const cleanedSenderNumber = String(senderNumber).trim();
+    /*
+     * Transaction/Order ID-এর original
+     * value অক্ষত রাখা হচ্ছে।
+     */
+    const cleanedTransactionNumber =
+      String(transactionNumber)
+        .trim();
 
-    const cleanedTransactionNumber = String(transactionNumber)
-      .trim()
-      .toUpperCase();
+    const cleanedAmount =
+      Number(amount);
 
-    const cleanedAmount = Number(amount);
+    const cleanedAccountId =
+      paymentAccountId ===
+        undefined ||
+      paymentAccountId === null ||
+      paymentAccountId === ""
+        ? null
+        : Number(
+            paymentAccountId,
+          );
 
-    /* Active Payment Method Validation */
-
-    const activePaymentMethods = await getActivePaymentMethods();
-
-    const selectedPaymentMethod = activePaymentMethods.find(
-      (paymentMethod) => paymentMethod.method === cleanedMethod,
-    );
-
-    if (!selectedPaymentMethod) {
-      return res.status(409).json({
-        success: false,
-
-        message: "Selected payment method is currently unavailable.",
-      });
-    }
-
-    if (!/^01\d{9}$/.test(String(selectedPaymentMethod.accountNumber || ""))) {
-      return res.status(409).json({
-        success: false,
-
-        message: "Selected payment method is not configured correctly.",
-      });
-    }
-
-    
-
-    /* Method Validation */
-
-    const allowedMethods = ["bkash", "nagad", "rocket"];
-
-    if (!allowedMethods.includes(cleanedMethod)) {
-      return res.status(400).json({
-        success: false,
-        message: "সঠিক Payment Method নির্বাচন করুন।",
-      });
-    }
-
-    /* Sender Number Validation */
-
-    if (!/^01[3-9]\d{8}$/.test(cleanedSenderNumber)) {
-      return res.status(400).json({
-        success: false,
-        message: "সঠিক ১১ ডিজিটের Sender Number দিন।",
-      });
-    }
-
-    /* Transaction ID Validation */
+    const allowedMethods = [
+      "bkash",
+      "nagad",
+      "rocket",
+      "binance",
+    ];
 
     if (
-      cleanedTransactionNumber.length < 6 ||
-      cleanedTransactionNumber.length > 100
+      !allowedMethods.includes(
+        cleanedMethod,
+      )
     ) {
       return res.status(400).json({
         success: false,
-        message: "সঠিক Transaction ID দিন।",
+
+        message:
+          "সঠিক Payment Method নির্বাচন করুন।",
       });
     }
 
-    /* Amount Validation */
-
-    if (!Number.isFinite(cleanedAmount) || cleanedAmount < 100) {
+    if (
+      cleanedAccountId !== null &&
+      (
+        !Number.isInteger(
+          cleanedAccountId,
+        ) ||
+        cleanedAccountId < 1
+      )
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Minimum deposit amount ৳100।",
+
+        message:
+          "Invalid receiving account selection.",
       });
     }
 
-    const deposit = await createDepositRequest({
-      userId: req.user.id,
-      method: cleanedMethod,
-      senderNumber: cleanedSenderNumber,
-      transactionNumber: cleanedTransactionNumber,
-      amount: cleanedAmount,
-    });
+    /*
+     * Mobile banking sender number।
+     */
+    if (
+      cleanedMethod !== "binance" &&
+      !/^01[3-9]\d{8}$/.test(
+        cleanedSenderNumber,
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          "সঠিক ১১ ডিজিটের Sender Number দিন।",
+      });
+    }
+
+    /*
+     * Binance Pay sender Pay ID।
+     */
+    if (
+      cleanedMethod === "binance" &&
+      !/^[A-Za-z0-9_-]{4,120}$/.test(
+        cleanedSenderNumber,
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          "সঠিক Binance Sender Pay ID দিন।",
+      });
+    }
+
+    if (
+      cleanedTransactionNumber
+        .length < 6 ||
+      cleanedTransactionNumber
+        .length > 100
+    ) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          cleanedMethod === "binance"
+            ? "সঠিক Binance Order ID দিন।"
+            : "সঠিক Transaction ID দিন।",
+      });
+    }
+
+    if (
+      !Number.isFinite(
+        cleanedAmount,
+      ) ||
+      cleanedAmount < 100 ||
+      cleanedAmount > 1000000
+    ) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          "Deposit amount must be between ৳100 and ৳10,00,000.",
+      });
+    }
+
+    const deposit =
+      await createDepositRequest({
+        userId:
+          req.user.id,
+
+        method:
+          cleanedMethod,
+
+        paymentAccountId:
+          cleanedAccountId,
+
+        senderNumber:
+          cleanedSenderNumber,
+
+        transactionNumber:
+          cleanedTransactionNumber,
+
+        amount:
+          cleanedAmount,
+      });
 
     return res.status(201).json({
       success: true,
-      message: "Deposit request submitted successfully.",
+
+      message:
+        "Deposit request submitted successfully.",
 
       data: {
         deposit,
@@ -174,8 +255,60 @@ async function getMyDepositHistory(req, res, next) {
   }
 }
 
+/* ==========================
+   Get Payment Account QR
+========================== */
+
+async function getPaymentAccountQr(
+  req,
+  res,
+  next,
+) {
+  try {
+    const qrImage =
+      await getPaymentAccountQrFile(
+        req.params.accountId,
+      );
+
+    res.setHeader(
+      "Content-Type",
+      qrImage.mimeType,
+    );
+
+    res.setHeader(
+      "Content-Length",
+      String(qrImage.imageSize),
+    );
+
+    res.setHeader(
+      "Cache-Control",
+      "private, max-age=300",
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${
+        String(
+          qrImage.fileName ||
+          "binance-pay-qr",
+        ).replace(
+          /[^a-zA-Z0-9._-]/g,
+          "_",
+        )
+      }"`,
+    );
+
+    return res.status(200).send(
+      qrImage.imageData,
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getPaymentMethods,
   submitDepositRequest,
   getMyDepositHistory,
+  getPaymentAccountQr,
 };

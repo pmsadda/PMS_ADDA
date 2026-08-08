@@ -1797,3 +1797,883 @@ a:focus-visible {
         width: 100%;
     }
 }
+
+/* ==========================================
+   DEPOSIT ACCOUNT ROTATION MANAGEMENT
+========================================== */
+
+.payment-rotation-panel {
+    margin-bottom: 30px;
+    padding: 24px;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.18);
+
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(25, 25, 25, 0.98),
+            rgba(12, 12, 12, 0.99)
+        );
+
+    box-shadow:
+        0 18px 45px
+        rgba(0, 0, 0, 0.24);
+}
+
+/* Header */
+
+.payment-rotation-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.payment-rotation-header h2 {
+    margin: 4px 0 7px;
+
+    color: #ffffff;
+
+    font-size: 25px;
+}
+
+.payment-rotation-header p {
+    max-width: 720px;
+    margin: 0;
+
+    color: #989898;
+
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.payment-management-refresh {
+    min-height: 46px;
+
+    padding: 10px 17px;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.24);
+
+    border-radius: 13px;
+
+    color: #ffd700;
+    background: #1d1d1d;
+
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.payment-management-refresh i {
+    margin-right: 7px;
+}
+
+/* Method Tabs */
+
+.payment-method-tabs {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.payment-method-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+    min-height: 54px;
+
+    gap: 9px;
+    padding: 9px 12px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+
+    border-radius: 14px;
+
+    color: #a8a8a8;
+    background: #202020;
+
+    font-weight: 800;
+    cursor: pointer;
+
+    transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        color 160ms ease,
+        background 160ms ease;
+}
+
+.payment-method-tab:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        rgba(255, 215, 0, 0.3);
+}
+
+.payment-method-tab.is-active {
+    color: #171300;
+
+    border-color: #ffd700;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe76b,
+            #dcae00
+        );
+
+    box-shadow:
+        0 9px 24px
+        rgba(255, 193, 0, 0.18);
+}
+
+.method-tab-icon {
+    display: grid;
+    place-items: center;
+
+    width: 32px;
+    height: 32px;
+
+    border-radius: 10px;
+
+    color: #ffffff;
+    background: #343434;
+
+    font-size: 14px;
+    font-weight: 900;
+
+    flex-shrink: 0;
+}
+
+.method-tab-icon.bkash {
+    background: #d71a60;
+}
+
+.method-tab-icon.nagad {
+    background: #e94924;
+}
+
+.method-tab-icon.rocket {
+    background: #8b2c91;
+}
+
+.method-tab-icon.binance {
+    color: #171300;
+    background: #f3ba2f;
+}
+
+/* Rotation Control */
+
+.rotation-control-card {
+    padding: 18px;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.14);
+
+    border-radius: 18px;
+
+    background: #151515;
+}
+
+.rotation-control-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+}
+
+.rotation-control-grid label,
+.payment-account-form-grid label {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    gap: 8px;
+
+    color: #b7b7b7;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.rotation-control-grid select,
+.rotation-control-grid input,
+.payment-account-form-grid input,
+.payment-account-form-grid select {
+    width: 100%;
+    min-height: 45px;
+
+    padding: 10px 12px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 12px;
+
+    color: #ffffff;
+    background: #242424;
+
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.rotation-control-grid input:focus,
+.rotation-control-grid select:focus,
+.payment-account-form-grid input:focus,
+.payment-account-form-grid select:focus {
+    outline: none;
+
+    border-color:
+        rgba(255, 215, 0, 0.7);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255, 215, 0, 0.08);
+}
+
+.rotation-time-input {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr) auto;
+
+    align-items: center;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 12px;
+
+    background: #242424;
+
+    overflow: hidden;
+}
+
+.rotation-time-input input {
+    border: 0;
+    border-radius: 0;
+}
+
+.rotation-time-input span {
+    padding: 0 12px;
+
+    color: #e2bd38;
+
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.current-payment-account {
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+
+    min-width: 0;
+    gap: 5px;
+    padding: 11px 13px;
+
+    border:
+        1px solid
+        rgba(61, 221, 145, 0.18);
+
+    border-radius: 12px;
+
+    background:
+        rgba(61, 221, 145, 0.06);
+}
+
+.current-payment-account span {
+    color: #8f8f8f;
+
+    font-size: 10px;
+    font-weight: 850;
+
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.current-payment-account strong {
+    color: #55e49c;
+
+    font-size: 14px;
+
+    overflow-wrap: anywhere;
+}
+
+.current-payment-account small {
+    color: #8d9a94;
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.rotation-control-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.rotation-save-button,
+.rotate-now-button,
+.add-payment-account-button {
+    min-height: 44px;
+
+    padding: 10px 15px;
+
+    border-radius: 12px;
+
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.rotation-save-button {
+    border: 0;
+
+    color: #171300;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe66c,
+            #d8a900
+        );
+}
+
+.rotate-now-button {
+    border:
+        1px solid
+        rgba(63, 155, 255, 0.34);
+
+    color: #72b5ff;
+    background:
+        rgba(34, 111, 207, 0.11);
+}
+
+.add-payment-account-button {
+    border:
+        1px solid
+        rgba(61, 221, 145, 0.3);
+
+    color: #55e49c;
+    background:
+        rgba(61, 221, 145, 0.08);
+}
+
+.rotation-control-actions i {
+    margin-right: 6px;
+}
+
+/* Account Editor */
+
+.payment-account-editor {
+    margin-top: 18px;
+    padding: 19px;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.2);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #201d12,
+            #141414
+        );
+}
+
+.payment-account-editor[hidden] {
+    display: none !important;
+}
+
+.payment-account-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+    margin-bottom: 17px;
+}
+
+.payment-account-editor-header span {
+    color: #dbb629;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 1px;
+}
+
+.payment-account-editor-header h3 {
+    margin-top: 3px;
+
+    color: #ffffff;
+
+    font-size: 19px;
+}
+
+#closePaymentAccountForm {
+    display: grid;
+    place-items: center;
+
+    width: 40px;
+    height: 40px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 11px;
+
+    color: #bfbfbf;
+    background: #292929;
+
+    cursor: pointer;
+}
+
+.payment-account-form-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 14px;
+}
+
+.payment-qr-upload-field small {
+    color: #818181;
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.payment-qr-preview {
+    width: min(190px, 100%);
+
+    margin: 17px auto 0;
+    padding: 9px;
+
+    border-radius: 15px;
+
+    background: #ffffff;
+}
+
+.payment-qr-preview[hidden] {
+    display: none !important;
+}
+
+.payment-qr-preview img {
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: contain;
+
+    border-radius: 9px;
+}
+
+.payment-account-form-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.payment-account-cancel,
+.payment-account-save {
+    min-height: 44px;
+
+    padding: 10px 18px;
+
+    border-radius: 12px;
+
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.payment-account-cancel {
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    color: #bdbdbd;
+    background: #292929;
+}
+
+.payment-account-save {
+    border: 0;
+
+    color: #171300;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe66c,
+            #daa900
+        );
+}
+
+/* Account List */
+
+.payment-account-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+    margin: 24px 0 13px;
+}
+
+.payment-account-list-header h3 {
+    color: #ffffff;
+
+    font-size: 19px;
+}
+
+.payment-account-list-header p {
+    margin-top: 4px;
+
+    color: #858585;
+
+    font-size: 11px;
+}
+
+.payment-account-count {
+    padding: 6px 11px;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.2);
+
+    border-radius: 999px;
+
+    color: #e3c044;
+    background:
+        rgba(255, 215, 0, 0.06);
+
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.payment-account-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 13px;
+}
+
+.payment-account-card {
+    position: relative;
+
+    min-width: 0;
+    padding: 16px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #222222,
+            #181818
+        );
+}
+
+.payment-account-card.is-current {
+    border-color:
+        rgba(61, 221, 145, 0.48);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(61, 221, 145, 0.05);
+}
+
+.payment-account-card.is-disabled {
+    opacity: 0.58;
+}
+
+.payment-account-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+.payment-account-card-header strong {
+    color: #ffffff;
+
+    font-size: 14px;
+}
+
+.payment-account-card-header span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #858585;
+
+    font-size: 10px;
+}
+
+.payment-account-status {
+    padding: 4px 8px;
+
+    border-radius: 999px;
+
+    color: #55e49c;
+    background:
+        rgba(61, 221, 145, 0.1);
+
+    font-size: 9px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.payment-account-status.disabled {
+    color: #ff8188;
+    background:
+        rgba(255, 88, 100, 0.1);
+}
+
+.payment-account-identifier {
+    margin: 14px 0 5px;
+
+    color: #f1ca3d;
+
+    font-size: 17px;
+    font-weight: 900;
+
+    overflow-wrap: anywhere;
+}
+
+.payment-account-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 8px;
+
+    color: #858585;
+
+    font-size: 10px;
+}
+
+.current-account-badge {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 5px;
+    margin-top: 11px;
+    padding: 5px 8px;
+
+    border-radius: 999px;
+
+    color: #55e49c;
+    background:
+        rgba(61, 221, 145, 0.1);
+
+    font-size: 9px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.payment-account-actions {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.payment-account-actions button {
+    min-height: 37px;
+
+    border-radius: 10px;
+
+    font-size: 11px;
+    font-weight: 850;
+
+    cursor: pointer;
+}
+
+.edit-payment-account {
+    border:
+        1px solid
+        rgba(63, 155, 255, 0.28);
+
+    color: #72b5ff;
+    background:
+        rgba(34, 111, 207, 0.09);
+}
+
+.delete-payment-account {
+    border:
+        1px solid
+        rgba(255, 88, 100, 0.25);
+
+    color: #ff8188;
+    background:
+        rgba(255, 88, 100, 0.08);
+}
+
+.payment-account-empty {
+    grid-column: 1 / -1;
+
+    display: grid;
+    place-items: center;
+
+    min-height: 145px;
+
+    gap: 8px;
+    padding: 20px;
+
+    border:
+        1px dashed
+        rgba(255, 215, 0, 0.18);
+
+    border-radius: 16px;
+
+    color: #8d8d8d;
+
+    text-align: center;
+}
+
+.payment-account-empty i {
+    color: #d9b429;
+
+    font-size: 23px;
+}
+
+.payment-management-status {
+    margin: 15px 0 0;
+
+    color: #858585;
+
+    font-size: 11px;
+    text-align: right;
+}
+
+/* Busy State */
+
+.payment-rotation-panel.is-busy {
+    cursor: wait;
+}
+
+.payment-rotation-panel.is-busy button,
+.payment-rotation-panel.is-busy input,
+.payment-rotation-panel.is-busy select {
+    pointer-events: none;
+}
+
+.payment-management-refresh:disabled,
+.rotation-save-button:disabled,
+.rotate-now-button:disabled,
+.add-payment-account-button:disabled,
+.payment-account-save:disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
+}
+
+/* Responsive */
+
+@media (max-width: 1150px) {
+    .rotation-control-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .payment-account-list {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 850px) {
+    .payment-account-form-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .payment-rotation-panel {
+        padding: 17px;
+    }
+
+    .payment-rotation-header,
+    .payment-account-list-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .payment-management-refresh {
+        width: 100%;
+    }
+
+    .payment-method-tabs {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .rotation-control-grid,
+    .payment-account-form-grid,
+    .payment-account-list {
+        grid-template-columns: 1fr;
+    }
+
+    .rotation-control-actions,
+    .payment-account-form-actions {
+        display: grid;
+
+        grid-template-columns: 1fr;
+    }
+
+    .rotation-control-actions button,
+    .payment-account-form-actions button {
+        width: 100%;
+    }
+
+    .payment-management-status {
+        text-align: left;
+    }
+}

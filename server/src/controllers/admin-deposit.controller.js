@@ -7,7 +7,18 @@ const {
 const {
   getAdminPaymentSettings,
   updatePaymentSettings,
-} = require("../services/deposit-payment.service");
+
+  getAdminPaymentManagement,
+  updatePaymentRotation,
+  rotatePaymentMethodNow,
+
+  createPaymentAccount,
+  updatePaymentAccount,
+  removePaymentAccount,
+  savePaymentAccountQr,
+} = require(
+  "../services/deposit-payment.service",
+);
 
 /* ==========================
    Get Payment Settings
@@ -59,6 +70,203 @@ async function savePaymentSettings(req, res, next) {
 }
 
 /* ==========================
+   Payment Rotation Management
+========================== */
+
+async function getPaymentManagement(
+  req,
+  res,
+  next,
+) {
+  try {
+    const paymentMethods =
+      await getAdminPaymentManagement();
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Deposit payment management loaded successfully.",
+
+      data: {
+        paymentMethods,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
+   Update Rotation Settings
+========================== */
+
+async function savePaymentRotation(
+  req,
+  res,
+  next,
+) {
+  try {
+    const rotation =
+      await updatePaymentRotation(
+        req.user.id,
+        {
+          method:
+            req.params.method,
+
+          rotationMode:
+            req.body?.rotationMode,
+
+          rotationIntervalMinutes:
+            req.body
+              ?.rotationIntervalMinutes,
+
+          bdtPerUsdt:
+            req.body?.bdtPerUsdt,
+        },
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Payment rotation settings updated successfully.",
+
+      data: {
+        rotation,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
+   Rotate Account Now
+========================== */
+
+async function rotatePaymentNow(
+  req,
+  res,
+  next,
+) {
+  try {
+    const rotation =
+      await rotatePaymentMethodNow(
+        req.user.id,
+        req.params.method,
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Payment account rotated successfully.",
+
+      data: {
+        rotation,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
+   Create Payment Account
+========================== */
+
+async function addPaymentAccount(
+  req,
+  res,
+  next,
+) {
+  try {
+    const account =
+      await createPaymentAccount(
+        req.user.id,
+        req.body || {},
+      );
+
+    return res.status(201).json({
+      success: true,
+
+      message:
+        "Payment account added successfully.",
+
+      data: {
+        account,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
+   Update Payment Account
+========================== */
+
+async function editPaymentAccount(
+  req,
+  res,
+  next,
+) {
+  try {
+    const account =
+      await updatePaymentAccount(
+        req.user.id,
+        req.params.accountId,
+        req.body || {},
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Payment account updated successfully.",
+
+      data: {
+        account,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
+   Remove Payment Account
+========================== */
+
+async function deletePaymentAccount(
+  req,
+  res,
+  next,
+) {
+  try {
+    const account =
+      await removePaymentAccount(
+        req.user.id,
+        req.params.accountId,
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Payment account removed successfully.",
+
+      data: {
+        account,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
    Get All Deposit Requests
 ========================== */
 
@@ -76,7 +284,13 @@ async function getDepositRequests(req, res, next) {
 
     const allowedStatuses = ["all", "pending", "approved", "rejected"];
 
-    const allowedMethods = ["all", "bkash", "nagad", "rocket"];
+    const allowedMethods = [
+  "all",
+  "bkash",
+  "nagad",
+  "rocket",
+  "binance",
+];
 
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({
@@ -253,10 +467,55 @@ async function rejectDeposit(req, res, next) {
   }
 }
 
+/* ==========================
+   Upload Binance QR
+========================== */
+
+async function uploadPaymentAccountQr(
+  req,
+  res,
+  next,
+) {
+  try {
+    const qrImage =
+      await savePaymentAccountQr({
+        adminId: req.user.id,
+
+        accountId:
+          req.params.accountId,
+
+        file: req.file,
+      });
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Binance Pay QR image uploaded successfully.",
+
+      data: {
+        qrImage,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getPaymentSettings,
   savePaymentSettings,
+
+  getPaymentManagement,
+  savePaymentRotation,
+  rotatePaymentNow,
+
+  addPaymentAccount,
+  editPaymentAccount,
+  deletePaymentAccount,
+
   getDepositRequests,
   approveDeposit,
   rejectDeposit,
+  uploadPaymentAccountQr,
 };

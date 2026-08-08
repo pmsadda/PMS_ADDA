@@ -959,3 +959,225 @@ input:focus{
         justify-content: center;
     }
 }
+
+/* ==========================================
+   DEPOSIT ROTATION + BINANCE PAY
+========================================== */
+
+/* Four available payment methods */
+
+.payment-grid {
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+}
+
+/* Binance icon */
+
+.payment-card-icon {
+    display: grid;
+    place-items: center;
+
+    width: 58px;
+    height: 58px;
+
+    border-radius: 16px;
+
+    font-size: 27px;
+
+    flex-shrink: 0;
+}
+
+.payment-card-icon.binance-icon {
+    color: #111111;
+
+    background:
+        linear-gradient(
+            145deg,
+            #fff079,
+            #f3ba2f 55%,
+            #c98b08
+        );
+
+    box-shadow:
+        0 8px 20px
+        rgba(243, 186, 47, 0.22);
+}
+
+.payment-card.active
+.payment-card-icon.binance-icon {
+    box-shadow:
+        0 0 0 3px
+        rgba(243, 186, 47, 0.18),
+        0 10px 24px
+        rgba(243, 186, 47, 0.28);
+}
+
+/* Binance BDT to USDT summary */
+
+.binance-payment-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+
+    margin:
+        14px 0
+        22px;
+}
+
+.binance-payment-summary[hidden] {
+    display: none !important;
+}
+
+.binance-payment-summary > div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+
+    min-width: 0;
+    padding: 14px;
+
+    border:
+        1px solid
+        rgba(243, 186, 47, 0.24);
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(243, 186, 47, 0.1),
+            rgba(25, 25, 25, 0.96)
+        );
+}
+
+.binance-payment-summary span {
+    color: #aeb3b8;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.binance-payment-summary strong {
+    color: #f3ba2f;
+
+    font-size: 16px;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+}
+
+/* Long Binance Pay ID support */
+
+#merchantNumber {
+    max-width: 100%;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Binance QR */
+
+.payment-qr-wrapper {
+    width: min(210px, 100%);
+
+    margin:
+        4px auto
+        18px;
+
+    padding: 10px;
+
+    border:
+        1px solid
+        rgba(255, 215, 0, 0.28);
+
+    border-radius: 16px;
+
+    background: #ffffff;
+}
+
+.payment-qr-wrapper[hidden] {
+    display: none !important;
+}
+
+.payment-qr-wrapper img {
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    aspect-ratio: 1 / 1;
+
+    border-radius: 10px;
+
+    object-fit: contain;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+    .payment-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .payment-card {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .payment-card {
+        flex-direction: column;
+
+        justify-content: center;
+
+        gap: 9px;
+        padding: 13px 8px;
+
+        text-align: center;
+    }
+
+    .payment-card-icon {
+        width: 44px;
+        height: 44px;
+
+        border-radius: 13px;
+
+        font-size: 21px;
+    }
+
+    .binance-payment-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .binance-payment-summary > div {
+        padding: 12px;
+    }
+
+    .official-number h2 {
+        font-size: 23px;
+        letter-spacing: 1px;
+    }
+
+    .payment-qr-wrapper {
+        width: min(185px, 100%);
+    }
+}

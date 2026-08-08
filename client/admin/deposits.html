@@ -269,294 +269,406 @@
                 </section>
 
                 <!-- =========================
-     Deposit Payment Settings
+     Deposit Account Rotation
 ========================== -->
 
                 <section
-                    class="payment-settings-panel"
-                    id="paymentSettingsPanel">
-
-                    <div class="payment-settings-header">
+                    class="payment-rotation-panel"
+                    id="paymentRotationPanel">
+                    <div class="payment-rotation-header">
 
                         <div>
-
                             <span class="section-kicker">
-                                PAYMENT SETTINGS
+                                PAYMENT MANAGEMENT
                             </span>
 
                             <h2>
-                                Deposit Payment Numbers
+                                Deposit Accounts & Rotation
                             </h2>
 
                             <p>
-                                User Deposit page-এ দেখানো
-                                bKash, Nagad ও Rocket number
-                                এখান থেকে নিয়ন্ত্রণ করুন।
+                                bKash, Nagad, Rocket এবং Binance Pay
+                                receiving account, rotation mode ও সময় নিয়ন্ত্রণ
+                                করুন।
                             </p>
-
                         </div>
 
                         <button
                             type="button"
-                            class="payment-settings-refresh"
-                            id="refreshPaymentSettings">
-
+                            class="payment-management-refresh"
+                            id="refreshPaymentManagement">
                             <i class="fa-solid fa-rotate"></i>
 
                             Refresh
-
                         </button>
 
                     </div>
 
-                    <form
-                        id="depositPaymentSettingsForm"
-                        class="payment-settings-form"
-                        novalidate>
+                    <!-- Method Selector -->
 
-                        <div class="payment-settings-grid">
+                    <div
+                        class="payment-method-tabs"
+                        id="paymentMethodTabs"
+                        role="tablist"
+                        aria-label="Deposit payment method">
+                        <button
+                            type="button"
+                            class="payment-method-tab is-active"
+                            data-deposit-method="bkash"
+                            aria-selected="true">
+                            <span class="method-tab-icon bkash">
+                                B
+                            </span>
 
-                            <!-- bKash -->
+                            bKash
+                        </button>
 
-                            <article
-                                class="payment-method-setting bkash"
-                                data-payment-method="bkash">
+                        <button
+                            type="button"
+                            class="payment-method-tab"
+                            data-deposit-method="nagad"
+                            aria-selected="false">
+                            <span class="method-tab-icon nagad">
+                                N
+                            </span>
 
-                                <div class="payment-method-heading">
+                            Nagad
+                        </button>
 
-                                    <div class="payment-method-icon">
-                                        B
-                                    </div>
+                        <button
+                            type="button"
+                            class="payment-method-tab"
+                            data-deposit-method="rocket"
+                            aria-selected="false">
+                            <span class="method-tab-icon rocket">
+                                R
+                            </span>
 
-                                    <div>
-                                        <strong>bKash</strong>
-                                        <span>
-                                            Deposit account
-                                        </span>
-                                    </div>
+                            Rocket
+                        </button>
 
-                                </div>
+                        <button
+                            type="button"
+                            class="payment-method-tab"
+                            data-deposit-method="binance"
+                            aria-selected="false">
+                            <span class="method-tab-icon binance">
+                                <i class="fa-solid fa-coins"></i>
+                            </span>
 
-                                <label>
-                                    Account Number
+                            Binance
+                        </button>
+                    </div>
 
+                    <!-- Rotation Controls -->
+
+                    <div class="rotation-control-card">
+
+                        <div class="rotation-control-grid">
+
+                            <label>
+                                Rotation Mode
+
+                                <select id="paymentRotationMode">
+                                    <option value="auto">
+                                        Auto Rotation
+                                    </option>
+
+                                    <option value="manual">
+                                        Manual Rotation
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label>
+                                Rotation Time
+
+                                <div class="rotation-time-input">
                                     <input
-                                        type="tel"
-                                        inputmode="numeric"
-                                        maxlength="11"
-                                        placeholder="01XXXXXXXXX"
-                                        autocomplete="off"
-                                        data-payment-field="accountNumber">
-                                </label>
+                                        type="number"
+                                        id="paymentRotationInterval"
+                                        min="1"
+                                        max="1440"
+                                        step="1"
+                                        value="10">
 
-                                <label>
-                                    Account Type
-
-                                    <select
-                                        data-payment-field="accountType">
-
-                                        <option value="personal">
-                                            Personal
-                                        </option>
-
-                                        <option value="agent">
-                                            Agent
-                                        </option>
-
-                                        <option value="merchant">
-                                            Merchant
-                                        </option>
-
-                                    </select>
-                                </label>
-
-                                <label>
-                                    Status
-
-                                    <select
-                                        data-payment-field="status">
-
-                                        <option value="active">
-                                            Active
-                                        </option>
-
-                                        <option value="disabled">
-                                            Disabled
-                                        </option>
-
-                                    </select>
-                                </label>
-
-                            </article>
-
-                            <!-- Nagad -->
-
-                            <article
-                                class="payment-method-setting nagad"
-                                data-payment-method="nagad">
-
-                                <div class="payment-method-heading">
-
-                                    <div class="payment-method-icon">
-                                        N
-                                    </div>
-
-                                    <div>
-                                        <strong>Nagad</strong>
-                                        <span>
-                                            Deposit account
-                                        </span>
-                                    </div>
-
+                                    <span>Minutes</span>
                                 </div>
+                            </label>
 
-                                <label>
-                                    Account Number
+                            <label
+                                id="binanceRateField"
+                                hidden>
+                                BDT Per USDT
 
+                                <div class="rotation-time-input">
                                     <input
-                                        type="tel"
-                                        inputmode="numeric"
-                                        maxlength="11"
-                                        placeholder="01XXXXXXXXX"
-                                        autocomplete="off"
-                                        data-payment-field="accountNumber">
-                                </label>
+                                        type="number"
+                                        id="paymentBdtPerUsdt"
+                                        min="1"
+                                        max="1000000"
+                                        step="0.01"
+                                        placeholder="Example: 122.50">
 
-                                <label>
-                                    Account Type
-
-                                    <select
-                                        data-payment-field="accountType">
-
-                                        <option value="personal">
-                                            Personal
-                                        </option>
-
-                                        <option value="agent">
-                                            Agent
-                                        </option>
-
-                                        <option value="merchant">
-                                            Merchant
-                                        </option>
-
-                                    </select>
-                                </label>
-
-                                <label>
-                                    Status
-
-                                    <select
-                                        data-payment-field="status">
-
-                                        <option value="active">
-                                            Active
-                                        </option>
-
-                                        <option value="disabled">
-                                            Disabled
-                                        </option>
-
-                                    </select>
-                                </label>
-
-                            </article>
-
-                            <!-- Rocket -->
-
-                            <article
-                                class="payment-method-setting rocket"
-                                data-payment-method="rocket">
-
-                                <div class="payment-method-heading">
-
-                                    <div class="payment-method-icon">
-                                        R
-                                    </div>
-
-                                    <div>
-                                        <strong>Rocket</strong>
-                                        <span>
-                                            Deposit account
-                                        </span>
-                                    </div>
-
+                                    <span>BDT</span>
                                 </div>
+                            </label>
 
-                                <label>
-                                    Account Number
+                            <div class="current-payment-account">
 
-                                    <input
-                                        type="tel"
-                                        inputmode="numeric"
-                                        maxlength="11"
-                                        placeholder="01XXXXXXXXX"
-                                        autocomplete="off"
-                                        data-payment-field="accountNumber">
-                                </label>
+                                <span>
+                                    Current Receiving Account
+                                </span>
 
-                                <label>
-                                    Account Type
+                                <strong id="currentPaymentAccount">
+                                    Loading...
+                                </strong>
 
-                                    <select
-                                        data-payment-field="accountType">
+                                <small id="nextRotationText">
+                                    Rotation information loading...
+                                </small>
 
-                                        <option value="personal">
-                                            Personal
-                                        </option>
-
-                                        <option value="agent">
-                                            Agent
-                                        </option>
-
-                                        <option value="merchant">
-                                            Merchant
-                                        </option>
-
-                                    </select>
-                                </label>
-
-                                <label>
-                                    Status
-
-                                    <select
-                                        data-payment-field="status">
-
-                                        <option value="active">
-                                            Active
-                                        </option>
-
-                                        <option value="disabled">
-                                            Disabled
-                                        </option>
-
-                                    </select>
-                                </label>
-
-                            </article>
+                            </div>
 
                         </div>
 
-                        <div class="payment-settings-footer">
+                        <div class="rotation-control-actions">
 
-                            <p id="paymentSettingsUpdatedText">
-                                Payment settings loading...
-                            </p>
+                            <button
+                                type="button"
+                                class="rotation-save-button"
+                                id="savePaymentRotation">
+                                <i class="fa-solid fa-floppy-disk"></i>
+
+                                Save Rotation
+                            </button>
+
+                            <button
+                                type="button"
+                                class="rotate-now-button"
+                                id="rotatePaymentNow">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+
+                                Rotate Now
+                            </button>
+
+                            <button
+                                type="button"
+                                class="add-payment-account-button"
+                                id="openPaymentAccountForm">
+                                <i class="fa-solid fa-plus"></i>
+
+                                Add Account
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Account Editor -->
+
+                    <form
+                        class="payment-account-editor"
+                        id="paymentAccountForm"
+                        novalidate
+                        hidden>
+                        <div class="payment-account-editor-header">
+
+                            <div>
+                                <span>
+                                    RECEIVING ACCOUNT
+                                </span>
+
+                                <h3 id="paymentAccountFormTitle">
+                                    Add New Account
+                                </h3>
+                            </div>
+
+                            <button
+                                type="button"
+                                id="closePaymentAccountForm"
+                                aria-label="Close account form">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+                        <input
+                            type="hidden"
+                            id="paymentAccountId">
+
+                        <input
+                            type="hidden"
+                            id="paymentAccountMethod"
+                            value="bkash">
+
+                        <div class="payment-account-form-grid">
+
+                            <label>
+                                Display Name
+
+                                <input
+                                    type="text"
+                                    id="paymentAccountDisplayName"
+                                    maxlength="30"
+                                    placeholder="Example: bKash Personal 1"
+                                    autocomplete="off"
+                                    required>
+                            </label>
+
+                            <label>
+                                <span id="paymentAccountIdentifierLabel">
+                                    Account Number
+                                </span>
+
+                                <input
+                                    type="text"
+                                    id="paymentAccountIdentifier"
+                                    maxlength="120"
+                                    placeholder="01XXXXXXXXX"
+                                    autocomplete="off"
+                                    required>
+                            </label>
+
+                            <label>
+                                Account Type
+
+                                <select id="paymentAccountType">
+                                    <option value="personal">
+                                        Personal
+                                    </option>
+
+                                    <option value="agent">
+                                        Agent
+                                    </option>
+
+                                    <option value="merchant">
+                                        Merchant
+                                    </option>
+
+                                    <option value="pay_id">
+                                        Binance Pay ID
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label>
+                                Status
+
+                                <select id="paymentAccountStatus">
+                                    <option value="active">
+                                        Active
+                                    </option>
+
+                                    <option value="disabled">
+                                        Disabled
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label>
+                                Display Order
+
+                                <input
+                                    type="number"
+                                    id="paymentAccountSortOrder"
+                                    min="0"
+                                    max="9999"
+                                    step="1"
+                                    value="0">
+                            </label>
+
+                            <label
+                                class="payment-qr-upload-field"
+                                id="paymentQrUploadField"
+                                hidden>
+                                Binance QR Image
+
+                                <input
+                                    type="file"
+                                    id="paymentQrImageInput"
+                                    accept="image/png,image/jpeg,image/webp">
+
+                                <small>
+                                    PNG, JPG অথবা WebP। Maximum 2 MB.
+                                </small>
+                            </label>
+
+                        </div>
+
+                        <div
+                            class="payment-qr-preview"
+                            id="paymentQrPreview"
+                            hidden>
+                            <img
+                                id="paymentQrPreviewImage"
+                                alt="Binance QR preview">
+                        </div>
+
+                        <div class="payment-account-form-actions">
+
+                            <button
+                                type="button"
+                                class="payment-account-cancel"
+                                id="cancelPaymentAccount">
+                                Cancel
+                            </button>
 
                             <button
                                 type="submit"
-                                class="save-payment-settings"
-                                id="savePaymentSettings">
-
+                                class="payment-account-save"
+                                id="savePaymentAccount">
                                 <i class="fa-solid fa-floppy-disk"></i>
 
-                                Save Payment Numbers
-
+                                Save Account
                             </button>
 
                         </div>
 
                     </form>
+
+                    <!-- Account List -->
+
+                    <div class="payment-account-list-header">
+
+                        <div>
+                            <h3 id="paymentAccountListTitle">
+                                bKash Accounts
+                            </h3>
+
+                            <p>
+                                Current account ও rotation order এখান থেকে দেখা
+                                যাবে।
+                            </p>
+                        </div>
+
+                        <span
+                            class="payment-account-count"
+                            id="paymentAccountCount">
+                            0 Accounts
+                        </span>
+
+                    </div>
+
+                    <div
+                        class="payment-account-list"
+                        id="paymentAccountList">
+                        <div class="payment-account-empty">
+
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+
+                            <p>
+                                Payment accounts loading...
+                            </p>
+
+                        </div>
+                    </div>
+
+                    <p
+                        class="payment-management-status"
+                        id="paymentManagementStatus">
+                        Payment management data loading...
+                    </p>
 
                 </section>
 
@@ -613,6 +725,10 @@
 
                         <option value="rocket">
                             Rocket
+                        </option>
+
+                        <option value="binance">
+                            Binance
                         </option>
 
                     </select>
