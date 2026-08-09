@@ -83,64 +83,17 @@ async function joinMatchmaking(
   request,
   response,
 ) {
-  try {
-    const data =
-      await carromService
-        .joinCarromMatchmaking(
-          request.user.id,
-          request.body?.roomId,
-        );
+  return response
+    .status(503)
+    .json({
+      success: false,
 
-        const carromSocket =
-  request.app.get(
-    "carromSocket",
-  );
+      code:
+        "CARROM_UNDER_DEVELOPMENT",
 
-if (
-  data?.match?.status ===
-  "waiting"
-) {
-  carromSocket
-    ?.scheduleBotMatchmaking(
-      data,
-    );
-}
-
-if (
-  data?.match?.status ===
-  "countdown"
-) {
-  carromSocket
-    ?.scheduleMatchStart(
-      data,
-    );
-}
-
-    return response
-      .status(200)
-      .json({
-        success: true,
-
-        message:
-          data.matchmaking
-            ?.alreadyJoined
-            ? "Existing Carrom match loaded successfully."
-            : "Carrom matchmaking joined successfully.",
-
-        data,
-      });
-  } catch (error) {
-    console.error(
-      "CARROM MATCHMAKING ERROR:",
-      error,
-    );
-
-    return sendCarromError(
-      response,
-      error,
-      "Unable to join Carrom matchmaking.",
-    );
-  }
+      message:
+        "Carrom-এর কাজ চলছে। শীঘ্রই চালু হবে।",
+    });
 }
 
 /* ==========================================

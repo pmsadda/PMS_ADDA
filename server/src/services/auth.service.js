@@ -681,8 +681,44 @@ async function getUserReferralSummary(
     };
 }
 
+/* ==========================
+   Mark User Offline
+========================== */
+
+async function markUserOffline(
+    userId
+) {
+    const validUserId =
+        Number(userId);
+
+    if (
+        !Number.isInteger(validUserId) ||
+        validUserId <= 0
+    ) {
+        const error = new Error(
+            "Invalid user ID."
+        );
+
+        error.statusCode = 400;
+
+        throw error;
+    }
+
+    await pool.execute(
+        `
+        UPDATE users
+        SET is_online = 0
+        WHERE id = ?
+        `,
+        [validUserId]
+    );
+
+    return true;
+}
+
 module.exports = {
     createUser,
     loginUser,
-    getUserReferralSummary
+    getUserReferralSummary,
+    markUserOffline
 };

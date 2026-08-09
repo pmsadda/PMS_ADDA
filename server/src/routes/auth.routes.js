@@ -8,6 +8,7 @@ const {
 const {
   registerUser,
   login,
+  logout,
   me,
   referralSummary,
   requestForgotPasswordOtp,
@@ -65,6 +66,13 @@ router.post("/register", registerUser);
 /* Login */
 
 router.post("/login", loginRateLimiter, login);
+/* Logout */
+
+router.post(
+  "/logout",
+  requireAuth,
+  logout,
+);
 
 /* Request Forgot Password OTP */
 

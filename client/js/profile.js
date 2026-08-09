@@ -526,10 +526,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   DOM.cancelLogout?.addEventListener("click", closeLogoutModal);
 
-  DOM.confirmLogout?.addEventListener("click", () => {
-    clearAuthentication();
-    window.location.replace("./login.html");
-  });
+   DOM.confirmLogout?.addEventListener(
+    "click",
+    () => {
+      if (
+        window.AUTH_SESSION?.logout
+      ) {
+        window.AUTH_SESSION.logout();
+
+        return;
+      }
+
+      clearAuthentication();
+
+      window.location.replace(
+        "./login.html",
+      );
+    },
+  );
 
   DOM.logoutModal?.addEventListener("click", (event) => {
     if (event.target === DOM.logoutModal) {

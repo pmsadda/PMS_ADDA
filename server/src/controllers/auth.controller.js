@@ -4,6 +4,7 @@ const {
   createUser,
   loginUser,
   getUserReferralSummary,
+  markUserOffline,
 } = require("../services/auth.service");
 
 const {
@@ -421,9 +422,37 @@ async function resetForgottenPassword(
   }
 }
 
+/* ==========================
+   Logout User
+========================== */
+
+async function logout(
+  req,
+  res,
+  next,
+) {
+  try {
+    await markUserOffline(
+      req.user.id,
+    );
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Logout successful.",
+      });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   registerUser,
   login,
+  logout,
   me,
   referralSummary,
   requestForgotPasswordOtp,

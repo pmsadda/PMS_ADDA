@@ -76,91 +76,61 @@
 ========================================== */
 
 (function initializeAuthSession() {
-  const ACCESS_TOKEN_KEY = "access_token";
+  const ACCESS_TOKEN_KEY =
+    "access_token";
 
-    const LOBBY_SESSION_DURATION_MS =
-    30 * 60 * 1000;
-
-  const LOBBY_SESSION_STARTED_KEY =
-    "pms_lobby_session_started_at";
-
-  const AUTH_STORAGE_KEYS = [
+   const AUTH_STORAGE_KEYS = [
     "access_token",
+    "token",
+    "refresh_token",
     "current_user",
+    "user",
     "user_id",
   ];
 
-  let logoutTimer = null;
+  /*
+   * দীর্ঘ JWT session হলে browser-এর
+   * setTimeout limit সমস্যা এড়াতে
+   * সর্বোচ্চ ২৪ ঘণ্টা পরপর যাচাই হবে।
+   */
+  const MAX_SESSION_CHECK_MS =
+    24 * 60 * 60 * 1000;
+
+  let sessionTimer = null;
   let activeToken = null;
   let logoutStarted = false;
 
   function isPublicAuthPage() {
     const pathname =
-      String(window.location.pathname).toLowerCase();
-
-    return (
-      pathname.endsWith("/login.html") ||
-      pathname.endsWith("/register.html")
-    );
-  }
-
-    function isLobbyPage() {
-    const pathname =
       String(
         window.location.pathname,
       ).toLowerCase();
 
-    return pathname.endsWith(
-      "/lobby.html",
+    return (
+      pathname.endsWith(
+        "/login.html",
+      ) ||
+      pathname.endsWith(
+        "/register.html",
+      )
     );
-  }
-
-  function clearLobbySession() {
-    sessionStorage.removeItem(
-      LOBBY_SESSION_STARTED_KEY,
-    );
-  }
-
-  function getOrCreateLobbyStartedAt() {
-    const now = Date.now();
-
-    const storedStartedAt = Number(
-      sessionStorage.getItem(
-        LOBBY_SESSION_STARTED_KEY,
-      ),
-    );
-
-    const isValidStoredTime =
-      Number.isFinite(storedStartedAt) &&
-      storedStartedAt > 0 &&
-      storedStartedAt <= now &&
-      now - storedStartedAt <
-        LOBBY_SESSION_DURATION_MS;
-
-    if (isValidStoredTime) {
-      return storedStartedAt;
-    }
-
-    sessionStorage.setItem(
-      LOBBY_SESSION_STARTED_KEY,
-      String(now),
-    );
-
-    return now;
   }
 
   function getLoginPageUrl() {
-    const configScript = Array.from(
-      document.scripts,
-    ).find((script) => {
-      const source = String(
-        script.getAttribute("src") || "",
-      );
+    const configScript =
+      Array.from(
+        document.scripts,
+      ).find((script) => {
+        const source = String(
+          script.getAttribute("src") ||
+          "",
+        );
 
-      return /(?:^|\/)app-config\.js(?:\?.*)?$/i.test(
-        source,
-      );
-    });
+        return (
+          /(?:^|\/)app-config\.js(?:\?.*)?$/i
+            .test(source)
+        );
+      });
 
     if (configScript?.src) {
       return new URL(
@@ -176,28 +146,44 @@
   }
 
   function clearAuthStorage() {
-    AUTH_STORAGE_KEYS.forEach((key) => {
-      localStorage.removeItem(key);
-    });
+    AUTH_STORAGE_KEYS.forEach(
+      (key) => {
+        localStorage.removeItem(key);
+      },
+    );
+
+    /*
+     * পুরোনো ৩০ মিনিটের Lobby session
+     * record থাকলে সেটিও পরিষ্কার হবে।
+     */
+    sessionStorage.removeItem(
+      "pms_lobby_session_started_at",
+    );
   }
 
   function decodeJwtPayload(token) {
     try {
-      const tokenParts = String(token).split(".");
+      const tokenParts =
+        String(token).split(".");
 
       if (tokenParts.length !== 3) {
         return null;
       }
 
-      let payload = tokenParts[1]
-        .replace(/-/g, "+")
-        .replace(/_/g, "/");
+      let payload =
+        tokenParts[1]
+          .replace(/-/g, "+")
+          .replace(/_/g, "/");
 
-      while (payload.length % 4 !== 0) {
+      while (
+        payload.length % 4 !== 0
+      ) {
         payload += "=";
       }
 
-      return JSON.parse(window.atob(payload));
+      return JSON.parse(
+        window.atob(payload),
+      );
     } catch (error) {
       console.error(
         "Token decode error:",
@@ -208,15 +194,19 @@
     }
   }
 
-  function getTokenExpirationTime(token) {
-    const payload = decodeJwtPayload(token);
+  function getTokenExpirationTime(
+    token,
+  ) {
+    const payload =
+      decodeJwtPayload(token);
 
-    const expiresAtSeconds = Number(
-      payload?.exp,
-    );
+    const expiresAtSeconds =
+      Number(payload?.exp);
 
     if (
-      !Number.isFinite(expiresAtSeconds) ||
+      !Number.isFinite(
+        expiresAtSeconds,
+      ) ||
       expiresAtSeconds <= 0
     ) {
       return 0;
@@ -235,6 +225,18 @@
     );
   }
 
+  function clearSessionTimer() {
+    if (!sessionTimer) {
+      return;
+    }
+
+    window.clearTimeout(
+      sessionTimer,
+    );
+
+    sessionTimer = null;
+  }
+
   function logoutSession(
     showMessage = true,
   ) {
@@ -244,15 +246,11 @@
 
     logoutStarted = true;
 
-    if (logoutTimer) {
-      window.clearTimeout(logoutTimer);
-      logoutTimer = null;
-    }
+    clearSessionTimer();
 
     activeToken = null;
 
-       clearAuthStorage();
-    clearLobbySession();
+    clearAuthStorage();
 
     if (
       showMessage &&
@@ -266,14 +264,8 @@
     redirectToLogin();
   }
 
-    function startSessionTimer() {
-    if (logoutTimer) {
-      window.clearTimeout(
-        logoutTimer,
-      );
-
-      logoutTimer = null;
-    }
+  function startSessionTimer() {
+    clearSessionTimer();
 
     logoutStarted = false;
 
@@ -285,77 +277,43 @@
     activeToken = token;
 
     if (!token) {
-      clearLobbySession();
-
       return;
     }
 
-    /*
-     * Game, room, wallet, profile ও admin
-     * page-এ ৩০ মিনিটের timer চলবে না।
-     */
-    if (!isLobbyPage()) {
-      clearLobbySession();
-
-      console.log(
-        "Lobby auto logout disabled on this page.",
-      );
-
-      return;
-    }
-
-    const tokenExpirationTime =
+    const expirationTime =
       getTokenExpirationTime(token);
 
+    const remainingTime =
+      expirationTime - Date.now();
+
     if (
-      !tokenExpirationTime ||
-      tokenExpirationTime <= Date.now()
+      !expirationTime ||
+      remainingTime <= 0
     ) {
       logoutSession(false);
 
       return;
     }
 
-    const lobbyStartedAt =
-      getOrCreateLobbyStartedAt();
-
-    const lobbyExpirationTime =
-      lobbyStartedAt +
-      LOBBY_SESSION_DURATION_MS;
-
     /*
-     * Lobby timer অথবা server token—
-     * যেটি আগে শেষ হবে সেটিই কার্যকর।
+     * Lobby, Wallet এবং Game—সব page-এ
+     * শুধু JWT expiration কার্যকর হবে।
+     * আলাদা ৩০ মিনিটের logout নেই।
      */
-    const expirationTime = Math.min(
-      lobbyExpirationTime,
-      tokenExpirationTime,
-    );
+    const nextCheckDelay =
+      Math.min(
+        remainingTime,
+        MAX_SESSION_CHECK_MS,
+      );
 
-    const remainingTime =
-      expirationTime - Date.now();
-
-    if (remainingTime <= 0) {
-      logoutSession(true);
-
-      return;
-    }
-
-    logoutTimer =
-      window.setTimeout(() => {
-        logoutSession(true);
-      }, remainingTime);
-
-    console.log(
-      "Lobby session remaining:",
-      Math.ceil(
-        remainingTime / 1000,
-      ),
-      "seconds",
-    );
+    sessionTimer =
+      window.setTimeout(
+        startSessionTimer,
+        nextCheckDelay,
+      );
   }
 
-    function verifyCurrentSession() {
+  function verifyCurrentSession() {
     const token =
       localStorage.getItem(
         ACCESS_TOKEN_KEY,
@@ -375,41 +333,16 @@
       return;
     }
 
-    /*
-     * Game page-এ focus/visibility change
-     * হলেও auto logout check হবে না।
-     */
-    if (!isLobbyPage()) {
-      return;
-    }
-
-    const tokenExpirationTime =
+    const expirationTime =
       getTokenExpirationTime(token);
 
-    const lobbyStartedAt = Number(
-      sessionStorage.getItem(
-        LOBBY_SESSION_STARTED_KEY,
-      ),
-    );
-
-    const lobbyExpirationTime =
-      lobbyStartedAt +
-      LOBBY_SESSION_DURATION_MS;
-
-    const sessionExpired =
-      !tokenExpirationTime ||
-      tokenExpirationTime <= Date.now() ||
-      !Number.isFinite(
-        lobbyStartedAt,
-      ) ||
-      lobbyStartedAt <= 0 ||
-      lobbyExpirationTime <= Date.now();
-
-    if (sessionExpired) {
+    if (
+      !expirationTime ||
+      expirationTime <= Date.now()
+    ) {
       logoutSession(true);
     }
   }
-
 
   window.addEventListener(
     "focus",
@@ -441,6 +374,7 @@
 
       if (!event.newValue) {
         logoutSession(false);
+
         return;
       }
 
@@ -448,23 +382,89 @@
     },
   );
 
-  window.AUTH_SESSION = Object.freeze({
-    start: startSessionTimer,
+  window.AUTH_SESSION =
+    Object.freeze({
+       start:
+        startSessionTimer,
 
-    logout() {
-      logoutSession(false);
-    },
+            async logout() {
+        try {
+          await notifyServerLogout();
+        } finally {
+          logoutSession(false);
+        }
+      },
 
-    getExpirationTime() {
-      const token = localStorage.getItem(
+      getExpirationTime() {
+        const token =
+          localStorage.getItem(
+            ACCESS_TOKEN_KEY,
+          );
+
+        return token
+          ? getTokenExpirationTime(
+              token,
+            )
+          : 0;
+      },
+    });
+
+      async function notifyServerLogout() {
+    const token =
+      localStorage.getItem(
         ACCESS_TOKEN_KEY,
       );
 
-      return token
-        ? getTokenExpirationTime(token)
-        : 0;
-    },
-  });
+    if (
+      !token ||
+      !window.APP_CONFIG
+    ) {
+      return;
+    }
+
+    const abortController =
+      new AbortController();
+
+    const abortTimer =
+      window.setTimeout(
+        () => {
+          abortController.abort();
+        },
+        3000,
+      );
+
+    try {
+      await fetch(
+        window.APP_CONFIG.api(
+          "/auth/logout",
+        ),
+        {
+          method: "POST",
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+
+          signal:
+            abortController.signal,
+        },
+      );
+    } catch (error) {
+      /*
+       * Network সমস্যা হলেও local logout
+       * অবশ্যই সম্পন্ন হবে।
+       */
+      console.warn(
+        "Server logout request failed:",
+        error?.message || error,
+      );
+    } finally {
+      window.clearTimeout(
+        abortTimer,
+      );
+    }
+  }
 
   startSessionTimer();
 })();

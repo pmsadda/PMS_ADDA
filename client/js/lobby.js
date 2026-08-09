@@ -1425,10 +1425,24 @@ document.addEventListener("DOMContentLoaded", () => {
     closeModal(DOM.logoutModal),
   );
 
-  DOM.confirmLogoutButton?.addEventListener("click", () => {
-    clearAuthentication();
-    window.location.replace(LOGIN_PAGE);
-  });
+    DOM.confirmLogoutButton?.addEventListener(
+    "click",
+    () => {
+      if (
+        window.AUTH_SESSION?.logout
+      ) {
+        window.AUTH_SESSION.logout();
+
+        return;
+      }
+
+      clearAuthentication();
+
+      window.location.replace(
+        LOGIN_PAGE,
+      );
+    },
+  );
 
   window.addEventListener("click", (event) => {
     if (event.target === DOM.notificationModal) {
@@ -1513,8 +1527,14 @@ document.addEventListener("DOMContentLoaded", () => {
     navigateTo("./ludo-rooms.html"),
   );
 
-  DOM.carromButton?.addEventListener("click", () =>
-  navigateTo("./carrom-rooms.html"),
+DOM.carromButton?.addEventListener(
+  "click",
+  () => {
+    showToast(
+      "Carrom-এর কাজ চলছে। শীঘ্রই চালু হবে।",
+      "info",
+    );
+  },
 );
 
   DOM.lotteryButton?.addEventListener("click", () =>

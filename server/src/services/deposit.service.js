@@ -357,8 +357,29 @@ async function createDepositRequest({
       status:
         "pending",
     };
-  } catch (error) {
+   } catch (error) {
     await connection.rollback();
+
+    /*
+     * Database UNIQUE constraint একই
+     * transaction ID দ্বিতীয়বার নিলে
+     * পরিষ্কার 409 response দেওয়া হবে।
+     */
+    if (
+      error?.code === "ER_DUP_ENTRY"
+    ) {
+      const duplicateError =
+        new Error(
+          "This transaction ID has already been used.",
+        );
+
+      duplicateError.statusCode = 409;
+
+      duplicateError.code =
+        "DUPLICATE_DEPOSIT_TRANSACTION";
+
+      throw duplicateError;
+    }
 
     throw error;
   } finally {

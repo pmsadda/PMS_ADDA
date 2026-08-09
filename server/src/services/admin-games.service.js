@@ -223,74 +223,88 @@ async function getPublicGameAvailability() {
         "ludo"
     ];
 
-    const [rows] = await pool.query(`
-        SELECT
-            game_type,
+    /*
+     * Teen Patti এবং Poker-এর room/player
+     * হিসাব game_rooms থেকে আসবে।
+     *
+     * Ludo-এর চলমান player হিসাব আলাদাভাবে
+     * ludo_matches থেকে নেওয়া হবে।
+     */
+    const [
+        [roomRows],
+        [ludoRows]
+    ] = await Promise.all([
+        pool.query(`
+            SELECT
+                game_type,
 
-            COUNT(*) AS total_rooms,
+                COUNT(*) AS total_rooms,
 
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN status IN (
-                            'waiting',
-                            'running'
-                        )
-                        THEN 1
-                        ELSE 0
-                    END
-                ),
-                0
-            ) AS available_rooms,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status IN (
+                                'waiting',
+                                'running'
+                            )
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS available_rooms,
 
-            COALESCE(
-    SUM(
-        CASE
-            WHEN game_type IN (
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN game_type IN (
+                                'teen_patti',
+                                'poker'
+                            )
+                            THEN current_players
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS active_players
+
+            FROM game_rooms
+
+            WHERE game_type IN (
                 'teen_patti',
-                'poker'
-            )
-            THEN current_players
-            ELSE 0
-        END
-    ),
-    0
-)
-+
-COALESCE(
-    (
-        SELECT
-            SUM(
-                lm.current_players
+                'poker',
+                'ludo'
             )
 
-        FROM ludo_matches lm
+            GROUP BY game_type
+        `),
 
-        WHERE lm.match_status IN (
-            'waiting',
-            'starting',
-            'playing'
-        )
-    ),
-    0
-) AS active_players,
+        pool.query(`
+            SELECT
+                COALESCE(
+                    SUM(current_players),
+                    0
+                ) AS active_players
 
-        FROM game_rooms
+            FROM ludo_matches
 
-        WHERE game_type IN (
-            'teen_patti',
-            'poker',
-            'ludo'
-        )
+            WHERE match_status IN (
+                'waiting',
+                'starting',
+                'playing'
+            )
+        `)
+    ]);
 
-        GROUP BY game_type
-    `);
+    const ludoActivePlayers = Number(
+        ludoRows[0]?.active_players || 0
+    );
 
     const games = {};
 
     gameTypes.forEach((gameType) => {
         const row =
-            rows.find(
+            roomRows.find(
                 (item) =>
                     String(item.game_type) ===
                     gameType
@@ -310,20 +324,21 @@ COALESCE(
             /*
              * কোনো game_rooms record না থাকলে
              * game-এর নিজস্ব room module চলবে।
-             *
-             * Record থাকলে অন্তত একটি waiting
-             * অথবা running room থাকতে হবে।
              */
             available:
                 totalRooms === 0 ||
                 availableRooms > 0,
 
             totalRooms,
+
             availableRooms,
 
-            activePlayers: Number(
-                row?.active_players || 0
-            )
+            activePlayers:
+                gameType === "ludo"
+                    ? ludoActivePlayers
+                    : Number(
+                        row?.active_players || 0
+                    )
         };
     });
 
