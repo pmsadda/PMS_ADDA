@@ -3207,6 +3207,26 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       socket.on(
+  "account:blocked",
+  (payload = {}) => {
+    window.alert(
+      payload.message ||
+      "Your account has been banned.",
+    );
+
+    if (
+      typeof window.AUTH_SESSION
+        ?.logout === "function"
+    ) {
+      window.AUTH_SESSION.logout();
+      return;
+    }
+
+    redirectToLogin();
+  },
+);
+
+      socket.on(
         "disconnect",
         (reason) => {
           state.socketConnected =

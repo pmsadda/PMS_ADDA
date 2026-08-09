@@ -31,13 +31,13 @@ function disconnectBannedUserSockets(
 
     return 0;
   }
-
-  const namespaceNames = [
-    "/teenpatti",
-    "/poker",
-    "/ludo",
-    "/support",
-  ];
+const namespaceNames = [
+  "/teenpatti",
+  "/poker",
+  "/ludo",
+  "/support",
+  "/lottery",
+];
 
   const disconnectedSocketIds =
     new Set();
