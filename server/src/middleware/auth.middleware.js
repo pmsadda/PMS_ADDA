@@ -13,108 +13,182 @@ const {
    Verify Access Token
 ========================== */
 
-function requireAuth(
+async function requireAuth(
   request,
   response,
-  next
+  next,
 ) {
+  const authorization =
+    request.headers.authorization ||
+    "";
+
+  const [
+    scheme,
+    token,
+  ] = authorization.split(" ");
+
+  if (
+    scheme !== "Bearer" ||
+    !token
+  ) {
+    return response
+      .status(401)
+      .json({
+        success: false,
+
+        code:
+          "AUTH_TOKEN_REQUIRED",
+
+        message:
+          "Authentication token is required.",
+      });
+  }
+
+  let decoded;
+
   try {
-    const authorization =
-      request.headers.authorization ||
-      "";
-
-    const [
-      scheme,
-      token
-    ] =
-      authorization.split(" ");
-
-    if (
-      scheme !== "Bearer" ||
-      !token
-    ) {
-      return response
-        .status(401)
-        .json({
-          success: false,
-
-          message:
-            "Authentication token is required."
-        });
-    }
-
-    const decoded =
-      jwt.verify(
-        token,
-        process.env.JWT_SECRET,
-        {
-          algorithms: [
-            "HS256"
-          ]
-        }
-      );
-
-    const userId =
-      Number.parseInt(
-        decoded.id,
-        10
-      );
-
-    if (
-      !Number.isInteger(userId) ||
-      userId < 1
-    ) {
-      return response
-        .status(401)
-        .json({
-          success: false,
-
-          message:
-            "Invalid authentication token."
-        });
-    }
-
-    request.user = {
-      id: userId,
-
-      uid:
-        decoded.uid ||
-        null,
-
-      role:
-        String(
-          decoded.role || ""
-        )
-          .trim()
-          .toLowerCase()
-    };
-
-    request.accessToken =
-      token;
-
-    next();
+    decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET,
+      {
+        algorithms: [
+          "HS256",
+        ],
+      },
+    );
   } catch (error) {
-    if (
+    const tokenExpired =
       error.name ===
-      "TokenExpiredError"
-    ) {
-      return response
-        .status(401)
-        .json({
-          success: false,
-
-          message:
-            "Your login session has expired."
-        });
-    }
+      "TokenExpiredError";
 
     return response
       .status(401)
       .json({
         success: false,
 
+        code:
+          tokenExpired
+            ? "AUTH_TOKEN_EXPIRED"
+            : "AUTH_TOKEN_INVALID",
+
         message:
-          "Invalid authentication token."
+          tokenExpired
+            ? "Your login session has expired."
+            : "Invalid authentication token.",
+      });
+  }
+
+  const userId =
+    Number.parseInt(
+      decoded.id,
+      10,
+    );
+
+  if (
+    !Number.isInteger(userId) ||
+    userId < 1
+  ) {
+    return response
+      .status(401)
+      .json({
+        success: false,
+
+        code:
+          "AUTH_USER_INVALID",
+
+        message:
+          "Invalid authentication token.",
+      });
+  }
+
+  try {
+    const [userRows] =
+      await pool.query(
+        `
+          SELECT
+            id,
+            uid,
+            role,
+            account_status
+
+          FROM users
+
+          WHERE id = ?
+
+          LIMIT 1
+        `,
+        [userId],
+      );
+
+    const user =
+      userRows[0] || null;
+
+    if (!user) {
+      return response
+        .status(401)
+        .json({
+          success: false,
+
+          code:
+            "AUTH_USER_NOT_FOUND",
+
+          message:
+            "User account was not found.",
+        });
+    }
+
+    if (
+      String(
+        user.account_status || "",
+      ).toLowerCase() !== "active"
+    ) {
+      return response
+        .status(403)
+        .json({
+          success: false,
+
+          code:
+            "ACCOUNT_INACTIVE",
+
+          message:
+            "This account is not active.",
+        });
+    }
+
+    request.user = {
+      id: Number(user.id),
+
+      uid:
+        user.uid ||
+        null,
+
+      role:
+        String(
+          user.role || ""
+        )
+          .trim()
+          .toLowerCase(),
+    };
+
+    request.accessToken = token;
+
+    return next();
+  } catch (error) {
+    console.error(
+      "LIVE AUTH DATABASE ERROR:",
+      error,
+    );
+
+    return response
+      .status(500)
+      .json({
+        success: false,
+
+        code:
+          "AUTH_DATABASE_ERROR",
+
+        message:
+          "Authentication service is temporarily unavailable.",
       });
   }
 }
