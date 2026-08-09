@@ -378,6 +378,40 @@ const POKER_GAME = {
       this.setRoundStatus(error.message || "Unable to connect.");
     });
 
+    this.socket.on(
+  "account:blocked",
+  (payload = {}) => {
+    window.alert(
+      payload.message ||
+      "Your account has been banned.",
+    );
+
+    if (
+      typeof window.AUTH_SESSION
+        ?.logout === "function"
+    ) {
+      window.AUTH_SESSION.logout();
+      return;
+    }
+
+    [
+      "access_token",
+      "token",
+      "refresh_token",
+      "current_user",
+      "user",
+      "user_id",
+    ].forEach((key) => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+
+    window.location.replace(
+      "login.html",
+    );
+  },
+);
+
     this.socket.on("disconnect", () => {
       this.setConnection("Reconnecting…", false);
 

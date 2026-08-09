@@ -2624,6 +2624,18 @@
 
     state.socket.on("support:update", scheduleRealtimeRefresh);
 
+    state.socket.on(
+  "account:blocked",
+  (payload = {}) => {
+    window.alert(
+      payload.message ||
+      "Your admin account is not active.",
+    );
+
+    clearLoginSession();
+  },
+);
+
     state.socket.on("disconnect", () => {
       startAutomaticRefresh();
     });

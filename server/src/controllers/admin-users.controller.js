@@ -18,6 +18,84 @@ function parseUserId(value) {
   return userId;
 }
 
+function disconnectBannedUserSockets(
+  request,
+  userId,
+) {
+  const io = request.app.get("io");
+
+  if (!io) {
+    console.warn(
+      "Socket.IO instance is unavailable.",
+    );
+
+    return 0;
+  }
+
+  const namespaceNames = [
+    "/teenpatti",
+    "/poker",
+    "/ludo",
+    "/support",
+  ];
+
+  const disconnectedSocketIds =
+    new Set();
+
+  for (
+    const namespaceName
+    of namespaceNames
+  ) {
+    const namespace =
+      io.of(namespaceName);
+
+    for (
+      const socket
+      of namespace.sockets.values()
+    ) {
+      if (
+        Number(socket.user?.id) !==
+        Number(userId)
+      ) {
+        continue;
+      }
+
+      if (
+        disconnectedSocketIds.has(
+          socket.id,
+        )
+      ) {
+        continue;
+      }
+
+      disconnectedSocketIds.add(
+        socket.id,
+      );
+
+      socket.emit(
+        "account:blocked",
+        {
+          success: false,
+
+          code:
+            "ACCOUNT_BANNED",
+
+          message:
+            "Your account has been banned.",
+        },
+      );
+
+      /*
+       * true দিলে underlying connection-সহ
+       * সব namespace থেকে disconnect হবে।
+       */
+      socket.disconnect(true);
+    }
+  }
+
+  return disconnectedSocketIds.size;
+}
+
 async function getUserSummary(req, res) {
   try {
     const summary =
@@ -183,6 +261,16 @@ async function updateUserStatus(req, res) {
           accountStatus
         );
 
+        let disconnectedSockets = 0;
+
+if (accountStatus === "banned") {
+  disconnectedSockets =
+    disconnectBannedUserSockets(
+      req,
+      userId,
+    );
+}
+
     return res.status(200).json({
       success: true,
 
@@ -192,8 +280,10 @@ async function updateUserStatus(req, res) {
           : "User activated successfully.",
 
       data: {
-        user: updatedUser
-      }
+  user: updatedUser,
+
+  disconnectedSockets,
+}
     });
   } catch (error) {
     console.error(
