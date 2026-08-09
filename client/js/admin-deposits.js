@@ -549,8 +549,12 @@ function normalizePaymentManagement(
   [];
 
   const methodGroups =
-    Array.isArray(data.methods)
-      ? data.methods
+  Array.isArray(data.methods)
+    ? data.methods
+    : Array.isArray(
+        data.paymentMethods,
+      )
+      ? data.paymentMethods
       : [];
 
   if (
@@ -588,19 +592,28 @@ function normalizePaymentManagement(
             methodGroup?.method || "",
           ).toLowerCase();
 
-        const rotation =
-          methodGroup?.rotation ||
-          methodGroup?.paymentRotation;
+        const nestedRotation =
+  methodGroup?.rotation ||
+  methodGroup?.paymentRotation;
 
-        if (!rotation) {
-          return null;
-        }
+const rotation =
+  nestedRotation ||
+  (
+    methodGroup?.rotationMode
+      ? methodGroup
+      : null
+  );
 
-        return {
-          ...rotation,
-          method:
-            rotation?.method || method,
-        };
+if (!rotation) {
+  return null;
+}
+
+return {
+  ...rotation,
+
+  method:
+    rotation?.method || method,
+};
       })
       .filter(Boolean);
   }
