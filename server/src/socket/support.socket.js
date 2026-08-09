@@ -2,63 +2,154 @@
 
 const jwt = require("jsonwebtoken");
 
-function authenticateSupportSocket(socket, next) {
-  try {
-    const headerToken = socket.handshake.headers?.authorization?.replace(
-      /^Bearer\s+/i,
-      "",
-    );
+const {
+  pool,
+} = require("../config/database");
 
-    const token = socket.handshake.auth?.token || headerToken;
+async function authenticateSupportSocket(
+  socket,
+  next,
+) {
+  try {
+    const headerToken =
+      socket.handshake.headers
+        ?.authorization
+        ?.replace(
+          /^Bearer\s+/i,
+          "",
+        );
+
+    const token =
+      socket.handshake.auth?.token ||
+      headerToken;
 
     if (!token) {
-      const error = new Error("Authentication token is required.");
+      const error = new Error(
+        "Authentication token is required.",
+      );
 
       error.data = {
         statusCode: 401,
+        code: "SOCKET_TOKEN_REQUIRED",
       };
 
       return next(error);
     }
 
-    const decoded =
-  jwt.verify(
-    token,
-    process.env.JWT_SECRET,
-    {
-      algorithms: [
-        "HS256",
-      ],
-    },
-  );
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET,
+      {
+        algorithms: ["HS256"],
+      },
+    );
 
     const userId = Number(decoded.id);
 
-    if (!Number.isInteger(userId) || userId < 1) {
-      const error = new Error("Invalid authentication token.");
+    if (
+      !Number.isInteger(userId) ||
+      userId <= 0
+    ) {
+      const error = new Error(
+        "Invalid authentication token.",
+      );
 
       error.data = {
         statusCode: 401,
+        code: "SOCKET_USER_INVALID",
+      };
+
+      return next(error);
+    }
+
+    const [userRows] =
+      await pool.query(
+        `
+          SELECT
+            id,
+            uid,
+            role,
+            account_status
+
+          FROM users
+
+          WHERE id = ?
+
+          LIMIT 1
+        `,
+        [userId],
+      );
+
+    const user = userRows[0] || null;
+
+    if (!user) {
+      const error = new Error(
+        "User account was not found.",
+      );
+
+      error.data = {
+        statusCode: 401,
+        code: "SOCKET_USER_NOT_FOUND",
+      };
+
+      return next(error);
+    }
+
+    if (
+      String(
+        user.account_status || "",
+      ).toLowerCase() !== "active"
+    ) {
+      const error = new Error(
+        "This account is not active.",
+      );
+
+      error.data = {
+        statusCode: 403,
+        code: "SOCKET_ACCOUNT_INACTIVE",
       };
 
       return next(error);
     }
 
     socket.user = {
-      id: userId,
-      uid: decoded.uid,
-      role: decoded.role,
+      id: Number(user.id),
+      uid: user.uid || null,
+      role: String(
+        user.role || "user",
+      ).toLowerCase(),
     };
 
     return next();
-  } catch {
-    const error = new Error("Invalid or expired authentication token.");
+  } catch (error) {
+    console.error(
+      "SUPPORT SOCKET AUTH ERROR:",
+      error.message,
+    );
 
-    error.data = {
-      statusCode: 401,
+    const isTokenError = [
+      "JsonWebTokenError",
+      "TokenExpiredError",
+      "NotBeforeError",
+    ].includes(error.name);
+
+    const socketError = new Error(
+      isTokenError
+        ? "Invalid or expired authentication token."
+        : "Socket authentication is temporarily unavailable.",
+    );
+
+    socketError.data = {
+      statusCode:
+        isTokenError ? 401 : 500,
+
+      code:
+        isTokenError
+          ? "SOCKET_AUTH_FAILED"
+          : "SOCKET_AUTH_DATABASE_ERROR",
     };
 
-    return next(error);
+    return next(socketError);
   }
 }
 
