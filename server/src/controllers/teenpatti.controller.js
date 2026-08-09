@@ -2,16 +2,53 @@
 
 const teenPattiService = require("../services/teenpatti.service");
 
-function sendControllerError(response, error, fallbackMessage) {
-  const statusCode = Number(error.statusCode || error.status) || 500;
+function sendControllerError(
+  response,
+  error,
+  fallbackMessage,
+) {
+  const requestedStatus =
+    Number(
+      error?.statusCode ||
+      error?.status,
+    );
 
-  return response.status(statusCode).json({
-    success: false,
+  /*
+   * শুধু controlled 4xx service error
+   * client-কে দেখানো হবে।
+   *
+   * Database, SQL বা unexpected 5xx error-এর
+   * internal message কখনো browser-এ যাবে না।
+   */
+  const statusCode =
+    requestedStatus >= 400 &&
+    requestedStatus < 500
+      ? requestedStatus
+      : 500;
 
-    code: error.code || "TEEN_PATTI_REQUEST_FAILED",
+  const publicCode =
+    statusCode === 500
+      ? "TEEN_PATTI_INTERNAL_ERROR"
+      : (
+          error?.code ||
+          "TEEN_PATTI_REQUEST_FAILED"
+        );
 
-    message: error.message || fallbackMessage,
-  });
+  const publicMessage =
+    statusCode === 500
+      ? fallbackMessage
+      : (
+          error?.message ||
+          fallbackMessage
+        );
+
+  return response
+    .status(statusCode)
+    .json({
+      success: false,
+      code: publicCode,
+      message: publicMessage,
+    });
 }
 
 /* =========================================================

@@ -3,6 +3,48 @@
 const ludoService =
   require("../services/ludo.service");
 
+  function sendLudoControllerError(
+  response,
+  error,
+  fallbackMessage,
+) {
+  const requestedStatus =
+    Number(
+      error?.statusCode ||
+      error?.status,
+    );
+
+  const statusCode =
+    requestedStatus >= 400 &&
+    requestedStatus < 500
+      ? requestedStatus
+      : 500;
+
+  const publicMessage =
+    statusCode === 500
+      ? fallbackMessage
+      : (
+          error?.message ||
+          fallbackMessage
+        );
+
+  return response
+    .status(statusCode)
+    .json({
+      success: false,
+
+      code:
+        statusCode === 500
+          ? "LUDO_INTERNAL_ERROR"
+          : (
+              error?.code ||
+              "LUDO_REQUEST_FAILED"
+            ),
+
+      message: publicMessage,
+    });
+}
+
 
   /* ==========================================
    Get Available Ludo Rooms
@@ -35,19 +77,11 @@ async function getAvailableRooms(
       error,
     );
 
-    return res
-      .status(
-        error.statusCode ||
-          error.status ||
-          500,
-      )
-      .json({
-        success: false,
-
-        message:
-          error.message ||
-          "Unable to load Ludo rooms.",
-      });
+    return sendLudoControllerError(
+  res,
+  error,
+  "Unable to load Ludo rooms.",
+);
   }
 }
 
@@ -91,19 +125,11 @@ async function joinMatchmaking(
       error
     );
 
-    return res
-      .status(
-        error.statusCode ||
-          error.status ||
-          500
-      )
-      .json({
-        success: false,
-
-        message:
-          error.message ||
-          "Ludo matchmaking failed.",
-      });
+    return sendLudoControllerError(
+  res,
+  error,
+  "Ludo matchmaking failed.",
+);
   }
 }
 
@@ -138,19 +164,11 @@ async function getMatchState(
       error
     );
 
-    return res
-      .status(
-        error.statusCode ||
-          error.status ||
-          500
-      )
-      .json({
-        success: false,
-
-        message:
-          error.message ||
-          "Unable to load Ludo match.",
-      });
+    return sendLudoControllerError(
+  res,
+  error,
+  "Unable to load Ludo match.",
+);
   }
 }
 

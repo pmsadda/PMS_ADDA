@@ -13,13 +13,20 @@ function sendControllerError(
   response,
   error,
   fallbackMessage,
+  fallbackCode =
+    "LOTTERY_REQUEST_FAILED",
 ) {
-  const statusCode =
+  const requestedStatus =
     Number(
-      error.statusCode ||
-        error.status ||
-        500,
+      error?.statusCode ||
+      error?.status,
     );
+
+  const statusCode =
+    requestedStatus >= 400 &&
+    requestedStatus < 500
+      ? requestedStatus
+      : 500;
 
   return response
     .status(statusCode)
@@ -27,12 +34,20 @@ function sendControllerError(
       success: false,
 
       message:
-        error.message ||
-        fallbackMessage,
+        statusCode === 500
+          ? fallbackMessage
+          : (
+              error?.message ||
+              fallbackMessage
+            ),
 
       code:
-        error.code ||
-        "LOTTERY_REQUEST_FAILED",
+        statusCode === 500
+          ? "LOTTERY_INTERNAL_ERROR"
+          : (
+              error?.code ||
+              fallbackCode
+            ),
     });
 }
 
@@ -248,23 +263,12 @@ async function purchaseTickets(
       error,
     );
 
-    return response
-      .status(
-        error.statusCode ||
-          error.status ||
-          500,
-      )
-      .json({
-        success: false,
-
-        code:
-          error.code ||
-          "LOTTERY_PURCHASE_ERROR",
-
-        message:
-          error.message ||
-          "Lottery ticket purchase failed.",
-      });
+   return sendControllerError(
+  response,
+  error,
+  "Lottery ticket purchase failed.",
+  "LOTTERY_PURCHASE_ERROR",
+);
   }
 }
 
@@ -301,23 +305,12 @@ async function cancelTicket(
       error,
     );
 
-    return response
-      .status(
-        error.statusCode ||
-          error.status ||
-          500,
-      )
-      .json({
-        success: false,
-
-        code:
-          error.code ||
-          "LOTTERY_CANCEL_ERROR",
-
-        message:
-          error.message ||
-          "Lottery ticket cancellation failed.",
-      });
+    return sendControllerError(
+  response,
+  error,
+  "Lottery ticket cancellation failed.",
+  "LOTTERY_CANCEL_ERROR",
+);
   }
 }
 

@@ -4,6 +4,48 @@ const pokerService = require("../services/poker.service");
 
 const { publishPokerExitFromHttp } = require("../socket/poker.socket");
 
+function sendPokerControllerError(
+  response,
+  error,
+  fallbackMessage,
+) {
+  const requestedStatus =
+    Number(
+      error?.statusCode ||
+      error?.status,
+    );
+
+  const statusCode =
+    requestedStatus >= 400 &&
+    requestedStatus < 500
+      ? requestedStatus
+      : 500;
+
+  const publicMessage =
+    statusCode === 500
+      ? fallbackMessage
+      : (
+          error?.message ||
+          fallbackMessage
+        );
+
+  return response
+    .status(statusCode)
+    .json({
+      success: false,
+
+      code:
+        statusCode === 500
+          ? "POKER_INTERNAL_ERROR"
+          : (
+              error?.code ||
+              "POKER_REQUEST_FAILED"
+            ),
+
+      message: publicMessage,
+    });
+}
+
 async function joinMatchmaking(req, res) {
   try {
     const userId = req.user.id;
@@ -28,11 +70,11 @@ async function joinMatchmaking(req, res) {
   } catch (error) {
     console.error("POKER MATCHMAKING ERROR:", error);
 
-    return res.status(error.statusCode || error.status || 500).json({
-      success: false,
-
-      message: error.message || "Poker matchmaking failed.",
-    });
+   return sendPokerControllerError(
+  res,
+  error,
+  "Poker matchmaking failed.",
+);
   }
 }
 
@@ -47,11 +89,11 @@ async function getTableState(req, res) {
   } catch (error) {
     console.error("GET POKER TABLE ERROR:", error);
 
-    return res.status(error.statusCode || error.status || 500).json({
-      success: false,
-
-      message: error.message || "Unable to load Poker table.",
-    });
+    return sendPokerControllerError(
+  res,
+  error,
+  "Unable to load Poker table.",
+);
   }
 }
 
@@ -82,10 +124,11 @@ async function exitTable(req, res) {
   } catch (error) {
     console.error("POKER TABLE EXIT ERROR:", error);
 
-    return res.status(error.statusCode || error.status || 500).json({
-      success: false,
-      message: error.message || "Unable to exit Poker table.",
-    });
+    return sendPokerControllerError(
+  res,
+  error,
+  "Unable to exit Poker table.",
+);
   }
 }
 

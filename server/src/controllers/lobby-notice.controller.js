@@ -5,27 +5,47 @@ const lobbyNoticeService = require(
 );
 
 function sendError(
-  res,
+  response,
   error,
   fallbackMessage,
 ) {
   console.error(
-    "Lobby notice controller error:",
+    "LOBBY NOTICE CONTROLLER ERROR:",
     error,
   );
 
-  return res
-    .status(error.statusCode || 500)
+  const requestedStatus =
+    Number(
+      error?.statusCode ||
+      error?.status,
+    );
+
+  const statusCode =
+    requestedStatus >= 400 &&
+    requestedStatus < 500
+      ? requestedStatus
+      : 500;
+
+  return response
+    .status(statusCode)
     .json({
       success: false,
 
       message:
-        error.message ||
-        fallbackMessage,
+        statusCode === 500
+          ? fallbackMessage
+          : (
+              error?.message ||
+              fallbackMessage
+            ),
 
       code:
-        error.code ||
-        "LOBBY_NOTICE_ERROR",
+        statusCode === 500
+          ? "LOBBY_NOTICE_INTERNAL_ERROR"
+          : (
+              error?.code ||
+              "LOBBY_NOTICE_ERROR"
+            ),
     });
 }
 
