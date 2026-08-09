@@ -251,7 +251,10 @@ function normalizeSupportAttachments(files = []) {
       );
     }
 
-    const fileSize = Number(file?.size || 0);
+    const fileSize =
+  Buffer.isBuffer(file?.buffer)
+    ? file.buffer.length
+    : 0;
 
     if (
       !Number.isInteger(fileSize) ||
