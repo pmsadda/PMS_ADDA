@@ -201,6 +201,62 @@ function normalizeTargetUrl(value) {
   return parsedUrl.toString();
 }
 
+function detectBannerImageMimeType(
+  buffer,
+) {
+  if (
+    !Buffer.isBuffer(buffer) ||
+    buffer.length < 12
+  ) {
+    return null;
+  }
+
+  if (
+    buffer[0] === 0xff &&
+    buffer[1] === 0xd8 &&
+    buffer[2] === 0xff
+  ) {
+    return "image/jpeg";
+  }
+
+  const pngSignature = [
+    0x89,
+    0x50,
+    0x4e,
+    0x47,
+    0x0d,
+    0x0a,
+    0x1a,
+    0x0a,
+  ];
+
+  if (
+    pngSignature.every(
+      (byte, index) =>
+        buffer[index] === byte,
+    )
+  ) {
+    return "image/png";
+  }
+
+  if (
+    buffer.toString(
+      "ascii",
+      0,
+      4,
+    ) === "RIFF" &&
+    buffer.toString(
+      "ascii",
+      8,
+      12,
+    ) === "WEBP"
+  ) {
+    return "image/webp";
+  }
+
+  return null;
+}
+
 function validateUploadedImage(
   file,
 ) {
@@ -221,11 +277,35 @@ function validateUploadedImage(
     );
   }
 
+  const declaredMimeType =
+  String(
+    file.mimetype || "",
+  )
+    .trim()
+    .toLowerCase();
+
   if (
     !ALLOWED_IMAGE_TYPES.has(
       file.mimetype,
     )
   ) {
+
+    const detectedMimeType =
+  detectBannerImageMimeType(
+    file.buffer,
+  );
+
+if (
+  !detectedMimeType ||
+  detectedMimeType !==
+    declaredMimeType
+) {
+  throw createServiceError(
+    "Banner image content does not match its declared image type.",
+    400,
+    "BANNER_IMAGE_SIGNATURE_MISMATCH",
+  );
+}
     throw createServiceError(
       "Only JPG, PNG and WebP banner images are allowed.",
       400,
@@ -252,7 +332,7 @@ function validateUploadedImage(
       ).slice(0, 255),
 
     mimeType:
-      file.mimetype,
+  detectedMimeType,
 
     imageSize:
       file.buffer.length,

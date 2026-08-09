@@ -8,6 +8,62 @@ const {
 
 const AVATAR_PUBLIC_PATH = "/uploads/avatars";
 
+const detectAvatarMimeType = (
+  buffer,
+) => {
+  if (
+    !Buffer.isBuffer(buffer) ||
+    buffer.length < 12
+  ) {
+    return null;
+  }
+
+  if (
+    buffer[0] === 0xff &&
+    buffer[1] === 0xd8 &&
+    buffer[2] === 0xff
+  ) {
+    return "image/jpeg";
+  }
+
+  const pngSignature = [
+    0x89,
+    0x50,
+    0x4e,
+    0x47,
+    0x0d,
+    0x0a,
+    0x1a,
+    0x0a,
+  ];
+
+  if (
+    pngSignature.every(
+      (byte, index) =>
+        buffer[index] === byte,
+    )
+  ) {
+    return "image/png";
+  }
+
+  if (
+    buffer.toString(
+      "ascii",
+      0,
+      4,
+    ) === "RIFF" &&
+    buffer.toString(
+      "ascii",
+      8,
+      12,
+    ) === "WEBP"
+  ) {
+    return "image/webp";
+  }
+
+  return null;
+};
+
 const deleteAvatarFile = async (avatarUrl) => {
   if (
     typeof avatarUrl !== "string" ||
@@ -49,6 +105,45 @@ const uploadProfileAvatar = async (request, response, next) => {
         message: "Please select a JPG, PNG or WEBP profile picture.",
       });
     }
+
+    const uploadedBuffer =
+  await fs.readFile(
+    uploadedFile.path,
+  );
+
+const declaredMimeType =
+  String(
+    uploadedFile.mimetype || "",
+  )
+    .trim()
+    .toLowerCase();
+
+const detectedMimeType =
+  detectAvatarMimeType(
+    uploadedBuffer,
+  );
+
+if (
+  !detectedMimeType ||
+  detectedMimeType !==
+    declaredMimeType
+) {
+  await fs
+    .unlink(uploadedFile.path)
+    .catch(() => {});
+
+  return response
+    .status(400)
+    .json({
+      success: false,
+
+      code:
+        "AVATAR_SIGNATURE_MISMATCH",
+
+      message:
+        "Profile picture content does not match its image type.",
+    });
+}
 
     const userId = Number(request.user.id);
     const avatarUrl = `${AVATAR_PUBLIC_PATH}/${uploadedFile.filename}`;
