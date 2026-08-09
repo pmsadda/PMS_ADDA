@@ -2,6 +2,24 @@
 
 require("dotenv").config();
 
+/*
+ * Server কখনো missing অথবা দুর্বল JWT secret
+ * নিয়ে চালু হবে না।
+ *
+ * Secret-এর value log করা হবে না।
+ */
+const jwtSecret =
+  String(
+    process.env.JWT_SECRET ||
+    "",
+  );
+
+if (jwtSecret.length < 64) {
+  throw new Error(
+    "JWT_SECRET must contain at least 64 characters.",
+  );
+}
+
 const http = require("http");
 const { Server } = require("socket.io");
 
