@@ -17,11 +17,9 @@ const { initializePokerSocket } = require("./src/socket/poker.socket");
 
 const { initializeSupportSocket } = require("./src/socket/support.socket");
 
-const {
-  initializeLotterySocket,
-} = require(
-  "./src/socket/lottery.socket",
-);
+const { initializeCarromSocket } = require("./src/socket/carrom.socket");
+
+const { initializeLotterySocket } = require("./src/socket/lottery.socket");
 
 const PORT = Number(process.env.PORT) || 5000;
 
@@ -54,10 +52,7 @@ const io = new Server(httpServer, {
    * allowRequest also rejects disallowed Socket.IO handshakes.
    */
   allowRequest(request, callback) {
-    callback(
-      null,
-      isCorsOriginAllowed(request.headers.origin),
-    );
+    callback(null, isCorsOriginAllowed(request.headers.origin));
   },
 });
 
@@ -70,6 +65,13 @@ initializeTeenPattiSocket(io);
 initializeLudoSocket(io);
 initializePokerSocket(io);
 initializeSupportSocket(io);
+const carromSocket =
+  initializeCarromSocket(io);
+
+app.set(
+  "carromSocket",
+  carromSocket,
+);
 initializeLotterySocket(io);
 
 /*
@@ -79,10 +81,10 @@ async function startServer() {
   try {
     await testDatabaseConnection();
 
-   httpServer.listen(PORT, HOST, () => {
-  console.log(`🚀 PMS ADDA Server Running at http://${HOST}:${PORT}`);
-  console.log(`🔌 Socket.IO Running on Port ${PORT}`);
-});
+    httpServer.listen(PORT, HOST, () => {
+      console.log(`🚀 PMS ADDA Server Running at http://${HOST}:${PORT}`);
+      console.log(`🔌 Socket.IO Running on Port ${PORT}`);
+    });
   } catch (error) {
     console.error("❌ SERVER START ERROR:", error);
 

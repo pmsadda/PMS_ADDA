@@ -91,6 +91,31 @@ async function joinMatchmaking(
           request.body?.roomId,
         );
 
+        const carromSocket =
+  request.app.get(
+    "carromSocket",
+  );
+
+if (
+  data?.match?.status ===
+  "waiting"
+) {
+  carromSocket
+    ?.scheduleBotMatchmaking(
+      data,
+    );
+}
+
+if (
+  data?.match?.status ===
+  "countdown"
+) {
+  carromSocket
+    ?.scheduleMatchStart(
+      data,
+    );
+}
+
     return response
       .status(200)
       .json({

@@ -239,6 +239,10 @@ playerMode: 2,
 
 matchPollTimerId: null,
 
+socket: null,
+
+socketConnected: false,
+
 toastTimerId: null,
     frontendDemo: true,
   };
@@ -1674,9 +1678,226 @@ if (state.matchPollTimerId) {
     null;
 }
 
+if (state.socket) {
+  state.socket.disconnect();
+
+  state.socket = null;
+}
+
 state.engine?.destroy();
     },
   );
+
+  /* ==================================
+   Carrom Socket.IO
+================================== */
+
+function joinCarromSocketMatch() {
+  if (
+    !state.socket ||
+    !state.socketConnected ||
+    !state.matchId
+  ) {
+    return;
+  }
+
+  state.socket.emit(
+    "match:join",
+    {
+      matchId:
+        state.matchId,
+    },
+    (result) => {
+      if (!result?.success) {
+        showToast(
+          result?.message ||
+          "Unable to join live Carrom match.",
+          "error",
+        );
+
+        return;
+      }
+
+      if (result.data) {
+        applyCarromMatchState(
+          result.data,
+        );
+
+        renderRealMatchState();
+      }
+    },
+  );
+}
+
+function initializeCarromSocket() {
+  if (
+    typeof window.io !==
+    "function"
+  ) {
+    console.warn(
+      "Socket.IO client is unavailable.",
+    );
+
+    return;
+  }
+
+  if (state.socket) {
+    state.socket.disconnect();
+
+    state.socket = null;
+  }
+
+  state.socket =
+    window.io(
+      `${APP_CONFIG.SERVER_URL}/carrom`,
+      {
+        auth: {
+          token:
+            getAccessToken(),
+        },
+
+        transports: [
+          "websocket",
+          "polling",
+        ],
+
+        reconnection:
+          true,
+
+        reconnectionAttempts:
+          Infinity,
+
+        reconnectionDelay:
+          1000,
+
+        reconnectionDelayMax:
+          5000,
+
+        timeout:
+          15000,
+      },
+    );
+
+  state.socket.on(
+    "connect",
+    () => {
+      state.socketConnected =
+        true;
+
+      if (
+        elements.liveStatusText
+      ) {
+        elements
+          .liveStatusText
+          .textContent =
+          "Live Connected";
+      }
+
+      elements.liveStatusDot
+        ?.classList.remove(
+          "is-offline",
+        );
+
+      joinCarromSocketMatch();
+    },
+  );
+
+  state.socket.on(
+    "disconnect",
+    () => {
+      state.socketConnected =
+        false;
+
+      if (
+        elements.liveStatusText
+      ) {
+        elements
+          .liveStatusText
+          .textContent =
+          "Reconnecting...";
+      }
+
+      elements.liveStatusDot
+        ?.classList.add(
+          "is-offline",
+        );
+    },
+  );
+
+  state.socket.on(
+    "connect_error",
+    (error) => {
+      console.error(
+        "CARROM SOCKET CONNECTION ERROR:",
+        error,
+      );
+    },
+  );
+
+  state.socket.on(
+    "match:state",
+    (matchState) => {
+      try {
+        applyCarromMatchState(
+          matchState,
+        );
+
+        renderRealMatchState();
+      } catch (error) {
+        console.error(
+          "CARROM SOCKET STATE ERROR:",
+          error,
+        );
+      }
+    },
+  );
+
+  state.socket.on(
+    "match:bots-joined",
+    (payload) => {
+      const botCount =
+        Array.isArray(
+          payload?.bots,
+        )
+          ? payload.bots.length
+          : 0;
+
+      showToast(
+        botCount > 0
+          ? `${botCount} player joined the match.`
+          : "Players joined the match.",
+        "success",
+      );
+    },
+  );
+
+  state.socket.on(
+    "match:started",
+    (matchState) => {
+      applyCarromMatchState(
+        matchState,
+      );
+
+      renderRealMatchState();
+
+      showToast(
+        "Carrom match started.",
+        "success",
+      );
+    },
+  );
+
+  state.socket.on(
+    "match:error",
+    (error) => {
+      showToast(
+        error?.message ||
+        "Carrom live match error.",
+        "error",
+      );
+    },
+  );
+}
 
   /* ==================================
    Start Real Carrom Match
@@ -1893,7 +2114,9 @@ async function initializeRealCarromTable() {
 
     renderRealMatchState();
 
-    initializeEngine();
+initializeCarromSocket();
+
+initializeEngine();
 
     stopTurnTimer();
 

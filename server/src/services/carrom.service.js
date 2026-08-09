@@ -1057,18 +1057,20 @@ async function cleanupExpiredCarromMatches(
       "Room ID",
     );
 
-  const [expiredRows] =
+  const [expiredMatches] =
     await connection.query(
       `
         SELECT
-          id
+          *
 
         FROM carrom_matches
 
         WHERE room_id = ?
-          AND match_status = 'waiting'
+          AND match_status =
+              'waiting'
           AND entry_collected = 0
-          AND matchmaking_expires_at <= NOW()
+          AND matchmaking_expires_at
+              <= NOW()
 
         ORDER BY id ASC
 
@@ -1079,69 +1081,99 @@ async function cleanupExpiredCarromMatches(
       ],
     );
 
-  if (!expiredRows.length) {
-    return [];
-  }
+  const results = [];
 
-  const expiredMatchIds =
-    expiredRows.map(
-      (row) =>
-        Number(row.id),
+  for (
+    const match of
+    expiredMatches
+  ) {
+    const matchId =
+      Number(match.id);
+
+    const players =
+      await getLockedCarromMatchPlayers(
+        matchId,
+        connection,
+      );
+
+    const realPlayers =
+      players.filter(
+        (player) =>
+          Number(
+            player.is_bot,
+          ) !== 1,
+      );
+
+    if (
+      realPlayers.length === 0
+    ) {
+      await connection.query(
+        `
+          UPDATE carrom_matches
+
+          SET
+            match_status =
+              'cancelled',
+
+            current_players = 0,
+
+            cancelled_at = NOW(),
+
+            cancellation_reason =
+              'No real player remained in matchmaking.',
+
+            state_version =
+              state_version + 1
+
+          WHERE id = ?
+            AND match_status =
+                'waiting'
+            AND entry_collected = 0
+        `,
+        [
+          matchId,
+        ],
+      );
+
+      results.push({
+        matchId,
+
+        action:
+          "cancelled",
+
+        addedBots: [],
+      });
+
+      continue;
+    }
+
+    const botFillResult =
+      await addBotsToCarromMatch(
+        match,
+        connection,
+      );
+
+    await finalizeFullCarromMatch(
+      matchId,
+      connection,
+      {
+        allowExpired:
+          true,
+      },
     );
 
-  const placeholders =
-    expiredMatchIds
-      .map(() => "?")
-      .join(", ");
+    results.push({
+      matchId,
 
-  await connection.query(
-    `
-      UPDATE carrom_match_players
+      action:
+        "started_with_bots",
 
-      SET
-        player_status = 'left',
+      addedBots:
+        botFillResult.addedBots,
+    });
+  }
 
-        is_connected = 0
-
-      WHERE match_id IN (
-        ${placeholders}
-      )
-        AND player_status IN (
-          'joined',
-          'ready'
-        )
-        AND entry_status = 'pending'
-    `,
-    expiredMatchIds,
-  );
-
-  await connection.query(
-    `
-      UPDATE carrom_matches
-
-      SET
-        match_status = 'cancelled',
-
-        current_players = 0,
-
-        cancelled_at = NOW(),
-
-        cancellation_reason =
-          'Matchmaking expired before enough players joined.',
-
-        state_version =
-          state_version + 1
-
-      WHERE id IN (
-        ${placeholders}
-      )
-        AND match_status = 'waiting'
-        AND entry_collected = 0
-    `,
-    expiredMatchIds,
-  );
-
-  return expiredMatchIds;
+  return results;
 }
 
 /* ==========================================
@@ -1436,7 +1468,6 @@ async function getWaitingCarromMatch(
 /* ==========================================
    Locked Match Players
 ========================================== */
-
 async function getLockedCarromMatchPlayers(
   matchId,
   connection,
@@ -1454,6 +1485,11 @@ async function getLockedCarromMatchPlayers(
           cmp.id,
           cmp.match_id,
           cmp.user_id,
+          cmp.bot_id,
+          cmp.is_bot,
+          cmp.bot_level,
+          cmp.bot_name,
+          cmp.bot_avatar,
           cmp.seat_no,
           cmp.team_no,
           cmp.player_status,
@@ -1484,13 +1520,26 @@ async function getLockedCarromMatchPlayers(
           u.username,
           u.avatar_url,
           u.wallet_balance,
-          u.account_status
+          u.account_status,
+
+          cb.bot_code,
+          cb.bot_name AS live_bot_name,
+          cb.avatar_url AS live_bot_avatar,
+          cb.bot_level AS live_bot_level,
+          cb.status AS bot_status,
+          cb.wallet_balance AS bot_wallet_balance
 
         FROM carrom_match_players cmp
 
-        INNER JOIN users u
+        LEFT JOIN users u
           ON u.id =
              cmp.user_id
+         AND cmp.is_bot = 0
+
+        LEFT JOIN carrom_bots cb
+          ON cb.id =
+             cmp.bot_id
+         AND cmp.is_bot = 1
 
         WHERE cmp.match_id = ?
           AND cmp.player_status IN (
@@ -1735,6 +1784,597 @@ async function addPlayerToCarromMatch(
 }
 
 /* ==========================================
+   Lock Available Carrom Bots
+========================================== */
+
+async function getLockedAvailableCarromBots(
+  match,
+  requiredBotCount,
+  connection,
+) {
+  const validBotCount =
+    Number(requiredBotCount);
+
+  if (
+    !Number.isInteger(validBotCount) ||
+    validBotCount < 1
+  ) {
+    return [];
+  }
+
+  const entryAmount =
+    parseMoney(
+      match.entry_amount,
+    );
+
+  const [bots] =
+    await connection.query(
+      `
+        SELECT
+          cb.id,
+          cb.bot_code,
+          cb.bot_name,
+          cb.avatar_url,
+          cb.bot_level,
+          cb.status,
+          cb.wallet_balance,
+          cb.total_matches,
+          cb.total_wins,
+          cb.total_wagered,
+          cb.total_prize,
+          cb.last_used_at
+
+        FROM carrom_bots cb
+
+        WHERE cb.status = 'active'
+          AND cb.wallet_balance >= ?
+
+          AND NOT EXISTS (
+            SELECT 1
+
+            FROM carrom_match_players cmp
+
+            INNER JOIN carrom_matches cm
+              ON cm.id =
+                 cmp.match_id
+
+            WHERE cmp.bot_id =
+                  cb.id
+              AND cmp.is_bot = 1
+              AND cmp.player_status IN (
+                'joined',
+                'ready',
+                'active',
+                'disconnected'
+              )
+              AND cm.match_status IN (
+                'waiting',
+                'countdown',
+                'playing',
+                'paused',
+                'settling'
+              )
+          )
+
+        ORDER BY
+          cb.last_used_at IS NULL DESC,
+          cb.last_used_at ASC,
+          cb.total_matches ASC,
+          cb.id ASC
+
+        LIMIT ?
+
+        FOR UPDATE
+      `,
+      [
+        entryAmount,
+
+        validBotCount,
+      ],
+    );
+
+  if (
+    bots.length !==
+    validBotCount
+  ) {
+    throw createServiceError(
+      "Enough active Carrom bots are not available.",
+      409,
+      "CARROM_BOTS_NOT_AVAILABLE",
+    );
+  }
+
+  return bots;
+}
+
+/* ==========================================
+   Fill Empty Match Seats with Bots
+========================================== */
+
+async function addBotsToCarromMatch(
+  match,
+  connection,
+) {
+  const matchId =
+    parsePositiveInteger(
+      match.id,
+      "Match ID",
+    );
+
+  const playerMode =
+    parsePlayerMode(
+      match.player_mode,
+    );
+
+  const players =
+    await getLockedCarromMatchPlayers(
+      matchId,
+      connection,
+    );
+
+  const requiredBotCount =
+    Math.max(
+      0,
+      playerMode -
+      players.length,
+    );
+
+  if (requiredBotCount === 0) {
+    return {
+      addedBots: [],
+
+      players,
+    };
+  }
+
+  const bots =
+    await getLockedAvailableCarromBots(
+      match,
+      requiredBotCount,
+      connection,
+    );
+
+  const occupiedSeats =
+    players.map(
+      (player) =>
+        Number(
+          player.seat_no,
+        ),
+    );
+
+  const addedBots = [];
+
+  for (const bot of bots) {
+    const seatNo =
+      findAvailableCarromSeat(
+        playerMode,
+        occupiedSeats,
+      );
+
+    const teamNo =
+      resolveCarromTeamNo(
+        playerMode,
+        seatNo,
+      );
+
+    const [insertResult] =
+      await connection.query(
+        `
+          INSERT INTO carrom_match_players (
+            match_id,
+            user_id,
+            bot_id,
+            is_bot,
+            bot_level,
+            bot_name,
+            bot_avatar,
+            seat_no,
+            team_no,
+            player_status,
+            entry_status,
+            entry_amount,
+            turnover_applied,
+            turnover_amount,
+            prize_amount,
+            refund_amount,
+            score,
+            pocketed_coin_count,
+            foul_count,
+            queen_pocketed,
+            queen_covered,
+            is_connected,
+            joined_at,
+            last_connected_at
+          )
+          VALUES (
+            ?,
+            NULL,
+            ?,
+            1,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            'joined',
+            'pending',
+            ?,
+            0,
+            0.00,
+            0.00,
+            0.00,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            NOW(),
+            NOW()
+          )
+        `,
+        [
+          matchId,
+
+          Number(bot.id),
+
+          bot.bot_level,
+
+          bot.bot_name,
+
+          bot.avatar_url ||
+          null,
+
+          seatNo,
+
+          teamNo,
+
+          parseMoney(
+            match.entry_amount,
+          ),
+        ],
+      );
+
+    const matchPlayerId =
+      Number(
+        insertResult.insertId,
+      );
+
+    if (
+      !Number.isInteger(
+        matchPlayerId,
+      ) ||
+      matchPlayerId < 1
+    ) {
+      throw createServiceError(
+        "Unable to add Carrom bot.",
+        500,
+        "CARROM_BOT_JOIN_FAILED",
+      );
+    }
+
+    await connection.query(
+      `
+        UPDATE carrom_bots
+
+        SET
+          last_used_at = NOW()
+
+        WHERE id = ?
+      `,
+      [
+        Number(bot.id),
+      ],
+    );
+
+    occupiedSeats.push(
+      seatNo,
+    );
+
+    addedBots.push({
+      matchPlayerId,
+
+      botId:
+        Number(bot.id),
+
+      botCode:
+        bot.bot_code,
+
+      botName:
+        bot.bot_name,
+
+      botLevel:
+        bot.bot_level,
+
+      seatNo,
+
+      teamNo,
+    });
+  }
+
+  const [matchResult] =
+    await connection.query(
+      `
+        UPDATE carrom_matches
+
+        SET
+          current_players =
+            current_players + ?,
+
+          state_version =
+            state_version + 1
+
+        WHERE id = ?
+          AND match_status =
+              'waiting'
+          AND entry_collected = 0
+          AND current_players + ?
+              <= required_players
+      `,
+      [
+        addedBots.length,
+
+        matchId,
+
+        addedBots.length,
+      ],
+    );
+
+  if (
+    Number(
+      matchResult.affectedRows,
+    ) !== 1
+  ) {
+    throw createServiceError(
+      "Unable to update Carrom bot player count.",
+      409,
+      "CARROM_BOT_COUNT_UPDATE_FAILED",
+    );
+  }
+
+  const updatedPlayers =
+    await getLockedCarromMatchPlayers(
+      matchId,
+      connection,
+    );
+
+  return {
+    addedBots,
+
+    players:
+      updatedPlayers,
+  };
+}
+
+/* ==========================================
+   Carrom Bot Entry Debit
+========================================== */
+
+async function debitCarromBotEntry(
+  match,
+  player,
+  connection,
+) {
+  const botId =
+    parsePositiveInteger(
+      player.bot_id,
+      "Bot ID",
+    );
+
+  const matchPlayerId =
+    parsePositiveInteger(
+      player.id,
+      "Match Player ID",
+    );
+
+  const entryAmount =
+    parseMoney(
+      player.entry_amount,
+    );
+
+  const balanceBefore =
+    parseMoney(
+      player.bot_wallet_balance,
+    );
+
+  if (
+    String(
+      player.bot_status ||
+      "",
+    ).toLowerCase() !==
+      "active"
+  ) {
+    throw createServiceError(
+      "Selected Carrom bot is not active.",
+      409,
+      "CARROM_BOT_NOT_ACTIVE",
+    );
+  }
+
+  if (
+    balanceBefore <
+    entryAmount
+  ) {
+    throw createServiceError(
+      "Selected Carrom bot has insufficient balance.",
+      409,
+      "CARROM_BOT_INSUFFICIENT_BALANCE",
+    );
+  }
+
+  const balanceAfter =
+    parseMoney(
+      balanceBefore -
+      entryAmount,
+    );
+
+  const transactionId =
+    createCarromWalletTransactionId(
+      "CRBBUY",
+    );
+
+  const [botResult] =
+    await connection.query(
+      `
+        UPDATE carrom_bots
+
+        SET
+          wallet_balance =
+            wallet_balance - ?,
+
+          total_matches =
+            total_matches + 1,
+
+          total_wagered =
+            total_wagered + ?,
+
+          last_used_at =
+            NOW()
+
+        WHERE id = ?
+          AND status = 'active'
+          AND wallet_balance >= ?
+      `,
+      [
+        entryAmount,
+
+        entryAmount,
+
+        botId,
+
+        entryAmount,
+      ],
+    );
+
+  if (
+    Number(
+      botResult.affectedRows,
+    ) !== 1
+  ) {
+    throw createServiceError(
+      "Unable to debit Carrom bot entry.",
+      409,
+      "CARROM_BOT_ENTRY_DEBIT_FAILED",
+    );
+  }
+
+  await connection.query(
+    `
+      INSERT INTO carrom_bot_transactions (
+        transaction_id,
+        bot_id,
+        match_id,
+        match_player_id,
+        transaction_type,
+        direction,
+        amount,
+        balance_before,
+        balance_after,
+        description
+      )
+      VALUES (
+        ?,
+        ?,
+        ?,
+        ?,
+        'entry_debit',
+        'debit',
+        ?,
+        ?,
+        ?,
+        ?
+      )
+    `,
+    [
+      transactionId,
+
+      botId,
+
+      Number(match.id),
+
+      matchPlayerId,
+
+      entryAmount,
+
+      balanceBefore,
+
+      balanceAfter,
+
+      `Carrom match ${match.match_code} bot entry fee`,
+    ],
+  );
+
+  const [playerResult] =
+    await connection.query(
+      `
+        UPDATE carrom_match_players
+
+        SET
+          entry_status =
+            'collected',
+
+          turnover_applied =
+            0,
+
+          turnover_amount =
+            0.00,
+
+          entry_transaction_id =
+            ?,
+
+          entry_balance_before =
+            ?,
+
+          entry_balance_after =
+            ?
+
+        WHERE id = ?
+          AND is_bot = 1
+          AND bot_id = ?
+          AND entry_status =
+              'pending'
+      `,
+      [
+        transactionId,
+
+        balanceBefore,
+
+        balanceAfter,
+
+        matchPlayerId,
+
+        botId,
+      ],
+    );
+
+  if (
+    Number(
+      playerResult.affectedRows,
+    ) !== 1
+  ) {
+    throw createServiceError(
+      "Unable to record Carrom bot entry debit.",
+      409,
+      "CARROM_BOT_ENTRY_RECORD_FAILED",
+    );
+  }
+
+  player.bot_wallet_balance =
+    balanceAfter;
+
+  return {
+    alreadyCollected:
+      false,
+
+    balanceBefore,
+
+    balanceAfter,
+
+    transactionId,
+  };
+}
+
+/* ==========================================
    Lock All Match Users
 ========================================== */
 
@@ -1742,10 +2382,18 @@ async function getLockedCarromMatchUsers(
   players,
   connection,
 ) {
+  const realPlayers =
+    players.filter(
+      (player) =>
+        Number(
+          player.is_bot,
+        ) !== 1,
+    );
+
   const userIds =
     [
       ...new Set(
-        players.map(
+        realPlayers.map(
           (player) =>
             Number(
               player.user_id,
@@ -1771,13 +2419,17 @@ async function getLockedCarromMatchUsers(
 
   if (
     userIds.length !==
-    players.length
+    realPlayers.length
   ) {
     throw createServiceError(
-      "Carrom match contains an invalid or duplicate player.",
+      "Carrom match contains an invalid or duplicate real player.",
       409,
-      "CARROM_INVALID_MATCH_PLAYERS",
+      "CARROM_INVALID_REAL_PLAYERS",
     );
+  }
+
+  if (userIds.length === 0) {
+    return [];
   }
 
   const placeholders =
@@ -1837,12 +2489,17 @@ async function getLockedCarromMatchUsers(
 async function finalizeFullCarromMatch(
   matchId,
   connection,
+  options = {},
 ) {
   const validMatchId =
     parsePositiveInteger(
       matchId,
       "Match ID",
     );
+
+    const allowExpired =
+  options.allowExpired ===
+  true;
 
   const [matchRows] =
     await connection.query(
@@ -1894,13 +2551,14 @@ async function finalizeFullCarromMatch(
     );
   }
 
-  if (
-    new Date(
-      match
-        .matchmaking_expires_at,
-    ).getTime() <=
-    Date.now()
-  ) {
+ if (
+  !allowExpired &&
+  new Date(
+    match
+      .matchmaking_expires_at,
+  ).getTime() <=
+  Date.now()
+) {
     throw createServiceError(
       "Carrom matchmaking time has expired.",
       409,
@@ -1955,34 +2613,74 @@ async function finalizeFullCarromMatch(
    * একজনের balance কম হলে কারও wallet debit হবে না।
    */
   for (const player of players) {
-    const user =
-      usersById.get(
-        Number(
-          player.user_id,
-        ),
+  const isBot =
+    Number(
+      player.is_bot,
+    ) === 1;
+
+  if (isBot) {
+    const botBalance =
+      parseMoney(
+        player
+          .bot_wallet_balance,
       );
 
-    validateUserForCarrom(
-      user,
-      player.entry_amount,
-    );
+    if (
+      String(
+        player.bot_status ||
+        "",
+      ).toLowerCase() !==
+        "active"
+    ) {
+      throw createServiceError(
+        "One or more Carrom bots are inactive.",
+        409,
+        "CARROM_BOT_NOT_ACTIVE",
+      );
+    }
+
+    if (
+      botBalance <
+      parseMoney(
+        player.entry_amount,
+      )
+    ) {
+      throw createServiceError(
+        "One or more Carrom bots have insufficient balance.",
+        409,
+        "CARROM_BOT_INSUFFICIENT_BALANCE",
+      );
+    }
+
+    continue;
   }
 
-  const debitResults = [];
+  const user =
+    usersById.get(
+      Number(
+        player.user_id,
+      ),
+    );
 
-  for (const player of players) {
-    const user =
-      usersById.get(
-        Number(
-          player.user_id,
-        ),
-      );
+  validateUserForCarrom(
+    user,
+    player.entry_amount,
+  );
+}
 
+ const debitResults = [];
+
+for (const player of players) {
+  const isBot =
+    Number(
+      player.is_bot,
+    ) === 1;
+
+  if (isBot) {
     const debitResult =
-      await debitCarromPlayerEntry(
+      await debitCarromBotEntry(
         match,
         player,
-        user,
         connection,
       );
 
@@ -1990,12 +2688,52 @@ async function finalizeFullCarromMatch(
       matchPlayerId:
         Number(player.id),
 
+      actorType:
+        "bot",
+
       userId:
-        Number(player.user_id),
+        null,
+
+      botId:
+        Number(player.bot_id),
 
       ...debitResult,
     });
+
+    continue;
   }
+
+  const user =
+    usersById.get(
+      Number(
+        player.user_id,
+      ),
+    );
+
+  const debitResult =
+    await debitCarromPlayerEntry(
+      match,
+      player,
+      user,
+      connection,
+    );
+
+  debitResults.push({
+    matchPlayerId:
+      Number(player.id),
+
+    actorType:
+      "real",
+
+    userId:
+      Number(player.user_id),
+
+    botId:
+      null,
+
+    ...debitResult,
+  });
+}
 
   const firstPlayer =
     players
@@ -2307,7 +3045,12 @@ async function getCarromMatchState(
           cmp.id,
           cmp.match_id,
           cmp.user_id,
-          cmp.seat_no,
+cmp.bot_id,
+cmp.is_bot,
+cmp.bot_level,
+cmp.bot_name,
+cmp.bot_avatar,
+cmp.seat_no,
           cmp.team_no,
           cmp.player_status,
           cmp.entry_status,
@@ -2330,14 +3073,26 @@ async function getCarromMatchState(
           u.uid,
           u.full_name,
           u.username,
-          u.avatar_url,
-          u.wallet_balance
+         u.avatar_url,
+u.wallet_balance,
+
+cb.bot_code,
+cb.bot_name AS live_bot_name,
+cb.avatar_url AS live_bot_avatar,
+cb.bot_level AS live_bot_level,
+cb.wallet_balance AS bot_wallet_balance
 
         FROM carrom_match_players cmp
 
-        INNER JOIN users u
-          ON u.id =
-             cmp.user_id
+        LEFT JOIN users u
+  ON u.id =
+     cmp.user_id
+ AND cmp.is_bot = 0
+
+LEFT JOIN carrom_bots cb
+  ON cb.id =
+     cmp.bot_id
+ AND cmp.is_bot = 1
 
         WHERE cmp.match_id = ?
           AND cmp.player_status <>
@@ -2433,9 +3188,15 @@ async function getCarromMatchState(
         Date.now(),
     );
 
-  const players =
-    playerRows.map(
-      (player) => ({
+ const players =
+  playerRows.map(
+    (player) => {
+      const isBot =
+        Number(
+          player.is_bot,
+        ) === 1;
+
+      return {
         id:
           Number(player.id),
 
@@ -2445,24 +3206,64 @@ async function getCarromMatchState(
           ),
 
         userId:
-          Number(
-            player.user_id,
-          ),
+          isBot
+            ? null
+            : Number(
+                player.user_id,
+              ),
+
+        botId:
+          isBot
+            ? Number(
+                player.bot_id,
+              )
+            : null,
+
+        isBot,
+
+        botLevel:
+          isBot
+            ? (
+                player.bot_level ||
+                player.live_bot_level ||
+                "normal"
+              )
+            : null,
 
         uid:
-          player.uid,
+          isBot
+            ? null
+            : player.uid,
 
         name:
-          player.full_name ||
-          player.username ||
-          player.uid,
+          isBot
+            ? (
+                player.bot_name ||
+                player.live_bot_name ||
+                "Carrom Player"
+              )
+            : (
+                player.full_name ||
+                player.username ||
+                player.uid
+              ),
 
         username:
-          player.username,
+          isBot
+            ? null
+            : player.username,
 
         avatarUrl:
-          player.avatar_url ||
-          null,
+          isBot
+            ? (
+                player.bot_avatar ||
+                player.live_bot_avatar ||
+                null
+              )
+            : (
+                player.avatar_url ||
+                null
+              ),
 
         seatNo:
           Number(
@@ -2486,9 +3287,14 @@ async function getCarromMatchState(
           ),
 
         walletBalance:
-          parseMoney(
-            player.wallet_balance,
-          ),
+          isBot
+            ? parseMoney(
+                player
+                  .bot_wallet_balance,
+              )
+            : parseMoney(
+                player.wallet_balance,
+              ),
 
         prizeAmount:
           parseMoney(
@@ -2535,12 +3341,14 @@ async function getCarromMatchState(
           ),
 
         isConnected:
-          Boolean(
-            Number(
-              player
-                .is_connected,
-            ),
-          ),
+          isBot
+            ? true
+            : Boolean(
+                Number(
+                  player
+                    .is_connected,
+                ),
+              ),
 
         joinedAt:
           player.joined_at ||
@@ -2567,8 +3375,9 @@ async function getCarromMatchState(
         resultedAt:
           player.resulted_at ||
           null,
-      }),
-    );
+      };
+    },
+  );
 
   const currentPlayer =
     gameStateRow
@@ -3120,6 +3929,593 @@ async function joinCarromMatchmaking(
 }
 
 /* ==========================================
+   Finalize Expired Match with Bots
+========================================== */
+
+async function finalizeExpiredCarromMatchWithBots(
+  matchId,
+) {
+  const validMatchId =
+    parsePositiveInteger(
+      matchId,
+      "Match ID",
+    );
+
+  const connection =
+    await pool.getConnection();
+
+  let transactionStarted =
+    false;
+
+  try {
+    await connection
+      .beginTransaction();
+
+    transactionStarted =
+      true;
+
+    const [matchRows] =
+      await connection.query(
+        `
+          SELECT
+            *
+
+          FROM carrom_matches
+
+          WHERE id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+        [
+          validMatchId,
+        ],
+      );
+
+    let match =
+      matchRows[0] || null;
+
+    if (!match) {
+      throw createServiceError(
+        "Carrom match was not found.",
+        404,
+        "CARROM_MATCH_NOT_FOUND",
+      );
+    }
+
+    if (
+      String(
+        match.match_status,
+      ) !== "waiting" ||
+      Number(
+        match.entry_collected,
+      ) === 1
+    ) {
+      await connection.commit();
+
+      transactionStarted =
+        false;
+
+      return {
+        skipped:
+          true,
+
+        reason:
+          "MATCH_NOT_WAITING",
+
+        matchState:
+          await getCarromMatchState(
+            validMatchId,
+            null,
+            connection,
+          ),
+      };
+    }
+
+    const expiresAt =
+      new Date(
+        match
+          .matchmaking_expires_at,
+      ).getTime();
+
+    if (
+      Number.isFinite(expiresAt) &&
+      expiresAt >
+      Date.now()
+    ) {
+      await connection.commit();
+
+      transactionStarted =
+        false;
+
+      return {
+        skipped:
+          true,
+
+        reason:
+          "MATCHMAKING_NOT_EXPIRED",
+
+        remainingMilliseconds:
+          Math.max(
+            0,
+            expiresAt -
+            Date.now(),
+          ),
+
+        matchState:
+          await getCarromMatchState(
+            validMatchId,
+            null,
+            connection,
+          ),
+      };
+    }
+
+    const existingPlayers =
+      await getLockedCarromMatchPlayers(
+        validMatchId,
+        connection,
+      );
+
+    const realPlayers =
+      existingPlayers.filter(
+        (player) =>
+          Number(
+            player.is_bot,
+          ) !== 1,
+      );
+
+    if (realPlayers.length === 0) {
+      await connection.query(
+        `
+          UPDATE carrom_matches
+
+          SET
+            match_status =
+              'cancelled',
+
+            current_players = 0,
+
+            cancelled_at = NOW(),
+
+            cancellation_reason =
+              'No real player remained in matchmaking.',
+
+            state_version =
+              state_version + 1
+
+          WHERE id = ?
+            AND match_status =
+                'waiting'
+            AND entry_collected = 0
+        `,
+        [
+          validMatchId,
+        ],
+      );
+
+      await connection.commit();
+
+      transactionStarted =
+        false;
+
+      return {
+        skipped:
+          true,
+
+        reason:
+          "NO_REAL_PLAYER",
+
+        matchState:
+          await getCarromMatchState(
+            validMatchId,
+            null,
+            connection,
+          ),
+      };
+    }
+
+    const botFillResult =
+      await addBotsToCarromMatch(
+        match,
+        connection,
+      );
+
+    const [updatedMatchRows] =
+      await connection.query(
+        `
+          SELECT
+            *
+
+          FROM carrom_matches
+
+          WHERE id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+        [
+          validMatchId,
+        ],
+      );
+
+    match =
+      updatedMatchRows[0] ||
+      null;
+
+    if (!match) {
+      throw createServiceError(
+        "Carrom match disappeared during bot matchmaking.",
+        409,
+        "CARROM_BOT_MATCH_NOT_FOUND",
+      );
+    }
+
+    const finalizedMatch =
+      await finalizeFullCarromMatch(
+        validMatchId,
+        connection,
+        {
+          allowExpired:
+            true,
+        },
+      );
+
+    await connection.commit();
+
+    transactionStarted =
+      false;
+
+    return {
+      skipped:
+        false,
+
+      reason:
+        "BOTS_ADDED",
+
+      addedBots:
+        botFillResult.addedBots,
+
+      finalizedMatch,
+
+      matchState:
+        await getCarromMatchState(
+          validMatchId,
+          null,
+          connection,
+        ),
+    };
+  } catch (error) {
+    if (transactionStarted) {
+      await connection
+        .rollback();
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+/* ==========================================
+   Start Carrom Playing Match
+========================================== */
+
+async function startCarromPlayingMatch(
+  matchId,
+) {
+  const validMatchId =
+    parsePositiveInteger(
+      matchId,
+      "Match ID",
+    );
+
+  const connection =
+    await pool.getConnection();
+
+  let transactionStarted =
+    false;
+
+  try {
+    await connection
+      .beginTransaction();
+
+    transactionStarted =
+      true;
+
+    const [matchRows] =
+      await connection.query(
+        `
+          SELECT
+            cm.*,
+            cr.turn_seconds
+
+          FROM carrom_matches cm
+
+          INNER JOIN carrom_rooms cr
+            ON cr.id =
+               cm.room_id
+
+          WHERE cm.id = ?
+
+          LIMIT 1
+
+          FOR UPDATE
+        `,
+        [
+          validMatchId,
+        ],
+      );
+
+    const match =
+      matchRows[0] || null;
+
+    if (!match) {
+      throw createServiceError(
+        "Carrom match was not found.",
+        404,
+        "CARROM_MATCH_NOT_FOUND",
+      );
+    }
+
+    if (
+      String(
+        match.match_status,
+      ) === "playing"
+    ) {
+      await connection.commit();
+
+      transactionStarted =
+        false;
+
+      return {
+        alreadyPlaying:
+          true,
+
+        matchState:
+          await getCarromMatchState(
+            validMatchId,
+            null,
+            connection,
+          ),
+      };
+    }
+
+    if (
+      String(
+        match.match_status,
+      ) !== "countdown" ||
+      Number(
+        match.entry_collected,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Carrom match is not ready to play.",
+        409,
+        "CARROM_MATCH_NOT_READY",
+      );
+    }
+
+    const turnSeconds =
+      Math.max(
+        5,
+        Number(
+          match.turn_seconds ||
+          20,
+        ),
+      );
+
+    const [gameStateResult] =
+      await connection.query(
+        `
+          UPDATE carrom_game_states
+
+          SET
+            game_phase =
+              'aiming',
+
+            shot_in_progress = 0,
+
+            turn_started_at =
+              NOW(),
+
+            turn_expires_at =
+              TIMESTAMPADD(
+                SECOND,
+                ?,
+                NOW()
+              ),
+
+            last_action_at =
+              NOW(),
+
+            state_version =
+              state_version + 1
+
+          WHERE match_id = ?
+            AND game_phase =
+                'setup'
+        `,
+        [
+          turnSeconds,
+
+          validMatchId,
+        ],
+      );
+
+    if (
+      Number(
+        gameStateResult.affectedRows,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Unable to start Carrom game state.",
+        409,
+        "CARROM_GAME_STATE_START_FAILED",
+      );
+    }
+
+    const [matchResult] =
+      await connection.query(
+        `
+          UPDATE carrom_matches
+
+          SET
+            match_status =
+              'playing',
+
+            started_at =
+              COALESCE(
+                started_at,
+                NOW()
+              ),
+
+            state_version =
+              state_version + 1
+
+          WHERE id = ?
+            AND match_status =
+                'countdown'
+            AND entry_collected = 1
+        `,
+        [
+          validMatchId,
+        ],
+      );
+
+    if (
+      Number(
+        matchResult.affectedRows,
+      ) !== 1
+    ) {
+      throw createServiceError(
+        "Unable to start Carrom match.",
+        409,
+        "CARROM_MATCH_PLAY_START_FAILED",
+      );
+    }
+
+    await connection.commit();
+
+    transactionStarted =
+      false;
+
+    return {
+      alreadyPlaying:
+        false,
+
+      matchState:
+        await getCarromMatchState(
+          validMatchId,
+          null,
+          connection,
+        ),
+    };
+  } catch (error) {
+    if (transactionStarted) {
+      await connection
+        .rollback();
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+/* ==========================================
+   Recoverable Carrom Matches
+========================================== */
+
+async function getRecoverableCarromMatches() {
+  const [rows] =
+    await pool.query(
+      `
+        SELECT
+          id,
+          match_code,
+          match_status,
+          current_players,
+          required_players,
+          entry_collected,
+          matchmaking_expires_at,
+          countdown_started_at,
+          started_at,
+          updated_at
+
+        FROM carrom_matches
+
+        WHERE (
+          match_status = 'waiting'
+          AND entry_collected = 0
+          AND current_players > 0
+        )
+        OR (
+          match_status = 'countdown'
+          AND entry_collected = 1
+        )
+        OR (
+          match_status = 'playing'
+          AND entry_collected = 1
+          AND settlement_completed = 0
+        )
+
+        ORDER BY id ASC
+      `,
+    );
+
+  return rows.map(
+    (match) => ({
+      matchId:
+        Number(match.id),
+
+      matchCode:
+        match.match_code,
+
+      status:
+        match.match_status,
+
+      currentPlayers:
+        Number(
+          match.current_players,
+        ),
+
+      requiredPlayers:
+        Number(
+          match.required_players,
+        ),
+
+      entryCollected:
+        Boolean(
+          Number(
+            match.entry_collected,
+          ),
+        ),
+
+      matchmakingExpiresAt:
+        match
+          .matchmaking_expires_at ||
+        null,
+
+      countdownStartedAt:
+        match
+          .countdown_started_at ||
+        null,
+
+      startedAt:
+        match.started_at ||
+        null,
+
+      updatedAt:
+        match.updated_at ||
+        null,
+    }),
+  );
+}
+
+/* ==========================================
    Service Exports
 ========================================== */
 
@@ -3141,4 +4537,7 @@ module.exports = {
   getActiveRoomById,
   getCarromMatchState,
   joinCarromMatchmaking,
+  finalizeExpiredCarromMatchWithBots,
+  startCarromPlayingMatch,
+getRecoverableCarromMatches,
 };
