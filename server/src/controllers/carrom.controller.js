@@ -1,9 +1,7 @@
 "use strict";
 
 const carromService =
-  require(
-    "../services/carrom.service",
-  );
+  require("../services/carrom.service");
 
 /* ==========================================
    Controller Error Response
@@ -17,8 +15,8 @@ function sendCarromError(
   const statusCode =
     Number(
       error.statusCode ||
-        error.status ||
-        500,
+      error.status ||
+      500,
     );
 
   return response
@@ -45,14 +43,10 @@ async function getAvailableRooms(
   response,
 ) {
   try {
-    const playerMode =
-      request.query
-        .playerMode || 2;
-
     const rooms =
       await carromService
         .getAvailableRooms(
-          playerMode,
+          request.query?.playerMode,
         );
 
     return response
@@ -64,9 +58,6 @@ async function getAvailableRooms(
           "Carrom rooms loaded successfully.",
 
         data: {
-          playerMode:
-            Number(playerMode),
-
           rooms,
         },
       });
@@ -85,9 +76,94 @@ async function getAvailableRooms(
 }
 
 /* ==========================================
+   Join Carrom Matchmaking
+========================================== */
+
+async function joinMatchmaking(
+  request,
+  response,
+) {
+  try {
+    const data =
+      await carromService
+        .joinCarromMatchmaking(
+          request.user.id,
+          request.body?.roomId,
+        );
+
+    return response
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          data.matchmaking
+            ?.alreadyJoined
+            ? "Existing Carrom match loaded successfully."
+            : "Carrom matchmaking joined successfully.",
+
+        data,
+      });
+  } catch (error) {
+    console.error(
+      "CARROM MATCHMAKING ERROR:",
+      error,
+    );
+
+    return sendCarromError(
+      response,
+      error,
+      "Unable to join Carrom matchmaking.",
+    );
+  }
+}
+
+/* ==========================================
+   Get Carrom Match State
+========================================== */
+
+async function getMatchState(
+  request,
+  response,
+) {
+  try {
+    const data =
+      await carromService
+        .getCarromMatchState(
+          request.params.matchId,
+          request.user.id,
+        );
+
+    return response
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Carrom match state loaded successfully.",
+
+        data,
+      });
+  } catch (error) {
+    console.error(
+      "GET CARROM MATCH STATE ERROR:",
+      error,
+    );
+
+    return sendCarromError(
+      response,
+      error,
+      "Unable to load Carrom match.",
+    );
+  }
+}
+
+/* ==========================================
    Controller Exports
 ========================================== */
 
 module.exports = {
   getAvailableRooms,
+  joinMatchmaking,
+  getMatchState,
 };

@@ -959,78 +959,156 @@ async function loadAvailableRooms() {
      Room Selection
   ================================== */
 
-  function selectRoom(roomId) {
-    if (state.isSelectingRoom) {
-      return;
-    }
+ async function selectRoom(roomId) {
+  if (state.isSelectingRoom) {
+    return;
+  }
 
-    const validRoomId =
-      Number(roomId);
+  const validRoomId =
+    Number(roomId);
 
-    const room =
-      state.rooms.find(
-        (item) =>
-          Number(item.id) ===
-          validRoomId,
+  const room =
+    state.rooms.find(
+      (item) =>
+        Number(item.id) ===
+        validRoomId,
+    );
+
+  if (!room) {
+    showToast(
+      "Invalid Carrom room selected",
+      "error",
+    );
+
+    return;
+  }
+
+  if (room.status !== "active") {
+    showToast(
+      "This Carrom room is closed",
+      "error",
+    );
+
+    return;
+  }
+
+  if (
+    getWalletBalance() <
+    Number(room.entryAmount)
+  ) {
+    showToast(
+      `Minimum ৳${formatMoney(
+        room.entryAmount,
+      )} balance required`,
+      "error",
+    );
+
+    return;
+  }
+
+  state.isSelectingRoom =
+    true;
+
+  showLoader(
+    "Joining Carrom matchmaking...",
+  );
+
+  try {
+    const result =
+      await apiRequest(
+        "/carrom/matchmaking/join",
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            roomId:
+              validRoomId,
+          }),
+        },
       );
 
-    if (!room) {
-      showToast(
-        "Invalid Carrom room selected",
-        "error",
+    const data =
+      result?.data || {};
+
+    const match =
+      data.match ||
+      data.matchState?.match ||
+      null;
+
+    const matchId =
+      Number(
+        match?.matchId ||
+        match?.id ||
+        data.matchId,
       );
-
-      return;
-    }
-
-    if (room.status !== "active") {
-      showToast(
-        "This Carrom room is closed",
-        "error",
-      );
-
-      return;
-    }
 
     if (
-      getWalletBalance() <
-      Number(room.entryAmount)
+      !Number.isInteger(matchId) ||
+      matchId < 1
     ) {
-      showToast(
-        `Minimum ৳${formatMoney(
-          room.entryAmount,
-        )} balance required`,
-        "error",
+      throw new Error(
+        "Carrom match ID was not returned by the server",
       );
-
-      return;
     }
-
-    state.isSelectingRoom = true;
 
     saveSelectedRoom(room);
 
+    localStorage.setItem(
+      "current_carrom_match",
+      JSON.stringify({
+        matchId,
+
+        roomId:
+          validRoomId,
+
+        matchCode:
+          match?.matchCode ||
+          match?.code ||
+          null,
+
+        status:
+          match?.status ||
+          "waiting",
+
+        savedAt:
+          new Date()
+            .toISOString(),
+
+        state:
+          data,
+      }),
+    );
+
     showToast(
-      `${state.playerMode}-player ${
-        room.roomName
-      } selected`,
+      result?.message ||
+        "Carrom matchmaking joined",
       "success",
     );
 
-    /*
-     * Carrom table frontend তৈরি হলে এখান থেকে
-     * carrom-table.html page-এ নেওয়া হবে।
-     * এখন কোনো wallet debit করা হচ্ছে না।
-     */
     window.setTimeout(() => {
-      state.isSelectingRoom = false;
+      window.location.href =
+        `carrom-table.html?matchId=${encodeURIComponent(
+          matchId,
+        )}`;
+    }, 500);
+  } catch (error) {
+    console.error(
+      "JOIN CARROM MATCHMAKING ERROR:",
+      error,
+    );
 
-      showToast(
-        "Room saved. Carrom table will be added in the next step.",
-        "info",
-      );
-    }, 900);
+    showToast(
+      error.message ||
+        "Unable to join Carrom matchmaking",
+      "error",
+    );
+
+    state.isSelectingRoom =
+      false;
+  } finally {
+    hideLoader();
   }
+}
 
   /* ==================================
      Events

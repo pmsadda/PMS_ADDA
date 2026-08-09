@@ -211,7 +211,15 @@
 
     selectedRoom: null,
 
-    playerMode: 2,
+matchId: null,
+
+matchState: null,
+
+currentPlayer: null,
+
+isLoadingMatch: false,
+
+playerMode: 2,
 
     engine: null,
 
@@ -229,8 +237,9 @@
 
     turnTimerId: null,
 
-    toastTimerId: null,
+matchPollTimerId: null,
 
+toastTimerId: null,
     frontendDemo: true,
   };
 
@@ -298,6 +307,305 @@
         ? 4
         : 2;
   }
+
+  /* ==================================
+   Real Match API
+================================== */
+
+function getAccessToken() {
+  return localStorage.getItem(
+    "access_token",
+  );
+}
+
+function getMatchIdFromPage() {
+  const query =
+    new URLSearchParams(
+      window.location.search,
+    );
+
+  const queryMatchId =
+    Number(
+      query.get("matchId"),
+    );
+
+  if (
+    Number.isInteger(queryMatchId) &&
+    queryMatchId > 0
+  ) {
+    return queryMatchId;
+  }
+
+  const storedMatch =
+    readStoredJson(
+      "current_carrom_match",
+    );
+
+  const storedMatchId =
+    Number(
+      storedMatch?.matchId,
+    );
+
+  if (
+    Number.isInteger(storedMatchId) &&
+    storedMatchId > 0
+  ) {
+    return storedMatchId;
+  }
+
+  return null;
+}
+
+function redirectToLogin() {
+  localStorage.removeItem(
+    "access_token",
+  );
+
+  window.location.href =
+    "login.html";
+}
+
+async function apiRequest(
+  endpoint,
+  options = {},
+) {
+  const controller =
+    new AbortController();
+
+  const timeoutId =
+    window.setTimeout(() => {
+      controller.abort();
+    }, 15000);
+
+  try {
+    const response =
+      await fetch(
+        APP_CONFIG.api(endpoint),
+        {
+          ...options,
+
+          headers: {
+            Accept:
+              "application/json",
+
+            ...(options.body
+              ? {
+                  "Content-Type":
+                    "application/json",
+                }
+              : {}),
+
+            Authorization:
+              `Bearer ${getAccessToken()}`,
+
+            ...(options.headers || {}),
+          },
+
+          signal:
+            controller.signal,
+        },
+      );
+
+    let result = null;
+
+    try {
+      result =
+        await response.json();
+    } catch (_error) {
+      result = null;
+    }
+
+    if (response.status === 401) {
+      redirectToLogin();
+
+      throw new Error(
+        "Your login session has expired",
+      );
+    }
+
+    if (!response.ok) {
+      const error =
+        new Error(
+          result?.message ||
+          "Unable to load Carrom match",
+        );
+
+      error.code =
+        result?.code ||
+        "CARROM_REQUEST_FAILED";
+
+      error.statusCode =
+        response.status;
+
+      throw error;
+    }
+
+    return result;
+  } catch (error) {
+    if (
+      error.name ===
+      "AbortError"
+    ) {
+      throw new Error(
+        "Server response timeout",
+      );
+    }
+
+    throw error;
+  } finally {
+    window.clearTimeout(
+      timeoutId,
+    );
+  }
+}
+
+function applyCarromMatchState(
+  matchState,
+) {
+  const match =
+    matchState?.match;
+
+  if (!match?.id) {
+    throw new Error(
+      "Invalid Carrom match state",
+    );
+  }
+
+  state.matchId =
+    Number(match.id);
+
+  state.matchState =
+    matchState;
+
+  state.playerMode =
+    Number(match.playerMode) === 4
+      ? 4
+      : 2;
+
+  state.selectedRoom = {
+    game:
+      "carrom",
+
+    roomId:
+      Number(match.roomId),
+
+    roomCode:
+      match.roomCode,
+
+    roomName:
+      match.roomName,
+
+    entryAmount:
+      Number(match.entryAmount),
+
+    playerMode:
+      state.playerMode,
+
+    serviceChargePercent:
+      Number(
+        match.serviceChargePercent,
+      ),
+  };
+
+  const currentUserId =
+    Number(
+      state.user?.id ||
+      state.user?.userId,
+    );
+
+  state.currentPlayer =
+    matchState.players?.find(
+      (player) =>
+        Number(player.userId) ===
+        currentUserId,
+    ) || null;
+
+  if (state.currentPlayer) {
+    state.user = {
+      ...state.user,
+
+      walletBalance:
+        Number(
+          state.currentPlayer
+            .walletBalance,
+        ),
+    };
+
+    localStorage.setItem(
+      "current_user",
+      JSON.stringify(state.user),
+    );
+  }
+
+  localStorage.setItem(
+    "selected_carrom_room",
+    JSON.stringify(
+      state.selectedRoom,
+    ),
+  );
+
+  localStorage.setItem(
+    "current_carrom_match",
+    JSON.stringify({
+      matchId:
+        state.matchId,
+
+      roomId:
+        Number(match.roomId),
+
+      matchCode:
+        match.matchCode,
+
+      status:
+        match.status,
+
+      savedAt:
+        new Date().toISOString(),
+
+      state:
+        matchState,
+    }),
+  );
+}
+
+async function loadCarromMatchState() {
+  if (!getAccessToken()) {
+    redirectToLogin();
+
+    return null;
+  }
+
+  const matchId =
+    getMatchIdFromPage();
+
+  if (!matchId) {
+    throw new Error(
+      "Carrom match ID was not found",
+    );
+  }
+
+  state.isLoadingMatch =
+    true;
+
+  try {
+    const result =
+      await apiRequest(
+        `/carrom/matches/${matchId}`,
+      );
+
+    const matchState =
+      result?.data;
+
+    applyCarromMatchState(
+      matchState,
+    );
+
+    return matchState;
+  } finally {
+    state.isLoadingMatch =
+      false;
+  }
+}
 
   /* ==================================
      General Helpers
@@ -520,152 +828,224 @@
   /* ==================================
      Match Information
   ================================== */
+function renderMatchInformation() {
+  const match =
+    state.matchState?.match;
 
-  function renderMatchInformation() {
-    const prize =
-      calculatePrize();
+  const prize =
+    calculatePrize();
 
-    elements.entryAmount.textContent =
-      `Entry: ৳${formatMoney(
-        prize.entryAmount,
-      )}`;
+  elements.entryAmount.textContent =
+    `Entry: ৳${formatMoney(
+      match?.entryAmount ??
+      prize.entryAmount,
+    )}`;
 
-    elements.playerMode.textContent =
-      `Players: ${
-        state.playerMode
-      }`;
+  elements.playerMode.textContent =
+    `Players: ${
+      match?.playerMode ||
+      state.playerMode
+    }`;
 
-    elements.serviceCharge.textContent =
-      `Charge: ${
-        prize.chargePercent
-      }%`;
+  elements.serviceCharge.textContent =
+    `Charge: ${
+      match?.serviceChargePercent ??
+      prize.chargePercent
+    }%`;
 
-    elements.matchCode.textContent =
-      state.selectedRoom
-        ?.roomCode ||
-      "CARROM-DEMO";
+  elements.matchCode.textContent =
+    match?.matchCode ||
+    state.selectedRoom?.roomCode ||
+    "CARROM";
 
-    elements.walletBalance.textContent =
-      `৳${formatMoney(
-        state.user
-          ?.walletBalance,
-      )}`;
+  elements.walletBalance.textContent =
+    `৳${formatMoney(
+      state.currentPlayer
+        ?.walletBalance ??
+      state.user
+        ?.walletBalance,
+    )}`;
 
-    elements.liveStatusText.textContent =
-      "Frontend Demo";
+  const status =
+    String(
+      match?.status ||
+      "waiting",
+    ).toLowerCase();
 
-    elements.liveStatusDot
-      ?.classList.remove(
-        "is-offline",
+  const statusLabels = {
+    waiting:
+      "Waiting for players",
+
+    countdown:
+      "Starting match",
+
+    playing:
+      "Live Match",
+
+    paused:
+      "Match Paused",
+
+    settling:
+      "Calculating Result",
+
+    completed:
+      "Match Completed",
+
+    cancelled:
+      "Match Cancelled",
+
+    failed:
+      "Match Failed",
+  };
+
+  elements.liveStatusText.textContent =
+    statusLabels[status] ||
+    status.toUpperCase();
+
+  const isLive =
+    [
+      "waiting",
+      "countdown",
+      "playing",
+      "paused",
+      "settling",
+    ].includes(status);
+
+  elements.liveStatusDot
+    ?.classList.toggle(
+      "is-offline",
+      !isLive,
+    );
+}
+
+ function configurePlayerPanels() {
+  const players =
+    Array.isArray(
+      state.matchState?.players,
+    )
+      ? state.matchState.players
+      : [];
+
+  const requiredPlayers =
+    Number(
+      state.matchState
+        ?.match
+        ?.requiredPlayers ||
+      state.playerMode,
+    );
+
+  for (
+    let seat = 1;
+    seat <= 4;
+    seat += 1
+  ) {
+    const panel =
+      document.getElementById(
+        `playerPanel${seat}`,
       );
-  }
 
-  function configurePlayerPanels() {
-    const userName =
-      getUserName();
+    const name =
+      document.getElementById(
+        `playerName${seat}`,
+      );
 
-    const userAvatar =
-      getUserAvatar();
+    const avatar =
+      document.getElementById(
+        `playerAvatar${seat}`,
+      );
 
-    const playerNames =
-      state.playerMode === 4
-        ? [
-            userName,
-            "Player 2",
-            "Player 3",
-            "Player 4",
-          ]
-        : [
-            userName,
-            "Opponent",
-          ];
+    const team =
+      document.getElementById(
+        `playerTeam${seat}`,
+      );
 
-    for (
-      let seat = 1;
-      seat <= 4;
-      seat += 1
-    ) {
-      const panel =
-        document.getElementById(
-          `playerPanel${seat}`,
-        );
+    const score =
+      document.getElementById(
+        `playerScore${seat}`,
+      );
 
-      const name =
-        document.getElementById(
-          `playerName${seat}`,
-        );
+    const isSeatUsed =
+      seat <=
+      requiredPlayers;
 
-      const avatar =
-        document.getElementById(
-          `playerAvatar${seat}`,
-        );
+    const player =
+      players.find(
+        (item) =>
+          Number(item.seatNo) ===
+          seat,
+      ) || null;
 
-      const team =
-        document.getElementById(
-          `playerTeam${seat}`,
-        );
+    if (panel) {
+      panel.hidden =
+        !isSeatUsed;
 
-      const score =
-        document.getElementById(
-          `playerScore${seat}`,
-        );
+      panel.classList.toggle(
+        "is-empty",
+        isSeatUsed &&
+        !player,
+      );
 
-      const isSeatUsed =
-        seat <=
-        state.playerMode;
+      panel.classList.toggle(
+        "is-current-user",
+        Number(player?.userId) ===
+        Number(
+          state.currentPlayer
+            ?.userId,
+        ),
+      );
+    }
 
-      if (panel) {
-        panel.hidden =
-          !isSeatUsed;
+    if (!isSeatUsed) {
+      continue;
+    }
 
-        panel.classList.toggle(
-          "is-empty",
-          !isSeatUsed,
-        );
-      }
+    if (name) {
+      name.textContent =
+        player?.name ||
+        `Waiting for Player ${seat}`;
+    }
 
-      if (!isSeatUsed) {
-        continue;
-      }
+    if (avatar) {
+      avatar.src =
+        player?.avatarUrl ||
+        "../assets/images/default-avatar.png";
 
-      if (name) {
-        name.textContent =
-          playerNames[
-            seat - 1
-          ];
-      }
+      avatar.onerror = () => {
+        avatar.onerror = null;
 
-      if (avatar) {
         avatar.src =
-          seat === 1
-            ? userAvatar
-            : "../assets/images/default-avatar.png";
+          "../assets/images/default-avatar.png";
+      };
+    }
 
-        avatar.onerror = () => {
-          avatar.onerror = null;
+    const teamNo =
+      Number(
+        player?.teamNo ||
+        (
+          seat === 1 ||
+          seat === 3
+            ? 1
+            : 2
+        ),
+      );
 
-          avatar.src =
-            "../assets/images/default-avatar.png";
-        };
-      }
+    if (team) {
+      team.textContent =
+        teamNo === 1
+          ? "TEAM GOLD"
+          : "TEAM GREEN";
+    }
 
-      const isGoldTeam =
-        seat === 1 ||
-        seat === 3;
-
-      if (team) {
-        team.textContent =
-          isGoldTeam
-            ? "TEAM GOLD"
-            : "TEAM GREEN";
-      }
-
-      if (score) {
-        score.textContent =
-          "Score: 0";
-      }
+    if (score) {
+      score.textContent =
+        player
+          ? `Score: ${Number(
+              player.score || 0,
+            )}`
+          : "Waiting...";
     }
   }
+}
 
   /* ==================================
      Score
@@ -1283,28 +1663,270 @@
   window.addEventListener(
     "beforeunload",
     () => {
-      stopTurnTimer();
+     stopTurnTimer();
 
-      state.engine?.destroy();
+if (state.matchPollTimerId) {
+  window.clearInterval(
+    state.matchPollTimerId,
+  );
+
+  state.matchPollTimerId =
+    null;
+}
+
+state.engine?.destroy();
     },
   );
 
   /* ==================================
-     Start Frontend Demo
-  ================================== */
+   Start Real Carrom Match
+================================== */
 
-  initializeStoredData();
+function setGameplayControlsEnabled(
+  isEnabled,
+) {
+  if (elements.shootButton) {
+    elements.shootButton.disabled =
+      !isEnabled;
+  }
 
+  if (elements.resetAimButton) {
+    elements.resetAimButton.disabled =
+      !isEnabled;
+  }
+
+  if (elements.powerRange) {
+    elements.powerRange.disabled =
+      !isEnabled;
+  }
+}
+
+function updateScoresFromMatchState() {
+  const players =
+    state.matchState?.players ||
+    [];
+
+  state.goldScore =
+    players
+      .filter(
+        (player) =>
+          Number(player.teamNo) === 1,
+      )
+      .reduce(
+        (total, player) =>
+          total +
+          Number(player.score || 0),
+        0,
+      );
+
+  state.greenScore =
+    players
+      .filter(
+        (player) =>
+          Number(player.teamNo) === 2,
+      )
+      .reduce(
+        (total, player) =>
+          total +
+          Number(player.score || 0),
+        0,
+      );
+
+  state.roundNumber =
+    Number(
+      state.matchState
+        ?.gameState
+        ?.turnNumber ||
+      1,
+    );
+
+  updateScoreUI();
+}
+
+function updateMatchBoardMessage() {
+  const match =
+    state.matchState?.match;
+
+  const matchmaking =
+    state.matchState?.matchmaking;
+
+  const status =
+    String(
+      match?.status ||
+      "waiting",
+    ).toLowerCase();
+
+  if (status === "waiting") {
+    setBoardMessage(
+      `Waiting for players: ${
+        matchmaking?.joinedPlayers || 0
+      }/${
+        matchmaking?.requiredPlayers ||
+        match?.requiredPlayers ||
+        state.playerMode
+      }`,
+    );
+
+    return;
+  }
+
+  if (status === "countdown") {
+    setBoardMessage(
+      "All players joined. Match is starting...",
+      "success",
+    );
+
+    return;
+  }
+
+  if (status === "playing") {
+    setBoardMessage(
+      "Server connection is preparing the current turn.",
+      "success",
+    );
+
+    return;
+  }
+
+  if (status === "completed") {
+    setBoardMessage(
+      "This Carrom match has completed.",
+      "success",
+    );
+
+    return;
+  }
+
+  if (status === "cancelled") {
+    setBoardMessage(
+      match?.cancellationReason ||
+      "This Carrom match was cancelled.",
+      "error",
+    );
+
+    return;
+  }
+
+  setBoardMessage(
+    `Match status: ${status}`,
+  );
+}
+
+function renderRealMatchState() {
   renderMatchInformation();
 
   configurePlayerPanels();
 
-  updateScoreUI();
+  updateScoresFromMatchState();
 
-  initializeEngine();
+  updateMatchBoardMessage();
 
-  showToast(
-    "Carrom frontend demo loaded. Wallet has not been charged.",
-    "success",
+  /*
+   * Server-authoritative shot API এবং Socket.IO
+   * যুক্ত হওয়ার আগে local demo shot বন্ধ থাকবে।
+   */
+  setGameplayControlsEnabled(false);
+}
+
+async function refreshRealMatchState() {
+  try {
+    await loadCarromMatchState();
+
+    renderRealMatchState();
+
+    const status =
+      String(
+        state.matchState
+          ?.match
+          ?.status ||
+        "",
+      ).toLowerCase();
+
+    if (
+      [
+        "completed",
+        "cancelled",
+        "failed",
+      ].includes(status)
+    ) {
+      if (state.matchPollTimerId) {
+        window.clearInterval(
+          state.matchPollTimerId,
+        );
+
+        state.matchPollTimerId =
+          null;
+      }
+    }
+  } catch (error) {
+    console.error(
+      "REFRESH CARROM MATCH ERROR:",
+      error,
+    );
+  }
+}
+
+function startMatchStatePolling() {
+  if (state.matchPollTimerId) {
+    window.clearInterval(
+      state.matchPollTimerId,
+    );
+  }
+
+  state.matchPollTimerId =
+    window.setInterval(() => {
+      refreshRealMatchState();
+    }, 2500);
+}
+
+async function initializeRealCarromTable() {
+  initializeStoredData();
+
+  setGameplayControlsEnabled(false);
+
+  setBoardMessage(
+    "Loading Carrom match...",
   );
+
+  try {
+    await loadCarromMatchState();
+
+    renderRealMatchState();
+
+    initializeEngine();
+
+    stopTurnTimer();
+
+    setGameplayControlsEnabled(false);
+
+    startMatchStatePolling();
+
+    showToast(
+      "Real Carrom match loaded successfully.",
+      "success",
+    );
+  } catch (error) {
+    console.error(
+      "INITIALIZE CARROM MATCH ERROR:",
+      error,
+    );
+
+    setBoardMessage(
+      error.message ||
+      "Unable to load Carrom match.",
+      "error",
+    );
+
+    showToast(
+      error.message ||
+      "Unable to load Carrom match.",
+      "error",
+    );
+
+    setGameplayControlsEnabled(false);
+  }
+}
+
+initializeRealCarromTable();
+
 })();
