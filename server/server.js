@@ -48,6 +48,18 @@ const io = new Server(httpServer, {
   cors: corsOptions,
 
   /*
+   * Game এবং chat socket দিয়ে অস্বাভাবিক বড়
+   * payload পাঠিয়ে server memory ব্যবহার ঠেকায়।
+   */
+  maxHttpBufferSize: 100 * 1024,
+
+  /*
+   * ছোট realtime payload-এর জন্য compression
+   * overhead ও compression-based attack surface কমায়।
+   */
+  perMessageDeflate: false,
+
+  /*
    * CORS headers protect browsers.
    * allowRequest also rejects disallowed Socket.IO handshakes.
    */

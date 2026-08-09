@@ -192,14 +192,20 @@ app.use(
 
 app.use(cors(corsOptions));
 
-app.use(express.json());
+app.use(
+  express.json({
+    limit: "100kb",
+    strict: true,
+  }),
+);
 
 app.use(
   express.urlencoded({
     extended: true,
+    limit: "100kb",
+    parameterLimit: 100,
   }),
 );
-
 app.use("/client", express.static(path.join(__dirname, "../../client")));
 
 app.use(
