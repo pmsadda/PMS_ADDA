@@ -51,7 +51,9 @@ function socketAuthentication(socket, next) {
       return next(error);
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
 
     const userId = Number(decoded.id);
 
@@ -1420,17 +1422,12 @@ function initializeTeenPattiSocket(io) {
         return;
       }
 
-            /*
+      /*
        * একই user-এর অন্য active socket থাকলে
        * পুরোনো socket disconnect ignore হবে।
        */
       if (
-        hasAnotherConnectedUserSocket(
-          namespace,
-          tableId,
-          userId,
-          socket.id,
-        )
+        hasAnotherConnectedUserSocket(namespace, tableId, userId, socket.id)
       ) {
         console.log(
           `Teen Patti old socket ignored: user=${userId}, table=${tableId}`,

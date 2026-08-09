@@ -21,7 +21,16 @@ function authenticateSupportSocket(socket, next) {
       return next(error);
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded =
+  jwt.verify(
+    token,
+    process.env.JWT_SECRET,
+    {
+      algorithms: [
+        "HS256",
+      ],
+    },
+  );
 
     const userId = Number(decoded.id);
 
