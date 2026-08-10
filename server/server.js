@@ -100,13 +100,33 @@ initializeTeenPattiSocket(io);
 initializeLudoSocket(io);
 initializePokerSocket(io);
 initializeSupportSocket(io);
-const carromSocket =
-  initializeCarromSocket(io);
+
+/*
+ * Carrom এখন development hold-এ আছে।
+ *
+ * CARROM_ENABLED=true না দিলে Socket namespace,
+ * recovery timer এবং database processing চালু হবে না।
+ */
+const carromEnabled =
+  process.env.CARROM_ENABLED ===
+  "true";
+
+let carromSocket = null;
+
+if (carromEnabled) {
+  carromSocket =
+    initializeCarromSocket(io);
+} else {
+  console.log(
+    "⏸️ Carrom Socket.IO disabled",
+  );
+}
 
 app.set(
   "carromSocket",
   carromSocket,
 );
+
 initializeLotterySocket(io);
 
 /*
