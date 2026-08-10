@@ -25,6 +25,10 @@ const {
   getMaximumBuyIn,
 } = require("../constants/poker.constants");
 
+const POKER_DEBUG_LOGS =
+  process.env.POKER_DEBUG_LOGS ===
+  "true";
+
 /* ==========================================
    Basic Helpers
 ========================================== */
@@ -4659,7 +4663,10 @@ async function performAutomaticTurn(
 
     amount = decision.amount;
 
-    console.log("POKER BOT DECISION:", {
+    if (POKER_DEBUG_LOGS) {
+  console.log(
+    "POKER BOT DECISION:",
+    {
       tableId: turn.tableId,
 
       handId: turn.handId,
@@ -4670,10 +4677,18 @@ async function performAutomaticTurn(
 
       action: actionType,
 
-      equity: Number(decision.equity.toFixed(3)),
+      equity:
+        Number(
+          decision.equity.toFixed(3),
+        ),
 
-      potOdds: Number(decision.potOdds.toFixed(3)),
-    });
+      potOdds:
+        Number(
+          decision.potOdds.toFixed(3),
+        ),
+    },
+  );
+}
   }
 
   const result = await performPlayerAction({
