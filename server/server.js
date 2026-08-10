@@ -25,7 +25,12 @@ const { Server } = require("socket.io");
 
 const app = require("./src/app");
 
-const { testDatabaseConnection } = require("./src/config/database");
+const {
+  pool,
+  testDatabaseConnection,
+} = require(
+  "./src/config/database",
+);
 
 const { initializeTeenPattiSocket } = require("./src/socket/teenpatti.socket");
 
@@ -123,3 +128,91 @@ async function startServer() {
 }
 
 startServer();
+
+/*
+ * Render deploy/restart এবং VPS shutdown-এর সময়
+ * নতুন connection বন্ধ করে Socket.IO ও database
+ * pool cleanভাবে release করবে।
+ */
+let shutdownStarted = false;
+
+async function shutdownServer(
+  signal,
+) {
+  if (shutdownStarted) {
+    return;
+  }
+
+  shutdownStarted = true;
+
+  console.log(
+    `SERVER SHUTDOWN STARTED: ${signal}`,
+  );
+
+  /*
+   * কোনো shutdown operation আটকে গেলে
+   * 15 সেকেন্ড পরে process forcefully বন্ধ হবে।
+   */
+  const forceExitTimer =
+    setTimeout(() => {
+      console.error(
+        "SERVER SHUTDOWN TIMEOUT",
+      );
+
+      process.exit(1);
+    }, 15000);
+
+  forceExitTimer.unref();
+
+  try {
+    /*
+     * নতুন Socket connection বন্ধ করে
+     * connected clients cleanভাবে disconnect করে।
+     */
+    await new Promise((resolve) => {
+      io.close(() => {
+        resolve();
+      });
+    });
+
+    /*
+     * চলমান database query শেষ হওয়ার পর
+     * connection pool বন্ধ করে।
+     */
+    await pool.end();
+
+    clearTimeout(forceExitTimer);
+
+    console.log(
+      "SERVER SHUTDOWN COMPLETED",
+    );
+
+    process.exit(0);
+  } catch (error) {
+    clearTimeout(forceExitTimer);
+
+    console.error(
+      "SERVER SHUTDOWN ERROR:",
+      {
+        message: error.message,
+        code: error.code,
+      },
+    );
+
+    process.exit(1);
+  }
+}
+
+process.once(
+  "SIGTERM",
+  () => {
+    void shutdownServer("SIGTERM");
+  },
+);
+
+process.once(
+  "SIGINT",
+  () => {
+    void shutdownServer("SIGINT");
+  },
+);
