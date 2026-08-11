@@ -257,55 +257,33 @@ function detectBannerImageMimeType(
   return null;
 }
 
-function validateUploadedImage(
-  file,
-) {
-  if (!file) {
-    return null;
-  }
-
+function validateUploadedImage(file) {
   if (
-    !Buffer.isBuffer(
-      file.buffer,
-    ) ||
+    !file ||
+    !Buffer.isBuffer(file.buffer) ||
     file.buffer.length < 1
   ) {
     throw createServiceError(
-      "Uploaded banner image is empty.",
+      "A valid banner image is required.",
       400,
-      "EMPTY_BANNER_IMAGE",
+      "BANNER_IMAGE_REQUIRED",
     );
   }
 
   const declaredMimeType =
-  String(
-    file.mimetype || "",
-  )
-    .trim()
-    .toLowerCase();
+    String(file.mimetype || "")
+      .trim()
+      .toLowerCase();
 
+  /*
+   * Browser-এর declared MIME type আগে
+   * allowlist দিয়ে পরীক্ষা করা হচ্ছে।
+   */
   if (
     !ALLOWED_IMAGE_TYPES.has(
-      file.mimetype,
+      declaredMimeType,
     )
   ) {
-
-    const detectedMimeType =
-  detectBannerImageMimeType(
-    file.buffer,
-  );
-
-if (
-  !detectedMimeType ||
-  detectedMimeType !==
-    declaredMimeType
-) {
-  throw createServiceError(
-    "Banner image content does not match its declared image type.",
-    400,
-    "BANNER_IMAGE_SIGNATURE_MISMATCH",
-  );
-}
     throw createServiceError(
       "Only JPG, PNG and WebP banner images are allowed.",
       400,
@@ -324,6 +302,27 @@ if (
     );
   }
 
+  /*
+   * File extension বা browser MIME বিশ্বাস
+   * না করে actual image bytes পরীক্ষা।
+   */
+  const detectedMimeType =
+    detectBannerImageMimeType(
+      file.buffer,
+    );
+
+  if (
+    !detectedMimeType ||
+    detectedMimeType !==
+      declaredMimeType
+  ) {
+    throw createServiceError(
+      "Banner image content does not match its declared image type.",
+      400,
+      "BANNER_IMAGE_SIGNATURE_MISMATCH",
+    );
+  }
+
   return {
     fileName:
       String(
@@ -332,7 +331,7 @@ if (
       ).slice(0, 255),
 
     mimeType:
-  detectedMimeType,
+      detectedMimeType,
 
     imageSize:
       file.buffer.length,
