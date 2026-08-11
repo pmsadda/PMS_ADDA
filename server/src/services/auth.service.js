@@ -405,9 +405,10 @@ async function findUserForLogin(
                 phone,
                 email,
                 password_hash,
-                role,
-                account_status,
-                wallet_balance
+              role,
+account_status,
+avatar_url,
+wallet_balance
             FROM users
             WHERE username = ?
                OR phone = ?
@@ -492,8 +493,12 @@ async function loginUser({
         fullName: user.full_name,
         username: user.username,
         phone: user.phone,
-        email: user.email,
-        role: user.role,
+       email: user.email,
+
+avatarUrl:
+    user.avatar_url || null,
+
+role: user.role,
         accountStatus:
             user.account_status,
         walletBalance:
