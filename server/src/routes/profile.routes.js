@@ -12,6 +12,7 @@ const {
 
 const {
   uploadProfileAvatar,
+  getProfileAvatar,
 } = require("../controllers/profile-avatar.controller");
 
 const router = express.Router();
@@ -48,6 +49,11 @@ const handleAvatarUpload = (request, response, next) => {
     });
   });
 };
+
+router.get(
+  "/avatar/:userId",
+  getProfileAvatar,
+);
 
 router.post(
   "/avatar",
