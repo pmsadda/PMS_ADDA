@@ -40,6 +40,12 @@ let roundTimer = null;
 let nextRoundTimer = null;
 let loopBusy = false;
 
+const CARD_DEAL_INTERVAL_MS =
+  750;
+
+const CARD_RESULT_BUFFER_MS =
+  700;
+
 const PUBLIC_ROOM =
   "andar-bahar:public";
 
@@ -523,79 +529,115 @@ async function settleCurrentRound(
      * প্রত্যেক connected user-কে তার updated wallet ও
      * bet result আলাদাভাবে পাঠানো হবে।
      */
-    const connectedSockets =
-      await namespace
-        .in(PUBLIC_ROOM)
-        .fetchSockets();
+   const dealtCardCount =
+  Array.isArray(
+    result.cards,
+  )
+    ? result.cards.filter(
+        (card) =>
+          card.side !==
+          "joker",
+      ).length
+    : 0;
 
-    await Promise.all(
-      connectedSockets.map(
-        async (socket) => {
-          try {
-            const [userRows] =
-              await pool.query(
-                `
-                  SELECT
-                    wallet_balance
+const visualDealDuration =
+  dealtCardCount *
+    CARD_DEAL_INTERVAL_MS +
+  CARD_RESULT_BUFFER_MS;
 
-                  FROM users
+const privateResultTimer =
+  setTimeout(
+    async () => {
+      try {
+        const connectedSockets =
+          await namespace
+            .in(PUBLIC_ROOM)
+            .fetchSockets();
 
-                  WHERE id = ?
+        await Promise.all(
+          connectedSockets.map(
+            async (
+              connectedSocket,
+            ) => {
+              try {
+                const [userRows] =
+                  await pool.query(
+                    `
+                      SELECT
+                        wallet_balance
 
-                  LIMIT 1
-                `,
-                [
-                  socket.user.id,
-                ],
-              );
+                      FROM users
 
-            const userBet =
-              await getUserRoundBet(
-                socket.user.id,
-                roundId,
-              );
+                      WHERE id = ?
 
-            socket.emit(
-              "andar-bahar:user-result",
-              {
-                success: true,
+                      LIMIT 1
+                    `,
+                    [
+                      connectedSocket
+                        .user.id,
+                    ],
+                  );
 
-                data: {
-                  userBet,
+                const userBet =
+                  await getUserRoundBet(
+                    connectedSocket
+                      .user.id,
+                    roundId,
+                  );
 
-                  walletBalance:
-                    Number(
-                      userRows[0]
-                        ?.wallet_balance ||
-                      0,
-                    ),
-                },
-              },
-            );
-          } catch (error) {
-            console.error(
-              "ANDAR BAHAR PRIVATE RESULT ERROR:",
-              error.message,
-            );
-          }
-        },
-      ),
-    );
+                connectedSocket.emit(
+                  "andar-bahar:user-result",
+                  {
+                    success: true,
+
+                    data: {
+                      userBet,
+
+                      walletBalance:
+                        Number(
+                          userRows[0]
+                            ?.wallet_balance ||
+                          0,
+                        ),
+                    },
+                  },
+                );
+              } catch (error) {
+                console.error(
+                  "ANDAR BAHAR PRIVATE RESULT ERROR:",
+                  error.message,
+                );
+              }
+            },
+          ),
+        );
+      } catch (error) {
+        console.error(
+          "ANDAR BAHAR DELAYED WALLET ERROR:",
+          error.message,
+        );
+      }
+    },
+    visualDealDuration,
+  );
+
+privateResultTimer.unref?.();
 
     const settings =
       await getGameSettings();
 
     const nextRoundDelay =
-      (
-        Number(
-          settings
-            .resultDisplaySeconds,
-        ) +
-        Number(
-          settings
-            .nextRoundDelaySeconds,
-        )
-      ) * 1000;
+  visualDealDuration +
+  (
+    Number(
+      settings
+        .resultDisplaySeconds,
+    ) +
+    Number(
+      settings
+        .nextRoundDelaySeconds,
+    )
+  ) * 1000;
 
     clearNextRoundTimer();
 

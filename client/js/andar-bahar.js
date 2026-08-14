@@ -1166,7 +1166,7 @@ animateCardFromJoker(
 container.scrollLeft =
   container.scrollWidth;
             },
-            index * 280,
+            index * 750,
           );
 
         state.cardAnimationTimers.push(
@@ -1175,10 +1175,10 @@ container.scrollLeft =
       },
     );
 
-    const resultDelay =
-      dealtCards.length *
-        280 +
-      450;
+   const resultDelay =
+  dealtCards.length *
+    750 +
+  700;
 
     const resultTimer =
       window.setTimeout(
