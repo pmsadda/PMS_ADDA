@@ -114,6 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pokerButton: document.getElementById("pokerBtn"),
     ludoButton: document.getElementById("ludoBtn"),
     carromButton: document.getElementById("carromBtn"),
+    andarBaharButton: document.getElementById("andarBaharBtn"),
     lotteryButton: document.getElementById("lotteryBtn"),
 
     settingsButton: document.getElementById("settingsBtn"),
@@ -1535,6 +1536,14 @@ DOM.carromButton?.addEventListener(
       "info",
     );
   },
+);
+
+DOM.andarBaharButton?.addEventListener(
+  "click",
+  () =>
+    navigateTo(
+      "./andar-bahar.html",
+    ),
 );
 
   DOM.lotteryButton?.addEventListener("click", () =>

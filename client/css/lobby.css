@@ -2999,3 +2999,338 @@ button:focus{
     font-size: 12px;
   }
 }
+
+/* =========================================================
+   ANDAR BAHAR LOBBY CARD
+========================================================= */
+
+.andar-bahar-lobby-card {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(255, 215, 0, 0.38);
+}
+
+.andar-bahar-lobby-card::after {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    background:
+        radial-gradient(
+            circle at 24% 45%,
+            rgba(255, 215, 0, 0.12),
+            transparent 42%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(2, 24, 16, 0.12),
+            rgba(255, 215, 0, 0.04)
+        );
+}
+
+.andar-bahar-lobby-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.andar-bahar-lobby-art {
+    position: relative;
+    display: flex;
+    min-width: 270px;
+    min-height: 215px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(19, 102, 67, 0.9),
+            rgba(3, 35, 23, 0.98) 68%
+        );
+    border: 1px solid rgba(255, 215, 0, 0.34);
+    border-radius: 18px;
+    box-shadow:
+        inset 0 0 30px rgba(0, 0, 0, 0.48),
+        0 12px 25px rgba(0, 0, 0, 0.34);
+}
+
+.andar-bahar-lobby-art::before {
+    position: absolute;
+    inset: 11px;
+    content: "";
+    pointer-events: none;
+    border: 1px solid rgba(255, 215, 0, 0.24);
+    border-radius: 13px;
+}
+
+.ab-lobby-card {
+    position: absolute;
+    top: 30px;
+    display: flex;
+    width: 78px;
+    height: 108px;
+    padding: 9px;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
+    color: #06130f;
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #e8e3d3
+        );
+    border: 2px solid #ffd700;
+    border-radius: 9px;
+    box-shadow: 0 11px 19px rgba(0, 0, 0, 0.48);
+    transform-origin: bottom center;
+}
+
+.ab-lobby-card span {
+    align-self: flex-start;
+    color: #9c151e;
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.ab-lobby-card i {
+    color: #9c151e;
+    font-size: 31px;
+}
+
+.ab-card-left {
+    margin-left: -92px;
+    transform: rotate(-13deg);
+    animation:
+        andarBaharLeftCard
+        3.2s ease-in-out infinite;
+}
+
+.ab-card-center {
+    z-index: 2;
+    top: 22px;
+    background:
+        linear-gradient(
+            145deg,
+            #fff8cf,
+            #ffd76e
+        );
+    transform: translateY(-4px);
+    animation:
+        andarBaharCenterCard
+        2.8s ease-in-out infinite;
+}
+
+.ab-card-center span,
+.ab-card-center i {
+    color: #765400;
+}
+
+.ab-card-right {
+    margin-left: 92px;
+    transform: rotate(13deg);
+    animation:
+        andarBaharRightCard
+        3.2s ease-in-out infinite;
+}
+
+.ab-card-right span,
+.ab-card-right i {
+    color: #06130f;
+}
+
+.ab-lobby-title {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    display: flex;
+    min-height: 42px;
+    padding: 8px 10px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    background: rgba(0, 0, 0, 0.48);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    letter-spacing: 0.7px;
+}
+
+.ab-lobby-title strong {
+    color: #ffd700;
+    font-size: 14px;
+}
+
+.ab-lobby-title span {
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.andar-bahar-lobby-features {
+    display: flex;
+    margin: 11px 0 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.andar-bahar-lobby-features span {
+    display: inline-flex;
+    min-height: 29px;
+    padding: 6px 9px;
+    align-items: center;
+    gap: 6px;
+    color: #e7eee9;
+    background: rgba(255, 215, 0, 0.07);
+    border: 1px solid rgba(255, 215, 0, 0.23);
+    border-radius: 16px;
+    font-size: 11px;
+}
+
+.andar-bahar-lobby-features i {
+    color: #ffd700;
+}
+
+.andar-bahar-play-btn {
+    background:
+        linear-gradient(
+            135deg,
+            #ffd700,
+            #e7ad1b
+        );
+}
+
+.andar-bahar-play-btn:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+}
+
+@keyframes andarBaharLeftCard {
+    0%,
+    100% {
+        transform:
+            rotate(-13deg)
+            translateY(0);
+    }
+
+    50% {
+        transform:
+            rotate(-10deg)
+            translateY(-7px);
+    }
+}
+
+@keyframes andarBaharCenterCard {
+    0%,
+    100% {
+        transform:
+            translateY(-4px)
+            scale(1);
+        box-shadow:
+            0 11px 19px rgba(0, 0, 0, 0.48),
+            0 0 9px rgba(255, 215, 0, 0.25);
+    }
+
+    50% {
+        transform:
+            translateY(-11px)
+            scale(1.04);
+        box-shadow:
+            0 15px 24px rgba(0, 0, 0, 0.52),
+            0 0 22px rgba(255, 215, 0, 0.52);
+    }
+}
+
+@keyframes andarBaharRightCard {
+    0%,
+    100% {
+        transform:
+            rotate(13deg)
+            translateY(0);
+    }
+
+    50% {
+        transform:
+            rotate(10deg)
+            translateY(-7px);
+    }
+}
+
+/* =========================================================
+   ANDAR BAHAR RESPONSIVE
+========================================================= */
+
+@media (max-width: 760px) {
+    .andar-bahar-lobby-art {
+        min-width: 220px;
+        min-height: 190px;
+    }
+
+    .ab-lobby-card {
+        top: 26px;
+        width: 68px;
+        height: 94px;
+    }
+
+    .ab-card-center {
+        top: 19px;
+    }
+
+    .ab-card-left {
+        margin-left: -78px;
+    }
+
+    .ab-card-right {
+        margin-left: 78px;
+    }
+
+    .ab-lobby-card i {
+        font-size: 26px;
+    }
+}
+
+@media (max-width: 520px) {
+    .andar-bahar-lobby-art {
+        width: 100%;
+        min-width: 0;
+        min-height: 170px;
+    }
+
+    .ab-lobby-card {
+        width: 61px;
+        height: 85px;
+        padding: 7px;
+    }
+
+    .ab-lobby-card span {
+        font-size: 17px;
+    }
+
+    .ab-lobby-card i {
+        font-size: 23px;
+    }
+
+    .ab-card-left {
+        margin-left: -70px;
+    }
+
+    .ab-card-right {
+        margin-left: 70px;
+    }
+
+    .ab-lobby-title {
+        min-height: 36px;
+    }
+
+    .ab-lobby-title strong {
+        font-size: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ab-card-left,
+    .ab-card-center,
+    .ab-card-right {
+        animation: none;
+    }
+}

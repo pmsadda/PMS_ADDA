@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <meta
+        name="theme-color"
+        content="#06130f">
+
+    <title>Andar Bahar | PMS ADDA</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="../assets/logo/logo.png">
+
+    <link
+        rel="preconnect"
+        href="https://cdnjs.cloudflare.com">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/andar-bahar.css">
+
+</head>
+
+<body>
+
+    <main class="andar-bahar-app">
+
+        <!-- =========================
+             GAME HEADER
+        ========================== -->
+
+        <header class="game-header">
+
+            <button
+                class="header-icon-btn"
+                id="backBtn"
+                type="button"
+                aria-label="Return to lobby">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+            </button>
+
+            <a
+                class="game-brand"
+                href="./lobby.html"
+                aria-label="PMS ADDA lobby">
+
+                <img
+                    src="../assets/logo/logo.png"
+                    alt="PMS ADDA">
+
+                <div class="brand-text">
+
+                    <strong>PMS ADDA</strong>
+
+                    <span>Andar Bahar</span>
+
+                </div>
+
+            </a>
+
+            <div class="header-actions">
+
+                <div
+                    class="wallet-display"
+                    aria-label="Wallet balance">
+
+                    <i class="fa-solid fa-wallet"></i>
+
+                    <span>৳</span>
+
+                    <strong id="walletBalance">0.00</strong>
+
+                </div>
+
+                <button
+                    class="header-icon-btn"
+                    id="soundBtn"
+                    type="button"
+                    aria-label="Toggle sound">
+
+                    <i class="fa-solid fa-volume-high"></i>
+
+                </button>
+
+            </div>
+
+        </header>
+
+        <!-- =========================
+             CONNECTION MESSAGE
+        ========================== -->
+
+        <section
+            class="connection-bar"
+            id="connectionBar">
+
+            <span
+                class="connection-dot"
+                id="connectionDot">
+            </span>
+
+            <span id="connectionText">
+                Connecting to Andar Bahar...
+            </span>
+
+        </section>
+
+        <!-- =========================
+             GAME INFORMATION
+        ========================== -->
+
+        <section class="round-information">
+
+            <div class="round-number">
+
+                <span>Round</span>
+
+                <strong id="roundCode">Waiting...</strong>
+
+            </div>
+
+            <div class="round-status">
+
+                <span id="roundStatusText">
+                    Connecting
+                </span>
+
+                <div
+                    class="round-timer"
+                    id="roundTimer">
+
+                    <i class="fa-regular fa-clock"></i>
+
+                    <strong id="timerValue">--</strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- =========================
+             GAME TABLE
+        ========================== -->
+
+        <section class="andar-bahar-table">
+
+            <div
+                class="table-glow"
+                aria-hidden="true">
+            </div>
+
+            <!-- Joker Card -->
+
+            <div class="joker-section">
+
+                <span class="section-label">
+                    Joker Card
+                </span>
+
+                <div
+                    class="card-slot joker-slot"
+                    id="jokerCardSlot">
+
+                    <img
+                        id="jokerCardImage"
+                        src="../assets/cards/card-back.png"
+                        alt="Joker card">
+
+                </div>
+
+            </div>
+
+            <!-- Playing Sides -->
+
+            <div class="playing-sides">
+
+                <!-- Andar -->
+
+                <article
+                    class="bet-side andar-side"
+                    id="andarSide">
+
+                    <div class="side-heading">
+
+                        <span class="side-letter">A</span>
+
+                        <div>
+
+                            <h2>ANDAR</h2>
+
+                            <p>First card side</p>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="dealt-cards"
+                        id="andarCards">
+
+                        <span class="empty-card-message">
+                            Cards will appear here
+                        </span>
+
+                    </div>
+
+                    <div class="side-statistics">
+
+                        <span>
+
+                            <i class="fa-solid fa-users"></i>
+
+                            <strong id="andarPlayers">0</strong>
+
+                        </span>
+
+                        <span>
+
+                            Total
+
+                            <strong>
+                                ৳<span id="andarTotal">0.00</span>
+                            </strong>
+
+                        </span>
+
+                    </div>
+
+                    <button
+                        class="side-select-btn"
+                        id="andarBetBtn"
+                        type="button"
+                        data-side="andar">
+
+                        <i class="fa-solid fa-coins"></i>
+
+                        Bet on Andar
+
+                    </button>
+
+                </article>
+
+                <!-- Bahar -->
+
+                <article
+                    class="bet-side bahar-side"
+                    id="baharSide">
+
+                    <div class="side-heading">
+
+                        <span class="side-letter">B</span>
+
+                        <div>
+
+                            <h2>BAHAR</h2>
+
+                            <p>Second card side</p>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="dealt-cards"
+                        id="baharCards">
+
+                        <span class="empty-card-message">
+                            Cards will appear here
+                        </span>
+
+                    </div>
+
+                    <div class="side-statistics">
+
+                        <span>
+
+                            <i class="fa-solid fa-users"></i>
+
+                            <strong id="baharPlayers">0</strong>
+
+                        </span>
+
+                        <span>
+
+                            Total
+
+                            <strong>
+                                ৳<span id="baharTotal">0.00</span>
+                            </strong>
+
+                        </span>
+
+                    </div>
+
+                    <button
+                        class="side-select-btn"
+                        id="baharBetBtn"
+                        type="button"
+                        data-side="bahar">
+
+                        <i class="fa-solid fa-coins"></i>
+
+                        Bet on Bahar
+
+                    </button>
+
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- =========================
+             BETTING PANEL
+        ========================== -->
+
+        <section
+            class="betting-panel"
+            id="bettingPanel">
+
+            <div class="selected-bet-information">
+
+                <span>Selected Side</span>
+
+                <strong id="selectedSideText">
+                    Choose Andar or Bahar
+                </strong>
+
+            </div>
+
+            <div class="bet-amount-control">
+
+                <button
+                    class="amount-change-btn"
+                    id="decreaseBetBtn"
+                    type="button"
+                    aria-label="Decrease bet">
+
+                    <i class="fa-solid fa-minus"></i>
+
+                </button>
+
+                <div class="bet-amount-display">
+
+                    <span>Bet Amount</span>
+
+                    <div>
+
+                        <span>৳</span>
+
+                        <input
+                            id="betAmountInput"
+                            type="number"
+                            value="5"
+                            min="5"
+                            max="1000"
+                            step="5"
+                            inputmode="decimal"
+                            aria-label="Bet amount">
+
+                    </div>
+
+                </div>
+
+                <button
+                    class="amount-change-btn"
+                    id="increaseBetBtn"
+                    type="button"
+                    aria-label="Increase bet">
+
+                    <i class="fa-solid fa-plus"></i>
+
+                </button>
+
+            </div>
+
+            <div
+                class="quick-bet-options"
+                id="quickBetOptions">
+
+                <button
+                    type="button"
+                    data-amount="5">
+                    ৳5
+                </button>
+
+                <button
+                    type="button"
+                    data-amount="10">
+                    ৳10
+                </button>
+
+                <button
+                    type="button"
+                    data-amount="20">
+                    ৳20
+                </button>
+
+                <button
+                    type="button"
+                    data-amount="50">
+                    ৳50
+                </button>
+
+                <button
+                    type="button"
+                    data-amount="100">
+                    ৳100
+                </button>
+
+                <button
+                    type="button"
+                    data-amount="500">
+                    ৳500
+                </button>
+
+                <button
+                    type="button"
+                    data-amount="1000">
+                    ৳1000
+                </button>
+
+            </div>
+
+            <button
+                class="place-bet-btn"
+                id="placeBetBtn"
+                type="button"
+                disabled>
+
+                <i class="fa-solid fa-coins"></i>
+
+                <span id="placeBetText">
+                    Select Andar or Bahar
+                </span>
+
+            </button>
+
+            <p
+                class="betting-message"
+                id="bettingMessage">
+
+                Minimum bet ৳5 and maximum bet ৳1000.
+
+            </p>
+
+        </section>
+
+        <!-- =========================
+             MY CURRENT BET
+        ========================== -->
+
+        <section
+            class="my-bet-card is-hidden"
+            id="myBetCard">
+
+            <div>
+
+                <span>My Bet</span>
+
+                <strong id="myBetSide">--</strong>
+
+            </div>
+
+            <div>
+
+                <span>Amount</span>
+
+                <strong>
+                    ৳<span id="myBetAmount">0.00</span>
+                </strong>
+
+            </div>
+
+            <div>
+
+                <span>Status</span>
+
+                <strong id="myBetStatus">Accepted</strong>
+
+            </div>
+
+        </section>
+
+        <!-- =========================
+             RECENT RESULTS
+        ========================== -->
+
+        <section class="recent-results-section">
+
+            <div class="section-title">
+
+                <div>
+
+                    <span>History</span>
+
+                    <h2>Recent Results</h2>
+
+                </div>
+
+                <button
+                    id="refreshHistoryBtn"
+                    type="button"
+                    aria-label="Refresh history">
+
+                    <i class="fa-solid fa-rotate"></i>
+
+                </button>
+
+            </div>
+
+            <div
+                class="recent-results"
+                id="recentResults">
+
+                <p class="history-placeholder">
+                    Recent results will appear here.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- =========================
+         WINNER OVERLAY
+    ========================== -->
+
+    <div
+        class="result-overlay is-hidden"
+        id="resultOverlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="resultTitle">
+
+        <div class="result-modal">
+
+            <button
+                class="result-close-btn"
+                id="resultCloseBtn"
+                type="button"
+                aria-label="Close result">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+            <div class="winner-crown">
+
+                <i class="fa-solid fa-crown"></i>
+
+            </div>
+
+            <span class="result-label">
+                Winning Side
+            </span>
+
+            <h2 id="resultTitle">
+                ANDAR
+            </h2>
+
+            <div class="result-cards">
+
+                <div>
+
+                    <span>Joker</span>
+
+                    <img
+                        id="resultJokerCard"
+                        src="../assets/cards/card-back.png"
+                        alt="Result joker card">
+
+                </div>
+
+                <i class="fa-solid fa-equals"></i>
+
+                <div>
+
+                    <span>Matching</span>
+
+                    <img
+                        id="resultMatchingCard"
+                        src="../assets/cards/card-back.png"
+                        alt="Matching card">
+
+                </div>
+
+            </div>
+
+            <p id="userResultMessage">
+                Round completed.
+            </p>
+
+            <button
+                class="continue-btn"
+                id="continueBtn"
+                type="button">
+
+                Continue Playing
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+         LOADING OVERLAY
+    ========================== -->
+
+    <div
+        class="loading-overlay"
+        id="loadingOverlay">
+
+        <img
+            src="../assets/logo/logo.png"
+            alt="PMS ADDA">
+
+        <div class="loading-spinner"></div>
+
+        <p id="loadingText">
+            Loading Andar Bahar...
+        </p>
+
+    </div>
+
+    <!-- =========================
+         TOAST
+    ========================== -->
+
+    <div
+        class="game-toast"
+        id="gameToast"
+        role="status"
+        aria-live="polite">
+    </div>
+
+    <!-- =========================
+         SCRIPTS
+    ========================== -->
+
+    <script src="../js/app-config.js"></script>
+
+    <script src="../js/auth-guard.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script src="../js/game-orientation.js"></script>
+
+    <script src="../js/andar-bahar.js"></script>
+
+</body>
+
+</html>
