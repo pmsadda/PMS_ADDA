@@ -771,6 +771,11 @@
       round.roundCode ||
       `#${round.id}`;
 
+      DOM.jokerCardImage.src =
+  getCardImageUrl(
+    round.jokerCard,
+  );
+
     DOM.roundStatusText.textContent =
       formatStatus(
         round.roundStatus,
@@ -992,6 +997,113 @@
     return image;
   }
 
+  function animateCardFromJoker(
+  image,
+  side,
+) {
+  if (
+    !image ||
+    typeof image.animate !==
+      "function"
+  ) {
+    return;
+  }
+
+  const reduceMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+  if (reduceMotion) {
+    return;
+  }
+
+  window.requestAnimationFrame(
+    () => {
+      const jokerRect =
+        DOM.jokerCardImage
+          .getBoundingClientRect();
+
+      const cardRect =
+        image
+          .getBoundingClientRect();
+
+      const sourceCenterX =
+        jokerRect.left +
+        jokerRect.width / 2;
+
+      const sourceCenterY =
+        jokerRect.top +
+        jokerRect.height / 2;
+
+      const targetCenterX =
+        cardRect.left +
+        cardRect.width / 2;
+
+      const targetCenterY =
+        cardRect.top +
+        cardRect.height / 2;
+
+      const translateX =
+        sourceCenterX -
+        targetCenterX;
+
+      const translateY =
+        sourceCenterY -
+        targetCenterY;
+
+      const startingRotation =
+        side === "andar"
+          ? -14
+          : 14;
+
+      image.animate(
+        [
+          {
+            opacity: 0.15,
+
+            transform:
+              `translate(${translateX}px, ${translateY}px) ` +
+              `scale(0.72) rotate(${startingRotation}deg)`,
+
+            filter:
+              "drop-shadow(0 16px 15px rgba(0, 0, 0, 0.7))",
+          },
+
+          {
+            opacity: 1,
+
+            transform:
+              "translate(0, 0) scale(1.08) rotate(0deg)",
+
+            offset: 0.82,
+          },
+
+          {
+            opacity: 1,
+
+            transform:
+              "translate(0, 0) scale(1) rotate(0deg)",
+
+            filter:
+              cardRect.width
+                ? "drop-shadow(0 7px 8px rgba(0, 0, 0, 0.55))"
+                : "none",
+          },
+        ],
+        {
+          duration: 560,
+
+          easing:
+            "cubic-bezier(0.18, 0.82, 0.28, 1)",
+
+          fill: "both",
+        },
+      );
+    },
+  );
+}
+
   function showRoundResult(result) {
     if (!result?.round) {
       return;
@@ -1037,14 +1149,22 @@
                   ? DOM.andarCards
                   : DOM.baharCards;
 
-              container.appendChild(
-                createCardElement(
-                  card,
-                ),
-              );
+              const cardImage =
+  createCardElement(
+    card,
+  );
 
-              container.scrollLeft =
-                container.scrollWidth;
+container.appendChild(
+  cardImage,
+);
+
+animateCardFromJoker(
+  cardImage,
+  card.side,
+);
+
+container.scrollLeft =
+  container.scrollWidth;
             },
             index * 280,
           );

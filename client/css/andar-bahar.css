@@ -1207,3 +1207,251 @@ button:disabled {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* =========================================================
+   COMPACT ANDAR BAHAR LAYOUT
+========================================================= */
+
+@media (min-width: 761px) {
+    .andar-bahar-app {
+        width: min(100%, 980px);
+        padding-top: 72px;
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .game-header {
+        width: min(100%, 980px);
+        min-height: 58px;
+        padding: 7px 12px;
+    }
+
+    .game-brand img {
+        width: 38px;
+        height: 38px;
+    }
+
+    .brand-text strong {
+        font-size: 15px;
+    }
+
+    .header-icon-btn {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+
+    .wallet-display {
+        min-height: 36px;
+        padding: 0 11px;
+    }
+
+    .connection-bar {
+        min-height: 32px;
+        margin-bottom: 9px;
+        padding: 6px 11px;
+        font-size: 12px;
+    }
+
+    .round-information {
+        margin-bottom: 10px;
+        padding: 9px 14px;
+        border-radius: 12px;
+    }
+
+    .round-number {
+        gap: 2px;
+    }
+
+    .round-number span {
+        font-size: 10px;
+    }
+
+    .round-number strong {
+        font-size: 13px;
+    }
+
+    .round-status {
+        gap: 2px;
+    }
+
+    .round-status > span {
+        font-size: 11px;
+    }
+
+    .round-timer {
+        min-width: 60px;
+        padding: 5px 9px;
+    }
+
+    .round-timer strong {
+        font-size: 14px;
+    }
+
+    .andar-bahar-table {
+        padding: 13px;
+        border-radius: 20px;
+    }
+
+    .table-glow {
+        inset: 7px;
+        border-radius: 15px;
+    }
+
+    .joker-section {
+        margin-bottom: 10px;
+        gap: 5px;
+    }
+
+    .section-label {
+        font-size: 10px;
+    }
+
+    .card-slot {
+        width: 55px;
+        min-width: 55px;
+        height: 78px;
+        border-radius: 7px;
+    }
+
+    .card-slot img {
+        width: 51px;
+        height: 73px;
+    }
+
+    .playing-sides {
+        gap: 9px;
+    }
+
+    .bet-side {
+        padding: 9px;
+        border-radius: 13px;
+    }
+
+    .side-heading {
+        gap: 7px;
+    }
+
+    .side-letter {
+        width: 33px;
+        height: 33px;
+        flex-basis: 33px;
+        font-size: 15px;
+    }
+
+    .side-heading h2 {
+        font-size: 14px;
+    }
+
+    .side-heading p {
+        font-size: 10px;
+    }
+
+    .dealt-cards {
+        min-height: 76px;
+        margin: 8px 0;
+        padding: 5px;
+        border-radius: 8px;
+    }
+
+    .dealt-card {
+        width: 45px;
+        height: 64px;
+        flex-basis: 45px;
+        margin-left: -18px;
+    }
+
+    .side-statistics {
+        margin-bottom: 7px;
+        font-size: 10px;
+    }
+
+    .side-select-btn {
+        min-height: 33px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        font-size: 11px;
+    }
+
+    .betting-panel {
+        margin-top: 10px;
+        padding: 11px 13px;
+        border-radius: 13px;
+    }
+
+    .selected-bet-information {
+        margin-bottom: 8px;
+    }
+
+    .bet-amount-control {
+        grid-template-columns: 38px minmax(0, 1fr) 38px;
+        gap: 7px;
+    }
+
+    .amount-change-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 9px;
+    }
+
+    .bet-amount-display {
+        padding: 5px 9px;
+        border-radius: 9px;
+    }
+
+    .bet-amount-display > span {
+        font-size: 9px;
+    }
+
+    .bet-amount-display > div {
+        font-size: 15px;
+    }
+
+    .bet-amount-display input {
+        width: 90px;
+        font-size: 17px;
+    }
+
+    .quick-bet-options {
+        margin: 8px 0;
+        gap: 5px;
+    }
+
+    .quick-bet-options button {
+        min-height: 28px;
+        padding: 4px 3px;
+        border-radius: 7px;
+        font-size: 10px;
+    }
+
+    .place-bet-btn {
+        min-height: 38px;
+        padding: 8px 13px;
+        border-radius: 9px;
+        font-size: 13px;
+    }
+
+    .betting-message {
+        margin-top: 6px;
+        font-size: 10px;
+    }
+
+    .my-bet-card {
+        margin-top: 9px;
+        padding: 9px;
+    }
+
+    .recent-results-section {
+        margin-top: 10px;
+        padding: 11px 13px;
+    }
+}
+
+/*
+ * পুরোনো basic animation বন্ধ থাকবে।
+ * JavaScript exact Joker position থেকে flying animation চালাবে।
+ */
+.dealt-card {
+    animation: none;
+    will-change: transform, opacity;
+}

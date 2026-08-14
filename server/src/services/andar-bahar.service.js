@@ -613,6 +613,12 @@ async function createRound() {
     const roundNonce =
       createReferenceCode("NONCE");
 
+      const preparedCards =
+  prepareRoundCards(
+    serverSeed,
+    roundNonce,
+  );
+
     const bettingDurationSeconds =
       Math.max(
         5,
@@ -624,36 +630,45 @@ async function createRound() {
 
     const [insertResult] =
       await connection.query(
-        `
-          INSERT INTO andar_bahar_rounds (
-            round_code,
-            round_status,
-            server_seed_hash,
-            server_seed,
-            round_nonce,
-            betting_started_at,
-            betting_closes_at
-          )
-          VALUES (
-            ?,
-            'betting',
-            ?,
-            ?,
-            ?,
-            CURRENT_TIMESTAMP(3),
-            DATE_ADD(
-              CURRENT_TIMESTAMP(3),
-              INTERVAL ? SECOND
-            )
-          )
+        `INSERT INTO andar_bahar_rounds (
+  round_code,
+  round_status,
+  joker_card,
+  joker_rank,
+  server_seed_hash,
+  server_seed,
+  round_nonce,
+  betting_started_at,
+  betting_closes_at
+)
+VALUES (
+  ?,
+  'betting',
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  CURRENT_TIMESTAMP(3),
+  DATE_ADD(
+    CURRENT_TIMESTAMP(3),
+    INTERVAL ? SECOND
+  )
+)
         `,
         [
-          roundCode,
-          serverSeedHash,
-          serverSeed,
-          roundNonce,
-          bettingDurationSeconds,
-        ],
+  roundCode,
+  preparedCards
+    .jokerCard
+    .code,
+  preparedCards
+    .jokerCard
+    .rank,
+  serverSeedHash,
+  serverSeed,
+  roundNonce,
+  bettingDurationSeconds,
+],
       );
 
     const roundRow =
