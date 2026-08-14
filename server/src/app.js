@@ -50,6 +50,8 @@ const lotteryRoutes = require("./routes/lottery.routes");
 
 const andarBaharRoutes = require("./routes/andar-bahar.routes");
 
+const adminAndarBaharRoutes = require("./routes/admin-andar-bahar.routes");
+
 const adminLotteryRoutes = require("./routes/admin-lottery.routes");
 
 const app = express();
@@ -289,6 +291,8 @@ app.use("/api/carrom", carromRoutes);
 app.use("/api/lottery", lotteryRoutes);
 
 app.use("/api/andar-bahar", andarBaharRoutes);
+
+app.use("/api/admin/andar-bahar", adminAndarBaharRoutes);
 
 app.use("/api/admin/lottery", adminLotteryRoutes);
 
