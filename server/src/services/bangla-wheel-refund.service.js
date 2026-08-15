@@ -1,8 +1,6 @@
 "use strict";
 
-const {
-  pool,
-} = require("../config/database");
+const { pool } = require("../config/database");
 
 const {
   ROUND_STATUS,
@@ -10,48 +8,35 @@ const {
   parseMoney,
   parsePositiveInteger,
   createReferenceCode,
-  mapRoundRow
-} = require(
-  "./bangla-wheel.service"
-);
+  mapRoundRow,
+} = require("./bangla-wheel.service");
 
 /* =========================================================
    REFUND ROUND
 ========================================================= */
 
-async function refundRound(
-  roundId,
-  reason =
-    "Bangla Wheel round cancelled"
-) {
-  const validRoundId =
-    parsePositiveInteger(
-      roundId
-    );
+async function refundRound(roundId, reason = "Bangla Wheel round cancelled") {
+  const validRoundId = parsePositiveInteger(roundId);
 
   const refundReason =
     String(reason || "")
       .trim()
-      .slice(0, 255) ||
-    "Bangla Wheel round cancelled";
+      .slice(0, 255) || "Bangla Wheel round cancelled";
 
   assertCondition(
     validRoundId,
     "Valid Bangla Wheel round ID is required.",
     400,
-    "INVALID_ROUND_ID"
+    "INVALID_ROUND_ID",
   );
 
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
-    await connection
-      .beginTransaction();
+    await connection.beginTransaction();
 
-    const [roundRows] =
-      await connection.query(
-        `
+    const [roundRows] = await connection.query(
+      `
           SELECT
             *
 
@@ -63,32 +48,26 @@ async function refundRound(
 
           FOR UPDATE
         `,
-        [validRoundId]
-      );
+      [validRoundId],
+    );
 
-    const round =
-      roundRows[0] ||
-      null;
+    const round = roundRows[0] || null;
 
     assertCondition(
       round,
       "Bangla Wheel round was not found.",
       404,
-      "ROUND_NOT_FOUND"
+      "ROUND_NOT_FOUND",
     );
 
     assertCondition(
-      round.round_status !==
-        ROUND_STATUS.COMPLETED,
+      round.round_status !== ROUND_STATUS.COMPLETED,
       "A completed round cannot be refunded.",
       409,
-      "COMPLETED_ROUND_NOT_REFUNDABLE"
+      "COMPLETED_ROUND_NOT_REFUNDABLE",
     );
 
-    if (
-      round.round_status ===
-        ROUND_STATUS.REFUNDED
-    ) {
+    if (round.round_status === ROUND_STATUS.REFUNDED) {
       await connection.commit();
 
       return {
@@ -96,8 +75,7 @@ async function refundRound(
         refundedPlayers: 0,
         refundedAmount: 0,
 
-        round:
-          mapRoundRow(round)
+        round: mapRoundRow(round),
       };
     }
 
@@ -119,15 +97,11 @@ async function refundRound(
 
         WHERE id = ?
       `,
-      [
-        refundReason,
-        validRoundId
-      ]
+      [refundReason, validRoundId],
     );
 
-    const [betRows] =
-      await connection.query(
-        `
+    const [betRows] = await connection.query(
+      `
           SELECT
             *
 
@@ -141,28 +115,19 @@ async function refundRound(
 
           FOR UPDATE
         `,
-        [validRoundId]
-      );
+      [validRoundId],
+    );
 
     let refundedPlayers = 0;
     let refundedAmount = 0;
 
-    for (
-      const bet of betRows
-    ) {
-      const userId =
-        Number(
-          bet.user_id
-        );
+    for (const bet of betRows) {
+      const userId = Number(bet.user_id);
 
-      const betAmount =
-        parseMoney(
-          bet.bet_amount
-        );
+      const betAmount = parseMoney(bet.bet_amount);
 
-      const [userRows] =
-        await connection.query(
-          `
+      const [userRows] = await connection.query(
+        `
             SELECT
               id,
               wallet_balance,
@@ -176,39 +141,26 @@ async function refundRound(
 
             FOR UPDATE
           `,
-          [userId]
-        );
+        [userId],
+      );
 
-      const user =
-        userRows[0] ||
-        null;
+      const user = userRows[0] || null;
 
       assertCondition(
         user,
         `Refund user ${userId} was not found.`,
         500,
-        "REFUND_USER_NOT_FOUND"
+        "REFUND_USER_NOT_FOUND",
       );
 
-      const balanceBefore =
-        parseMoney(
-          user.wallet_balance
-        );
+      const balanceBefore = parseMoney(user.wallet_balance);
 
-      const balanceAfter =
-        parseMoney(
-          balanceBefore +
-            betAmount
-        );
+      const balanceAfter = parseMoney(balanceBefore + betAmount);
 
-      const refundTransactionId =
-        createReferenceCode(
-          "BW_REFUND"
-        );
+      const refundTransactionId = createReferenceCode("BW_REFUND");
 
-      const [walletResult] =
-        await connection.query(
-          `
+      const [walletResult] = await connection.query(
+        `
             UPDATE users
 
             SET
@@ -223,19 +175,14 @@ async function refundRound(
 
             WHERE id = ?
           `,
-          [
-            betAmount,
-            betAmount,
-            userId
-          ]
-        );
+        [betAmount, betAmount, userId],
+      );
 
       assertCondition(
-        walletResult.affectedRows ===
-          1,
+        walletResult.affectedRows === 1,
         "Bangla Wheel refund credit failed.",
         500,
-        "REFUND_CREDIT_FAILED"
+        "REFUND_CREDIT_FAILED",
       );
 
       await connection.query(
@@ -274,8 +221,8 @@ async function refundRound(
           balanceBefore,
           balanceAfter,
           bet.bet_code,
-          `Bangla Wheel round ${round.round_code} refund: ${refundReason}`
-        ]
+          `Bangla Wheel round ${round.round_code} refund: ${refundReason}`,
+        ],
       );
 
       await connection.query(
@@ -303,20 +250,12 @@ async function refundRound(
             AND bet_status =
               'accepted'
         `,
-        [
-          balanceAfter,
-          refundTransactionId,
-          bet.id
-        ]
+        [balanceAfter, refundTransactionId, bet.id],
       );
 
       refundedPlayers += 1;
 
-      refundedAmount =
-        parseMoney(
-          refundedAmount +
-            betAmount
-        );
+      refundedAmount = parseMoney(refundedAmount + betAmount);
     }
 
     await connection.query(
@@ -337,15 +276,11 @@ async function refundRound(
 
         WHERE id = ?
       `,
-      [
-        refundReason,
-        validRoundId
-      ]
+      [refundReason, validRoundId],
     );
 
-    const [updatedRows] =
-      await connection.query(
-        `
+    const [updatedRows] = await connection.query(
+      `
           SELECT
             *
 
@@ -355,21 +290,18 @@ async function refundRound(
 
           LIMIT 1
         `,
-        [validRoundId]
-      );
+      [validRoundId],
+    );
 
     await connection.commit();
 
     return {
-  alreadyRefunded: false,
-  refundedPlayers,
-  refundedAmount,
+      alreadyRefunded: false,
+      refundedPlayers,
+      refundedAmount,
 
-  round:
-    mapRoundRow(
-      updatedRows[0]
-    )
-};
+      round: mapRoundRow(updatedRows[0]),
+    };
   } catch (error) {
     await connection.rollback();
 
@@ -384,9 +316,8 @@ async function refundRound(
 ========================================================= */
 
 async function getIncompleteRounds() {
-  const [rows] =
-    await pool.query(
-      `
+  const [rows] = await pool.query(
+    `
         SELECT
           *
 
@@ -401,23 +332,13 @@ async function getIncompleteRounds() {
         )
 
         ORDER BY id ASC
-      `
-    );
+      `,
+  );
 
-  return rows.map(
-    (round) =>
-      mapRoundRow(
-        round,
-        {
-          revealResult:
-            [
-              "spinning",
-              "settling"
-            ].includes(
-              round.round_status
-            )
-        }
-      )
+  return rows.map((round) =>
+    mapRoundRow(round, {
+      revealResult: ["spinning", "settling"].includes(round.round_status),
+    }),
   );
 }
 
@@ -427,5 +348,5 @@ async function getIncompleteRounds() {
 
 module.exports = {
   refundRound,
-  getIncompleteRounds
+  getIncompleteRounds,
 };
