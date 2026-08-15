@@ -1338,3 +1338,11 @@ button:disabled {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Loading overlay visibility fix */
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
