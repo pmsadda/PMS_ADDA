@@ -14,10 +14,8 @@ const {
 } = require(
   "../middleware/auth.middleware",
 );
-
 const {
   getGameState,
-  createOrGetRound,
   placeUserBet,
   getMyRoundBet,
   getCompletedResult,
@@ -98,18 +96,6 @@ router.get(
   "/state",
   gameReadLimiter,
   getGameState,
-);
-
-/*
- * POST /api/andar-bahar/round
- *
- * Socket game loop-ও একই service ব্যবহার করবে।
- * Duplicate active round তৈরি হবে না।
- */
-router.post(
-  "/round",
-  betLimiter,
-  createOrGetRound,
 );
 
 /*
