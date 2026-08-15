@@ -3334,3 +3334,326 @@ button:focus{
         animation: none;
     }
 }
+
+/* =====================================================
+   LOBBY — FINAL EQUAL MOBILE GAME CARDS
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .app {
+    padding-bottom:
+      calc(
+        125px +
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+  .game-list {
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      ) !important;
+
+    grid-auto-rows: 380px;
+
+    align-items: stretch;
+
+    gap: 12px;
+
+    width: 100%;
+  }
+
+  .game-card {
+    display: flex !important;
+
+    width: 100%;
+    min-width: 0;
+    height: 100% !important;
+    min-height: 0;
+
+    padding: 11px;
+
+    flex-direction: column !important;
+    align-items: center;
+
+    gap: 9px;
+
+    overflow: hidden;
+
+    border-radius: 17px;
+
+    text-align: center;
+  }
+
+  /*
+   * সব game artwork একই size।
+   */
+  .game-card > img,
+  .carrom-lobby-art,
+  .lottery-game-art,
+  .andar-bahar-lobby-art {
+    width: 128px !important;
+    min-width: 0 !important;
+    max-width: 128px !important;
+
+    height: 128px !important;
+    min-height: 128px !important;
+    max-height: 128px !important;
+
+    flex:
+      0 0 128px !important;
+
+    margin: 0 auto;
+
+    box-sizing: border-box;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
+  }
+
+  .game-card > img {
+    border-radius: 14px;
+  }
+
+  /*
+   * Info section পুরো অবশিষ্ট জায়গা নেবে।
+   */
+  .game-info {
+    display: flex !important;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+
+    flex: 1;
+
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .game-info h3 {
+    display: flex;
+
+    min-height: 42px;
+
+    margin: 0 0 5px;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+
+    font-size: 17px;
+    line-height: 1.2;
+
+    overflow-wrap: anywhere;
+  }
+
+  .game-info p {
+    display: -webkit-box;
+
+    min-height: 34px;
+    max-height: 34px;
+
+    margin: 0 0 8px;
+
+    overflow: hidden;
+
+    color: #b5b5b5;
+
+    font-size: 12px;
+    line-height: 17px;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /*
+   * Dynamic status সব card-এ একই জায়গা নেবে।
+   */
+  .game-live-status {
+    min-height: 20px;
+
+    margin: 0 0 9px;
+
+    font-size: 12px;
+    line-height: 20px;
+  }
+
+  /*
+   * Custom feature badge mobile grid-এ hide।
+   * Status এবং button পরিষ্কার থাকবে।
+   */
+  .carrom-lobby-features,
+  .andar-bahar-lobby-features {
+    display: none !important;
+  }
+
+  /*
+   * সব button card-এর নিচে একই position।
+   */
+  .play-btn,
+  .carrom-play-btn,
+  .lottery-play-btn,
+  .andar-bahar-play-btn {
+    display: inline-flex;
+
+    width: 100% !important;
+    min-height: 44px;
+
+    margin-top: auto;
+    padding: 9px 7px;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    border-radius: 11px;
+
+    font-size: 13px;
+    line-height: 1.15;
+  }
+
+  /*
+   * Compact Andar Bahar artwork।
+   */
+  .andar-bahar-lobby-art {
+    overflow: hidden;
+
+    border-radius: 14px;
+  }
+
+  .andar-bahar-lobby-art::before {
+    inset: 6px;
+
+    border-radius: 9px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-lobby-card {
+    top: 14px;
+
+    width: 42px;
+    height: 60px;
+
+    padding: 4px;
+
+    border-width: 1px;
+    border-radius: 6px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-card-center {
+    top: 10px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-card-left {
+    margin-left: -45px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-card-right {
+    margin-left: 45px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-lobby-card span {
+    font-size: 11px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-lobby-card i {
+    font-size: 16px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-lobby-title {
+    right: 7px;
+    bottom: 7px;
+    left: 7px;
+
+    min-height: 26px;
+
+    padding: 4px;
+
+    gap: 4px;
+
+    border-radius: 7px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-lobby-title strong {
+    font-size: 9px;
+  }
+
+  .andar-bahar-lobby-art
+  .ab-lobby-title span {
+    font-size: 8px;
+  }
+
+  /*
+   * Fixed bottom navigation যেন শেষ row ঢেকে না রাখে।
+   */
+  .game-section {
+    margin-bottom: 28px;
+  }
+}
+
+@media (max-width: 390px) {
+
+  .game-list {
+    grid-auto-rows: 355px;
+
+    gap: 9px;
+  }
+
+  .game-card {
+    padding: 9px;
+
+    gap: 7px;
+  }
+
+  .game-card > img,
+  .carrom-lobby-art,
+  .lottery-game-art,
+  .andar-bahar-lobby-art {
+    width: 110px !important;
+    max-width: 110px !important;
+
+    height: 110px !important;
+    min-height: 110px !important;
+    max-height: 110px !important;
+
+    flex-basis: 110px !important;
+  }
+
+  .game-info h3 {
+    min-height: 38px;
+
+    font-size: 15px;
+  }
+
+  .game-info p {
+    font-size: 11px;
+  }
+
+  .game-live-status {
+    font-size: 11px;
+  }
+
+  .play-btn,
+  .carrom-play-btn,
+  .lottery-play-btn,
+  .andar-bahar-play-btn {
+    min-height: 42px;
+
+    font-size: 12px;
+  }
+}
