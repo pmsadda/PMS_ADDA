@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <meta
+        name="theme-color"
+        content="#06130f">
+
+    <title>Bangla Wheel | PMS ADDA</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="../assets/logo/logo.png">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/bangla-wheel.css">
+
+</head>
+
+<body>
+
+    <main class="bangla-wheel-app">
+
+        <!-- Header -->
+
+        <header class="wheel-header">
+
+            <button
+                type="button"
+                class="header-icon-btn"
+                id="backBtn"
+                aria-label="Return to lobby">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+            </button>
+
+            <a
+                href="./lobby.html"
+                class="wheel-brand">
+
+                <img
+                    src="../assets/logo/logo.png"
+                    alt="PMS ADDA">
+
+                <div>
+
+                    <strong>PMS ADDA</strong>
+
+                    <span>Bangla Wheel</span>
+
+                </div>
+
+            </a>
+
+            <div class="header-actions">
+
+                <div class="wallet-display">
+
+                    <i class="fa-solid fa-wallet"></i>
+
+                    <span>৳</span>
+
+                    <strong id="walletBalance">
+                        0.00
+                    </strong>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="header-icon-btn"
+                    id="soundBtn"
+                    aria-label="Toggle sound">
+
+                    <i class="fa-solid fa-volume-high"></i>
+
+                </button>
+
+            </div>
+
+        </header>
+
+        <!-- Connection -->
+
+        <section
+            class="connection-bar"
+            id="connectionBar">
+
+            <span class="connection-dot"></span>
+
+            <span id="connectionText">
+                Connecting to Bangla Wheel...
+            </span>
+
+        </section>
+
+        <!-- Round Information -->
+
+        <section class="round-information">
+
+            <div>
+
+                <span>Round</span>
+
+                <strong id="roundCode">
+                    Waiting...
+                </strong>
+
+            </div>
+
+            <div class="round-status">
+
+                <span id="roundStatusText">
+                    Connecting
+                </span>
+
+                <div class="round-timer">
+
+                    <i class="fa-regular fa-clock"></i>
+
+                    <strong id="timerValue">
+                        --
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Wheel Stage -->
+
+        <section class="wheel-stage">
+
+            <div
+                class="wheel-needle"
+                id="wheelNeedle"
+                aria-hidden="true">
+
+                <i class="fa-solid fa-caret-down"></i>
+
+            </div>
+
+            <div
+                class="wheel-shell"
+                id="wheelShell">
+
+                <div
+                    class="animal-wheel"
+                    id="animalWheel">
+
+                    <div
+                        class="wheel-segments"
+                        id="wheelSegments">
+                    </div>
+
+                    <div class="wheel-center">
+
+                        <img
+                            src="../assets/logo/logo.png"
+                            alt="PMS ADDA">
+
+                        <strong>SPIN</strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                class="spin-information"
+                id="spinInformation">
+
+                <i class="fa-solid fa-circle-notch"></i>
+
+                <span id="spinInformationText">
+                    Select an animal and place your bet
+                </span>
+
+            </div>
+
+        </section>
+
+        <!-- Animal Betting Options -->
+
+        <section class="animal-betting-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span>Choose Animal</span>
+
+                    <h2>Place Your Bet</h2>
+
+                </div>
+
+                <p>
+                    NIL animals cannot receive bets
+                </p>
+
+            </div>
+
+            <div
+                class="animal-options"
+                id="animalOptions">
+
+                <p class="loading-message">
+                    Loading animals...
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- Betting Panel -->
+
+        <section class="betting-panel">
+
+            <div class="selected-animal">
+
+                <span>Selected Animal</span>
+
+                <strong id="selectedAnimalText">
+                    Choose an animal
+                </strong>
+
+            </div>
+
+            <div class="bet-amount-control">
+
+                <button
+                    type="button"
+                    class="amount-button"
+                    id="decreaseBetBtn">
+
+                    <i class="fa-solid fa-minus"></i>
+
+                </button>
+
+                <div class="bet-amount-display">
+
+                    <span>Bet Amount</span>
+
+                    <div>
+
+                        <span>৳</span>
+
+                        <input
+                            id="betAmountInput"
+                            type="number"
+                            min="5"
+                            max="1000"
+                            step="5"
+                            value="5"
+                            inputmode="decimal">
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="amount-button"
+                    id="increaseBetBtn">
+
+                    <i class="fa-solid fa-plus"></i>
+
+                </button>
+
+            </div>
+
+            <div
+                class="quick-bet-options"
+                id="quickBetOptions">
+
+                <button type="button" data-amount="5">
+                    ৳5
+                </button>
+
+                <button type="button" data-amount="10">
+                    ৳10
+                </button>
+
+                <button type="button" data-amount="20">
+                    ৳20
+                </button>
+
+                <button type="button" data-amount="50">
+                    ৳50
+                </button>
+
+                <button type="button" data-amount="100">
+                    ৳100
+                </button>
+
+                <button type="button" data-amount="500">
+                    ৳500
+                </button>
+
+                <button type="button" data-amount="1000">
+                    ৳1000
+                </button>
+
+            </div>
+
+            <div class="payout-preview">
+
+                <span>Possible net payout</span>
+
+                <strong>
+                    ৳<span id="possiblePayout">0.00</span>
+                </strong>
+
+            </div>
+
+            <button
+                type="button"
+                class="place-bet-btn"
+                id="placeBetBtn"
+                disabled>
+
+                <i class="fa-solid fa-coins"></i>
+
+                <span id="placeBetText">
+                    Select an animal
+                </span>
+
+            </button>
+
+            <p
+                class="betting-message"
+                id="bettingMessage">
+
+                Minimum ৳5 and maximum ৳1000.
+
+            </p>
+
+        </section>
+
+        <!-- My Bet -->
+
+        <section
+            class="my-bet-card is-hidden"
+            id="myBetCard">
+
+            <div>
+
+                <span>My Animal</span>
+
+                <strong id="myBetAnimal">
+                    --
+                </strong>
+
+            </div>
+
+            <div>
+
+                <span>Bet Amount</span>
+
+                <strong>
+                    ৳<span id="myBetAmount">0.00</span>
+                </strong>
+
+            </div>
+
+            <div>
+
+                <span>Multiplier</span>
+
+                <strong id="myBetMultiplier">
+                    0x
+                </strong>
+
+            </div>
+
+            <div>
+
+                <span>Status</span>
+
+                <strong id="myBetStatus">
+                    --
+                </strong>
+
+            </div>
+
+        </section>
+
+        <!-- Recent Results -->
+
+        <section class="recent-results-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span>History</span>
+
+                    <h2>Recent Results</h2>
+
+                </div>
+
+                <button
+                    type="button"
+                    id="refreshHistoryBtn"
+                    class="refresh-history-btn">
+
+                    <i class="fa-solid fa-rotate"></i>
+
+                </button>
+
+            </div>
+
+            <div
+                class="recent-results"
+                id="recentResults">
+
+                <p class="loading-message">
+                    Loading results...
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Winner Modal -->
+
+    <div
+        class="result-overlay is-hidden"
+        id="resultOverlay">
+
+        <div class="result-modal">
+
+            <button
+                type="button"
+                class="result-close-btn"
+                id="resultCloseBtn">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+            <div
+                class="result-animal-image"
+                id="resultAnimalImage">
+
+                <img
+                    id="winnerAnimalImage"
+                    src="../assets/logo/logo.png"
+                    alt="Winning animal">
+
+            </div>
+
+            <span id="resultLabel">
+                Winning Animal
+            </span>
+
+            <h2 id="winnerAnimalName">
+                Elephant
+            </h2>
+
+            <strong
+                class="winner-multiplier"
+                id="winnerMultiplier">
+
+                10x
+
+            </strong>
+
+            <p id="userResultMessage">
+                Round completed.
+            </p>
+
+            <button
+                type="button"
+                class="continue-btn"
+                id="continueBtn">
+
+                Continue Playing
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Loading -->
+
+    <div
+        class="loading-overlay"
+        id="loadingOverlay">
+
+        <img
+            src="../assets/logo/logo.png"
+            alt="PMS ADDA">
+
+        <div class="loading-spinner"></div>
+
+        <p id="loadingText">
+            Loading Bangla Wheel...
+        </p>
+
+    </div>
+
+    <!-- Toast -->
+
+    <div
+        class="game-toast"
+        id="gameToast"
+        role="status"
+        aria-live="polite">
+    </div>
+
+    <script src="../js/app-config.js"></script>
+ <script src="../js/auth-guard.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script src="../js/game-orientation.js"></script>
+
+    <script src="../js/bangla-wheel.js"></script>
+
+</body>
+
+</html>

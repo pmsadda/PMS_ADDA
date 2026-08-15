@@ -3657,3 +3657,258 @@ button:focus{
     font-size: 12px;
   }
 }
+
+/* =========================================================
+   BANGLA WHEEL LOBBY CARD
+========================================================= */
+
+.bangla-wheel-game-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 215, 0, 0.42);
+    background:
+        radial-gradient(
+            circle at 18% 12%,
+            rgba(255, 215, 0, 0.12),
+            transparent 34%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(3, 49, 34, 0.98),
+            rgba(1, 24, 18, 0.98)
+        );
+}
+
+.bangla-wheel-game-card::before {
+    content: "";
+    position: absolute;
+    top: -70px;
+    right: -70px;
+    width: 170px;
+    height: 170px;
+    border: 1px solid rgba(255, 215, 0, 0.13);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 18px rgba(255, 215, 0, 0.025),
+        0 0 0 38px rgba(255, 215, 0, 0.018);
+    pointer-events: none;
+}
+
+.bangla-wheel-card-visual {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 190px;
+    padding: 22px;
+    background:
+        radial-gradient(
+            circle,
+            rgba(19, 112, 75, 0.55) 0%,
+            rgba(3, 45, 32, 0.25) 52%,
+            transparent 72%
+        );
+}
+
+.bangla-wheel-mini-wheel {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 142px;
+    height: 142px;
+    border: 7px solid #d7a900;
+    border-radius: 50%;
+    background:
+        repeating-conic-gradient(
+            from -90deg,
+            #0b6846 0deg 27.69deg,
+            #073d2d 27.69deg 55.38deg
+        );
+    box-shadow:
+        0 0 0 3px #fff1a0,
+        0 0 0 7px rgba(255, 215, 0, 0.28),
+        0 16px 35px rgba(0, 0, 0, 0.48),
+        inset 0 0 24px rgba(0, 0, 0, 0.38);
+    animation: banglaWheelLobbySpin 12s linear infinite;
+}
+
+.bangla-wheel-mini-wheel::before {
+    content: "";
+    position: absolute;
+    top: -23px;
+    left: 50%;
+    z-index: 4;
+    width: 0;
+    height: 0;
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+    border-top: 28px solid #ffd700;
+    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.55));
+    transform: translateX(-50%);
+}
+
+.bangla-wheel-mini-wheel::after {
+    content: "";
+    position: absolute;
+    inset: 44px;
+    z-index: 2;
+    border: 3px solid #ffdf3e;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            circle at 35% 28%,
+            #fff3a0,
+            #d5a600 45%,
+            #6f5100 100%
+        );
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+.bangla-wheel-mini-wheel img {
+    position: relative;
+    z-index: 3;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.55));
+    animation: banglaWheelAnimalCounterSpin 12s linear infinite;
+}
+
+.bangla-wheel-live-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid rgba(61, 255, 164, 0.35);
+    border-radius: 999px;
+    color: #8dffc5;
+    background: rgba(0, 36, 25, 0.88);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.28);
+}
+
+.bangla-wheel-live-badge i {
+    color: #39e998;
+    font-size: 7px;
+    animation: banglaWheelLivePulse 1.3s ease-in-out infinite;
+}
+
+.bangla-wheel-game-card .game-info h3 {
+    color: #ffd700;
+}
+
+.bangla-wheel-lobby-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 12px 0 15px;
+}
+
+.bangla-wheel-lobby-features span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 9px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 8px;
+    color: #e8eee9;
+    background: rgba(0, 20, 14, 0.55);
+    font-size: 11px;
+    line-height: 1;
+}
+
+.bangla-wheel-lobby-features i {
+    color: #ffd700;
+}
+
+.bangla-wheel-play-btn {
+    color: #07150f;
+    background: linear-gradient(135deg, #ffe45c, #f5bd18);
+    box-shadow: 0 8px 20px rgba(224, 171, 0, 0.22);
+}
+
+.bangla-wheel-play-btn:hover {
+    background: linear-gradient(135deg, #fff08a, #ffd02d);
+    box-shadow: 0 10px 25px rgba(255, 207, 35, 0.32);
+    transform: translateY(-2px);
+}
+
+.bangla-wheel-play-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes banglaWheelLobbySpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes banglaWheelAnimalCounterSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+@keyframes banglaWheelLivePulse {
+    0%,
+    100% {
+        opacity: 0.45;
+        transform: scale(0.85);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.15);
+    }
+}
+
+@media (max-width: 600px) {
+    .bangla-wheel-card-visual {
+        min-height: 155px;
+        padding: 18px;
+    }
+
+    .bangla-wheel-mini-wheel {
+        width: 112px;
+        height: 112px;
+        border-width: 6px;
+    }
+
+    .bangla-wheel-mini-wheel::after {
+        inset: 34px;
+    }
+
+    .bangla-wheel-mini-wheel img {
+        width: 38px;
+        height: 38px;
+    }
+
+    .bangla-wheel-lobby-features {
+        gap: 5px;
+    }
+
+    .bangla-wheel-lobby-features span {
+        padding: 5px 7px;
+        font-size: 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bangla-wheel-mini-wheel,
+    .bangla-wheel-mini-wheel img,
+    .bangla-wheel-live-badge i {
+        animation: none;
+    }
+}
