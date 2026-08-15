@@ -34,9 +34,9 @@
     wheelSegments: $("wheelSegments"),
     animalOptions: $("animalOptions"),
 
-    selectedAnimalName: $("selectedAnimalName"),
+        selectedAnimalName: $("selectedAnimalText"),
     selectedMultiplier: $("selectedMultiplier"),
-    betAmount: $("betAmount"),
+    betAmount: $("betAmountInput"),
     possiblePayout: $("possiblePayout"),
     decreaseBet: $("decreaseBet"),
     increaseBet: $("increaseBet"),
@@ -293,8 +293,17 @@
           state.selectedAnimal =
             state.animals.find((animal) => animalCode(animal) === code) || null;
 
-          renderAnimalOptions();
+                    renderAnimalOptions();
           updateBetPreview();
+
+          const roundStatus = getRoundStatus(state.activeRound);
+          const remainingTime =
+            getRoundEndTime(state.activeRound) - serverNow();
+
+          setBettingEnabled(
+            roundStatus === "betting" &&
+            remainingTime > 0
+          );
         });
       });
   }
@@ -561,9 +570,10 @@
 
     DOM.placeBetBtn.disabled = true;
 
-    state.socket.emit("bangla-wheel:place-bet", {
-      animalCode: animalCode(state.selectedAnimal),
-      amount: Number(state.selectedAmount)
+        state.socket.emit("bangla-wheel:place-bet", {
+      roundId: Number(state.activeRound?.id),
+      animalId: Number(state.selectedAnimal?.id),
+      betAmount: Number(state.selectedAmount)
     }, (response) => {
       if (!response?.success) {
         showToast(response?.message || "Bet করা যায়নি", "error");
