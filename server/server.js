@@ -46,6 +46,8 @@ const { initializeLotterySocket } = require("./src/socket/lottery.socket");
 
 const { initializeAndarBaharSocket } = require("./src/socket/andar-bahar.socket");
 
+const { initializeBanglaWheelSocket } = require("./src/socket/bangla-wheel.socket");
+
 const PORT = Number(process.env.PORT) || 5000;
 
 const HOST = process.env.HOST || "0.0.0.0";
@@ -132,6 +134,8 @@ app.set(
 initializeLotterySocket(io);
 
 initializeAndarBaharSocket(io);
+
+initializeBanglaWheelSocket(io);
 
 /*
  * Server start।
