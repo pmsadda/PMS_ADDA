@@ -917,7 +917,7 @@ async function getDrawDetails(userId, drawId) {
 async function getMyTickets(userId, options = {}) {
   const validUserId = parsePositiveInteger(userId, "User ID");
 
-  const limit = parseListLimit(options.limit, 40, 100);
+   const limit = parseListLimit(options.limit, 20, 50);
 
   const page = parsePositiveInteger(options.page || 1, "Page");
 
@@ -931,7 +931,18 @@ async function getMyTickets(userId, options = {}) {
 
         FROM lottery_tickets
 
-        WHERE user_id = ?
+                WHERE user_id = ?
+          AND (
+            purchased_at >=
+              DATE_SUB(
+                CURRENT_TIMESTAMP,
+                INTERVAL 30 DAY
+              )
+            OR status IN (
+              'active',
+              'locked'
+            )
+          )
       `,
       [validUserId],
     ),
@@ -967,7 +978,18 @@ async function getMyTickets(userId, options = {}) {
         INNER JOIN lottery_draws ld
           ON ld.id = lt.draw_id
 
-        WHERE lt.user_id = ?
+                WHERE lt.user_id = ?
+          AND (
+            lt.purchased_at >=
+              DATE_SUB(
+                CURRENT_TIMESTAMP,
+                INTERVAL 30 DAY
+              )
+            OR lt.status IN (
+              'active',
+              'locked'
+            )
+          )
 
         ORDER BY
           lt.id DESC
