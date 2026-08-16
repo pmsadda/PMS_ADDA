@@ -29,6 +29,15 @@ const ROUND_STATUS =
     REFUNDED: "refunded",
   });
 
+  const RESULT_MODE =
+  Object.freeze({
+    FAIR_EQUAL:
+      "fair_equal",
+
+    ADMIN_CONFIGURED_ODDS:
+      "admin_configured_odds"
+  });
+
 const ACTIVE_ROUND_STATUSES = [
   ROUND_STATUS.BETTING,
   ROUND_STATUS.BETTING_CLOSED,
@@ -108,6 +117,30 @@ function parsePositiveInteger(
   return parsed;
 }
 
+function parseJsonValue(
+  value,
+  fallback = null
+) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return fallback;
+  }
+
+  if (
+    typeof value === "object"
+  ) {
+    return value;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
 function createReferenceCode(
   prefix
 ) {
@@ -141,6 +174,25 @@ function mapSettingsRow(row) {
       Number(
         row.game_enabled
       ) === 1,
+
+          resultMode:
+      Object.values(
+        RESULT_MODE
+      ).includes(
+        row.result_mode
+      )
+        ? row.result_mode
+        : RESULT_MODE.FAIR_EQUAL,
+
+    oddsVersion:
+      Number(
+        row.odds_version ||
+        1
+      ),
+
+    oddsUpdatedAt:
+      row.odds_updated_at ||
+      null,
 
     minimumBet:
       parseMoney(
@@ -214,6 +266,12 @@ function mapAnimalRow(row) {
         row.multiplier
       ),
 
+          winningWeight:
+      Number(
+        row.winning_weight ||
+        0
+      ),
+
       isBettable:
   Number(
     row.is_bettable
@@ -261,6 +319,40 @@ function mapRoundRow(
 
     roundStatus:
       row.round_status,
+
+          resultMode:
+      row.result_mode_snapshot ||
+      RESULT_MODE.FAIR_EQUAL,
+
+    oddsVersion:
+      Number(
+        row.odds_version_snapshot ||
+        1
+      ),
+
+    probabilitySnapshot:
+      parseJsonValue(
+        row.probability_snapshot,
+        []
+      ),
+
+    totalWinningWeight:
+      Number(
+        row.total_winning_weight ||
+        0
+      ),
+
+    winningTicket:
+      resultVisible &&
+      row.winning_ticket !== null
+        ? Number(
+            row.winning_ticket
+          )
+        : null,
+
+    probabilityLockedAt:
+      row.probability_locked_at ||
+      null,
 
     winningAnimalId:
       resultVisible &&
@@ -633,38 +725,345 @@ function createFairRandomIndex(
   );
 }
 
-function prepareWheelResult(
+function createProbabilitySnapshot(
   animals,
-  serverSeed,
-  roundNonce
+  resultMode =
+    RESULT_MODE.FAIR_EQUAL
 ) {
   assertCondition(
     Array.isArray(animals) &&
       animals.length === 13,
-"Exactly 13 animals are required.",
+    "Exactly 13 animals are required.",
     500,
     "INVALID_ANIMAL_LIST"
   );
 
-  const randomIndex =
+  const normalizedMode =
+    Object.values(
+      RESULT_MODE
+    ).includes(
+      resultMode
+    )
+      ? resultMode
+      : RESULT_MODE.FAIR_EQUAL;
+
+  const probabilitySnapshot =
+    animals.map((animal) => {
+      const winningWeight =
+        normalizedMode ===
+        RESULT_MODE.FAIR_EQUAL
+          ? 1
+          : Number(
+              animal.winningWeight ||
+              0
+            );
+
+      assertCondition(
+        Number.isInteger(
+          winningWeight
+        ) &&
+          winningWeight > 0,
+        `Invalid winning weight for ${animal.animalCode}.`,
+        500,
+        "INVALID_ANIMAL_WEIGHT"
+      );
+
+      return {
+        animalId:
+          Number(animal.id),
+
+        animalCode:
+          animal.animalCode,
+
+        animalName:
+          animal.animalName,
+
+        segmentIndex:
+          Number(
+            animal.segmentIndex
+          ),
+
+        multiplier:
+          parseMoney(
+            animal.multiplier
+          ),
+
+        isBettable:
+          animal.isBettable ===
+          true,
+
+        winningWeight
+      };
+    });
+
+  const totalWinningWeight =
+    probabilitySnapshot.reduce(
+      (total, animal) =>
+        total +
+        animal.winningWeight,
+      0
+    );
+
+  if (
+    normalizedMode ===
+    RESULT_MODE.ADMIN_CONFIGURED_ODDS
+  ) {
+    assertCondition(
+      totalWinningWeight ===
+        1000,
+      "Admin configured winning weights must total exactly 1000.",
+      500,
+      "INVALID_CONFIGURED_WEIGHT_TOTAL"
+    );
+  } else {
+    assertCondition(
+      totalWinningWeight ===
+        13,
+      "Fair equal mode requires 13 equal weights.",
+      500,
+      "INVALID_FAIR_WEIGHT_TOTAL"
+    );
+  }
+
+  return {
+    resultMode:
+      normalizedMode,
+
+    totalWinningWeight,
+
+    probabilitySnapshot:
+      probabilitySnapshot.map(
+        (animal) => ({
+          ...animal,
+
+          winningChancePercent:
+            Number(
+              (
+                animal.winningWeight *
+                100 /
+                totalWinningWeight
+              ).toFixed(2)
+            )
+        })
+      )
+  };
+}
+
+function prepareWheelResult(
+  animals,
+  serverSeed,
+  roundNonce,
+  resultMode =
+    RESULT_MODE.FAIR_EQUAL
+) {
+  assertCondition(
+    Array.isArray(animals) &&
+      animals.length === 13,
+    "Exactly 13 animals are required.",
+    500,
+    "INVALID_ANIMAL_LIST"
+  );
+
+  const normalizedMode =
+    Object.values(
+      RESULT_MODE
+    ).includes(
+      resultMode
+    )
+      ? resultMode
+      : RESULT_MODE.FAIR_EQUAL;
+
+  const probabilitySnapshot =
+    animals.map(
+      (
+        animal,
+        arrayIndex
+      ) => {
+        const configuredWeight =
+          Number(
+            animal.winningWeight ||
+            0
+          );
+
+        const effectiveWeight =
+          normalizedMode ===
+          RESULT_MODE.FAIR_EQUAL
+            ? 1
+            : configuredWeight;
+
+        assertCondition(
+          Number.isInteger(
+            effectiveWeight
+          ) &&
+            effectiveWeight > 0,
+          `Invalid winning weight for ${animal.animalCode}.`,
+          500,
+          "INVALID_ANIMAL_WEIGHT"
+        );
+
+        return {
+          arrayIndex,
+
+          animalId:
+            Number(animal.id),
+
+          animalCode:
+            animal.animalCode,
+
+          animalName:
+            animal.animalName,
+
+          segmentIndex:
+            Number(
+              animal.segmentIndex
+            ),
+
+          multiplier:
+            parseMoney(
+              animal.multiplier
+            ),
+
+          isBettable:
+            animal.isBettable ===
+            true,
+
+          winningWeight:
+            effectiveWeight
+        };
+      }
+    );
+
+  const totalWinningWeight =
+    probabilitySnapshot.reduce(
+      (
+        total,
+        item
+      ) =>
+        total +
+        item.winningWeight,
+      0
+    );
+
+  assertCondition(
+    totalWinningWeight > 0,
+    "Total winning weight must be greater than zero.",
+    500,
+    "INVALID_TOTAL_WINNING_WEIGHT"
+  );
+
+  if (
+    normalizedMode ===
+    RESULT_MODE.ADMIN_CONFIGURED_ODDS
+  ) {
+    assertCondition(
+      totalWinningWeight ===
+        1000,
+      "Admin configured winning weights must total exactly 1000.",
+      500,
+      "INVALID_CONFIGURED_WEIGHT_TOTAL"
+    );
+  }
+
+  /*
+   * createFairRandomIndex rejection sampling ব্যবহার করে।
+   * তাই total weight-এর মধ্যেও modulo bias থাকবে না।
+   */
+  const winningTicket =
     createFairRandomIndex(
       serverSeed,
       roundNonce,
-      animals.length
+      totalWinningWeight
     );
 
-  const winningAnimal =
-    animals[randomIndex];
+  let cumulativeWeight = 0;
+  let selectedSnapshot = null;
+
+  for (
+    const item of
+      probabilitySnapshot
+  ) {
+    cumulativeWeight +=
+      item.winningWeight;
+
+    if (
+      winningTicket <
+      cumulativeWeight
+    ) {
+      selectedSnapshot =
+        item;
+
+      break;
+    }
+  }
 
   assertCondition(
-    winningAnimal,
+    selectedSnapshot,
     "Winning animal could not be selected.",
     500,
     "WINNING_ANIMAL_MISSING"
   );
 
+  const winningAnimal =
+    animals[
+      selectedSnapshot.arrayIndex
+    ];
+
+  assertCondition(
+    winningAnimal,
+    "Winning animal record is missing.",
+    500,
+    "WINNING_ANIMAL_RECORD_MISSING"
+  );
+
+  const publicSnapshot =
+    probabilitySnapshot.map(
+      (item) => ({
+        animalId:
+          item.animalId,
+
+        animalCode:
+          item.animalCode,
+
+        animalName:
+          item.animalName,
+
+        segmentIndex:
+          item.segmentIndex,
+
+        multiplier:
+          item.multiplier,
+
+        isBettable:
+          item.isBettable,
+
+        winningWeight:
+          item.winningWeight,
+
+        winningChancePercent:
+          Number(
+            (
+              item.winningWeight *
+              100 /
+              totalWinningWeight
+            ).toFixed(2)
+          )
+      })
+    );
+
   return {
-    randomIndex,
+    randomIndex:
+      selectedSnapshot.arrayIndex,
+
+    winningTicket,
+
+    totalWinningWeight,
+
+    probabilitySnapshot:
+      publicSnapshot,
+
+    resultMode:
+      normalizedMode,
+
     winningAnimal
   };
 }
@@ -759,6 +1158,268 @@ async function getActiveRound(
   );
 }
 
+async function applyPendingConfiguration(
+  connection
+) {
+  const [rows] =
+    await connection.query(
+      `
+        SELECT
+          *
+
+        FROM bangla_wheel_pending_configs
+
+        WHERE config_status =
+          'pending'
+
+        ORDER BY id DESC
+
+        LIMIT 1
+
+        FOR UPDATE
+      `
+    );
+
+  const pending =
+    rows[0] ||
+    null;
+
+  if (!pending) {
+    return null;
+  }
+
+  const settingsPayload =
+    parseJsonValue(
+      pending.settings_payload,
+      {}
+    );
+
+  const animalsPayload =
+    parseJsonValue(
+      pending.animals_payload,
+      []
+    );
+
+  assertCondition(
+    Object.values(
+      RESULT_MODE
+    ).includes(
+      settingsPayload.resultMode
+    ),
+    "Pending result mode is invalid.",
+    500,
+    "INVALID_PENDING_RESULT_MODE"
+  );
+
+  assertCondition(
+    Array.isArray(
+      animalsPayload
+    ) &&
+      animalsPayload.length === 13,
+    "Pending configuration requires exactly 13 animals.",
+    500,
+    "INVALID_PENDING_ANIMALS"
+  );
+
+  const totalWeight =
+    animalsPayload.reduce(
+      (
+        total,
+        animal
+      ) =>
+        total +
+        Number(
+          animal.winningWeight ||
+          0
+        ),
+      0
+    );
+
+  if (
+    settingsPayload.resultMode ===
+    RESULT_MODE.ADMIN_CONFIGURED_ODDS
+  ) {
+    assertCondition(
+      totalWeight === 1000,
+      "Pending configured weights must total exactly 1000.",
+      500,
+      "INVALID_PENDING_WEIGHT_TOTAL"
+    );
+  }
+
+  await connection.query(
+    `
+      UPDATE bangla_wheel_pending_configs
+
+      SET config_status =
+        'applying'
+
+      WHERE id = ?
+        AND config_status =
+          'pending'
+    `,
+    [
+      pending.id
+    ]
+  );
+
+  await connection.query(
+    `
+      UPDATE bangla_wheel_settings
+
+      SET
+        game_enabled = ?,
+        minimum_bet = ?,
+        maximum_bet = ?,
+        betting_duration_seconds = ?,
+        spin_duration_seconds = ?,
+        result_display_seconds = ?,
+        next_round_delay_seconds = ?,
+        service_charge_percent = ?,
+        max_round_liability = ?,
+        result_mode = ?,
+        odds_version = ?,
+        odds_updated_at =
+          CURRENT_TIMESTAMP(3),
+        updated_by = ?
+
+      WHERE id = 1
+    `,
+    [
+      settingsPayload.gameEnabled
+        ? 1
+        : 0,
+
+      parseMoney(
+        settingsPayload.minimumBet
+      ),
+
+      parseMoney(
+        settingsPayload.maximumBet
+      ),
+
+      Number(
+        settingsPayload
+          .bettingDurationSeconds
+      ),
+
+      Number(
+        settingsPayload
+          .spinDurationSeconds
+      ),
+
+      Number(
+        settingsPayload
+          .resultDisplaySeconds
+      ),
+
+      Number(
+        settingsPayload
+          .nextRoundDelaySeconds
+      ),
+
+      parseMoney(
+        settingsPayload
+          .serviceChargePercent
+      ),
+
+      parseMoney(
+        settingsPayload
+          .maxRoundLiability
+      ),
+
+      settingsPayload.resultMode,
+
+      Number(
+        pending.config_version
+      ),
+
+      pending.created_by ||
+      null
+    ]
+  );
+
+  for (
+    const animal of
+      animalsPayload
+  ) {
+    const animalId =
+      parsePositiveInteger(
+        animal.id
+      );
+
+    const multiplier =
+      parseMoney(
+        animal.multiplier
+      );
+
+    const winningWeight =
+      Number(
+        animal.winningWeight
+      );
+
+    assertCondition(
+      animalId,
+      "Pending animal ID is invalid.",
+      500,
+      "INVALID_PENDING_ANIMAL_ID"
+    );
+
+    assertCondition(
+      Number.isInteger(
+        winningWeight
+      ) &&
+        winningWeight > 0,
+      "Pending animal weight is invalid.",
+      500,
+      "INVALID_PENDING_ANIMAL_WEIGHT"
+    );
+
+    const [updateResult] =
+      await connection.query(
+        `
+          UPDATE bangla_wheel_animals
+
+          SET
+            multiplier = ?,
+            winning_weight = ?,
+            is_bettable = ?
+
+          WHERE id = ?
+            AND animal_status =
+              'active'
+        `,
+        [
+          multiplier,
+          winningWeight,
+          animal.isBettable
+            ? 1
+            : 0,
+          animalId
+        ]
+      );
+
+    assertCondition(
+      Number(
+        updateResult.affectedRows
+      ) === 1,
+      `Pending animal ${animalId} could not be updated.`,
+      500,
+      "PENDING_ANIMAL_UPDATE_FAILED"
+    );
+  }
+
+  return {
+    id:
+      Number(pending.id),
+
+    configVersion:
+      Number(
+        pending.config_version
+      )
+  };
+}
+
 /* =========================================================
    CREATE ROUND
 ========================================================= */
@@ -771,29 +1432,7 @@ async function createRound() {
     await connection
       .beginTransaction();
 
-    const settings =
-      await getGameSettings(
-        connection,
-        {
-          lock: true
-        }
-      );
-
-    assertCondition(
-      settings.gameEnabled,
-      "Bangla Wheel is currently disabled.",
-      403,
-      "GAME_DISABLED"
-    );
-
-    await getActiveAnimals(
-      connection,
-      {
-        lock: true
-      }
-    );
-
-    const activeRound =
+       const activeRound =
       await getActiveRound(
         connection,
         {
@@ -802,15 +1441,89 @@ async function createRound() {
       );
 
     if (activeRound) {
+      const currentSettings =
+        await getGameSettings(
+          connection,
+          {
+            lock: true
+          }
+        );
+
       await connection.commit();
 
       return {
         created: false,
         round: activeRound,
+        settings:
+          currentSettings
+      };
+    }
+
+    /*
+     * Active round না থাকলেই pending config apply হবে।
+     */
+    const appliedPendingConfig =
+      await applyPendingConfiguration(
+        connection
+      );
+
+    const settings =
+      await getGameSettings(
+        connection,
+        {
+          lock: true
+        }
+      );
+
+       if (!settings.gameEnabled) {
+      if (
+        appliedPendingConfig
+      ) {
+        await connection.query(
+          `
+            UPDATE bangla_wheel_pending_configs
+
+            SET
+              config_status =
+                'applied',
+
+              applied_round_id = NULL,
+
+              applied_at =
+                CURRENT_TIMESTAMP(3)
+
+            WHERE id = ?
+              AND config_status =
+                'applying'
+          `,
+          [
+            appliedPendingConfig.id
+          ]
+        );
+      }
+
+      await connection.commit();
+
+      return {
+        created: false,
+        round: null,
         settings
       };
     }
 
+    const animals =
+      await getActiveAnimals(
+        connection,
+        {
+          lock: true
+        }
+      );
+
+    const lockedProbability =
+      createProbabilitySnapshot(
+        animals,
+        settings.resultMode
+      );
     const roundCode =
       createReferenceCode(
         "BWR"
@@ -849,18 +1562,28 @@ async function createRound() {
           INSERT INTO bangla_wheel_rounds (
             round_code,
             round_status,
-            server_seed_hash,
+                        server_seed_hash,
             server_seed,
             round_nonce,
+            result_mode_snapshot,
+            odds_version_snapshot,
+            probability_snapshot,
+            total_winning_weight,
+            probability_locked_at,
             betting_started_at,
             betting_closes_at
           )
           VALUES (
             ?,
             'betting',
+                   ?,
             ?,
             ?,
             ?,
+            ?,
+            ?,
+            ?,
+            CURRENT_TIMESTAMP(3),
             CURRENT_TIMESTAMP(3),
             DATE_ADD(
               CURRENT_TIMESTAMP(3),
@@ -868,14 +1591,52 @@ async function createRound() {
             )
           )
         `,
-        [
+                [
           roundCode,
           serverSeedHash,
           serverSeed,
           roundNonce,
+          lockedProbability.resultMode,
+          Number(
+            settings.oddsVersion ||
+            1
+          ),
+          JSON.stringify(
+            lockedProbability
+              .probabilitySnapshot
+          ),
+          lockedProbability
+            .totalWinningWeight,
           bettingDuration
         ]
       );
+
+          if (
+      appliedPendingConfig
+    ) {
+      await connection.query(
+        `
+          UPDATE bangla_wheel_pending_configs
+
+          SET
+            config_status =
+              'applied',
+
+            applied_round_id = ?,
+
+            applied_at =
+              CURRENT_TIMESTAMP(3)
+
+          WHERE id = ?
+            AND config_status =
+              'applying'
+        `,
+        [
+          insertResult.insertId,
+          appliedPendingConfig.id
+        ]
+      );
+    }
 
     const createdRound =
       await getRoundById(
@@ -939,12 +1700,14 @@ async function getPublicGameState() {
 
 module.exports = {
   ROUND_STATUS,
+  RESULT_MODE,
   ACTIVE_ROUND_STATUSES,
 
   createGameError,
   assertCondition,
-  parseMoney,
+    parseMoney,
   parsePositiveInteger,
+  parseJsonValue,
   createReferenceCode,
 
   mapSettingsRow,
@@ -955,12 +1718,14 @@ module.exports = {
   getActiveAnimals,
   getAnimalById,
 
-  createDeterministicNumber,
+    createDeterministicNumber,
   createFairRandomIndex,
+  createProbabilitySnapshot,
   prepareWheelResult,
 
-  getRoundById,
+    getRoundById,
   getActiveRound,
+  applyPendingConfiguration,
   createRound,
   getPublicGameState
 };

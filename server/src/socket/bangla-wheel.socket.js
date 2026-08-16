@@ -484,6 +484,14 @@ async function startOrResumeRound(
       activeRound =
         created.round;
 
+              if (!activeRound) {
+        await emitPublicState(
+          namespace
+        );
+
+        return;
+      }
+
       namespace
         .to(PUBLIC_ROOM)
         .emit(

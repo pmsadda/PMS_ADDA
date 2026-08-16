@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="theme-color"
+        content="#111827">
+
+    <title>Bangla Wheel Control | PMS ADDA</title>
+
+    <script src="../js/app-config.js"></script>
+
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/admin-lottery.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/admin-bangla-wheel.css">
+
+</head>
+
+<body>
+
+    <!-- Sidebar Overlay -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay">
+    </div>
+
+    <!-- Sidebar -->
+
+    <aside
+        class="sidebar"
+        id="sidebar">
+
+        <div class="sidebar-header">
+
+            <div class="brand-logo">
+
+                <i class="fa-solid fa-layer-group"></i>
+
+            </div>
+
+            <div>
+
+                <h2>PMS ADDA</h2>
+
+                <p>Admin Panel</p>
+
+            </div>
+
+            <button
+                type="button"
+                class="sidebar-close-btn"
+                id="sidebarCloseBtn"
+                aria-label="Close sidebar">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+        <nav class="sidebar-menu">
+
+            <a
+                href="dashboard.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                <span>Dashboard</span>
+
+            </a>
+
+            <a
+                href="users.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-users"></i>
+
+                <span>Users</span>
+
+            </a>
+
+            <a
+                href="deposits.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-money-bill-transfer"></i>
+
+                <span>Deposits</span>
+
+            </a>
+
+            <a
+                href="withdrawals.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-wallet"></i>
+
+                <span>Withdrawals</span>
+
+            </a>
+
+            <a
+                href="transactions.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-receipt"></i>
+
+                <span>Transactions</span>
+
+            </a>
+
+            <a
+                href="games.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-gamepad"></i>
+
+                <span>Game Management</span>
+
+            </a>
+
+                       <a
+                href="andar-bahar.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-layer-group"></i>
+
+                <span>Andar Bahar</span>
+
+            </a>
+
+            <a
+                href="bangla-wheel.html"
+                class="menu-item active">
+
+                <i class="fa-solid fa-dharmachakra"></i>
+
+                <span>Bangla Wheel</span>
+
+            </a>
+
+            <a
+                href="lottery.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-ticket"></i>
+
+                <span>Lottery Control</span>
+
+            </a>
+
+            <a
+                href="bots.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-robot"></i>
+
+                <span>Bots</span>
+
+            </a>
+
+            <a
+                href="support.html"
+                class="menu-item">
+
+                <i class="fa-solid fa-headset"></i>
+
+                <span>Support</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <button
+                type="button"
+                class="logout-btn"
+                id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                <span>Logout</span>
+
+            </button>
+
+        </div>
+
+    </aside>
+
+    <!-- Main Content -->
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button
+                    type="button"
+                    class="menu-toggle-btn"
+                    id="sidebarOpenBtn"
+                    aria-label="Open sidebar">
+
+                    <i class="fa-solid fa-bars"></i>
+
+                </button>
+
+                <div>
+
+                    <h1>Bangla Wheel Control</h1>
+
+                    <p>
+                        Manage modes, animal odds, multipliers, rounds and player bets
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="topbar-right">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    id="refreshDashboardBtn">
+
+                    <i class="fa-solid fa-rotate"></i>
+
+                    Refresh
+
+                </button>
+
+                <div class="admin-profile">
+
+                    <div class="admin-avatar">
+
+                        <i class="fa-solid fa-user-shield"></i>
+
+                    </div>
+
+                    <div class="admin-info">
+
+                        <strong id="adminName">
+                            Admin
+                        </strong>
+
+                        <span>Administrator</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+                <div class="content-wrapper">
+
+            <!-- Summary -->
+
+            <section class="ab-admin-summary">
+
+                <article class="ab-summary-card">
+
+                    <div class="summary-icon">
+
+                        <i class="fa-solid fa-dharmachakra"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Total Rounds</span>
+
+                        <strong id="totalRounds">0</strong>
+
+                    </div>
+
+                </article>
+
+                <article class="ab-summary-card">
+
+                    <div class="summary-icon green">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Completed</span>
+
+                        <strong id="completedRounds">0</strong>
+
+                    </div>
+
+                </article>
+
+                <article class="ab-summary-card">
+
+                    <div class="summary-icon blue">
+
+                        <i class="fa-solid fa-coins"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Total Bets</span>
+
+                        <strong>
+                            ৳<span id="totalBetAmount">0.00</span>
+                        </strong>
+
+                    </div>
+
+                </article>
+
+                <article class="ab-summary-card">
+
+                    <div class="summary-icon orange">
+
+                        <i class="fa-solid fa-percent"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Service Charge</span>
+
+                        <strong>
+                            ৳<span id="totalServiceCharge">0.00</span>
+                        </strong>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+            <!-- Pending Configuration -->
+
+            <section
+                class="bw-pending-banner is-hidden"
+                id="pendingConfigBanner">
+
+                <div>
+
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+
+                    <span>
+
+                        <strong>
+                            Configuration Pending
+                        </strong>
+
+                        <small id="pendingConfigText">
+                            Changes will apply before the next round.
+                        </small>
+
+                    </span>
+
+                </div>
+
+                <span
+                    class="bw-version-badge"
+                    id="pendingVersionBadge">
+
+                    v--
+
+                </span>
+
+            </section>
+
+            <!-- Settings -->
+
+            <section class="admin-card">
+
+                <div class="admin-card-header">
+
+                    <div>
+
+                        <span class="card-kicker">
+                            Configuration
+                        </span>
+
+                        <h2>Game Settings</h2>
+
+                    </div>
+
+                    <div
+                        class="game-status-badge"
+                        id="gameStatusBadge">
+
+                        Loading
+
+                    </div>
+
+                </div>
+
+                <form
+                    class="settings-form"
+                    id="settingsForm">
+
+                    <label class="toggle-field">
+
+                        <span>
+
+                            <strong>Game Enabled</strong>
+
+                            <small>
+                                Allow players to join new rounds
+                            </small>
+
+                        </span>
+
+                        <input
+                            type="checkbox"
+                            id="gameEnabledInput">
+
+                        <i></i>
+
+                    </label>
+
+                    <div class="bw-mode-selector">
+
+                        <label
+                            class="bw-mode-card"
+                            for="fairModeInput">
+
+                            <input
+                                type="radio"
+                                name="resultMode"
+                                id="fairModeInput"
+                                value="fair_equal">
+
+                            <span>
+
+                                <i class="fa-solid fa-shield-halved"></i>
+
+                                <strong>
+                                    Fair Equal
+                                </strong>
+
+                                <small>
+                                    Every animal receives equal 1/13 chance.
+                                </small>
+
+                            </span>
+
+                        </label>
+
+                        <label
+                            class="bw-mode-card"
+                            for="configuredModeInput">
+
+                            <input
+                                type="radio"
+                                name="resultMode"
+                                id="configuredModeInput"
+                                value="admin_configured_odds">
+
+                            <span>
+
+                                <i class="fa-solid fa-sliders"></i>
+
+                                <strong>
+                                    Admin Configured Odds
+                                </strong>
+
+                                <small>
+                                    Uses the disclosed animal weights below.
+                                </small>
+
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                    <div class="settings-grid">
+
+                        <label>
+
+                            <span>Minimum Bet (৳)</span>
+
+                            <input
+                                type="number"
+                                id="minimumBetInput"
+                                min="5"
+                                step="5"
+                                required>
+
+                        </label>
+
+                        <label>
+
+                            <span>Maximum Bet (৳)</span>
+
+                            <input
+                                type="number"
+                                id="maximumBetInput"
+                                min="5"
+                                step="5"
+                                required>
+
+                        </label>
+
+                        <label>
+
+                            <span>Service Charge (%)</span>
+
+                            <input
+                                type="number"
+                                id="serviceChargeInput"
+                                min="0"
+                                max="50"
+                                step="0.01"
+                                required>
+
+                        </label>
+
+                        <label>
+
+                            <span>Max Round Liability (৳)</span>
+
+                            <input
+                                type="number"
+                                id="maxLiabilityInput"
+                                min="100"
+                                step="100"
+                                required>
+
+                        </label>
+
+                        <label>
+
+                            <span>Betting Time (seconds)</span>
+
+                            <input
+                                type="number"
+                                id="bettingDurationInput"
+                                min="10"
+                                max="300"
+                                required>
+
+                        </label>
+
+                        <label>
+
+                            <span>Spin Time (seconds)</span>
+
+                            <input
+                                type="number"
+                                id="spinDurationInput"
+                                min="5"
+                                max="120"
+                                required>
+
+                        </label>
+
+                        <label>
+
+                            <span>Result Display (seconds)</span>
+
+                            <input
+                                type="number"
+                                id="resultDisplayInput"
+                                min="2"
+                                max="60"
+                                required>
+
+                        </label>
+
+                        <label>
+
+                            <span>Next Round Delay (seconds)</span>
+
+                            <input
+                                type="number"
+                                id="nextRoundDelayInput"
+                                min="1"
+                                max="120"
+                                required>
+
+                        </label>
+
+                    </div>
+
+                    <!-- Animal Odds -->
+
+                    <div class="bw-animal-settings-header">
+
+                        <div>
+
+                            <span class="card-kicker">
+                                Animal Configuration
+                            </span>
+
+                            <h3>
+                                Multipliers and Winning Odds
+                            </h3>
+
+                        </div>
+
+                        <div
+                            class="bw-weight-total"
+                            id="weightTotalBadge">
+
+                            Total:
+                            <strong id="totalWeightValue">
+                                0
+                            </strong>
+                            / 1000
+
+                        </div>
+
+                    </div>
+
+                    <p class="bw-animal-help">
+                        Weight 10 equals 1%. The total must be exactly
+                        1000 before saving.
+                    </p>
+
+                    <div
+                        class="bw-animal-settings-grid"
+                        id="animalSettingsGrid">
+
+                        <p class="empty-table">
+                            Loading animal settings...
+                        </p>
+
+                    </div>
+
+                    <div class="settings-actions">
+
+                        <p id="settingsMessage">
+                            Saved changes apply automatically from the next round.
+                        </p>
+
+                        <button
+                            type="submit"
+                            class="primary-btn"
+                            id="saveSettingsBtn">
+
+                            <i class="fa-solid fa-clock"></i>
+
+                            Schedule for Next Round
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+            <!-- Round History -->
+
+            <section class="admin-card">
+
+                <div class="admin-card-header round-history-header">
+
+                    <div>
+
+                        <span class="card-kicker">
+                            Monitoring
+                        </span>
+
+                        <h2>Round History</h2>
+
+                    </div>
+
+                    <div class="round-filters">
+
+                        <select id="roundModeFilter">
+
+                            <option value="">
+                                All Modes
+                            </option>
+
+                            <option value="fair_equal">
+                                Fair Equal
+                            </option>
+
+                            <option value="admin_configured_odds">
+                                Configured Odds
+                            </option>
+
+                        </select>
+
+                        <select id="roundStatusFilter">
+
+                            <option value="">
+                                All Statuses
+                            </option>
+
+                            <option value="betting">
+                                Betting
+                            </option>
+
+                            <option value="spinning">
+                                Spinning
+                            </option>
+
+                            <option value="completed">
+                                Completed
+                            </option>
+
+                            <option value="refunded">
+                                Refunded
+                            </option>
+
+                            <option value="cancelled">
+                                Cancelled
+                            </option>
+
+                        </select>
+
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            id="refreshRoundsBtn">
+
+                            <i class="fa-solid fa-rotate"></i>
+
+                            Refresh
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="admin-table-wrapper">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Round</th>
+
+                                <th>Mode</th>
+
+                                <th>Status</th>
+
+                                <th>Winner</th>
+
+                                <th>Players</th>
+
+                                <th>Total Bet</th>
+
+                                <th>Service Charge</th>
+
+                                <th>Completed</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="roundsTableBody">
+
+                            <tr>
+
+                                <td
+                                    colspan="9"
+                                    class="empty-table">
+
+                                    Loading rounds...
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="pagination">
+
+                    <button
+                        type="button"
+                        id="previousPageBtn">
+
+                        <i class="fa-solid fa-chevron-left"></i>
+
+                        Previous
+
+                    </button>
+
+                    <span id="pageInformation">
+                        Page 1
+                    </span>
+
+                    <button
+                        type="button"
+                        id="nextPageBtn">
+
+                        Next
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Bet Details Modal -->
+
+    <div
+        class="admin-modal is-hidden"
+        id="betsModal">
+
+        <div class="admin-modal-card">
+
+            <div class="admin-modal-header">
+
+                <div>
+
+                    <span>Round Bets</span>
+
+                    <h2 id="betsModalTitle">
+                        Bet Details
+                    </h2>
+
+                </div>
+
+                <button
+                    type="button"
+                    id="closeBetsModalBtn"
+                    aria-label="Close bet details">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>User</th>
+
+                            <th>Animal</th>
+
+                            <th>Bet</th>
+
+                            <th>Status</th>
+
+                            <th>Gross</th>
+
+                            <th>Charge</th>
+
+                            <th>Net Payout</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="betsTableBody">
+
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="empty-table">
+
+                                Loading bets...
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Loading -->
+
+    <div
+        class="admin-loading"
+        id="adminLoading">
+
+        <div class="admin-spinner"></div>
+
+        <p>Loading Bangla Wheel control...</p>
+
+    </div>
+
+    <!-- Toast -->
+
+    <div
+        class="admin-toast"
+        id="adminToast"
+        role="status"
+        aria-live="polite">
+    </div>
+
+    <script src="../js/admin-bangla-wheel.js"></script>
+
+</body>
+
+</html>

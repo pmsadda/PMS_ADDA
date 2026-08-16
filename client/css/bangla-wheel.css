@@ -1346,3 +1346,555 @@ button:disabled {
     visibility: hidden;
     pointer-events: none;
 }
+
+/* =========================================================
+   BANGLA WHEEL FINAL RESPONSIVE OVERRIDE
+========================================================= */
+
+:root {
+    --wheel-size: min(
+        430px,
+        42vw,
+        calc(100dvh - 235px)
+    );
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.bangla-wheel-app {
+    display: grid;
+    width: min(100%, 1180px);
+    height: 100dvh;
+    min-height: 0;
+    padding: 69px 10px 10px;
+    grid-template-columns:
+        minmax(390px, 1.08fr)
+        minmax(390px, 0.92fr);
+    grid-template-rows:
+        auto
+        auto
+        minmax(0, 1fr)
+        auto;
+    gap: 7px 10px;
+    overflow: hidden;
+}
+
+.wheel-header {
+    width: min(100%, 1180px);
+}
+
+.connection-bar {
+    grid-column: 1 / -1;
+    margin: 0;
+    min-height: 29px;
+    padding: 4px 10px;
+}
+
+.round-information {
+    grid-column: 1 / -1;
+    margin: 0;
+    min-height: 48px;
+    padding: 7px 12px;
+}
+
+.wheel-stage {
+    grid-column: 1;
+    grid-row: 3 / 5;
+    min-height: 0;
+    height: 100%;
+    padding: 25px 10px 8px;
+    justify-content: center;
+    border-radius: 18px;
+}
+
+.wheel-stage::after {
+    width: var(--wheel-size);
+    height: var(--wheel-size);
+}
+
+.wheel-shell {
+    width: var(--wheel-size);
+    max-width: 100%;
+    padding: 10px;
+    flex: 0 0 auto;
+}
+
+.animal-wheel {
+    contain: layout paint;
+    backface-visibility: hidden;
+}
+
+/* Only two green wheel colours */
+
+.animal-wheel {
+    background:
+        repeating-conic-gradient(
+            from -103.846deg,
+            #0b6846 0deg 27.692deg,
+            #073d2d 27.692deg 55.384deg
+        ) !important;
+}
+
+/* Keep every animal safely inside its segment */
+
+.wheel-segment {
+    width: calc(var(--wheel-size) * 0.16);
+    height: calc(var(--wheel-size) * 0.215);
+    margin-top: calc(var(--wheel-size) * -0.1075);
+    margin-left: calc(var(--wheel-size) * -0.08);
+    gap: 1px;
+    transform:
+        rotate(var(--segment-angle))
+        translateY(calc(var(--wheel-size) * -0.345))
+        rotate(calc(var(--segment-angle) * -1));
+}
+
+.wheel-segment img {
+    width: calc(var(--wheel-size) * 0.105);
+    height: calc(var(--wheel-size) * 0.105);
+    max-width: 45px;
+    max-height: 45px;
+}
+
+.wheel-segment strong {
+    max-width: calc(var(--wheel-size) * 0.15);
+    font-size: clamp(7px, 0.8vw, 10px);
+}
+
+/* Larger multiplier */
+
+.wheel-segment span {
+    min-width: 35px;
+    padding: 3px 6px;
+    color: #171000;
+    background: #ffd700;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 10px;
+    font-size: clamp(10px, 1vw, 13px);
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* NIL will not use red */
+
+.wheel-segment.is-nil span {
+    color: #071c13;
+    background: #f6c814;
+    border-color: #ffe77a;
+}
+
+.wheel-center {
+    width: calc(var(--wheel-size) * 0.225);
+    height: calc(var(--wheel-size) * 0.225);
+    max-width: 96px;
+    max-height: 96px;
+}
+
+.wheel-center img {
+    width: 50%;
+    height: 50%;
+}
+
+.spin-information {
+    min-height: 29px;
+    margin-top: 8px;
+    padding: 5px 11px;
+}
+
+/* Right-side compact controls */
+
+.animal-betting-section {
+    grid-column: 2;
+    grid-row: 3;
+    min-height: 0;
+    margin: 0;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.animal-betting-section .section-heading {
+    margin-bottom: 7px;
+}
+
+.animal-options {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.animal-option {
+    min-height: 66px;
+    padding: 4px 3px;
+    gap: 2px;
+    border-radius: 8px;
+}
+
+.animal-option img {
+    width: 30px;
+    height: 30px;
+}
+
+.animal-option strong {
+    font-size: 9px;
+}
+
+.animal-option span {
+    padding: 3px 7px;
+    color: #151000;
+    background: #ffd700;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.animal-option.is-nil {
+    border-color: rgba(255, 215, 0, 0.25);
+    opacity: 0.7;
+}
+
+.animal-option.is-nil span {
+    color: #071c13;
+    background: #eabe12;
+}
+
+.betting-panel {
+    grid-column: 2;
+    grid-row: 4;
+    margin: 0;
+    padding: 9px 11px;
+}
+
+.selected-animal,
+.payout-preview {
+    margin-bottom: 6px;
+}
+
+.bet-amount-control {
+    margin-bottom: 6px;
+}
+
+.quick-bet-options {
+    margin-bottom: 6px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.quick-bet-options button {
+    min-height: 29px;
+    padding: 3px;
+    font-size: 10px;
+}
+
+.place-bet-btn {
+    min-height: 38px;
+}
+
+.betting-message {
+    min-height: 0;
+    margin: 5px 0 0;
+}
+
+.my-bet-card {
+    position: fixed;
+    z-index: 70;
+    right: 12px;
+    bottom: 12px;
+    width: min(480px, calc(100% - 24px));
+    margin: 0;
+    box-shadow: 0 13px 32px rgba(0, 0, 0, 0.5);
+}
+
+.recent-results-section {
+    display: none;
+}
+
+/* =========================================================
+   MOBILE ONE-PAGE LAYOUT
+========================================================= */
+
+@media (max-width: 760px) {
+    :root {
+        --wheel-size: min(
+            68vw,
+            255px,
+            calc(31dvh - 14px)
+        );
+    }
+
+    .bangla-wheel-app {
+        display: flex;
+        width: 100%;
+        height: 100dvh;
+        padding: 62px 6px 6px;
+        gap: 4px;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .wheel-header {
+        min-height: 56px;
+        padding: 6px 8px;
+    }
+
+    .connection-bar {
+        min-height: 24px;
+        padding: 2px 8px;
+        font-size: 10px;
+        flex: 0 0 auto;
+    }
+
+    .round-information {
+        min-height: 42px;
+        padding: 4px 9px;
+        flex: 0 0 auto;
+    }
+
+    .round-information strong {
+        font-size: 11px;
+    }
+
+    .round-timer {
+        min-width: 52px;
+        padding: 3px 7px;
+    }
+
+    .wheel-stage {
+        width: 100%;
+        height: calc(var(--wheel-size) + 42px);
+        min-height: 0;
+        padding: 17px 4px 3px;
+        justify-content: flex-start;
+        flex: 0 0 auto;
+        border-width: 1px;
+        border-radius: 13px;
+    }
+
+    .wheel-stage::before {
+        inset: 4px;
+        border-radius: 10px;
+    }
+
+    .wheel-stage::after {
+        display: none;
+    }
+
+    .wheel-needle {
+        top: 0;
+        font-size: 36px;
+    }
+
+    .wheel-shell {
+        padding: 7px;
+        border-width: 2px;
+        box-shadow:
+            0 7px 15px rgba(0, 0, 0, 0.42),
+            0 0 10px rgba(255, 215, 0, 0.16);
+    }
+
+    .wheel-shell::after {
+        display: none;
+        animation: none;
+    }
+
+    .animal-wheel {
+        box-shadow:
+            inset 0 0 12px rgba(0, 0, 0, 0.42);
+    }
+
+    .animal-wheel.is-spinning {
+        filter: none;
+    }
+
+    .wheel-segment {
+        width: calc(var(--wheel-size) * 0.17);
+        height: calc(var(--wheel-size) * 0.225);
+        margin-top: calc(var(--wheel-size) * -0.1125);
+        margin-left: calc(var(--wheel-size) * -0.085);
+        transform:
+            rotate(var(--segment-angle))
+            translateY(calc(var(--wheel-size) * -0.335))
+            rotate(calc(var(--segment-angle) * -1));
+    }
+
+    .wheel-segment img {
+        width: calc(var(--wheel-size) * 0.105);
+        height: calc(var(--wheel-size) * 0.105);
+        min-width: 22px;
+        min-height: 22px;
+        filter: none;
+    }
+
+    .wheel-segment strong {
+        max-width: calc(var(--wheel-size) * 0.16);
+        font-size: clamp(5px, 1.7vw, 7px);
+    }
+
+    .wheel-segment span {
+        min-width: 25px;
+        padding: 2px 4px;
+        font-size: clamp(8px, 2.5vw, 10px);
+    }
+
+    .wheel-center {
+        width: calc(var(--wheel-size) * 0.22);
+        height: calc(var(--wheel-size) * 0.22);
+        border-width: 3px;
+    }
+
+    .spin-information {
+        min-height: 21px;
+        margin-top: 3px;
+        padding: 2px 8px;
+        font-size: 8px;
+    }
+
+    .spin-information.is-spinning i {
+        animation: none;
+    }
+
+    .animal-betting-section {
+        width: 100%;
+        min-height: 0;
+        padding: 5px;
+        flex: 1 1 auto;
+        overflow: hidden;
+    }
+
+    .animal-betting-section .section-heading {
+        display: none;
+    }
+
+    .animal-options {
+        height: 100%;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-rows: repeat(3, minmax(0, 1fr));
+        gap: 3px;
+    }
+
+    .animal-option {
+        min-height: 0;
+        padding: 2px;
+        gap: 0;
+        border-radius: 6px;
+    }
+
+    .animal-option img {
+        width: clamp(20px, 6vw, 29px);
+        height: clamp(20px, 6vw, 29px);
+        filter: none;
+    }
+
+    .animal-option strong {
+        max-width: 100%;
+        font-size: clamp(6px, 2vw, 8px);
+    }
+
+    .animal-option span {
+        padding: 1px 4px;
+        font-size: clamp(8px, 2.4vw, 10px);
+    }
+
+    .betting-panel {
+        width: 100%;
+        padding: 5px 7px;
+        flex: 0 0 auto;
+    }
+
+    .selected-animal {
+        margin-bottom: 3px;
+        font-size: 10px;
+    }
+
+    .bet-amount-control {
+        margin-bottom: 3px;
+    }
+
+    .amount-button {
+        width: 33px;
+        height: 33px;
+        min-height: 33px;
+    }
+
+    .bet-amount-display {
+        min-height: 33px;
+    }
+
+    .bet-amount-display > span {
+        display: none;
+    }
+
+    .bet-amount-display input {
+        font-size: 14px;
+    }
+
+    .quick-bet-options {
+        margin-bottom: 3px;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 2px;
+    }
+
+    .quick-bet-options button {
+        min-height: 24px;
+        padding: 1px;
+        font-size: 8px;
+    }
+
+    .payout-preview {
+        margin-bottom: 3px;
+        font-size: 9px;
+    }
+
+    .place-bet-btn {
+        min-height: 32px;
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .betting-message {
+        display: none;
+    }
+
+    .my-bet-card {
+        right: 6px;
+        bottom: 6px;
+        width: calc(100% - 12px);
+        padding: 7px;
+        font-size: 9px;
+    }
+
+    .recent-results-section {
+        display: none;
+    }
+
+    .wheel-segment,
+    .wheel-segment img,
+    .animal-option,
+    .animal-option img {
+        transition: none;
+    }
+}
+
+@media (max-width: 370px) {
+    :root {
+        --wheel-size: min(
+            64vw,
+            225px,
+            calc(29dvh - 8px)
+        );
+    }
+
+    .bangla-wheel-app {
+        padding-top: 59px;
+    }
+
+    .wheel-header {
+        min-height: 53px;
+    }
+
+    .animal-options {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}

@@ -54,6 +54,8 @@ const banglaWheelRoutes = require("./routes/bangla-wheel.routes");
 
 const adminAndarBaharRoutes = require("./routes/admin-andar-bahar.routes");
 
+const adminBanglaWheelRoutes = require("./routes/admin-bangla-wheel.routes");
+
 const adminLotteryRoutes = require("./routes/admin-lottery.routes");
 
 const app = express();
@@ -71,10 +73,7 @@ app.disable("x-powered-by");
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const LOCAL_CORS_HOSTS = new Set([
-  "localhost",
-  "127.0.0.1",
-]);
+const LOCAL_CORS_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
 function normalizeCorsOrigin(origin) {
   return String(origin || "")
@@ -130,15 +129,7 @@ const corsOptions = {
     callback(null, isCorsOriginAllowed(origin));
   },
 
-  methods: [
-    "GET",
-    "HEAD",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-  ],
+  methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 
   credentials: true,
 
@@ -297,6 +288,8 @@ app.use("/api/andar-bahar", andarBaharRoutes);
 app.use("/api/bangla-wheel", banglaWheelRoutes);
 
 app.use("/api/admin/andar-bahar", adminAndarBaharRoutes);
+
+app.use("/api/admin/bangla-wheel", adminBanglaWheelRoutes);
 
 app.use("/api/admin/lottery", adminLotteryRoutes);
 

@@ -3912,3 +3912,124 @@ button:focus{
         animation: none;
     }
 }
+
+/* =========================================================
+   BANGLA WHEEL LOBBY FINAL CARD FIX
+========================================================= */
+
+.bangla-wheel-game-card {
+    display: flex !important;
+    height: auto !important;
+    min-height: 400px;
+    flex-direction: column;
+}
+
+.bangla-wheel-card-visual {
+    width: 100%;
+    min-height: 130px;
+    max-height: 130px;
+    padding: 12px;
+    flex: 0 0 130px;
+}
+
+.bangla-wheel-mini-wheel {
+    width: 96px;
+    height: 96px;
+    border-width: 5px;
+}
+
+.bangla-wheel-mini-wheel::after {
+    inset: 29px;
+}
+
+.bangla-wheel-mini-wheel img {
+    width: 34px;
+    height: 34px;
+}
+
+.bangla-wheel-game-card .game-info {
+    display: flex;
+    min-height: 0;
+    padding-bottom: 14px;
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+
+.bangla-wheel-game-card .game-info p {
+    display: block;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+}
+
+.bangla-wheel-lobby-features {
+    margin: 8px 0 10px;
+}
+
+.bangla-wheel-play-btn {
+    display: flex !important;
+    width: 100%;
+    min-height: 44px !important;
+    margin-top: auto;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
+    overflow: visible !important;
+}
+
+@media (max-width: 600px) {
+    .bangla-wheel-game-card {
+        min-height: 340px;
+    }
+
+    .bangla-wheel-card-visual {
+        min-height: 105px;
+        max-height: 105px;
+        padding: 8px;
+        flex-basis: 105px;
+    }
+
+    .bangla-wheel-mini-wheel {
+        width: 78px;
+        height: 78px;
+        border-width: 4px;
+        animation: none;
+    }
+
+    .bangla-wheel-mini-wheel::after {
+        inset: 23px;
+    }
+
+    .bangla-wheel-mini-wheel img {
+        width: 28px;
+        height: 28px;
+        animation: none;
+    }
+
+    .bangla-wheel-live-badge {
+        top: 8px;
+        right: 8px;
+        padding: 4px 7px;
+        font-size: 8px;
+    }
+
+    .bangla-wheel-game-card .game-info {
+        padding-bottom: 10px;
+    }
+
+    .bangla-wheel-lobby-features {
+        gap: 4px;
+        margin: 5px 0 7px;
+    }
+
+    .bangla-wheel-lobby-features span {
+        padding: 4px 5px;
+        font-size: 8px;
+    }
+
+    .bangla-wheel-play-btn {
+        min-height: 40px !important;
+        flex-basis: 40px;
+        font-size: 10px;
+    }
+}

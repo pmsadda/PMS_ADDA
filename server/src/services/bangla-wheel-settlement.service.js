@@ -6,13 +6,16 @@ const {
 
 const {
   ROUND_STATUS,
+  RESULT_MODE,
   assertCondition,
   parseMoney,
   parsePositiveInteger,
+  parseJsonValue,
   createReferenceCode,
   mapRoundRow,
   getGameSettings,
   getActiveAnimals,
+  createProbabilitySnapshot,
   prepareWheelResult
 } = require(
   "./bangla-wheel.service"
@@ -238,19 +241,102 @@ async function startSpin(
       "ROUND_NONCE_MISSING"
     );
 
-    const animals =
-      await getActiveAnimals(
-        connection,
-        {
-          lock: true
-        }
+       let lockedSnapshot =
+      parseJsonValue(
+        round.probability_snapshot,
+        []
+      );
+
+    let lockedResultMode =
+      Object.values(
+        RESULT_MODE
+      ).includes(
+        round.result_mode_snapshot
+      )
+        ? round.result_mode_snapshot
+        : settings.resultMode;
+
+    let lockedOddsVersion =
+      Number(
+        round.odds_version_snapshot ||
+        settings.oddsVersion ||
+        1
+      );
+
+    /*
+     * পুরোনো active round deploy-এর আগে তৈরি হয়ে থাকলে
+     * safe recovery snapshot তৈরি হবে।
+     */
+    if (
+      !Array.isArray(
+        lockedSnapshot
+      ) ||
+      lockedSnapshot.length !== 13
+    ) {
+      const currentAnimals =
+        await getActiveAnimals(
+          connection,
+          {
+            lock: true
+          }
+        );
+
+      const recoveryProbability =
+        createProbabilitySnapshot(
+          currentAnimals,
+          lockedResultMode
+        );
+
+      lockedSnapshot =
+        recoveryProbability
+          .probabilitySnapshot;
+
+      lockedResultMode =
+        recoveryProbability
+          .resultMode;
+    }
+
+    const lockedAnimals =
+      lockedSnapshot.map(
+        (animal) => ({
+          id:
+            Number(
+              animal.animalId
+            ),
+
+          animalCode:
+            animal.animalCode,
+
+          animalName:
+            animal.animalName,
+
+          segmentIndex:
+            Number(
+              animal.segmentIndex
+            ),
+
+          multiplier:
+            parseMoney(
+              animal.multiplier
+            ),
+
+          isBettable:
+            animal.isBettable ===
+            true,
+
+          winningWeight:
+            Number(
+              animal.winningWeight
+            )
+        })
       );
 
     const wheelResult =
       prepareWheelResult(
-        animals,
+        lockedAnimals,
         round.server_seed,
-        round.round_nonce
+        round.round_nonce,
+        lockedResultMode
       );
 
     const winningAnimal =
@@ -266,7 +352,7 @@ async function startSpin(
         ) || 20
       );
 
-    await connection.query(
+        await connection.query(
       `
         UPDATE bangla_wheel_rounds
 
@@ -279,6 +365,23 @@ async function startSpin(
           winning_segment_index = ?,
           winning_multiplier = ?,
           random_result_index = ?,
+          winning_ticket = ?,
+          total_winning_weight = ?,
+          result_mode_snapshot = ?,
+
+          odds_version_snapshot =
+            COALESCE(
+              odds_version_snapshot,
+              ?
+            ),
+
+          probability_snapshot = ?,
+
+          probability_locked_at =
+            COALESCE(
+              probability_locked_at,
+              CURRENT_TIMESTAMP(3)
+            ),
 
           spinning_started_at =
             CURRENT_TIMESTAMP(3),
@@ -297,6 +400,14 @@ async function startSpin(
         winningAnimal.segmentIndex,
         winningAnimal.multiplier,
         wheelResult.randomIndex,
+        wheelResult.winningTicket,
+        wheelResult.totalWinningWeight,
+        wheelResult.resultMode,
+        lockedOddsVersion,
+        JSON.stringify(
+          wheelResult
+            .probabilitySnapshot
+        ),
         spinDurationSeconds,
         validRoundId
       ]
@@ -332,17 +443,30 @@ async function startSpin(
 
       spinDurationSeconds,
 
-      fairness: {
+           fairness: {
+        resultMode:
+          wheelResult.resultMode,
+
+        oddsVersion:
+          lockedOddsVersion,
+
+        totalWinningWeight:
+          wheelResult.totalWinningWeight,
+
+        probabilitySnapshot:
+          wheelResult.probabilitySnapshot,
+
         serverSeedHash:
           round.server_seed_hash,
 
         /*
-         * Spin চলার সময় seed প্রকাশ করা হবে না।
-         * Round completed হলে seed reveal হবে।
+         * Completed হওয়ার আগে secret seed/ticket
+         * প্রকাশ করা হবে না।
          */
         serverSeed: null,
         roundNonce: null,
-        randomResultIndex: null
+        randomResultIndex: null,
+        winningTicket: null
       }
     };
   } catch (error) {

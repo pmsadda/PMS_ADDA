@@ -17,46 +17,46 @@
     spinAnimation: null,
     serverOffset: 0,
     isSpinning: false,
-    soundEnabled: true
+    soundEnabled: true,
   };
 
   const $ = (id) => document.getElementById(id);
 
   const DOM = {
-    connectionStatus: $("connectionStatus"),
+    connectionStatus: $("connectionBar"),
     connectionText: $("connectionText"),
     walletBalance: $("walletBalance"),
-    roundId: $("roundId"),
-    roundStatus: $("roundStatus"),
+    roundId: $("roundCode"),
+    roundStatus: $("roundStatusText"),
     timerValue: $("timerValue"),
 
     animalWheel: $("animalWheel"),
     wheelSegments: $("wheelSegments"),
     animalOptions: $("animalOptions"),
 
-        selectedAnimalName: $("selectedAnimalText"),
-    selectedMultiplier: $("selectedMultiplier"),
+    selectedAnimalName: $("selectedAnimalText"),
+    selectedMultiplier: null,
     betAmount: $("betAmountInput"),
     possiblePayout: $("possiblePayout"),
-    decreaseBet: $("decreaseBet"),
-    increaseBet: $("increaseBet"),
+    decreaseBet: $("decreaseBetBtn"),
+    increaseBet: $("increaseBetBtn"),
     placeBetBtn: $("placeBetBtn"),
 
     myBetCard: $("myBetCard"),
     myBetAnimal: $("myBetAnimal"),
     myBetAmount: $("myBetAmount"),
-    myBetPayout: $("myBetPayout"),
+    myBetPayout: null,
 
     recentResults: $("recentResults"),
     resultOverlay: $("resultOverlay"),
-    resultAnimalImage: $("resultAnimalImage"),
-    resultAnimalName: $("resultAnimalName"),
-    resultMessage: $("resultMessage"),
-    closeResultBtn: $("closeResultBtn"),
+    resultAnimalImage: $("winnerAnimalImage"),
+    resultAnimalName: $("winnerAnimalName"),
+    resultMessage: $("userResultMessage"),
+    closeResultBtn: $("resultCloseBtn"),
 
     loadingOverlay: $("loadingOverlay"),
-    toast: $("toast"),
-    soundToggle: $("soundToggle")
+    toast: $("gameToast"),
+    soundToggle: $("soundBtn"),
   };
 
   function getServerUrl() {
@@ -79,7 +79,7 @@
   function money(value) {
     return Number(value || 0).toLocaleString("en-BD", {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
   }
 
@@ -125,17 +125,25 @@
     if (!DOM.toast) return;
 
     DOM.toast.textContent = message;
-    DOM.toast.className = `toast show ${type}`;
+    DOM.toast.className = `game-toast is-visible is-${type}`;
 
     clearTimeout(showToast.timer);
+
     showToast.timer = setTimeout(() => {
-      DOM.toast.classList.remove("show");
+      DOM.toast.className = "game-toast";
     }, 3000);
   }
 
-  function setConnected(connected) {
-    DOM.connectionStatus?.classList.toggle("connected", connected);
-    DOM.connectionStatus?.classList.toggle("disconnected", !connected);
+   function setConnected(connected) {
+    DOM.connectionStatus?.classList.toggle(
+      "is-connected",
+      connected
+    );
+
+    DOM.connectionStatus?.classList.toggle(
+      "is-disconnected",
+      !connected
+    );
 
     if (DOM.connectionText) {
       DOM.connectionText.textContent = connected
@@ -162,8 +170,8 @@
 
     const feePercent = Number(
       state.settings?.serviceChargePercent ??
-      state.settings?.service_charge_percent ??
-      5
+        state.settings?.service_charge_percent ??
+        5,
     );
 
     return gross - gross * (feePercent / 100);
@@ -189,6 +197,16 @@
     if (DOM.possiblePayout) {
       DOM.possiblePayout.textContent = `৳ ${money(calculateNetPayout())}`;
     }
+
+        const placeBetText = $("placeBetText");
+
+    if (placeBetText) {
+      placeBetText.textContent = state.selectedAnimal
+        ? `Bet ৳${money(state.selectedAmount)} on ${animalName(
+            state.selectedAnimal
+          )}`
+        : "Select an animal";
+    }
   }
 
   function buildWheelBackground() {
@@ -198,11 +216,7 @@
       .slice()
       .sort((a, b) => animalSegmentIndex(a) - animalSegmentIndex(b))
       .map((animal, index) => {
-        if (!isBettable(animal)) {
-          return index % 2 === 0 ? "#641818" : "#421010";
-        }
-
-        return index % 2 === 0 ? "#075438" : "#0b3428";
+        return index % 2 === 0 ? "#0b6846" : "#073d2d";
       });
 
     const stops = colors.map((color, index) => {
@@ -211,8 +225,7 @@
       return `${color} ${start}deg ${end}deg`;
     });
 
-    DOM.animalWheel.style.background =
-      `conic-gradient(from ${-90 - SEGMENT_ANGLE / 2}deg, ${stops.join(",")})`;
+    DOM.animalWheel.style.background = `conic-gradient(from ${-90 - SEGMENT_ANGLE / 2}deg, ${stops.join(",")})`;
   }
 
   function renderWheel() {
@@ -224,12 +237,13 @@
 
     buildWheelBackground();
 
-    DOM.wheelSegments.innerHTML = animals.map((animal) => {
-      const index = animalSegmentIndex(animal);
-      const angle = index * SEGMENT_ANGLE;
-      const nilClass = isBettable(animal) ? "" : " nil";
+    DOM.wheelSegments.innerHTML = animals
+      .map((animal) => {
+        const index = animalSegmentIndex(animal);
+        const angle = index * SEGMENT_ANGLE;
+        const nilClass = isBettable(animal) ? "" : " is-nil";
 
-      return `
+        return `
         <div
           class="wheel-segment${nilClass}"
           data-code="${escapeHtml(animalCode(animal))}"
@@ -243,28 +257,28 @@
             >
             <strong>${escapeHtml(animalName(animal))}</strong>
             <span>
-              ${isBettable(animal)
-                ? `${animalMultiplier(animal)}x`
-                : "NIL"}
+              ${isBettable(animal) ? `${animalMultiplier(animal)}x` : "NIL"}
             </span>
           </div>
         </div>
       `;
-    }).join("");
+      })
+      .join("");
   }
 
   function renderAnimalOptions() {
     if (!DOM.animalOptions) return;
 
-    DOM.animalOptions.innerHTML = state.animals.map((animal) => {
-      const code = animalCode(animal);
-      const bettable = isBettable(animal);
-      const selected = animalCode(state.selectedAnimal) === code;
+    DOM.animalOptions.innerHTML = state.animals
+      .map((animal) => {
+        const code = animalCode(animal);
+        const bettable = isBettable(animal);
+        const selected = animalCode(state.selectedAnimal) === code;
 
-      return `
+        return `
         <button
           type="button"
-          class="animal-option${selected ? " selected" : ""}${bettable ? "" : " nil"}"
+                    class="animal-option${selected ? " is-selected" : ""}${bettable ? "" : " is-nil"}"
           data-animal-code="${escapeHtml(code)}"
           ${bettable ? "" : "disabled"}
         >
@@ -281,7 +295,8 @@
           </strong>
         </button>
       `;
-    }).join("");
+      })
+      .join("");
 
     DOM.animalOptions
       .querySelectorAll(".animal-option:not(:disabled)")
@@ -293,17 +308,10 @@
           state.selectedAnimal =
             state.animals.find((animal) => animalCode(animal) === code) || null;
 
-                    renderAnimalOptions();
+          renderAnimalOptions();
           updateBetPreview();
 
-          const roundStatus = getRoundStatus(state.activeRound);
-          const remainingTime =
-            getRoundEndTime(state.activeRound) - serverNow();
-
-          setBettingEnabled(
-            roundStatus === "betting" &&
-            remainingTime > 0
-          );
+          setBettingEnabled(getRoundStatus(state.activeRound) === "betting");
         });
       });
   }
@@ -311,14 +319,14 @@
   function setBettingEnabled(enabled) {
     const canBet = enabled && !state.isSpinning;
 
-    DOM.placeBetBtn && (DOM.placeBetBtn.disabled =
-      !canBet || !state.selectedAnimal);
+    DOM.placeBetBtn &&
+      (DOM.placeBetBtn.disabled = !canBet || !state.selectedAnimal);
 
     DOM.decreaseBet && (DOM.decreaseBet.disabled = !canBet);
     DOM.increaseBet && (DOM.increaseBet.disabled = !canBet);
 
     DOM.animalOptions
-      ?.querySelectorAll(".animal-option:not(.nil)")
+            ?.querySelectorAll(".animal-option:not(.is-nil)")
       .forEach((button) => {
         button.disabled = !canBet;
       });
@@ -345,9 +353,7 @@
     }
 
     return parseDate(
-      round?.bettingEndsAt ||
-      round?.betting_ends_at ||
-      round?.bettingClosesAt
+      round?.bettingEndsAt || round?.betting_ends_at || round?.bettingClosesAt,
     );
   }
 
@@ -364,16 +370,16 @@
 
       if (DOM.roundStatus) {
         DOM.roundStatus.textContent =
-          status === "spinning" ? "SPINNING" :
-          status === "betting" ? "BETTING" :
-          status ? status.toUpperCase() : "WAITING";
+          status === "spinning"
+            ? "SPINNING"
+            : status === "betting"
+              ? "BETTING"
+              : status
+                ? status.toUpperCase()
+                : "WAITING";
       }
 
-      setBettingEnabled(status === "betting" && remaining > 0);
-
-      if (remaining <= 0 && status === "betting") {
-        setBettingEnabled(false);
-      }
+      setBettingEnabled(status === "betting");
     };
 
     tick();
@@ -387,9 +393,7 @@
 
     if (DOM.roundId) {
       DOM.roundId.textContent =
-        round.roundCode ||
-        round.round_code ||
-        `#${round.id || "—"}`;
+        round.roundCode || round.round_code || `#${round.id || "—"}`;
     }
 
     startCountdown();
@@ -400,9 +404,7 @@
 
     const round = data?.round || data;
     const code = round?.winningAnimalCode || round?.winning_animal_code;
-    const index =
-      round?.winningSegmentIndex ??
-      round?.winning_segment_index;
+    const index = round?.winningSegmentIndex ?? round?.winning_segment_index;
 
     return state.animals.find((animal) => {
       if (code) return animalCode(animal) === code;
@@ -434,31 +436,34 @@
     const round = data?.round || state.activeRound || {};
     const endingTime = parseDate(
       round.spinningEndsAt ||
-      round.spinning_ends_at ||
-      state.activeRound?.spinningEndsAt
+        round.spinning_ends_at ||
+        state.activeRound?.spinningEndsAt,
     );
 
-    let duration = endingTime
-      ? Math.max(800, endingTime - serverNow())
-      : 20000;
+    let duration = endingTime ? Math.max(800, endingTime - serverNow()) : 20000;
 
     duration = Math.min(duration, 20000);
 
     state.isSpinning = true;
     setBettingEnabled(false);
 
-    DOM.resultOverlay?.classList.remove("show");
+    DOM.resultOverlay?.classList.remove("is-visible");
 
-    const currentNormalized =
-      ((state.wheelRotation % 360) + 360) % 360;
+    const currentNormalized = ((state.wheelRotation % 360) + 360) % 360;
 
     const desiredNormalized =
-      ((-winningIndex * SEGMENT_ANGLE) % 360 + 360) % 360;
+      (((-winningIndex * SEGMENT_ANGLE) % 360) + 360) % 360;
 
-    const alignmentDelta =
-      (desiredNormalized - currentNormalized + 360) % 360;
+    const alignmentDelta = (desiredNormalized - currentNormalized + 360) % 360;
 
-    const fullTurns = Math.max(2, Math.ceil(10 * (duration / 20000)));
+        const mobileDevice = window.matchMedia("(max-width: 520px)").matches;
+
+    const normalTurns = mobileDevice ? 6 : 9;
+
+    const fullTurns = Math.max(
+      2,
+      Math.ceil(normalTurns * (duration / 20000))
+    );
     const targetRotation =
       state.wheelRotation + fullTurns * 360 + alignmentDelta;
 
@@ -468,32 +473,31 @@
       [
         {
           transform: `rotate(${state.wheelRotation}deg)`,
-          offset: 0
+          offset: 0,
         },
         {
           transform: `rotate(${targetRotation - SEGMENT_ANGLE * 5}deg)`,
-          offset: 0.72
+          offset: 0.72,
         },
         {
           transform: `rotate(${targetRotation - SEGMENT_ANGLE}deg)`,
-          offset: 0.94
+          offset: 0.94,
         },
         {
           transform: `rotate(${targetRotation}deg)`,
-          offset: 1
-        }
+          offset: 1,
+        },
       ],
       {
         duration,
         easing: "cubic-bezier(0.08, 0.72, 0.12, 1)",
-        fill: "forwards"
-      }
+        fill: "forwards",
+      },
     );
 
     state.spinAnimation.onfinish = () => {
       state.wheelRotation = targetRotation;
-      DOM.animalWheel.style.transform =
-        `rotate(${state.wheelRotation}deg)`;
+      DOM.animalWheel.style.transform = `rotate(${state.wheelRotation}deg)`;
       state.spinAnimation = null;
     };
   }
@@ -504,14 +508,12 @@
     const animal = findWinningAnimal(data);
     if (!animal) return;
 
-    document
-      .querySelectorAll(".wheel-segment")
-      .forEach((segment) => {
-        segment.classList.toggle(
-          "winner",
-          segment.dataset.code === animalCode(animal)
-        );
-      });
+    document.querySelectorAll(".wheel-segment").forEach((segment) => {
+      segment.classList.toggle(
+                  "is-winner",
+        segment.dataset.code === animalCode(animal),
+      );
+    });
 
     if (DOM.resultAnimalImage) {
       DOM.resultAnimalImage.src = animalImage(animal);
@@ -530,33 +532,55 @@
     DOM.resultOverlay?.classList.add("show");
   }
 
-  function renderMyBet(bet) {
+   function renderMyBet(bet) {
     if (!bet) {
-      DOM.myBetCard?.classList.remove("show");
+      DOM.myBetCard?.classList.add("is-hidden");
       return;
     }
 
+    const code =
+      bet.selectedAnimalCode ||
+      bet.animalCode ||
+      bet.animal_code;
+
     const animal = state.animals.find(
-      (item) =>
-        animalCode(item) ===
-        (bet.animalCode || bet.animal_code)
+      (item) => animalCode(item) === code
     );
 
-    DOM.myBetCard?.classList.add("show");
+    DOM.myBetCard?.classList.remove("is-hidden");
 
     if (DOM.myBetAnimal) {
       DOM.myBetAnimal.textContent =
-        animal ? animalName(animal) : "—";
+        animal?.animalName ||
+        bet.selectedAnimalName ||
+        "—";
     }
 
     if (DOM.myBetAmount) {
-      DOM.myBetAmount.textContent =
-        `৳ ${money(bet.betAmount || bet.bet_amount)}`;
+      DOM.myBetAmount.textContent = money(
+        bet.betAmount || bet.bet_amount
+      );
     }
 
-    if (DOM.myBetPayout) {
-      DOM.myBetPayout.textContent =
-        `৳ ${money(bet.netPayout || bet.net_payout || 0)}`;
+    const multiplierElement = $("myBetMultiplier");
+
+    if (multiplierElement) {
+      multiplierElement.textContent =
+        `${Number(
+          bet.multiplier ||
+          animalMultiplier(animal) ||
+          0
+        )}x`;
+    }
+
+    const statusElement = $("myBetStatus");
+
+    if (statusElement) {
+      statusElement.textContent = String(
+        bet.betStatus ||
+        bet.bet_status ||
+        "placed"
+      ).toUpperCase();
     }
   }
 
@@ -570,78 +594,137 @@
 
     DOM.placeBetBtn.disabled = true;
 
-        state.socket.emit("bangla-wheel:place-bet", {
-      roundId: Number(state.activeRound?.id),
-      animalId: Number(state.selectedAnimal?.id),
-      betAmount: Number(state.selectedAmount)
-    }, (response) => {
-      if (!response?.success) {
-        showToast(response?.message || "Bet করা যায়নি", "error");
-        setBettingEnabled(true);
-        return;
-      }
+    state.socket.emit(
+      "bangla-wheel:place-bet",
+      {
+        roundId: Number(state.activeRound?.id),
+        animalId: Number(state.selectedAnimal?.id),
+        betAmount: Number(state.selectedAmount),
+      },
+      (response) => {
+        if (!response?.success) {
+          showToast(response?.message || "Bet করা যায়নি", "error");
+          setBettingEnabled(getRoundStatus(state.activeRound) === "betting");
+          return;
+        }
 
-      renderMyBet(response.data?.bet || response.data);
-      updateWallet(
-        response.data?.walletBalance ??
-        response.data?.balance
-      );
+        renderMyBet(response.data?.bet || response.data);
+        updateWallet(response.data?.walletBalance ?? response.data?.balance);
 
-      showToast("Bet successfully placed", "success");
-    });
+        showToast("Bet successfully placed", "success");
+      },
+    );
   }
 
-  function bindControls() {
+   function bindControls() {
     DOM.decreaseBet?.addEventListener("click", () => {
-      const minimum = Number(state.settings?.minimumBet || 5);
+      const minimum = Number(
+        state.settings?.minimumBet || 5
+      );
+
       state.selectedAmount = Math.max(
         minimum,
         Number(state.selectedAmount) - 5
       );
+
       updateBetPreview();
     });
 
     DOM.increaseBet?.addEventListener("click", () => {
-      const maximum = Number(state.settings?.maximumBet || 1000);
+      const maximum = Number(
+        state.settings?.maximumBet || 1000
+      );
+
       state.selectedAmount = Math.min(
         maximum,
         Number(state.selectedAmount) + 5
       );
+
       updateBetPreview();
     });
 
-    document.querySelectorAll("[data-bet-amount]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const maximum = Number(state.settings?.maximumBet || 1000);
-        state.selectedAmount = Math.min(
-          maximum,
-          Number(button.dataset.betAmount)
-        );
-        updateBetPreview();
+    document
+      .querySelectorAll("[data-amount]")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          const maximum = Number(
+            state.settings?.maximumBet || 1000
+          );
+
+          state.selectedAmount = Math.min(
+            maximum,
+            Number(button.dataset.amount)
+          );
+
+          updateBetPreview();
+        });
       });
+
+    DOM.betAmount?.addEventListener("input", () => {
+      const minimum = Number(
+        state.settings?.minimumBet || 5
+      );
+
+      const maximum = Number(
+        state.settings?.maximumBet || 1000
+      );
+
+      const enteredAmount = Number(
+        DOM.betAmount.value
+      );
+
+      if (!Number.isFinite(enteredAmount)) return;
+
+      state.selectedAmount = Math.min(
+        maximum,
+        Math.max(minimum, enteredAmount)
+      );
+
+      updateBetPreview();
     });
 
-    DOM.placeBetBtn?.addEventListener("click", placeBet);
+    DOM.placeBetBtn?.addEventListener(
+      "click",
+      placeBet
+    );
 
     DOM.closeResultBtn?.addEventListener("click", () => {
-      DOM.resultOverlay?.classList.remove("show");
+      DOM.resultOverlay?.classList.remove("is-visible");
+    });
+
+    $("continueBtn")?.addEventListener("click", () => {
+      DOM.resultOverlay?.classList.remove("is-visible");
+    });
+
+    $("backBtn")?.addEventListener("click", () => {
+      window.location.href = "./lobby.html";
     });
 
     DOM.soundToggle?.addEventListener("click", () => {
       state.soundEnabled = !state.soundEnabled;
+
       DOM.soundToggle.classList.toggle(
-        "muted",
+        "is-muted",
         !state.soundEnabled
       );
+
+      const icon = DOM.soundToggle.querySelector("i");
+
+      if (icon) {
+        icon.className = state.soundEnabled
+          ? "fa-solid fa-volume-high"
+          : "fa-solid fa-volume-xmark";
+      }
     });
   }
 
   function handleState(payload) {
     const data = payload?.data || payload;
 
-    if (payload?.serverTime) {
-      state.serverOffset =
-        new Date(payload.serverTime).getTime() - Date.now();
+    const currentServerTime = data?.serverTime || payload?.serverTime;
+
+    if (currentServerTime) {
+      state.serverOffset = new Date(currentServerTime).getTime() - Date.now();
     }
 
     if (Array.isArray(data?.animals)) {
@@ -653,9 +736,7 @@
     if (data?.settings) {
       state.settings = data.settings;
       state.selectedAmount = Number(
-        data.settings.minimumBet ||
-        data.settings.minimum_bet ||
-        5
+        data.settings.minimumBet || data.settings.minimum_bet || 5,
       );
     }
 
@@ -678,7 +759,7 @@
       auth: { token },
       transports: ["websocket", "polling"],
       reconnection: true,
-      reconnectionAttempts: Infinity
+      reconnectionAttempts: Infinity,
     });
 
     state.socket.on("connect", () => setConnected(true));
@@ -695,17 +776,33 @@
       const data = payload?.data || payload;
       document
         .querySelectorAll(".wheel-segment")
-        .forEach((segment) => segment.classList.remove("winner"));
+        .forEach((segment) => segment.classList.remove("is-winner"));
 
-      DOM.resultOverlay?.classList.remove("show");
+      DOM.resultOverlay?.classList.remove("is-visible");
+            state.selectedAnimal = null;
+
+      renderAnimalOptions();
+      updateBetPreview();
       renderMyBet(null);
       state.isSpinning = false;
 
       applyRound(data.round || data);
     });
 
-    state.socket.on("bangla-wheel:betting-closed", () => {
+        state.socket.on("bangla-wheel:betting-closed", () => {
       setBettingEnabled(false);
+
+      const placeBetText = $("placeBetText");
+      const bettingMessage = $("bettingMessage");
+
+      if (placeBetText) {
+        placeBetText.textContent = "Betting Closed";
+      }
+
+      if (bettingMessage) {
+        bettingMessage.textContent =
+          "Wheel spin শুরু হচ্ছে। নতুন bet বন্ধ।";
+      }
     });
 
     state.socket.on("bangla-wheel:spin-started", (payload) => {
@@ -717,10 +814,29 @@
       }
 
       if (data?.round) applyRound(data.round);
+            const spinInformation = $("spinInformation");
+      const spinInformationText = $("spinInformationText");
+
+      spinInformation?.classList.add("is-spinning");
+
+      if (spinInformationText) {
+        spinInformationText.textContent =
+          "Wheel is spinning — please wait";
+      }
       spinWheel(data);
     });
 
-    state.socket.on("bangla-wheel:result", (payload) => {
+       state.socket.on("bangla-wheel:result", (payload) => {
+      const spinInformation = $("spinInformation");
+      const spinInformationText = $("spinInformationText");
+
+      spinInformation?.classList.remove("is-spinning");
+
+      if (spinInformationText) {
+        spinInformationText.textContent =
+          "Round completed";
+      }
+
       showResult(payload?.data || payload);
     });
 
@@ -738,16 +854,13 @@
       if (data?.won) {
         showToast(
           `You won ৳${money(data.netPayout || data.net_payout)}`,
-          "success"
+          "success",
         );
       }
     });
 
     state.socket.on("bangla-wheel:error", (payload) => {
-      showToast(
-        payload?.message || payload?.error || "Game error",
-        "error"
-      );
+      showToast(payload?.message || payload?.error || "Game error", "error");
     });
   }
 
