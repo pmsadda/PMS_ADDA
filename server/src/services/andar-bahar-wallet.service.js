@@ -152,6 +152,111 @@ async function getUserRoundBet(
 }
 
 /* =========================================================
+   GET USER ROUND BETS
+========================================================= */
+
+async function getUserRoundBets(
+  userId,
+  roundId,
+  connection = pool,
+) {
+  const validUserId =
+    parsePositiveInteger(userId);
+
+  const validRoundId =
+    parsePositiveInteger(roundId);
+
+  assertCondition(
+    validUserId,
+    "Valid authenticated user ID is required.",
+    401,
+    "INVALID_AUTHENTICATED_USER",
+  );
+
+  assertCondition(
+    validRoundId,
+    "Valid Andar Bahar round ID is required.",
+    400,
+    "INVALID_ROUND_ID",
+  );
+
+  const [rows] =
+    await connection.query(
+      `
+        SELECT
+          *
+
+        FROM andar_bahar_bets
+
+        WHERE user_id = ?
+          AND round_id = ?
+
+        ORDER BY id ASC
+      `,
+      [
+        validUserId,
+        validRoundId,
+      ],
+    );
+
+  const bets =
+    rows.map((row) =>
+      mapBetRow(row),
+    );
+
+  const summary =
+    bets.reduce(
+      (result, bet) => {
+        const amount =
+          parseMoney(
+            bet.betAmount,
+          );
+
+        result.totalBetAmount =
+          parseMoney(
+            result.totalBetAmount +
+              amount,
+          );
+
+        if (
+          bet.selectedSide ===
+          "andar"
+        ) {
+          result.andarBetAmount =
+            parseMoney(
+              result.andarBetAmount +
+                amount,
+            );
+        }
+
+        if (
+          bet.selectedSide ===
+          "bahar"
+        ) {
+          result.baharBetAmount =
+            parseMoney(
+              result.baharBetAmount +
+                amount,
+            );
+        }
+
+        return result;
+      },
+      {
+        totalBets: bets.length,
+        totalBetAmount: 0,
+        andarBetAmount: 0,
+        baharBetAmount: 0,
+      },
+    );
+
+  return {
+    bets,
+    summary,
+  };
+}
+
+/* =========================================================
    PLACE BET
 ========================================================= */
 
@@ -308,21 +413,52 @@ async function placeBet({
       "BETTING_TIME_ENDED",
     );
 
-    const existingBet =
-      await getUserRoundBet(
-        validUserId,
-        validRoundId,
-        connection,
-        {
-          lock: true,
-        },
+        /*
+     * Round row ইতিমধ্যে FOR UPDATE lock করা।
+     * তাই একই user-এর concurrent bet request combined
+     * maximum limit bypass করতে পারবে না।
+     */
+    const [userRoundTotalRows] =
+      await connection.query(
+        `
+          SELECT
+            COALESCE(
+              SUM(bet_amount),
+              0
+            ) AS total_bet_amount
+
+          FROM andar_bahar_bets
+
+          WHERE round_id = ?
+            AND user_id = ?
+            AND bet_status =
+              'accepted'
+        `,
+        [
+          validRoundId,
+          validUserId,
+        ],
+      );
+
+    const currentRoundBetTotal =
+      parseMoney(
+        userRoundTotalRows[0]
+          ?.total_bet_amount ||
+        0,
+      );
+
+    const combinedRoundBetTotal =
+      parseMoney(
+        currentRoundBetTotal +
+          validBetAmount,
       );
 
     assertCondition(
-      !existingBet,
-      "You have already placed a bet in this round.",
+      combinedRoundBetTotal <=
+        settings.maximumBet,
+      `Your total bets in this round cannot exceed ৳${settings.maximumBet}.`,
       409,
-      "BET_ALREADY_PLACED",
+      "ROUND_BET_LIMIT_EXCEEDED",
     );
 
     /*
@@ -562,26 +698,31 @@ async function placeBet({
           createdBetRows[0],
         ),
 
-      wallet: {
+           wallet: {
         balanceBefore,
         balanceAfter:
           balanceAfterBet,
       },
+
+      roundBetSummary: {
+        previousTotal:
+          currentRoundBetTotal,
+
+        newTotal:
+          combinedRoundBetTotal,
+
+        maximumTotal:
+          settings.maximumBet,
+
+        remainingLimit:
+          parseMoney(
+            settings.maximumBet -
+            combinedRoundBetTotal,
+          ),
+      },
     };
   } catch (error) {
     await connection.rollback();
-
-  if (
-  error.code ===
-  "ER_DUP_ENTRY"
-) {
-  assertCondition(
-    false,
-    "You have already placed a bet in this round.",
-    409,
-    "BET_ALREADY_PLACED",
-  );
-}
 
     throw error;
   } finally {
@@ -710,6 +851,7 @@ async function getRoundBetTotals(
 module.exports = {
   mapBetRow,
   getUserRoundBet,
+  getUserRoundBets,
   placeBet,
   getRoundBetTotals,
 };

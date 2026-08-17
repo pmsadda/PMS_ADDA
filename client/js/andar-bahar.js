@@ -154,9 +154,22 @@
       serviceChargePercent: 5,
     },
 
-    selectedSide: null,
-    betAmount: 5,
-    userBet: null,
+   selectedSide: null,
+betAmount: 5,
+
+/*
+ * userBet পুরোনো client compatibility-এর জন্য।
+ * userBets-এ current round-এর সব bet থাকবে।
+ */
+userBet: null,
+userBets: [],
+
+userBetSummary: {
+  totalBets: 0,
+  totalBetAmount: 0,
+  andarBetAmount: 0,
+  baharBetAmount: 0,
+},
 
     bettingOpen: false,
     placingBet: false,
@@ -531,12 +544,12 @@
   }
 
   function selectSide(side) {
-    if (
-      !state.bettingOpen ||
-      state.userBet
-    ) {
-      return;
-    }
+   if (
+  !state.bettingOpen ||
+  state.placingBet
+) {
+  return;
+}
 
     state.selectedSide =
       side;
@@ -557,80 +570,129 @@
     renderBetControls();
   }
 
-  function renderBetControls() {
-    const controlsDisabled =
-      !state.bettingOpen ||
-      Boolean(state.userBet) ||
-      state.placingBet;
+ function renderBetControls() {
+  const maximumBet =
+    Number(
+      state.settings
+        ?.maximumBet ||
+      1000
+    );
 
-    DOM.andarBetButton.disabled =
-      controlsDisabled;
+  const currentRoundTotal =
+    Number(
+      state.userBetSummary
+        ?.totalBetAmount ||
+      0
+    );
 
-    DOM.baharBetButton.disabled =
-      controlsDisabled;
+  const remainingLimit =
+    Math.max(
+      0,
+      maximumBet -
+        currentRoundTotal
+    );
 
-    DOM.decreaseBetButton.disabled =
-      controlsDisabled;
+  const controlsDisabled =
+    !state.bettingOpen ||
+    state.placingBet ||
+    remainingLimit <= 0;
 
-    DOM.increaseBetButton.disabled =
-      controlsDisabled;
+  DOM.andarBetButton.disabled =
+    controlsDisabled;
 
-    DOM.betAmountInput.disabled =
-      controlsDisabled;
+  DOM.baharBetButton.disabled =
+    controlsDisabled;
 
-    DOM.quickBetOptions
-      .querySelectorAll("button")
-      .forEach((button) => {
-        button.disabled =
-          controlsDisabled;
-      });
+  DOM.decreaseBetButton.disabled =
+    controlsDisabled;
 
-    const canPlaceBet =
-      state.bettingOpen &&
-      !state.userBet &&
-      !state.placingBet &&
-      Boolean(
-        state.selectedSide,
-      );
+  DOM.increaseBetButton.disabled =
+    controlsDisabled;
 
-    DOM.placeBetButton.disabled =
-      !canPlaceBet;
+  DOM.betAmountInput.disabled =
+    controlsDisabled;
 
-    if (state.placingBet) {
-      DOM.placeBetText.textContent =
-        "Placing Bet...";
+  DOM.quickBetOptions
+    .querySelectorAll("button")
+    .forEach((button) => {
+      const quickAmount =
+        Number(
+          button.dataset.amount ||
+          0
+        );
 
-      return;
-    }
+      button.disabled =
+        controlsDisabled ||
+        quickAmount >
+          remainingLimit;
+    });
 
-    if (state.userBet) {
-      DOM.placeBetText.textContent =
-        "Bet Already Placed";
+  const selectedAmount =
+    Number(
+      state.betAmount ||
+      0
+    );
 
-      return;
-    }
+  const canPlaceBet =
+    state.bettingOpen &&
+    !state.placingBet &&
+    Boolean(
+      state.selectedSide
+    ) &&
+    remainingLimit > 0 &&
+    selectedAmount <=
+      remainingLimit;
 
-    if (!state.bettingOpen) {
-      DOM.placeBetText.textContent =
-        "Betting Closed";
+  DOM.placeBetButton.disabled =
+    !canPlaceBet;
 
-      return;
-    }
-
-    if (!state.selectedSide) {
-      DOM.placeBetText.textContent =
-        "Select Andar or Bahar";
-
-      return;
-    }
-
+  if (state.placingBet) {
     DOM.placeBetText.textContent =
-      `Bet ৳${formatMoney(
-        state.betAmount,
-      )} on ${formatSide(
-        state.selectedSide,
-      )}`;
+      "Placing Bet...";
+
+    return;
   }
+
+  if (!state.bettingOpen) {
+    DOM.placeBetText.textContent =
+      "Betting Closed";
+
+    return;
+  }
+
+  if (remainingLimit <= 0) {
+    DOM.placeBetText.textContent =
+      "Round Bet Limit Reached";
+
+    return;
+  }
+
+  if (!state.selectedSide) {
+    DOM.placeBetText.textContent =
+      "Select Andar or Bahar";
+
+    return;
+  }
+
+  if (
+    selectedAmount >
+    remainingLimit
+  ) {
+    DOM.placeBetText.textContent =
+      `Remaining limit ৳${formatMoney(
+        remainingLimit
+      )}`;
+
+    return;
+  }
+
+  DOM.placeBetText.textContent =
+    `Bet ৳${formatMoney(
+      state.betAmount
+    )} on ${formatSide(
+      state.selectedSide
+    )}`;
+}
 
   /* =======================================================
      ROUND RENDERING
@@ -676,7 +738,15 @@
 
   function resetForNewRound() {
     state.selectedSide = null;
-    state.userBet = null;
+state.userBet = null;
+state.userBets = [];
+
+state.userBetSummary = {
+  totalBets: 0,
+  totalBetAmount: 0,
+  andarBetAmount: 0,
+  baharBetAmount: 0,
+};
     state.privateResult = null;
 
     DOM.andarSide.classList.remove(
@@ -962,7 +1032,127 @@
 
     renderBetControls();
   }
+function renderUserBets(
+  bets = [],
+  serverSummary = null
+) {
+  const validBets =
+    Array.isArray(bets)
+      ? bets.filter(Boolean)
+      : [];
 
+  state.userBets =
+    validBets;
+
+  state.userBet =
+    validBets[
+      validBets.length -
+        1
+    ] ||
+    null;
+
+  const calculatedSummary =
+    validBets.reduce(
+      (
+        summary,
+        bet
+      ) => {
+        const amount =
+          Number(
+            bet.betAmount ||
+              0
+          );
+
+        summary.totalBetAmount +=
+          amount;
+
+        if (
+          bet.selectedSide ===
+          "andar"
+        ) {
+          summary.andarBetAmount +=
+            amount;
+        }
+
+        if (
+          bet.selectedSide ===
+          "bahar"
+        ) {
+          summary.baharBetAmount +=
+            amount;
+        }
+
+        return summary;
+      },
+      {
+        totalBets:
+          validBets.length,
+
+        totalBetAmount: 0,
+        andarBetAmount: 0,
+        baharBetAmount: 0,
+      }
+    );
+
+  state.userBetSummary = {
+    ...calculatedSummary,
+    ...(serverSummary || {}),
+  };
+
+  if (
+    validBets.length === 0
+  ) {
+    DOM.myBetCard.classList.add(
+      "is-hidden"
+    );
+
+    renderBetControls();
+
+    return;
+  }
+
+  DOM.myBetCard.classList.remove(
+    "is-hidden"
+  );
+
+  const hasAndarBet =
+    state.userBetSummary
+      .andarBetAmount > 0;
+
+  const hasBaharBet =
+    state.userBetSummary
+      .baharBetAmount > 0;
+
+  if (
+    hasAndarBet &&
+    hasBaharBet
+  ) {
+    DOM.myBetSide.textContent =
+      "Andar + Bahar";
+  } else if (hasAndarBet) {
+    DOM.myBetSide.textContent =
+      "Andar";
+  } else {
+    DOM.myBetSide.textContent =
+      "Bahar";
+  }
+
+  DOM.myBetAmount.textContent =
+    formatMoney(
+      state.userBetSummary
+        .totalBetAmount
+    );
+
+  DOM.myBetStatus.textContent =
+    `${state.userBetSummary.totalBets} Bet${
+      state.userBetSummary
+        .totalBets === 1
+        ? ""
+        : "s"
+    }`;
+
+  renderBetControls();
+}
   /* =======================================================
      CARD ANIMATION
   ======================================================= */
@@ -1233,54 +1423,151 @@ container.scrollLeft =
   }
 
   function renderPrivateResultMessage(
-    privateResult,
-    winningSide,
-  ) {
-    const userBet =
-      privateResult?.userBet ||
-      state.userBet;
+  privateResult,
+  winningSide
+) {
+  const userBets =
+    Array.isArray(
+      privateResult?.userBets
+    )
+      ? privateResult.userBets
+      : state.userBets;
 
-    if (!userBet) {
-      DOM.userResultMessage.textContent =
-        `${formatSide(
-          winningSide,
-        )} won this round.`;
+  const validBets =
+    Array.isArray(userBets)
+      ? userBets.filter(Boolean)
+      : [];
 
-      return;
-    }
+  if (validBets.length === 0) {
+    DOM.userResultMessage.textContent =
+      `${formatSide(
+        winningSide
+      )} won this round.`;
 
-    renderUserBet(
-      userBet,
+    return;
+  }
+
+  renderUserBets(
+    validBets,
+    privateResult?.userBetSummary
+  );
+
+  const calculatedResult =
+    validBets.reduce(
+      (summary, bet) => {
+        const status =
+          String(
+            bet.betStatus ??
+            bet.bet_status ??
+            ""
+          ).toLowerCase();
+
+        const amount =
+          Number(
+            bet.betAmount ??
+            bet.bet_amount ??
+            0
+          );
+
+        const payout =
+          Number(
+            bet.netPayout ??
+            bet.net_payout ??
+            0
+          );
+
+        summary.totalBetAmount +=
+          amount;
+
+        if (status === "won") {
+          summary.winningBets += 1;
+          summary.netPayout +=
+            payout;
+        }
+
+        if (status === "lost") {
+          summary.losingBets += 1;
+          summary.lostAmount +=
+            amount;
+        }
+
+        if (status === "refunded") {
+          summary.refundedBets += 1;
+          summary.refundedAmount +=
+            amount;
+        }
+
+        return summary;
+      },
+      {
+        winningBets: 0,
+        losingBets: 0,
+        refundedBets: 0,
+        totalBetAmount: 0,
+        lostAmount: 0,
+        refundedAmount: 0,
+        netPayout: 0
+      }
     );
 
-    if (
-      userBet.betStatus === "won"
-    ) {
-      DOM.userResultMessage.textContent =
-        `You won ৳${formatMoney(
-          userBet.netPayout,
-        )}.`;
+  const serverResult =
+    privateResult?.resultSummary ||
+    {};
 
-      return;
-    }
+  const result = {
+    ...calculatedResult,
+    ...serverResult
+  };
 
-    if (
-      userBet.betStatus ===
-      "refunded"
-    ) {
-      DOM.userResultMessage.textContent =
-        `Your ৳${formatMoney(
-          userBet.betAmount,
-        )} bet was refunded.`;
-
-      return;
-    }
-
+  if (
+    result.winningBets > 0 &&
+    result.losingBets > 0
+  ) {
     DOM.userResultMessage.textContent =
-      `You lost ৳${formatMoney(
-        userBet.betAmount,
-      )} this round.`;
+      `${result.winningBets} bet won, ` +
+      `${result.losingBets} bet lost. ` +
+      `Total payout ৳${formatMoney(
+        result.netPayout
+      )}.`;
+
+    return;
   }
+
+  if (result.winningBets > 0) {
+    DOM.userResultMessage.textContent =
+      `${result.winningBets} bet${
+        result.winningBets === 1
+          ? ""
+          : "s"
+      } won. Total payout ৳${formatMoney(
+        result.netPayout
+      )}.`;
+
+    return;
+  }
+
+  if (result.refundedBets > 0) {
+    DOM.userResultMessage.textContent =
+      `${result.refundedBets} bet${
+        result.refundedBets === 1
+          ? ""
+          : "s"
+      } refunded. Amount ৳${formatMoney(
+        result.refundedAmount
+      )}.`;
+
+    return;
+  }
+
+  DOM.userResultMessage.textContent =
+    `${result.losingBets} bet${
+      result.losingBets === 1
+        ? ""
+        : "s"
+    } lost. Total bet ৳${formatMoney(
+      result.totalBetAmount
+    )}.`;
+}
 
   /* =======================================================
      HISTORY
@@ -1431,9 +1718,18 @@ container.scrollLeft =
           return;
         }
 
-        renderUserBet(
-          response.data?.bet,
-        );
+       const placedBet =
+  response.data?.bet ||
+  null;
+
+if (placedBet) {
+  renderUserBets(
+    [
+      ...state.userBets,
+      placedBet,
+    ],
+  );
+}
 
         if (
           response.data?.wallet
@@ -1597,14 +1893,22 @@ container.scrollLeft =
           data.betTotals,
         );
 
-        if (
-          data.userBet !==
-          undefined
-        ) {
-          renderUserBet(
-            data.userBet,
-          );
-        }
+      if (
+  data.userBets !==
+  undefined
+) {
+  renderUserBets(
+    data.userBets,
+    data.userBetSummary,
+  );
+} else if (
+  data.userBet !==
+  undefined
+) {
+  renderUserBet(
+    data.userBet,
+  );
+}
 
         hideLoading();
       },
@@ -1703,12 +2007,22 @@ container.scrollLeft =
         }
 
         if (
-          payload?.data?.userBet
-        ) {
-          renderUserBet(
-            payload.data.userBet,
-          );
-        }
+  Array.isArray(
+    payload?.data?.userBets
+  )
+) {
+  renderUserBets(
+    payload.data.userBets,
+    payload.data
+      .userBetSummary,
+  );
+} else if (
+  payload?.data?.userBet
+) {
+  renderUserBet(
+    payload.data.userBet,
+  );
+}
       },
     );
 

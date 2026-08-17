@@ -21,6 +21,7 @@ const {
 const {
   placeBet,
   getUserRoundBet,
+  getUserRoundBets,
   getRoundBetTotals
 } = require(
   "../services/bangla-wheel-wallet.service"
@@ -346,6 +347,16 @@ async function emitPrivateState(
 
   let userBet = null;
 
+  let userBetState = {
+    bets: [],
+
+    summary: {
+      totalBets: 0,
+      totalBetAmount: 0,
+      animalBetAmounts: {}
+    }
+  };
+
   let betTotals = {
     animals: []
   };
@@ -354,10 +365,10 @@ async function emitPrivateState(
     state.activeRound?.id
   ) {
     [
-      userBet,
+      userBetState,
       betTotals
     ] = await Promise.all([
-      getUserRoundBet(
+      getUserRoundBets(
         socket.user.id,
         state.activeRound.id
       ),
@@ -366,6 +377,13 @@ async function emitPrivateState(
         state.activeRound.id
       )
     ]);
+
+    userBet =
+      userBetState.bets[
+        userBetState.bets.length -
+          1
+      ] ||
+      null;
   }
 
   socket.emit(
@@ -375,7 +393,19 @@ async function emitPrivateState(
 
       data: {
         ...state,
+
+        /*
+         * পুরোনো client compatibility-এর জন্য
+         * সর্বশেষ bet এখানে থাকবে।
+         */
         userBet,
+
+        userBets:
+          userBetState.bets,
+
+        userBetSummary:
+          userBetState.summary,
+
         betTotals
       }
     }
@@ -783,30 +813,99 @@ async function completeWheelRound(
                 ]
               );
 
-            const userBet =
-              await getUserRoundBet(
-                connectedSocket
-                  .user.id,
-                roundId
-              );
+           const userBetState =
+  await getUserRoundBets(
+    connectedSocket
+      .user.id,
+    roundId
+  );
 
-            connectedSocket.emit(
-              "bangla-wheel:user-result",
-              {
-                success: true,
+const userBet =
+  userBetState.bets[
+    userBetState.bets.length -
+      1
+  ] ||
+  null;
 
-                data: {
-                  userBet,
+const resultSummary =
+  userBetState.bets.reduce(
+    (
+      summary,
+      bet
+    ) => {
+      if (
+        bet.betStatus ===
+        "won"
+      ) {
+        summary.winningBets +=
+          1;
 
-                  walletBalance:
-                    Number(
-                      userRows[0]
-                        ?.wallet_balance ||
-                      0
-                    )
-                }
-              }
-            );
+        summary.grossPayout +=
+          Number(
+            bet.grossPayout ||
+              0
+          );
+
+        summary.serviceCharge +=
+          Number(
+            bet.serviceCharge ||
+              0
+          );
+
+        summary.netPayout +=
+          Number(
+            bet.netPayout ||
+              0
+          );
+      }
+
+      if (
+        bet.betStatus ===
+        "lost"
+      ) {
+        summary.losingBets +=
+          1;
+      }
+
+      return summary;
+    },
+    {
+      winningBets: 0,
+      losingBets: 0,
+      grossPayout: 0,
+      serviceCharge: 0,
+      netPayout: 0
+    }
+  );
+
+connectedSocket.emit(
+  "bangla-wheel:user-result",
+  {
+    success: true,
+
+    data: {
+      /*
+       * পুরোনো client compatibility
+       */
+      userBet,
+
+      userBets:
+        userBetState.bets,
+
+      userBetSummary:
+        userBetState.summary,
+
+      resultSummary,
+
+      walletBalance:
+        Number(
+          userRows[0]
+            ?.wallet_balance ||
+          0
+        )
+    }
+  }
+);
           } catch (error) {
             console.error(
               "BANGLA WHEEL PRIVATE RESULT ERROR:",

@@ -9,9 +9,20 @@
     animals: [],
     settings: null,
     activeRound: null,
-    selectedAnimal: null,
-    selectedAmount: 5,
-    walletBalance: 0,
+   selectedAnimal: null,
+selectedAmount: 5,
+
+userBet: null,
+userBets: [],
+
+userBetSummary: {
+  totalBets: 0,
+  totalBetAmount: 0,
+  animalBetAmounts: {}
+},
+
+placingBet: false,
+walletBalance: 0,
     wheelRotation: 0,
     countdownTimer: null,
     spinAnimation: null,
@@ -316,21 +327,72 @@
       });
   }
 
-  function setBettingEnabled(enabled) {
-    const canBet = enabled && !state.isSpinning;
+ function setBettingEnabled(
+  enabled
+) {
+  const maximumBet =
+    Number(
+      state.settings
+        ?.maximumBet ||
+      state.settings
+        ?.maximum_bet ||
+      1000
+    );
 
-    DOM.placeBetBtn &&
-      (DOM.placeBetBtn.disabled = !canBet || !state.selectedAnimal);
+  const currentRoundTotal =
+    Number(
+      state.userBetSummary
+        ?.totalBetAmount ||
+      0
+    );
 
-    DOM.decreaseBet && (DOM.decreaseBet.disabled = !canBet);
-    DOM.increaseBet && (DOM.increaseBet.disabled = !canBet);
+  const remainingLimit =
+    Math.max(
+      0,
+      maximumBet -
+        currentRoundTotal
+    );
 
-    DOM.animalOptions
-            ?.querySelectorAll(".animal-option:not(.is-nil)")
-      .forEach((button) => {
-        button.disabled = !canBet;
-      });
+  const canBet =
+    enabled &&
+    !state.isSpinning &&
+    !state.placingBet &&
+    remainingLimit > 0;
+
+  if (DOM.placeBetBtn) {
+    DOM.placeBetBtn.disabled =
+      !canBet ||
+      !state.selectedAnimal ||
+      Number(
+        state.selectedAmount
+      ) >
+        remainingLimit;
   }
+
+  if (DOM.decreaseBet) {
+    DOM.decreaseBet.disabled =
+      !canBet;
+  }
+
+  if (DOM.increaseBet) {
+    DOM.increaseBet.disabled =
+      !canBet;
+  }
+
+  if (DOM.betAmount) {
+    DOM.betAmount.disabled =
+      !canBet;
+  }
+
+  DOM.animalOptions
+    ?.querySelectorAll(
+      ".animal-option:not(.is-nil)"
+    )
+    .forEach((button) => {
+      button.disabled =
+        !canBet;
+    });
+}
 
   function getRoundStatus(round) {
     return String(round?.status || round?.roundStatus || "").toLowerCase();
@@ -386,18 +448,59 @@
     state.countdownTimer = setInterval(tick, 250);
   }
 
-  function applyRound(round) {
-    if (!round) return;
+  function applyRound(
+  round
+) {
+  if (!round) return;
 
-    state.activeRound = round;
+  const previousRoundId =
+    Number(
+      state.activeRound?.id ||
+      0
+    );
 
-    if (DOM.roundId) {
-      DOM.roundId.textContent =
-        round.roundCode || round.round_code || `#${round.id || "—"}`;
-    }
+  const nextRoundId =
+    Number(
+      round.id ||
+      0
+    );
 
-    startCountdown();
+  if (
+    previousRoundId &&
+    nextRoundId &&
+    previousRoundId !==
+      nextRoundId
+  ) {
+    state.userBet = null;
+    state.userBets = [];
+
+    state.userBetSummary = {
+      totalBets: 0,
+      totalBetAmount: 0,
+      animalBetAmounts: {}
+    };
+
+    state.selectedAnimal =
+      null;
+
+    DOM.myBetCard
+      ?.classList.remove(
+        "show"
+      );
   }
+
+  state.activeRound =
+    round;
+
+  if (DOM.roundId) {
+    DOM.roundId.textContent =
+      round.roundCode ||
+      round.round_code ||
+      `#${round.id || "—"}`;
+  }
+
+  startCountdown();
+}
 
   function findWinningAnimal(data) {
     if (data?.winningAnimal) return data.winningAnimal;
@@ -447,7 +550,9 @@
     state.isSpinning = true;
     setBettingEnabled(false);
 
-    DOM.resultOverlay?.classList.remove("is-visible");
+    DOM.resultOverlay?.classList.add(
+  "is-hidden"
+);
 
     const currentNormalized = ((state.wheelRotation % 360) + 360) % 360;
 
@@ -529,92 +634,346 @@
         : "NIL — No payout";
     }
 
-    DOM.resultOverlay?.classList.add("show");
+    DOM.resultOverlay?.classList.remove(
+  "is-hidden"
+);
   }
 
-   function renderMyBet(bet) {
-    if (!bet) {
-      DOM.myBetCard?.classList.add("is-hidden");
-      return;
-    }
+ function getBetAmount(bet) {
+  return Number(
+    bet?.betAmount ??
+    bet?.bet_amount ??
+    0
+  );
+}
 
-    const code =
-      bet.selectedAnimalCode ||
-      bet.animalCode ||
-      bet.animal_code;
+function getBetStatus(bet) {
+  return String(
+    bet?.betStatus ??
+    bet?.bet_status ??
+    "accepted"
+  ).toLowerCase();
+}
 
-    const animal = state.animals.find(
-      (item) => animalCode(item) === code
-    );
+function renderUserBets(
+  bets = [],
+  serverSummary = null
+) {
+  const validBets =
+    Array.isArray(bets)
+      ? bets.filter(Boolean)
+      : [];
 
-    DOM.myBetCard?.classList.remove("is-hidden");
+  state.userBets = validBets;
 
-    if (DOM.myBetAnimal) {
-      DOM.myBetAnimal.textContent =
-        animal?.animalName ||
-        bet.selectedAnimalName ||
-        "—";
-    }
+  state.userBet =
+    validBets[validBets.length - 1] ||
+    null;
 
-    if (DOM.myBetAmount) {
-      DOM.myBetAmount.textContent = money(
-        bet.betAmount || bet.bet_amount
-      );
-    }
+  const calculatedSummary =
+    validBets.reduce(
+      (summary, bet) => {
+        const amount =
+          getBetAmount(bet);
 
-    const multiplierElement = $("myBetMultiplier");
+        const code =
+          String(
+            bet.selectedAnimalCode ??
+            bet.animalCode ??
+            bet.selected_animal_code ??
+            ""
+          ).toLowerCase();
 
-    if (multiplierElement) {
-      multiplierElement.textContent =
-        `${Number(
-          bet.multiplier ||
-          animalMultiplier(animal) ||
-          0
-        )}x`;
-    }
+        summary.totalBetAmount +=
+          amount;
 
-    const statusElement = $("myBetStatus");
-
-    if (statusElement) {
-      statusElement.textContent = String(
-        bet.betStatus ||
-        bet.bet_status ||
-        "placed"
-      ).toUpperCase();
-    }
-  }
-
-  function placeBet() {
-    if (!state.selectedAnimal || state.isSpinning) return;
-
-    if (!state.socket?.connected) {
-      showToast("Game server connected নয়", "error");
-      return;
-    }
-
-    DOM.placeBetBtn.disabled = true;
-
-    state.socket.emit(
-      "bangla-wheel:place-bet",
-      {
-        roundId: Number(state.activeRound?.id),
-        animalId: Number(state.selectedAnimal?.id),
-        betAmount: Number(state.selectedAmount),
-      },
-      (response) => {
-        if (!response?.success) {
-          showToast(response?.message || "Bet করা যায়নি", "error");
-          setBettingEnabled(getRoundStatus(state.activeRound) === "betting");
-          return;
+        if (code) {
+          summary.animalBetAmounts[code] =
+            Number(
+              summary.animalBetAmounts[code] ||
+              0
+            ) + amount;
         }
 
-        renderMyBet(response.data?.bet || response.data);
-        updateWallet(response.data?.walletBalance ?? response.data?.balance);
-
-        showToast("Bet successfully placed", "success");
+        return summary;
       },
+      {
+        totalBets: validBets.length,
+        totalBetAmount: 0,
+        animalBetAmounts: {}
+      }
     );
+
+  state.userBetSummary = {
+    ...calculatedSummary,
+    ...(serverSummary || {})
+  };
+
+  if (validBets.length === 0) {
+    DOM.myBetCard?.classList.add(
+      "is-hidden"
+    );
+
+    setBettingEnabled(
+      getRoundStatus(
+        state.activeRound
+      ) === "betting"
+    );
+
+    return;
   }
+
+  DOM.myBetCard?.classList.remove(
+    "is-hidden"
+  );
+
+  const animalCodes =
+    Object.keys(
+      state.userBetSummary
+        .animalBetAmounts ||
+      {}
+    );
+
+  const animalNames =
+    animalCodes.map((code) => {
+      const animal =
+        state.animals.find(
+          (item) =>
+            animalCode(item) === code
+        );
+
+      return (
+        animal?.animalName ||
+        animal?.animal_name ||
+        code
+      );
+    });
+
+  if (DOM.myBetAnimal) {
+    DOM.myBetAnimal.textContent =
+      animalNames.length > 0
+        ? animalNames.join(", ")
+        : `${validBets.length} Bets`;
+  }
+
+  if (DOM.myBetAmount) {
+    DOM.myBetAmount.textContent =
+      money(
+        state.userBetSummary
+          .totalBetAmount
+      );
+  }
+
+  const multiplierElement =
+    $("myBetMultiplier");
+
+  if (multiplierElement) {
+    const multipliers =
+      [
+        ...new Set(
+          validBets.map((bet) =>
+            Number(
+              bet.multiplier ??
+              bet.lockedMultiplier ??
+              bet.locked_multiplier ??
+              0
+            )
+          )
+        )
+      ];
+
+    multiplierElement.textContent =
+      multipliers.length === 1
+        ? `${multipliers[0]}x`
+        : "Mixed";
+  }
+
+  const statusElement =
+    $("myBetStatus");
+
+  if (statusElement) {
+    const statuses =
+      [
+        ...new Set(
+          validBets.map(
+            getBetStatus
+          )
+        )
+      ];
+
+    statusElement.textContent =
+      statuses.length === 1
+        ? `${
+            validBets.length
+          } BET${
+            validBets.length === 1
+              ? ""
+              : "S"
+          } · ${statuses[0].toUpperCase()}`
+        : `${validBets.length} BETS · SETTLED`;
+  }
+
+  setBettingEnabled(
+    getRoundStatus(
+      state.activeRound
+    ) === "betting"
+  );
+}
+
+/*
+ * পুরোনো single-bet response-এর compatibility।
+ */
+function renderMyBet(bet) {
+  if (!bet) {
+    renderUserBets([]);
+    return;
+  }
+
+  renderUserBets([bet]);
+}
+
+ function placeBet() {
+  if (
+    !state.selectedAnimal ||
+    state.isSpinning ||
+    state.placingBet
+  ) {
+    return;
+  }
+
+  if (
+    !state.socket?.connected
+  ) {
+    showToast(
+      "Game server connected নয়",
+      "error"
+    );
+
+    return;
+  }
+
+  const maximumBet =
+    Number(
+      state.settings
+        ?.maximumBet ||
+      state.settings
+        ?.maximum_bet ||
+      1000
+    );
+
+  const currentTotal =
+    Number(
+      state.userBetSummary
+        ?.totalBetAmount ||
+      0
+    );
+
+  const amount =
+    Number(
+      state.selectedAmount ||
+      0
+    );
+
+  if (
+    currentTotal + amount >
+    maximumBet
+  ) {
+    showToast(
+      `Round bet limit ৳${money(
+        maximumBet
+      )}`,
+      "error"
+    );
+
+    setBettingEnabled(true);
+
+    return;
+  }
+
+  state.placingBet = true;
+
+  setBettingEnabled(true);
+
+  state.socket.emit(
+    "bangla-wheel:place-bet",
+    {
+      roundId:
+        Number(
+          state.activeRound?.id
+        ),
+
+      animalId:
+        Number(
+          state.selectedAnimal?.id
+        ),
+
+      betAmount:
+        amount
+    },
+    (response) => {
+      state.placingBet = false;
+
+      if (
+        !response?.success
+      ) {
+        showToast(
+          response?.message ||
+            "Bet করা যায়নি",
+          "error"
+        );
+
+        setBettingEnabled(true);
+
+        return;
+      }
+
+      const placedBet =
+        response.data?.bet ||
+        response.data;
+
+      if (placedBet) {
+        state.userBet =
+          placedBet;
+
+        state.userBets = [
+          ...state.userBets,
+          placedBet
+        ];
+
+        state.userBetSummary = {
+          ...state.userBetSummary,
+
+          totalBets:
+            state.userBets.length,
+
+          totalBetAmount:
+            currentTotal +
+            amount
+        };
+
+      renderUserBets(
+  state.userBets
+);
+      }
+
+      updateWallet(
+        response.data?.wallet
+          ?.balanceAfter ??
+        response.data
+          ?.walletBalance ??
+        response.data
+          ?.balance
+      );
+
+      showToast(
+        "Bet successfully placed",
+        "success"
+      );
+
+      setBettingEnabled(true);
+    }
+  );
+}
 
    function bindControls() {
     DOM.decreaseBet?.addEventListener("click", () => {
@@ -689,11 +1048,15 @@
     );
 
     DOM.closeResultBtn?.addEventListener("click", () => {
-      DOM.resultOverlay?.classList.remove("is-visible");
+      DOM.resultOverlay?.classList.add(
+  "is-hidden"
+);
     });
 
     $("continueBtn")?.addEventListener("click", () => {
-      DOM.resultOverlay?.classList.remove("is-visible");
+      DOM.resultOverlay?.classList.add(
+  "is-hidden"
+);
     });
 
     $("backBtn")?.addEventListener("click", () => {
@@ -741,7 +1104,20 @@
     }
 
     if (data?.activeRound) applyRound(data.activeRound);
-    if (data?.userBet) renderMyBet(data.userBet);
+    if (
+  Array.isArray(
+    data?.userBets
+  )
+) {
+  renderUserBets(
+    data.userBets,
+    data.userBetSummary
+  );
+} else if (data?.userBet) {
+  renderMyBet(
+    data.userBet
+  );
+}
 
     updateWallet(data?.walletBalance ?? data?.balance);
     updateBetPreview();
@@ -778,12 +1154,23 @@
         .querySelectorAll(".wheel-segment")
         .forEach((segment) => segment.classList.remove("is-winner"));
 
-      DOM.resultOverlay?.classList.remove("is-visible");
+      DOM.resultOverlay?.classList.add(
+  "is-hidden"
+);
             state.selectedAnimal = null;
 
       renderAnimalOptions();
       updateBetPreview();
-      renderMyBet(null);
+      state.userBet = null;
+state.userBets = [];
+
+state.userBetSummary = {
+  totalBets: 0,
+  totalBetAmount: 0,
+  animalBetAmounts: {}
+};
+
+renderUserBets([]);
       state.isSpinning = false;
 
       applyRound(data.round || data);
@@ -840,24 +1227,71 @@
       showResult(payload?.data || payload);
     });
 
-    state.socket.on("bangla-wheel:user-result", (payload) => {
-      const data = payload?.data || payload;
+  state.socket.on(
+  "bangla-wheel:user-result",
+  (payload) => {
+    const data =
+      payload?.data ||
+      payload ||
+      {};
 
-      /*
-       * এই event spin শেষ হওয়ার পর আসে।
-       * তাই wallet এখানেই update হবে—আগে নয়।
-       */
-      updateWallet(data?.walletBalance ?? data?.balance);
+    updateWallet(
+      data.walletBalance ??
+      data.balance
+    );
 
-      if (data?.bet) renderMyBet(data.bet);
+    if (
+      Array.isArray(
+        data.userBets
+      )
+    ) {
+      renderUserBets(
+        data.userBets,
+        data.userBetSummary
+      );
+    } else if (data.userBet) {
+      renderMyBet(
+        data.userBet
+      );
+    }
 
-      if (data?.won) {
-        showToast(
-          `You won ৳${money(data.netPayout || data.net_payout)}`,
-          "success",
-        );
-      }
-    });
+    const result =
+      data.resultSummary ||
+      {};
+
+    const winningBets =
+      Number(
+        result.winningBets ||
+        0
+      );
+
+    const losingBets =
+      Number(
+        result.losingBets ||
+        0
+      );
+
+    const netPayout =
+      Number(
+        result.netPayout ||
+        0
+      );
+
+    if (winningBets > 0) {
+      showToast(
+        `${winningBets} bet won — payout ৳${money(
+          netPayout
+        )}`,
+        "success"
+      );
+    } else if (losingBets > 0) {
+      showToast(
+        `${losingBets} bet lost this round`,
+        "error"
+      );
+    }
+  }
+);
 
     state.socket.on("bangla-wheel:error", (payload) => {
       showToast(payload?.message || payload?.error || "Game error", "error");

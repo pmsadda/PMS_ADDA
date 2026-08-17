@@ -203,6 +203,122 @@ async function getUserRoundBet(
 }
 
 /* =========================================================
+   GET USER ROUND BETS
+========================================================= */
+
+async function getUserRoundBets(
+  userId,
+  roundId,
+  connection = pool
+) {
+  const validUserId =
+    parsePositiveInteger(
+      userId
+    );
+
+  const validRoundId =
+    parsePositiveInteger(
+      roundId
+    );
+
+  assertCondition(
+    validUserId,
+    "Valid authenticated user ID is required.",
+    401,
+    "INVALID_AUTHENTICATED_USER"
+  );
+
+  assertCondition(
+    validRoundId,
+    "Valid Bangla Wheel round ID is required.",
+    400,
+    "INVALID_ROUND_ID"
+  );
+
+  const [rows] =
+    await connection.query(
+      `
+        SELECT
+          *
+
+        FROM bangla_wheel_bets
+
+        WHERE user_id = ?
+          AND round_id = ?
+
+        ORDER BY id ASC
+      `,
+      [
+        validUserId,
+        validRoundId
+      ]
+    );
+
+  const bets =
+    rows.map((row) =>
+      mapBetRow(row)
+    );
+
+  const summary =
+    bets.reduce(
+      (
+        result,
+        bet
+      ) => {
+        const amount =
+          parseMoney(
+            bet.betAmount
+          );
+
+        result.totalBetAmount =
+          parseMoney(
+            result.totalBetAmount +
+              amount
+          );
+
+        const animalCode =
+          String(
+            bet.selectedAnimalCode ||
+              ""
+          ).toLowerCase();
+
+        if (animalCode) {
+          result.animalBetAmounts[
+            animalCode
+          ] =
+            parseMoney(
+              (
+                result
+                  .animalBetAmounts[
+                  animalCode
+                ] ||
+                0
+              ) +
+                amount
+            );
+        }
+
+        return result;
+      },
+      {
+        totalBets:
+          bets.length,
+
+        totalBetAmount:
+          0,
+
+        animalBetAmounts:
+          {}
+      }
+    );
+
+  return {
+    bets,
+    summary
+  };
+}
+
+/* =========================================================
    PLACE BET
 ========================================================= */
 
@@ -393,23 +509,6 @@ async function placeBet({
       "BETTING_TIME_ENDED"
     );
 
-    const existingBet =
-      await getUserRoundBet(
-        validUserId,
-        validRoundId,
-        connection,
-        {
-          lock: true
-        }
-      );
-
-    assertCondition(
-      !existingBet,
-      "You have already placed a bet in this round.",
-      409,
-      "BET_ALREADY_PLACED"
-    );
-
     const grossPayout =
       parseMoney(
         validBetAmount *
@@ -497,6 +596,57 @@ async function placeBet({
       403,
       "ACCOUNT_INACTIVE"
     );
+
+    const [roundBetSummaryRows] =
+  await connection.query(
+    `
+      SELECT
+        COUNT(*) AS bet_count,
+        COALESCE(
+          SUM(bet_amount),
+          0
+        ) AS total_bet_amount
+
+      FROM bangla_wheel_bets
+
+      WHERE round_id = ?
+        AND user_id = ?
+        AND bet_status = 'accepted'
+    `,
+    [
+      validRoundId,
+      validUserId
+    ]
+  );
+
+const roundBetSummary = {
+  betCount:
+    Number(
+      roundBetSummaryRows[0]
+        ?.bet_count ||
+        0
+    ),
+
+  previousTotal:
+    parseMoney(
+      roundBetSummaryRows[0]
+        ?.total_bet_amount
+    )
+};
+
+roundBetSummary.newTotal =
+  parseMoney(
+    roundBetSummary.previousTotal +
+      validBetAmount
+  );
+
+assertCondition(
+  roundBetSummary.newTotal <=
+    settings.maximumBet,
+  `Your total bet for this round cannot exceed ৳${settings.maximumBet}.`,
+  409,
+  "ROUND_BET_LIMIT_EXCEEDED"
+);
 
     const balanceBefore =
       parseMoney(
@@ -668,15 +818,18 @@ async function placeBet({
             total_potential_liability + ?,
 
           total_players =
-            total_players + 1
+  total_players + ?
 
         WHERE id = ?
       `,
       [
-        validBetAmount,
-        netPayout,
-        validRoundId
-      ]
+  validBetAmount,
+  netPayout,
+  roundBetSummary.betCount === 0
+    ? 1
+    : 0,
+  validRoundId
+]
     );
 
     const [createdRows] =
@@ -699,35 +852,37 @@ async function placeBet({
     await connection.commit();
 
     return {
-      bet:
-        mapBetRow(
-          createdRows[0]
-        ),
+  bet:
+    mapBetRow(
+      createdRows[0]
+    ),
 
-      animal,
+  animal,
 
-      wallet: {
-        balanceBefore,
+  roundBetSummary: {
+    betCount:
+      roundBetSummary.betCount +
+      1,
 
-        balanceAfter:
-          balanceAfterBet
-      }
-    };
+    totalBetAmount:
+      roundBetSummary.newTotal,
+
+    remainingBetLimit:
+      parseMoney(
+        settings.maximumBet -
+          roundBetSummary.newTotal
+      )
+  },
+
+  wallet: {
+    balanceBefore,
+
+    balanceAfter:
+      balanceAfterBet
+  }
+};
   } catch (error) {
     await connection.rollback();
-
-    if (
-      error.code ===
-      "ER_DUP_ENTRY"
-    ) {
-      assertCondition(
-        false,
-        "You have already placed a bet in this round.",
-        409,
-        "BET_ALREADY_PLACED"
-      );
-    }
-
     throw error;
   } finally {
     connection.release();
@@ -837,6 +992,7 @@ async function getRoundBetTotals(
 module.exports = {
   mapBetRow,
   getUserRoundBet,
+  getUserRoundBets,
   placeBet,
   getRoundBetTotals
 };
