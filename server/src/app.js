@@ -56,6 +56,8 @@ const adminAndarBaharRoutes = require("./routes/admin-andar-bahar.routes");
 
 const adminBanglaWheelRoutes = require("./routes/admin-bangla-wheel.routes");
 
+const adminBanglaDiceRoutes = require("./routes/admin-bangla-dice.routes");
+
 const banglaDiceRoutes = require("./routes/bangla-dice.routes");
 
 const adminLotteryRoutes = require("./routes/admin-lottery.routes");
@@ -294,6 +296,8 @@ app.use("/api/bangla-dice", banglaDiceRoutes);
 app.use("/api/admin/andar-bahar", adminAndarBaharRoutes);
 
 app.use("/api/admin/bangla-wheel", adminBanglaWheelRoutes);
+
+app.use("/api/admin/bangla-dice", adminBanglaDiceRoutes);
 
 app.use("/api/admin/lottery", adminLotteryRoutes);
 

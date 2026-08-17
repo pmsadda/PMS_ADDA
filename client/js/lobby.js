@@ -114,8 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
     pokerButton: document.getElementById("pokerBtn"),
     ludoButton: document.getElementById("ludoBtn"),
     carromButton: document.getElementById("carromBtn"),
-       andarBaharButton: document.getElementById("andarBaharBtn"),
+    andarBaharButton: document.getElementById("andarBaharBtn"),
     banglaWheelButton: document.getElementById("banglaWheelBtn"),
+    banglaDiceButton: document.getElementById("banglaDiceBtn"),
     lotteryButton: document.getElementById("lotteryBtn"),
 
     settingsButton: document.getElementById("settingsBtn"),
@@ -743,9 +744,9 @@ document.addEventListener("DOMContentLoaded", () => {
       },
 
       {
-  gameType: "carrom",
-  button: DOM.carromButton,
-},
+        gameType: "carrom",
+        button: DOM.carromButton,
+      },
     ];
 
     gameConfigs.forEach(({ gameType, button }) => {
@@ -1427,24 +1428,17 @@ document.addEventListener("DOMContentLoaded", () => {
     closeModal(DOM.logoutModal),
   );
 
-    DOM.confirmLogoutButton?.addEventListener(
-    "click",
-    () => {
-      if (
-        window.AUTH_SESSION?.logout
-      ) {
-        window.AUTH_SESSION.logout();
+  DOM.confirmLogoutButton?.addEventListener("click", () => {
+    if (window.AUTH_SESSION?.logout) {
+      window.AUTH_SESSION.logout();
 
-        return;
-      }
+      return;
+    }
 
-      clearAuthentication();
+    clearAuthentication();
 
-      window.location.replace(
-        LOGIN_PAGE,
-      );
-    },
-  );
+    window.location.replace(LOGIN_PAGE);
+  });
 
   window.addEventListener("click", (event) => {
     if (event.target === DOM.notificationModal) {
@@ -1460,26 +1454,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.addEventListener(
-  "keydown",
-  (event) => {
+  document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") {
       return;
     }
 
-    closeModal(
-      DOM.notificationModal,
-    );
+    closeModal(DOM.notificationModal);
 
-    closeModal(
-      DOM.referralModal,
-    );
+    closeModal(DOM.referralModal);
 
-    closeModal(
-      DOM.logoutModal,
-    );
-  },
-);
+    closeModal(DOM.logoutModal);
+  });
 
   /* =========================================================
      REFRESH BUTTON
@@ -1529,29 +1514,23 @@ document.addEventListener("DOMContentLoaded", () => {
     navigateTo("./ludo-rooms.html"),
   );
 
-DOM.carromButton?.addEventListener(
-  "click",
-  () => {
-    showToast(
-      "Carrom-এর কাজ চলছে। শীঘ্রই চালু হবে।",
-      "info",
-    );
-  },
-);
+  DOM.carromButton?.addEventListener("click", () => {
+    showToast("Carrom-এর কাজ চলছে। শীঘ্রই চালু হবে।", "info");
+  });
 
-DOM.andarBaharButton?.addEventListener(
+  DOM.andarBaharButton?.addEventListener("click", () =>
+    navigateTo("./andar-bahar.html"),
+  );
+
+  DOM.banglaWheelButton?.addEventListener("click", () =>
+    navigateTo("./bangla-wheel.html"),
+  );
+
+  DOM.banglaDiceButton?.addEventListener(
   "click",
   () =>
     navigateTo(
-      "./andar-bahar.html",
-    ),
-);
-
-DOM.banglaWheelButton?.addEventListener(
-  "click",
-  () =>
-    navigateTo(
-      "./bangla-wheel.html",
+      "./bangla-dice.html",
     ),
 );
 

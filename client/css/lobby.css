@@ -4033,3 +4033,265 @@ button:focus{
         font-size: 10px;
     }
 }
+
+/* =========================================================
+   BANGLA DICE LOBBY CARD
+========================================================= */
+
+.bangla-dice-game-card {
+    overflow: hidden;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(14, 65, 44, 0.96),
+            rgba(4, 25, 17, 0.98)
+        );
+    border-color:
+        rgba(255, 213, 74, 0.28);
+}
+
+.bangla-dice-card-visual {
+    position: relative;
+    display: grid;
+    min-height: 145px;
+    overflow: hidden;
+    place-items: center;
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(255, 213, 74, 0.2),
+            transparent 55%
+        ),
+        linear-gradient(
+            145deg,
+            #0d4b32,
+            #062418
+        );
+    perspective: 600px;
+}
+
+.bangla-dice-card-visual::after {
+    position: absolute;
+    right: 18%;
+    bottom: 11px;
+    left: 18%;
+    height: 19px;
+    content: "";
+    background:
+        rgba(0, 0, 0, 0.34);
+    border-radius: 50%;
+    filter: blur(8px);
+}
+
+.lobby-dice-cube {
+    position: relative;
+    z-index: 2;
+    width: 82px;
+    height: 82px;
+    transform:
+        rotateX(-20deg)
+        rotateY(34deg);
+    transform-style: preserve-3d;
+    animation:
+        lobby-dice-float
+        3.2s ease-in-out infinite;
+}
+
+@keyframes lobby-dice-float {
+    0%,
+    100% {
+        transform:
+            translateY(0)
+            rotateX(-20deg)
+            rotateY(34deg);
+    }
+
+    50% {
+        transform:
+            translateY(-8px)
+            rotateX(-13deg)
+            rotateY(54deg);
+    }
+}
+
+.lobby-dice-face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    overflow: hidden;
+    place-items: center;
+    background:
+        linear-gradient(
+            145deg,
+            #fffef5,
+            #e8dba7
+        );
+    border:
+        3px solid #eebd2e;
+    border-radius: 13px;
+    box-shadow:
+        inset 0 0 12px
+        rgba(108, 70, 0, 0.2);
+}
+
+.lobby-dice-face img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+}
+
+.lobby-dice-front {
+    transform:
+        translateZ(41px);
+}
+
+.lobby-dice-right {
+    transform:
+        rotateY(90deg)
+        translateZ(41px);
+}
+
+.lobby-dice-top {
+    transform:
+        rotateX(90deg)
+        translateZ(41px);
+}
+
+.bangla-dice-live-badge {
+    position: absolute;
+    z-index: 5;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    color: #ffffff;
+    background:
+        rgba(196, 33, 48, 0.88);
+    border-radius: 12px;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+}
+
+.bangla-dice-live-badge i {
+    color: #ff8991;
+    font-size: 6px;
+    animation:
+        bangla-dice-live-pulse
+        1.2s ease-in-out infinite;
+}
+
+@keyframes bangla-dice-live-pulse {
+    50% {
+        opacity: 0.35;
+    }
+}
+
+.bangla-dice-game-card
+.game-info p {
+    display: block;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+}
+
+.bangla-dice-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 8px 0 10px;
+}
+
+.bangla-dice-features span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 7px;
+    color: #b8d6c7;
+    background:
+        rgba(255, 255, 255, 0.055);
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+    border-radius: 9px;
+    font-size: 8px;
+}
+
+.bangla-dice-features i {
+    color: #ffd54a;
+}
+
+.bangla-dice-play-btn {
+    display: flex !important;
+    width: 100%;
+    min-height: 44px !important;
+    margin-top: auto;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
+    color: #171000 !important;
+    background:
+        linear-gradient(
+            135deg,
+            #ffe474,
+            #eeb92a
+        ) !important;
+    overflow: visible !important;
+}
+
+@media (max-width: 600px) {
+    .bangla-dice-game-card {
+        min-height: 340px;
+    }
+
+    .bangla-dice-card-visual {
+        min-height: 105px;
+        max-height: 105px;
+    }
+
+    .lobby-dice-cube {
+        width: 66px;
+        height: 66px;
+        animation: none;
+    }
+
+    .lobby-dice-face img {
+        width: 53px;
+        height: 53px;
+    }
+
+    .lobby-dice-front {
+        transform:
+            translateZ(33px);
+    }
+
+    .lobby-dice-right {
+        transform:
+            rotateY(90deg)
+            translateZ(33px);
+    }
+
+    .lobby-dice-top {
+        transform:
+            rotateX(90deg)
+            translateZ(33px);
+    }
+
+    .bangla-dice-features {
+        gap: 4px;
+        margin: 5px 0 7px;
+    }
+
+    .bangla-dice-features span {
+        padding: 4px 5px;
+        font-size: 7px;
+    }
+
+    .bangla-dice-play-btn {
+        min-height: 40px !important;
+        flex-basis: 40px;
+        font-size: 10px;
+    }
+}

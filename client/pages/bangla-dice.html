@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>বাংলা পাশা | PMS ADDA</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/bangla-dice.css">
+</head>
+
+<body>
+
+    <div
+        class="loading-overlay"
+        id="loadingOverlay">
+
+        <div class="loading-dice">
+            <i class="fa-solid fa-dice"></i>
+        </div>
+
+        <strong>বাংলা পাশা লোড হচ্ছে...</strong>
+    </div>
+
+    <header class="game-header">
+
+        <button
+            type="button"
+            class="icon-button"
+            id="backBtn"
+            aria-label="Lobby-তে ফিরে যান">
+
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+
+        <div class="game-title">
+
+            <span>PMS ADDA</span>
+
+            <h1>বাংলা পাশা</h1>
+        </div>
+
+        <div class="header-actions">
+
+            <button
+                type="button"
+                class="icon-button"
+                id="soundBtn"
+                aria-label="Sound চালু বা বন্ধ করুন">
+
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+
+            <div class="wallet-card">
+
+                <span>Balance</span>
+
+                <strong>
+                    ৳<span id="walletBalance">0.00</span>
+                </strong>
+            </div>
+        </div>
+
+    </header>
+
+    <main class="game-container">
+
+        <section class="round-information">
+
+            <div>
+                <span>Round</span>
+                <strong id="roundCode">--</strong>
+            </div>
+
+            <div class="connection-status">
+
+                <span
+                    class="connection-dot"
+                    id="connectionDot">
+                </span>
+
+                <strong id="connectionText">
+                    Connecting
+                </strong>
+            </div>
+
+            <div>
+                <span>Status</span>
+                <strong id="roundStatus">
+                    অপেক্ষা করুন
+                </strong>
+            </div>
+
+        </section>
+
+        <section class="dice-stage">
+
+            <div class="stage-glow"></div>
+
+            <div class="timer-card">
+
+                <span>Betting Time</span>
+
+                <strong id="timerValue">0</strong>
+            </div>
+
+            <div
+                class="dice-scene"
+                id="diceScene">
+
+                <div
+                    class="dice-cube"
+                    id="diceCube">
+
+                    <div class="dice-face dice-front">
+                        <img
+                            src="../assets/bangla-dice/hilsa.png"
+                            alt="ইলিশ">
+                    </div>
+
+                    <div class="dice-face dice-back">
+                        <img
+                            src="../assets/bangla-dice/water-lily.png"
+                            alt="শাপলা">
+                    </div>
+
+                    <div class="dice-face dice-right">
+                        <img
+                            src="../assets/bangla-dice/royal-bengal-tiger.png"
+                            alt="রয়েল বেঙ্গল টাইগার">
+                    </div>
+
+                    <div class="dice-face dice-left">
+                        <img
+                            src="../assets/bangla-dice/boat.png"
+                            alt="নৌকা">
+                    </div>
+
+                    <div class="dice-face dice-top">
+                        <img
+                            src="../assets/bangla-dice/rickshaw.png"
+                            alt="রিকশা">
+                    </div>
+
+                    <div class="dice-face dice-bottom">
+                        <img
+                            src="../assets/bangla-dice/mango.png"
+                            alt="আম">
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                class="roll-information"
+                id="rollInformation">
+
+                <i class="fa-solid fa-dice"></i>
+
+                <span id="rollInformationText">
+                    পছন্দের ছবিতে bet করুন
+                </span>
+            </div>
+
+        </section>
+
+        <section class="betting-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <span>Dice Faces</span>
+                    <h2>ছবি নির্বাচন করুন</h2>
+                </div>
+
+                <strong id="bettingMode">
+                    Equal Chance
+                </strong>
+            </div>
+
+            <div
+                class="symbol-options"
+                id="symbolOptions">
+
+                <p class="loading-message">
+                    Dice images লোড হচ্ছে...
+                </p>
+            </div>
+
+            <div class="bet-amount-card">
+
+                <div class="bet-amount-heading">
+
+                    <span>Bet Amount</span>
+
+                    <small id="remainingLimit">
+                        Remaining: ৳0.00
+                    </small>
+                </div>
+
+                <div class="amount-control">
+
+                    <button
+                        type="button"
+                        id="decreaseBetBtn"
+                        aria-label="Bet কমান">
+
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+
+                    <div>
+                        <span>৳</span>
+
+                        <input
+                            type="number"
+                            id="betAmountInput"
+                            value="5"
+                            min="5"
+                            step="5"
+                            inputmode="decimal"
+                            aria-label="Bet amount">
+                    </div>
+
+                    <button
+                        type="button"
+                        id="increaseBetBtn"
+                        aria-label="Bet বাড়ান">
+
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+
+                </div>
+
+                <div
+                    class="quick-bet-options"
+                    id="quickBetOptions">
+
+                    <button
+                        type="button"
+                        data-amount="10">
+                        ৳10
+                    </button>
+
+                    <button
+                        type="button"
+                        data-amount="20">
+                        ৳20
+                    </button>
+
+                    <button
+                        type="button"
+                        data-amount="50">
+                        ৳50
+                    </button>
+
+                    <button
+                        type="button"
+                        data-amount="100">
+                        ৳100
+                    </button>
+
+                </div>
+
+                <div class="bet-preview">
+
+                    <span id="selectedSymbolText">
+                        একটি ছবি নির্বাচন করুন
+                    </span>
+
+                    <strong id="potentialPayout">
+                        সম্ভাব্য payout: ৳0.00
+                    </strong>
+                </div>
+
+                <button
+                    type="button"
+                    class="place-bet-button"
+                    id="placeBetBtn"
+                    disabled>
+
+                    <i class="fa-solid fa-coins"></i>
+
+                    <span id="placeBetText">
+                        ছবি নির্বাচন করুন
+                    </span>
+                </button>
+
+            </div>
+
+        </section>
+
+        <section
+            class="my-bets-card is-hidden"
+            id="myBetsCard">
+
+            <div class="section-heading">
+
+                <div>
+                    <span>Current Round</span>
+                    <h2>আমার Bets</h2>
+                </div>
+
+                <strong id="myBetCount">
+                    0 Bets
+                </strong>
+            </div>
+
+            <div
+                class="my-bet-list"
+                id="myBetList">
+            </div>
+
+            <div class="my-bet-total">
+
+                <span>মোট Bet</span>
+
+                <strong>
+                    ৳<span id="myBetTotal">0.00</span>
+                </strong>
+            </div>
+
+        </section>
+
+        <section class="recent-results-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <span>History</span>
+                    <h2>সাম্প্রতিক ফলাফল</h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="refresh-button"
+                    id="refreshResultsBtn">
+
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+            </div>
+
+            <div
+                class="recent-results"
+                id="recentResults">
+
+                <p class="loading-message">
+                    ফলাফল লোড হচ্ছে...
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <div
+        class="result-overlay is-hidden"
+        id="resultOverlay">
+
+        <div class="result-modal">
+
+            <button
+                type="button"
+                class="result-close-button"
+                id="resultCloseBtn"
+                aria-label="Result বন্ধ করুন">
+
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span>Winning Image</span>
+
+            <div class="winner-image">
+                <img
+                    id="winnerImage"
+                    src="../assets/bangla-dice/hilsa.png"
+                    alt="Winning Dice image">
+            </div>
+
+            <h2 id="winnerName">
+                ইলিশ
+            </h2>
+
+            <strong id="winnerMultiplier">
+                5.5x
+            </strong>
+
+            <p id="userResultMessage">
+                Round completed
+            </p>
+
+            <button
+                type="button"
+                class="continue-button"
+                id="continueBtn">
+
+                Continue
+            </button>
+
+        </div>
+
+    </div>
+
+    <div
+        class="game-toast"
+        id="gameToast"
+        role="status">
+    </div>
+       <script src="../js/app-config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+ <script src="../js/bangla-dice.js"></script>
+</body>
+
+</html>
