@@ -2038,3 +2038,96 @@ body {
         font-size: 12px;
     }
 }
+
+/* =========================================================
+   MOBILE SCROLL AND ANIMAL GRID HEIGHT FIX
+========================================================= */
+
+@media (max-width: 768px) {
+    html,
+    body {
+        height: auto;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .bangla-wheel-app {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    .wheel-stage {
+        flex: 0 0 auto;
+        height: auto;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .animal-betting-section {
+        height: auto;
+        min-height: auto;
+        flex: 0 0 auto;
+        overflow: visible;
+    }
+
+    .animal-options {
+        height: auto;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-rows: repeat(3, minmax(72px, auto));
+        align-items: stretch;
+        overflow: visible;
+    }
+
+    .animal-option {
+        min-height: 72px;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .animal-option img {
+        width: 29px;
+        height: 29px;
+        flex: 0 0 auto;
+    }
+
+    .animal-option strong {
+        display: block;
+        width: 100%;
+        min-height: 11px;
+        overflow: hidden;
+        line-height: 1.1;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .animal-option span {
+        display: inline-flex;
+        min-height: 17px;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    .betting-panel,
+    .my-bet-card {
+        flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 380px) {
+    .animal-options {
+        grid-template-rows: repeat(3, minmax(66px, auto));
+    }
+
+    .animal-option {
+        min-height: 66px;
+    }
+
+    .animal-option img {
+        width: 25px;
+        height: 25px;
+    }
+}
