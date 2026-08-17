@@ -704,7 +704,129 @@ async function beginRoll(
       clearTimer(
         roundTimer,
       );
+          /*
+     * কোনো accepted bet না থাকলে Dice roll করবে না।
+     * একই round betting অবস্থায় রেখে countdown reset হবে।
+     */
+    const [betCountRows] =
+      await pool.query(
+        `
+          SELECT
+            COUNT(*) AS accepted_bets
+          FROM bangla_dice_bets
+          WHERE round_id = ?
+            AND bet_status = 'accepted'
+        `,
+        [
+          Number(roundId),
+        ],
+      );
 
+    const acceptedBetCount =
+      Number(
+        betCountRows[0]
+          ?.accepted_bets ||
+        0,
+      );
+
+    if (
+      acceptedBetCount === 0
+    ) {
+      const settings =
+        await getGameSettings();
+
+      const bettingDurationSeconds =
+        Math.max(
+          5,
+          Number(
+            settings
+              ?.bettingDurationSeconds ||
+            30,
+          ),
+        );
+
+      await pool.query(
+        `
+          UPDATE bangla_dice_rounds
+          SET
+            betting_ends_at =
+              DATE_ADD(
+                CURRENT_TIMESTAMP(3),
+                INTERVAL ? SECOND
+              ),
+            updated_at =
+              CURRENT_TIMESTAMP
+          WHERE id = ?
+            AND round_status = 'betting'
+        `,
+        [
+          bettingDurationSeconds,
+          Number(roundId),
+        ],
+      );
+
+      const refreshedActiveRound =
+        await getActiveRound();
+
+      if (refreshedActiveRound) {
+        const refreshedRound =
+          mapRoundRow(
+            refreshedActiveRound,
+            {
+              revealResult: false,
+            },
+          );
+
+        namespace
+          .to(PUBLIC_ROOM)
+          .emit(
+            "bangla-dice:round-started",
+            {
+              success: true,
+
+              serverTime:
+                new Date()
+                  .toISOString(),
+
+              noBets: true,
+
+              data: {
+                round:
+                  refreshedRound,
+              },
+            },
+          );
+
+        const retryDelay =
+          getDelay(
+            refreshedActiveRound
+              .betting_ends_at,
+          );
+
+        roundTimer =
+          setTimeout(
+            () => {
+              void beginRoll(
+                namespace,
+                Number(roundId),
+              );
+            },
+            retryDelay,
+          );
+
+        roundTimer.unref?.();
+      }
+
+      await emitPublicState(
+        namespace,
+      );
+
+      console.log(
+        `BANGLA DICE WAITING FOR BETS: round ${Number(roundId)}`,
+      );
+
+      return;
+    }
     namespace
       .to(PUBLIC_ROOM)
       .emit(

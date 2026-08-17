@@ -707,6 +707,108 @@ async function beginWheelSpin(
     );
 
   try {
+        /*
+     * কোনো accepted bet না থাকলে wheel spin করবে না।
+     * একই round betting অবস্থায় রেখে countdown reset হবে।
+     */
+    const [betCountRows] =
+      await pool.query(
+        `
+          SELECT
+            COUNT(*) AS accepted_bets
+          FROM bangla_wheel_bets
+          WHERE round_id = ?
+            AND bet_status = 'accepted'
+        `,
+        [
+          Number(roundId)
+        ]
+      );
+
+    const acceptedBetCount =
+      Number(
+        betCountRows[0]
+          ?.accepted_bets ||
+        0
+      );
+
+    if (
+      acceptedBetCount === 0
+    ) {
+      const settings =
+        await getGameSettings();
+
+      const bettingDurationSeconds =
+        Math.max(
+          5,
+          Number(
+            settings
+              ?.bettingDurationSeconds ||
+            30
+          )
+        );
+
+      await pool.query(
+        `
+          UPDATE bangla_wheel_rounds
+          SET
+            betting_closes_at =
+              DATE_ADD(
+                CURRENT_TIMESTAMP(3),
+                INTERVAL ? SECOND
+              ),
+            updated_at =
+              CURRENT_TIMESTAMP
+          WHERE id = ?
+            AND round_status = 'betting'
+        `,
+        [
+          bettingDurationSeconds,
+          Number(roundId)
+        ]
+      );
+
+      const refreshedRound =
+        await getActiveRound();
+
+      if (refreshedRound) {
+        namespace
+          .to(PUBLIC_ROOM)
+          .emit(
+            "bangla-wheel:round-started",
+            {
+              success: true,
+
+              round:
+                refreshedRound,
+
+              settings,
+
+              noBets:
+                true,
+
+              serverTime:
+                new Date()
+                  .toISOString()
+            }
+          );
+
+        scheduleBettingClose(
+          namespace,
+          refreshedRound
+        );
+      }
+
+      await emitPublicState(
+        namespace
+      );
+
+      console.log(
+        `BANGLA WHEEL WAITING FOR BETS: round ${Number(roundId)}`
+      );
+
+      return;
+    }
     namespace
       .to(PUBLIC_ROOM)
       .emit(
