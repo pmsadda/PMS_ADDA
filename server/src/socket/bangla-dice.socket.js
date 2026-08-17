@@ -857,16 +857,35 @@ async function startOrResumeRound(
             .betting_ends_at,
         );
 
+         const safelyBeginRoll =
+        () => {
+          /*
+           * Restart recovery-এর সময় delay 0 হতে পারে।
+           * startOrResumeRound তখনও busy থাকলে একটু পরে
+           * আবার চেষ্টা করতে হবে, নাহলে round আটকে যাবে।
+           */
+          if (loopBusy) {
+            roundTimer =
+              setTimeout(
+                safelyBeginRoll,
+                250,
+              );
+
+            roundTimer.unref?.();
+            return;
+          }
+
+          void beginRoll(
+            namespace,
+            Number(
+              activeRound.id,
+            ),
+          );
+        };
+
       roundTimer =
         setTimeout(
-          () => {
-            void beginRoll(
-              namespace,
-              Number(
-                activeRound.id,
-              ),
-            );
-          },
+          safelyBeginRoll,
           delay,
         );
 
