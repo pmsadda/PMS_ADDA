@@ -1,12 +1,10 @@
 "use strict";
 
 (() => {
-  const API_BASE =
-    window.APP_CONFIG?.API_BASE_URL ||
-    window.APP_CONFIG?.API_URL ||
-    window.location.origin;
-
-  const ADMIN_API = `${API_BASE}/api/admin/bangla-dice`;
+    const ADMIN_API =
+    typeof window.APP_CONFIG?.api === "function"
+      ? window.APP_CONFIG.api("/admin/bangla-dice")
+      : `${window.location.origin}/api/admin/bangla-dice`;
 
   const state = {
     symbols: [],
@@ -76,9 +74,11 @@
   };
 
   function getToken() {
-    return (
+        return (
+      localStorage.getItem("access_token") ||
       localStorage.getItem("token") ||
       localStorage.getItem("authToken") ||
+      sessionStorage.getItem("access_token") ||
       sessionStorage.getItem("token") ||
       ""
     );
