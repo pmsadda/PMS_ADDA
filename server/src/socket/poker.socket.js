@@ -2,6 +2,8 @@
 
 const crypto = require("crypto");
 
+const jwt = require("jsonwebtoken");
+
 const {
   pool,
 } = require("../config/database");
