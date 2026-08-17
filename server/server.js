@@ -8,16 +8,10 @@ require("dotenv").config();
  *
  * Secret-এর value log করা হবে না।
  */
-const jwtSecret =
-  String(
-    process.env.JWT_SECRET ||
-    "",
-  );
+const jwtSecret = String(process.env.JWT_SECRET || "");
 
 if (jwtSecret.length < 64) {
-  throw new Error(
-    "JWT_SECRET must contain at least 64 characters.",
-  );
+  throw new Error("JWT_SECRET must contain at least 64 characters.");
 }
 
 const http = require("http");
@@ -25,12 +19,7 @@ const { Server } = require("socket.io");
 
 const app = require("./src/app");
 
-const {
-  pool,
-  testDatabaseConnection,
-} = require(
-  "./src/config/database",
-);
+const { pool, testDatabaseConnection } = require("./src/config/database");
 
 const { initializeTeenPattiSocket } = require("./src/socket/teenpatti.socket");
 
@@ -44,9 +33,17 @@ const { initializeCarromSocket } = require("./src/socket/carrom.socket");
 
 const { initializeLotterySocket } = require("./src/socket/lottery.socket");
 
-const { initializeAndarBaharSocket } = require("./src/socket/andar-bahar.socket");
+const {
+  initializeAndarBaharSocket,
+} = require("./src/socket/andar-bahar.socket");
 
-const { initializeBanglaWheelSocket } = require("./src/socket/bangla-wheel.socket");
+const {
+  initializeBanglaWheelSocket,
+} = require("./src/socket/bangla-wheel.socket");
+
+const {
+  initializeBanglaDiceSocket,
+} = require("./src/socket/bangla-dice.socket");
 
 const PORT = Number(process.env.PORT) || 5000;
 
@@ -111,31 +108,25 @@ initializeSupportSocket(io);
  * CARROM_ENABLED=true না দিলে Socket namespace,
  * recovery timer এবং database processing চালু হবে না।
  */
-const carromEnabled =
-  process.env.CARROM_ENABLED ===
-  "true";
+const carromEnabled = process.env.CARROM_ENABLED === "true";
 
 let carromSocket = null;
 
 if (carromEnabled) {
-  carromSocket =
-    initializeCarromSocket(io);
+  carromSocket = initializeCarromSocket(io);
 } else {
-  console.log(
-    "⏸️ Carrom Socket.IO disabled",
-  );
+  console.log("⏸️ Carrom Socket.IO disabled");
 }
 
-app.set(
-  "carromSocket",
-  carromSocket,
-);
+app.set("carromSocket", carromSocket);
 
 initializeLotterySocket(io);
 
 initializeAndarBaharSocket(io);
 
 initializeBanglaWheelSocket(io);
+
+initializeBanglaDiceSocket(io);
 
 /*
  * Server start।
@@ -164,31 +155,24 @@ startServer();
  */
 let shutdownStarted = false;
 
-async function shutdownServer(
-  signal,
-) {
+async function shutdownServer(signal) {
   if (shutdownStarted) {
     return;
   }
 
   shutdownStarted = true;
 
-  console.log(
-    `SERVER SHUTDOWN STARTED: ${signal}`,
-  );
+  console.log(`SERVER SHUTDOWN STARTED: ${signal}`);
 
   /*
    * কোনো shutdown operation আটকে গেলে
    * 15 সেকেন্ড পরে process forcefully বন্ধ হবে।
    */
-  const forceExitTimer =
-    setTimeout(() => {
-      console.error(
-        "SERVER SHUTDOWN TIMEOUT",
-      );
+  const forceExitTimer = setTimeout(() => {
+    console.error("SERVER SHUTDOWN TIMEOUT");
 
-      process.exit(1);
-    }, 15000);
+    process.exit(1);
+  }, 15000);
 
   forceExitTimer.unref();
 
@@ -211,36 +195,25 @@ async function shutdownServer(
 
     clearTimeout(forceExitTimer);
 
-    console.log(
-      "SERVER SHUTDOWN COMPLETED",
-    );
+    console.log("SERVER SHUTDOWN COMPLETED");
 
     process.exit(0);
   } catch (error) {
     clearTimeout(forceExitTimer);
 
-    console.error(
-      "SERVER SHUTDOWN ERROR:",
-      {
-        message: error.message,
-        code: error.code,
-      },
-    );
+    console.error("SERVER SHUTDOWN ERROR:", {
+      message: error.message,
+      code: error.code,
+    });
 
     process.exit(1);
   }
 }
 
-process.once(
-  "SIGTERM",
-  () => {
-    void shutdownServer("SIGTERM");
-  },
-);
+process.once("SIGTERM", () => {
+  void shutdownServer("SIGTERM");
+});
 
-process.once(
-  "SIGINT",
-  () => {
-    void shutdownServer("SIGINT");
-  },
-);
+process.once("SIGINT", () => {
+  void shutdownServer("SIGINT");
+});
