@@ -553,11 +553,22 @@ async function startOrResumeRound(
             .bettingClosesAt
         );
 
-      if (
+          if (
         bettingDelay <= 0
       ) {
-        setImmediate(
+        const safelyBeginWheelSpin =
           () => {
+            if (loopBusy) {
+              const retryTimer =
+                setTimeout(
+                  safelyBeginWheelSpin,
+                  250
+                );
+
+              retryTimer.unref?.();
+              return;
+            }
+
             beginWheelSpin(
               namespace,
               activeRound.id
@@ -569,8 +580,15 @@ async function startOrResumeRound(
                 );
               }
             );
-          }
-        );
+          };
+
+        const recoveryTimer =
+          setTimeout(
+            safelyBeginWheelSpin,
+            0
+          );
+
+        recoveryTimer.unref?.();
       } else {
         scheduleBettingClose(
           namespace,
@@ -617,11 +635,22 @@ async function startOrResumeRound(
             .spinningEndsAt
         );
 
-      if (
+          if (
         settlementDelay <= 0
       ) {
-        setImmediate(
+        const safelyCompleteWheelRound =
           () => {
+            if (loopBusy) {
+              const retryTimer =
+                setTimeout(
+                  safelyCompleteWheelRound,
+                  250
+                );
+
+              retryTimer.unref?.();
+              return;
+            }
+
             completeWheelRound(
               namespace,
               activeRound.id
@@ -633,8 +662,15 @@ async function startOrResumeRound(
                 );
               }
             );
-          }
-        );
+          };
+
+        const recoveryTimer =
+          setTimeout(
+            safelyCompleteWheelRound,
+            0
+          );
+
+        recoveryTimer.unref?.();
       } else {
         scheduleSettlement(
           namespace,

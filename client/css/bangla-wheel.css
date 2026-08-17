@@ -1898,3 +1898,107 @@ body {
         grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 }
+
+/* =========================================================
+   FIX WHEEL ANIMAL CONTENT ALIGNMENT
+========================================================= */
+
+.wheel-segment-content {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+    text-align: center;
+    pointer-events: none;
+}
+
+.wheel-segment-content img {
+    display: block;
+    flex: 0 0 auto;
+}
+
+.wheel-segment-content strong {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    line-height: 1.05;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wheel-segment-content span {
+    display: inline-flex;
+    min-height: 22px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Mobile wheel spacing */
+
+@media (max-width: 600px) {
+    .wheel-segment {
+        width: calc(var(--wheel-size) * 0.145);
+        height: calc(var(--wheel-size) * 0.19);
+        margin-top: calc(var(--wheel-size) * -0.095);
+        margin-left: calc(var(--wheel-size) * -0.0725);
+        transform:
+            rotate(var(--segment-angle))
+            translateY(calc(var(--wheel-size) * -0.345))
+            rotate(calc(var(--segment-angle) * -1));
+    }
+
+    .wheel-segment-content {
+        gap: 1px;
+    }
+
+    .wheel-segment-content img {
+        width: calc(var(--wheel-size) * 0.085);
+        height: calc(var(--wheel-size) * 0.085);
+        max-width: 35px;
+        max-height: 35px;
+    }
+
+    .wheel-segment-content strong {
+        max-width: calc(var(--wheel-size) * 0.14);
+        font-size: clamp(7px, 2.2vw, 9px);
+    }
+
+    .wheel-segment-content span {
+        min-width: 29px;
+        min-height: 18px;
+        padding: 2px 5px;
+        font-size: clamp(8px, 2.5vw, 11px);
+    }
+}
+
+@media (max-width: 370px) {
+    .wheel-segment {
+        transform:
+            rotate(var(--segment-angle))
+            translateY(calc(var(--wheel-size) * -0.34))
+            rotate(calc(var(--segment-angle) * -1));
+    }
+
+    .wheel-segment-content img {
+        width: calc(var(--wheel-size) * 0.08);
+        height: calc(var(--wheel-size) * 0.08);
+    }
+
+    .wheel-segment-content strong {
+        font-size: 7px;
+    }
+
+    .wheel-segment-content span {
+        min-width: 25px;
+        min-height: 16px;
+        padding: 1px 4px;
+        font-size: 8px;
+    }
+}
