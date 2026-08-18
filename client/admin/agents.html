@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>PMS ADDA | Agent Management</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/admin-agents.css">
+
+    <script
+        src="../js/app-config.js"
+        defer></script>
+
+    <script
+        src="../js/auth-guard.js"
+        defer></script>
+
+    <script
+        src="../js/admin-agents.js"
+        defer></script>
+</head>
+
+<body>
+    <header class="agents-header">
+        <div class="header-left">
+            <a
+                href="dashboard.html"
+                class="back-button">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+
+            <div>
+                <p>PMS ADDA ADMIN</p>
+                <h1>Agent Management</h1>
+            </div>
+        </div>
+
+        <button
+            id="refreshAgentsBtn"
+            class="icon-button"
+            type="button"
+            title="Refresh">
+            <i class="fa-solid fa-rotate"></i>
+        </button>
+    </header>
+
+    <main class="agents-container">
+        <section class="summary-grid">
+            <article class="summary-card">
+                <span>Total Agents</span>
+                <strong id="totalAgents">0</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Active Agents</span>
+                <strong id="activeAgents">0</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Disabled Agents</span>
+                <strong id="disabledAgents">0</strong>
+            </article>
+        </section>
+
+        <div class="agents-layout">
+            <section class="admin-panel create-panel">
+                <div class="panel-heading">
+                    <p>Admin Only</p>
+                    <h2>Create Agent</h2>
+                </div>
+
+                <form id="createAgentForm">
+                    <label class="form-field">
+                        <span>Full Name</span>
+
+                        <input
+                            id="agentFullName"
+                            type="text"
+                            minlength="2"
+                            maxlength="100"
+                            autocomplete="off"
+                            required>
+                    </label>
+
+                    <label class="form-field">
+                        <span>Username</span>
+
+                        <input
+                            id="agentUsernameInput"
+                            type="text"
+                            minlength="4"
+                            maxlength="30"
+                            pattern="[a-z0-9_]+"
+                            autocomplete="off"
+                            required>
+
+                        <small>
+                            Lowercase letters, numbers and underscore.
+                        </small>
+                    </label>
+
+                    <label class="form-field">
+                        <span>Phone</span>
+
+                        <input
+                            id="agentPhone"
+                            type="tel"
+                            maxlength="16"
+                            autocomplete="off"
+                            required>
+                    </label>
+
+                    <label class="form-field">
+                        <span>Email</span>
+
+                        <input
+                            id="agentEmail"
+                            type="email"
+                            maxlength="150"
+                            autocomplete="off"
+                            required>
+                    </label>
+
+                    <label class="form-field">
+                        <span>Temporary Password</span>
+
+                        <div class="password-field">
+                            <input
+                                id="agentPassword"
+                                type="password"
+                                minlength="8"
+                                maxlength="72"
+                                autocomplete="new-password"
+                                required>
+
+                            <button
+                                id="togglePasswordBtn"
+                                type="button"
+                                title="Show password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+
+                        <small>
+                            Use at least 8 characters.
+                        </small>
+                    </label>
+
+                    <button
+                        id="createAgentBtn"
+                        class="primary-button"
+                        type="submit">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Create Agent
+                    </button>
+                </form>
+            </section>
+
+            <section class="admin-panel list-panel">
+                <div class="list-heading">
+                    <div class="panel-heading">
+                        <p>Staff Accounts</p>
+                        <h2>Agents</h2>
+                    </div>
+
+                    <input
+                        id="agentSearchInput"
+                        type="search"
+                        placeholder="Search username, phone or email">
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="agents-table">
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Username</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="agentsTableBody">
+                            <tr>
+                                <td
+                                    colspan="7"
+                                    class="empty-table">
+                                    Loading Agents...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div
+        id="statusModal"
+        class="modal-overlay is-hidden">
+
+        <section class="status-modal">
+            <div class="modal-heading">
+                <h2 id="statusModalTitle">
+                    Change Agent Status
+                </h2>
+
+                <button
+                    id="closeStatusModalBtn"
+                    class="icon-button"
+                    type="button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p id="statusModalMessage"></p>
+
+            <div class="modal-actions">
+                <button
+                    id="cancelStatusBtn"
+                    class="secondary-button"
+                    type="button">
+                    Cancel
+                </button>
+
+                <button
+                    id="confirmStatusBtn"
+                    class="primary-button"
+                    type="button">
+                    Confirm
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <div
+        id="agentsLoading"
+        class="agents-loading is-hidden">
+
+        <div class="loading-spinner"></div>
+
+        <p>Loading...</p>
+    </div>
+
+    <div
+        id="agentsToast"
+        class="agents-toast is-hidden">
+    </div>
+</body>
+</html>

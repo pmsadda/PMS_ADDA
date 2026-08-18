@@ -170,6 +170,51 @@ async function requireAuth(
           .toLowerCase(),
     };
 
+        /*
+     * Agent account-এর central API allowlist।
+     * Agent token দিয়ে game, wallet, user অথবা
+     * অন্য protected API access করা যাবে না।
+     */
+    if (
+      request.user.role ===
+      "agent"
+    ) {
+      const requestPath =
+        String(
+          request.originalUrl ||
+          request.url ||
+          ""
+        )
+          .split("?")[0]
+          .toLowerCase();
+
+      const agentAllowed =
+        requestPath.startsWith(
+          "/api/agent/"
+        ) ||
+        requestPath ===
+          "/api/agent" ||
+        requestPath ===
+          "/api/auth/me" ||
+        requestPath ===
+          "/api/auth/logout";
+
+      if (!agentAllowed) {
+        return response
+          .status(403)
+          .json({
+            success: false,
+
+            code:
+              "AGENT_ROUTE_FORBIDDEN",
+
+            message:
+              "This operation is not available."
+          });
+      }
+    }
+
+
     request.accessToken = token;
 
     return next();
@@ -306,7 +351,169 @@ async function requireAdmin(
   }
 }
 
+/* ==========================
+   Admin অথবা Agent Validation
+========================== */
+
+async function requireAdminOrAgent(
+  request,
+  response,
+  next
+) {
+  try {
+    if (!request.user?.id) {
+      return response
+        .status(401)
+        .json({
+          success: false,
+          code: "AUTH_REQUIRED",
+          message:
+            "Authentication is required."
+        });
+    }
+
+    const [rows] =
+      await pool.query(
+        `
+          SELECT
+            id,
+            uid,
+            username,
+            role,
+            account_status
+          FROM users
+          WHERE id = ?
+          LIMIT 1
+        `,
+        [
+          request.user.id
+        ]
+      );
+
+    const staff =
+      rows[0] || null;
+
+    if (!staff) {
+      return response
+        .status(401)
+        .json({
+          success: false,
+          code:
+            "STAFF_ACCOUNT_NOT_FOUND",
+          message:
+            "Staff account was not found."
+        });
+    }
+
+    if (
+      String(
+        staff.account_status || ""
+      ).toLowerCase() !==
+        "active"
+    ) {
+      return response
+        .status(403)
+        .json({
+          success: false,
+          code:
+            "STAFF_ACCOUNT_INACTIVE",
+          message:
+            "This staff account is not active."
+        });
+    }
+
+    const role =
+      String(
+        staff.role || ""
+      )
+        .trim()
+        .toLowerCase();
+
+    if (
+      ![
+        "admin",
+        "agent"
+      ].includes(role)
+    ) {
+      return response
+        .status(403)
+        .json({
+          success: false,
+          code:
+            "STAFF_ACCESS_REQUIRED",
+          message:
+            "Admin or Agent access is required."
+        });
+    }
+
+    request.user = {
+      id:
+        Number(staff.id),
+
+      uid:
+        staff.uid ||
+        request.user.uid ||
+        null,
+
+      username:
+        staff.username ||
+        null,
+
+      role
+    };
+
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/* ==========================
+   Verified Agent Only
+========================== */
+
+function requireAgent(
+  request,
+  response,
+  next
+) {
+  if (
+    !request.user?.id
+  ) {
+    return response
+      .status(401)
+      .json({
+        success: false,
+        code:
+          "AUTH_REQUIRED",
+        message:
+          "Authentication is required."
+      });
+  }
+
+  if (
+    String(
+      request.user.role || ""
+    ).toLowerCase() !==
+      "agent"
+  ) {
+    return response
+      .status(403)
+      .json({
+        success: false,
+        code:
+          "AGENT_ACCESS_REQUIRED",
+        message:
+          "This operation is not available."
+      });
+  }
+
+  return next();
+}
+
 module.exports = {
   requireAuth,
-  requireAdmin
+  requireAdmin,
+  requireAdminOrAgent,
+  requireAgent
 };

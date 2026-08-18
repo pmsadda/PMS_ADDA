@@ -154,8 +154,13 @@ async function login(req, res, next) {
 
     const token = createAccessToken(user);
 
-    const redirectTo =
-      user.role === "admin" ? "/admin/dashboard.html" : "/pages/lobby.html";
+    let redirectTo = "/pages/lobby.html";
+
+    if (user.role === "admin") {
+      redirectTo = "/admin/dashboard.html";
+    } else if (user.role === "agent") {
+      redirectTo = "/agent/dashboard.html";
+    }
 
     return res.status(200).json({
       success: true,
@@ -256,51 +261,33 @@ async function referralSummary(req, res, next) {
   }
 }
 
-
 /* ==========================
    Request Password Reset OTP
 ========================== */
 
-async function requestForgotPasswordOtp(
-  req,
-  res,
-  next,
-) {
+async function requestForgotPasswordOtp(req, res, next) {
   try {
-    const email = String(
-      req.body.email || "",
-    )
+    const email = String(req.body.email || "")
       .trim()
       .toLowerCase();
 
-    const result =
-      await requestPasswordResetOtp(
-        email,
-      );
+    const result = await requestPasswordResetOtp(email);
 
-    res.setHeader(
-      "Cache-Control",
-      "no-store",
-    );
+    res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).json({
       success: true,
 
-      message:
-        "Emailটি registered হলে password reset OTP পাঠানো হয়েছে।",
+      message: "Emailটি registered হলে password reset OTP পাঠানো হয়েছে।",
 
       data: {
-        requestId:
-          result.requestId,
+        requestId: result.requestId,
 
-        maskedEmail:
-          result.maskedEmail,
+        maskedEmail: result.maskedEmail,
 
-        expiresInSeconds:
-          result.expiresInSeconds,
+        expiresInSeconds: result.expiresInSeconds,
 
-        resendAfterSeconds:
-          result.resendAfterSeconds,
+        resendAfterSeconds: result.resendAfterSeconds,
       },
     });
   } catch (error) {
@@ -312,41 +299,27 @@ async function requestForgotPasswordOtp(
    Verify Password Reset OTP
 ========================== */
 
-async function verifyForgotPasswordOtp(
-  req,
-  res,
-  next,
-) {
+async function verifyForgotPasswordOtp(req, res, next) {
   try {
-    const result =
-      await verifyPasswordResetOtp({
-        requestId:
-          req.body.requestId,
+    const result = await verifyPasswordResetOtp({
+      requestId: req.body.requestId,
 
-        otp:
-          req.body.otp,
-      });
+      otp: req.body.otp,
+    });
 
-    res.setHeader(
-      "Cache-Control",
-      "no-store",
-    );
+    res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).json({
       success: true,
 
-      message:
-        "OTP verified successfully.",
+      message: "OTP verified successfully.",
 
       data: {
-        requestId:
-          result.requestId,
+        requestId: result.requestId,
 
-        resetToken:
-          result.resetToken,
+        resetToken: result.resetToken,
 
-        expiresInSeconds:
-          result.expiresInSeconds,
+        expiresInSeconds: result.expiresInSeconds,
       },
     });
   } catch (error) {
@@ -358,64 +331,42 @@ async function verifyForgotPasswordOtp(
    Reset Password
 ========================== */
 
-async function resetForgottenPassword(
-  req,
-  res,
-  next,
-) {
+async function resetForgottenPassword(req, res, next) {
   try {
-    const newPassword = String(
-      req.body.newPassword || "",
-    );
+    const newPassword = String(req.body.newPassword || "");
 
-    const confirmPassword = String(
-      req.body.confirmPassword || "",
-    );
+    const confirmPassword = String(req.body.confirmPassword || "");
 
-    if (
-      !newPassword ||
-      !confirmPassword
-    ) {
+    if (!newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
 
-        message:
-          "নতুন password এবং confirm password দিন।",
+        message: "নতুন password এবং confirm password দিন।",
       });
     }
 
-    if (
-      newPassword !==
-      confirmPassword
-    ) {
+    if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
 
-        message:
-          "নতুন password দুটি মিলছে না।",
+        message: "নতুন password দুটি মিলছে না।",
       });
     }
 
     await resetPasswordWithToken({
-      requestId:
-        req.body.requestId,
+      requestId: req.body.requestId,
 
-      resetToken:
-        req.body.resetToken,
+      resetToken: req.body.resetToken,
 
       newPassword,
     });
 
-    res.setHeader(
-      "Cache-Control",
-      "no-store",
-    );
+    res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).json({
       success: true,
 
-      message:
-        "Password reset successful. নতুন password দিয়ে login করুন।",
+      message: "Password reset successful. নতুন password দিয়ে login করুন।",
     });
   } catch (error) {
     next(error);
@@ -426,24 +377,15 @@ async function resetForgottenPassword(
    Logout User
 ========================== */
 
-async function logout(
-  req,
-  res,
-  next,
-) {
+async function logout(req, res, next) {
   try {
-    await markUserOffline(
-      req.user.id,
-    );
+    await markUserOffline(req.user.id);
 
-    return res
-      .status(200)
-      .json({
-        success: true,
+    return res.status(200).json({
+      success: true,
 
-        message:
-          "Logout successful.",
-      });
+      message: "Logout successful.",
+    });
   } catch (error) {
     next(error);
   }

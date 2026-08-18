@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="bn">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
+
+        <meta
+            name="theme-color"
+            content="#071a13">
+
+        <title>Finance Operations</title>
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+        <link
+            rel="stylesheet"
+            href="../css/agent-dashboard.css">
+
+        <script
+            src="../js/agent-config.js"
+            defer></script>
+
+        <script
+            src="../js/agent-auth-guard.js"
+            defer></script>
+
+        <script
+            src="../js/agent-dashboard.js"
+            defer></script>
+    </head>
+
+    <body>
+        <header class="agent-header">
+            <div class="agent-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+
+                <div>
+                    <p>Secure Access</p>
+                    <h1>Finance Operations</h1>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="agent-identity">
+                    <span>Signed in as</span>
+
+                    <strong id="agentUsername">
+                        Agent
+                    </strong>
+                </div>
+
+                <button
+                    id="refreshDashboardBtn"
+                    class="icon-button"
+                    type="button"
+                    title="Refresh">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+
+                <button
+                    id="logoutBtn"
+                    class="logout-button"
+                    type="button">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <main class="agent-container">
+            <section class="summary-grid">
+                <article class="summary-card">
+                    <div class="summary-icon deposit-icon">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                    </div>
+
+                    <div>
+                        <span>Pending Deposits</span>
+
+                        <strong id="pendingDepositCount">
+                            0
+                        </strong>
+                    </div>
+                </article>
+
+                <article class="summary-card">
+                    <div class="summary-icon withdrawal-icon">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+
+                    <div>
+                        <span>Pending Withdrawals</span>
+
+                        <strong id="pendingWithdrawalCount">
+                            0
+                        </strong>
+                    </div>
+                </article>
+
+                <article class="summary-card">
+                    <div class="summary-icon amount-icon">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+
+                    <div>
+                        <span>Pending Deposit Amount</span>
+
+                        <strong id="pendingDepositAmount">
+                            ৳0.00
+                        </strong>
+                    </div>
+                </article>
+
+                <article class="summary-card">
+                    <div class="summary-icon amount-icon">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </div>
+
+                    <div>
+                        <span>Pending Withdrawal Amount</span>
+
+                        <strong id="pendingWithdrawalAmount">
+                            ৳0.00
+                        </strong>
+                    </div>
+                </article>
+            </section>
+
+            <section class="finance-panel">
+                <div class="finance-tabs">
+                    <button
+                        id="depositTabBtn"
+                        class="tab-button active"
+                        type="button">
+                        <i class="fa-solid fa-arrow-down"></i>
+
+                        Deposits
+
+                        <span id="depositTabCount">
+                            0
+                        </span>
+                    </button>
+
+                    <button
+                        id="withdrawalTabBtn"
+                        class="tab-button"
+                        type="button">
+                        <i class="fa-solid fa-arrow-up"></i>
+
+                        Withdrawals
+
+                        <span id="withdrawalTabCount">
+                            0
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Deposit Panel -->
+
+                <section
+                    id="depositPanel"
+                    class="tab-panel">
+
+                    <div class="panel-heading">
+                        <div>
+                            <p>Finance Requests</p>
+                            <h2>Deposit Requests</h2>
+                        </div>
+
+                        <div class="panel-filters">
+                            <input
+                                id="depositSearchInput"
+                                type="search"
+                                placeholder="ID, username or transaction">
+
+                            <select id="depositStatusFilter">
+                                <option value="pending">
+                                    Pending
+                                </option>
+
+                                <option value="approved">
+                                    Approved
+                                </option>
+
+                                <option value="rejected">
+                                    Rejected
+                                </option>
+
+                                <option value="all">
+                                    All Status
+                                </option>
+                            </select>
+
+                            <button
+                                id="refreshDepositsBtn"
+                                class="icon-button"
+                                type="button"
+                                title="Refresh deposits">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="finance-table">
+                            <thead>
+                                <tr>
+                                    <th>Deposit ID</th>
+                                    <th>User</th>
+                                    <th>Method</th>
+                                    <th>Sender</th>
+                                    <th>Transaction ID</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="depositTableBody">
+                                <tr>
+                                    <td
+                                        colspan="9"
+                                        class="empty-table">
+                                        Loading deposits...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Withdrawal Panel -->
+
+                <section
+                    id="withdrawalPanel"
+                    class="tab-panel is-hidden">
+
+                    <div class="panel-heading">
+                        <div>
+                            <p>Finance Requests</p>
+                            <h2>Withdrawal Requests</h2>
+                        </div>
+
+                        <div class="panel-filters">
+                            <input
+                                id="withdrawalSearchInput"
+                                type="search"
+                                placeholder="ID, username or account">
+
+                            <select id="withdrawalStatusFilter">
+                                <option value="pending">
+                                    Pending
+                                </option>
+
+                                <option value="approved">
+                                    Approved
+                                </option>
+
+                                <option value="rejected">
+                                    Rejected
+                                </option>
+
+                                <option value="all">
+                                    All Status
+                                </option>
+                            </select>
+
+                            <button
+                                id="refreshWithdrawalsBtn"
+                                class="icon-button"
+                                type="button"
+                                title="Refresh withdrawals">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="finance-table">
+                            <thead>
+                                <tr>
+                                    <th>Withdrawal ID</th>
+                                    <th>User</th>
+                                    <th>Method</th>
+                                    <th>Account</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Requested</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="withdrawalTableBody">
+                                <tr>
+                                    <td
+                                        colspan="8"
+                                        class="empty-table">
+                                        Loading withdrawals...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <!-- Confirmation Modal -->
+
+        <div
+            id="actionModal"
+            class="modal-overlay is-hidden">
+
+            <section class="action-modal">
+                <div class="modal-heading">
+                    <div>
+                        <p id="modalCategory">
+                            Finance Request
+                        </p>
+
+                        <h2 id="modalTitle">
+                            Confirm Action
+                        </h2>
+                    </div>
+
+                    <button
+                        id="closeModalBtn"
+                        class="icon-button"
+                        type="button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div
+                    id="requestDetails"
+                    class="request-details">
+                </div>
+
+                <label
+                    id="reasonField"
+                    class="modal-field is-hidden">
+
+                    <span>Reject Reason</span>
+
+                    <select id="rejectReasonSelect">
+                        <option value>
+                            Select a reason
+                        </option>
+
+                        <option value="transaction_not_found">
+                            Transaction not found
+                        </option>
+
+                        <option value="wrong_amount">
+                            Wrong amount
+                        </option>
+
+                        <option value="duplicate_transaction">
+                            Duplicate transaction
+                        </option>
+
+                        <option value="wrong_sender">
+                            Wrong sender
+                        </option>
+
+                        <option value="other">
+                            Other
+                        </option>
+                    </select>
+                </label>
+
+                <label class="modal-field">
+                    <span id="noteLabel">
+                        Agent Note
+                    </span>
+
+                    <textarea
+                        id="actionNote"
+                        maxlength="255"
+                        rows="3"
+                        placeholder="Write a short note"></textarea>
+                </label>
+
+                <p class="security-note">
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                    এই action আপনার Agent ID, username,
+                    IP address এবং সময়সহ audit log-এ সংরক্ষিত হবে।
+                </p>
+
+                <div class="modal-actions">
+                    <button
+                        id="cancelActionBtn"
+                        class="secondary-button"
+                        type="button">
+                        Cancel
+                    </button>
+
+                    <button
+                        id="confirmActionBtn"
+                        class="primary-button"
+                        type="button">
+                        Confirm
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Loading -->
+
+        <div
+            id="agentLoading"
+            class="agent-loading is-hidden">
+
+            <div class="loading-spinner"></div>
+
+            <p>Loading Agent Panel...</p>
+        </div>
+
+        <!-- Toast -->
+
+        <div
+            id="agentToast"
+            class="agent-toast is-hidden">
+        </div>
+    </body>
+</html>

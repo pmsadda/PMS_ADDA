@@ -674,8 +674,14 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        if (String(user.role).toLowerCase() === "admin") {
+        const userRole = String(user.role || "")
+          .trim()
+          .toLowerCase();
+
+        if (userRole === "admin") {
           window.location.href = "../admin/dashboard.html";
+        } else if (userRole === "agent") {
+          window.location.href = "../agent/dashboard.html";
         } else {
           window.location.href = "./lobby.html";
         }

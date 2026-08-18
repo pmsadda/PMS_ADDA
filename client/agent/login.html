@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="theme-color"
+        content="#0b1120">
+
+    <title>Secure Finance Access</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/agent-login.css">
+
+    <script
+        src="../js/agent-config.js"
+        defer></script>
+
+    <script
+        src="../js/agent-login.js"
+        defer></script>
+</head>
+
+<body>
+    <main class="login-page">
+        <section class="login-card">
+            <div class="security-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+
+            <div class="login-heading">
+                <p>Authorized Personnel Only</p>
+                <h1>Finance Operations</h1>
+
+                <span>
+                    Sign in with your assigned credentials.
+                </span>
+            </div>
+
+            <form id="agentLoginForm">
+                <label class="form-field">
+                    <span>Username, phone or email</span>
+
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user"></i>
+
+                        <input
+                            id="agentIdentity"
+                            type="text"
+                            autocomplete="username"
+                            maxlength="150"
+                            required>
+                    </div>
+                </label>
+
+                <label class="form-field">
+                    <span>Password</span>
+
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            id="agentLoginPassword"
+                            type="password"
+                            autocomplete="current-password"
+                            maxlength="72"
+                            required>
+
+                        <button
+                            id="toggleLoginPasswordBtn"
+                            class="password-toggle"
+                            type="button"
+                            title="Show password">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </label>
+
+                <p
+                    id="loginError"
+                    class="login-error is-hidden">
+                </p>
+
+                <button
+                    id="agentLoginBtn"
+                    class="login-button"
+                    type="submit">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Sign In
+                </button>
+            </form>
+
+            <p class="security-message">
+                <i class="fa-solid fa-circle-info"></i>
+
+                Access attempts may be logged for security.
+            </p>
+        </section>
+    </main>
+
+    <div
+        id="loginLoading"
+        class="login-loading is-hidden">
+
+        <div class="loading-spinner"></div>
+
+        <p>Verifying credentials...</p>
+    </div>
+</body>
+</html>

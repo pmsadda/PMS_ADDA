@@ -5,6 +5,8 @@
 
 const { pool } = require("../config/database");
 
+const { insertAgentActionLog } = require("./agent-audit.service");
+
 /* ==========================================
    Helper: Generate Transaction ID
 ========================================== */
@@ -126,7 +128,12 @@ wr.status,
    Approve Withdraw
 ========================================== */
 
-async function approveWithdraw(withdrawId, adminNote = null, adminId = null) {
+async function approveWithdraw(
+  withdrawId,
+  adminNote = null,
+  adminId = null,
+  auditActor = null
+) {
   const connection = await pool.getConnection();
 
   try {
@@ -245,6 +252,38 @@ async function approveWithdraw(withdrawId, adminNote = null, adminId = null) {
       ],
     );
 
+       if (auditActor) {
+      await insertAgentActionLog({
+        connection,
+
+        agentId:
+          auditActor.agentId,
+
+        actionType:
+          "withdrawal_approved",
+
+        referenceId:
+          withdraw.withdraw_id ||
+          withdraw.id,
+
+        customerId:
+          withdraw.user_id,
+
+        amount:
+          Number(withdraw.amount),
+
+        reason:
+          adminNote ||
+          "Withdrawal approved",
+
+        ipAddress:
+          auditActor.ipAddress,
+
+        userAgent:
+          auditActor.userAgent
+      });
+    }
+
     await connection.commit();
 
     return {
@@ -273,7 +312,12 @@ async function approveWithdraw(withdrawId, adminNote = null, adminId = null) {
    Reject Withdraw and Refund Balance
 ========================================== */
 
-async function rejectWithdraw(withdrawId, adminNote = null, adminId = null) {
+async function rejectWithdraw(
+  withdrawId,
+  adminNote = null,
+  adminId = null,
+  auditActor = null
+) {
   const connection = await pool.getConnection();
 
   try {
@@ -484,6 +528,37 @@ async function rejectWithdraw(withdrawId, adminNote = null, adminId = null) {
 
     if (transactionResult.affectedRows !== 1) {
       throw new Error("Refund transaction creation failed.");
+    }
+
+        if (auditActor) {
+      await insertAgentActionLog({
+        connection,
+
+        agentId:
+          auditActor.agentId,
+
+        actionType:
+          "withdrawal_rejected",
+
+        referenceId:
+          withdraw.withdraw_id ||
+          withdraw.id,
+
+        customerId:
+          withdraw.user_id,
+
+        amount:
+          Number(withdraw.amount),
+
+        reason:
+          safeAdminNote,
+
+        ipAddress:
+          auditActor.ipAddress,
+
+        userAgent:
+          auditActor.userAgent
+      });
     }
 
     await connection.commit();

@@ -1,5 +1,7 @@
 const { pool } = require("../config/database");
 
+const { insertAgentActionLog } = require("./agent-audit.service");
+
 /* ==========================
    Get All Deposit Requests
 ========================== */
@@ -107,56 +109,30 @@ d.bonus_amount,
     userPhone: row.phone,
     email: row.email,
     currentWalletBalance: Number(row.wallet_balance),
-  method:
-  row.method,
+    method: row.method,
 
-paymentAccountId:
-  row.assigned_payment_account_id ===
-  null
-    ? null
-    : Number(
-        row
-          .assigned_payment_account_id,
-      ),
+    paymentAccountId:
+      row.assigned_payment_account_id === null
+        ? null
+        : Number(row.assigned_payment_account_id),
 
-receiverDisplayName:
-  row.receiver_display_name ||
-  null,
+    receiverDisplayName: row.receiver_display_name || null,
 
-receiverAccountIdentifier:
-  row
-    .receiver_account_identifier ||
-  null,
+    receiverAccountIdentifier: row.receiver_account_identifier || null,
 
-receiverAccountType:
-  row.receiver_account_type ||
-  null,
+    receiverAccountType: row.receiver_account_type || null,
 
-senderNumber:
-  row.sender_number,
+    senderNumber: row.sender_number,
 
-transactionNumber:
-  row.transaction_number,
+    transactionNumber: row.transaction_number,
 
-amount:
-  Number(row.amount),
+    amount: Number(row.amount),
 
-paymentAsset:
-  row.payment_asset || "BDT",
+    paymentAsset: row.payment_asset || "BDT",
 
-paymentAssetAmount:
-  Number(
-    row.payment_asset_amount ||
-      row.amount ||
-      0,
-  ),
+    paymentAssetAmount: Number(row.payment_asset_amount || row.amount || 0),
 
-exchangeRate:
-  row.exchange_rate === null
-    ? null
-    : Number(
-        row.exchange_rate,
-      ),
+    exchangeRate: row.exchange_rate === null ? null : Number(row.exchange_rate),
 
     bonusAmount: Number(row.bonus_amount || 0),
 
@@ -451,7 +427,11 @@ async function insertReferralBonusTransaction({
 /* ==========================
    Approve Deposit
 ========================== */
-async function approveDepositRequest({ depositId, adminId }) {
+async function approveDepositRequest({
+  depositId,
+  adminId,
+  auditActor = null,
+}) {
   const connection = await pool.getConnection();
 
   try {
@@ -817,6 +797,28 @@ async function approveDepositRequest({ depositId, adminId }) {
       }
     }
 
+    if (auditActor) {
+      await insertAgentActionLog({
+        connection,
+
+        agentId: auditActor.agentId,
+
+        actionType: "deposit_approved",
+
+        referenceId: deposit.deposit_id,
+
+        customerId: deposit.user_id,
+
+        amount,
+
+        reason: auditActor.reason || "Deposit approved",
+
+        ipAddress: auditActor.ipAddress,
+
+        userAgent: auditActor.userAgent,
+      });
+    }
+
     await connection.commit();
 
     return {
@@ -876,7 +878,13 @@ async function approveDepositRequest({ depositId, adminId }) {
    Reject Deposit
 ========================== */
 
-async function rejectDepositRequest({ depositId, adminId, reason, note }) {
+async function rejectDepositRequest({
+  depositId,
+  adminId,
+  reason,
+  note,
+  auditActor = null,
+}) {
   const connection = await pool.getConnection();
 
   try {
@@ -884,9 +892,11 @@ async function rejectDepositRequest({ depositId, adminId, reason, note }) {
 
     const [rows] = await connection.execute(
       `
-                SELECT
+                               SELECT
                     id,
                     deposit_id,
+                    user_id,
+                    amount,
                     status
                 FROM deposit_requests
                 WHERE deposit_id = ?
@@ -930,6 +940,38 @@ async function rejectDepositRequest({ depositId, adminId, reason, note }) {
             `,
       [adminId, adminNote, deposit.id],
     );
+
+       if (auditActor) {
+      await insertAgentActionLog({
+        connection,
+
+        agentId:
+          auditActor.agentId,
+
+        actionType:
+          "deposit_rejected",
+
+        referenceId:
+          deposit.deposit_id,
+
+        customerId:
+          deposit.user_id,
+
+        amount:
+          Number(deposit.amount),
+
+        reason:
+          note
+            ? `${reason}: ${note}`
+            : reason,
+
+        ipAddress:
+          auditActor.ipAddress,
+
+        userAgent:
+          auditActor.userAgent
+      });
+    }
 
     await connection.commit();
 

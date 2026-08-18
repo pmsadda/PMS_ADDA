@@ -15,6 +15,8 @@ const withdrawRoutes = require("./routes/withdraw.routes");
 
 const adminWithdrawRoutes = require("./routes/admin-withdraw.routes");
 
+const agentFinanceRoutes = require("./routes/agent-finance.routes");
+
 const walletRoutes = require("./routes/wallet.routes");
 
 const supportRoutes = require("./routes/support.routes");
@@ -61,6 +63,8 @@ const adminBanglaDiceRoutes = require("./routes/admin-bangla-dice.routes");
 const banglaDiceRoutes = require("./routes/bangla-dice.routes");
 
 const adminLotteryRoutes = require("./routes/admin-lottery.routes");
+
+const adminAgentRoutes = require("./routes/admin-agent.routes");
 
 const app = express();
 
@@ -267,6 +271,8 @@ app.get(
 
 app.use("/api/admin/withdraws", adminWithdrawRoutes);
 
+app.use("/api/agent", agentFinanceRoutes);
+
 app.use("/api/admin/dashboard", adminDashboardRoutes);
 
 app.use("/api/admin/transactions", adminTransactionRoutes);
@@ -307,6 +313,8 @@ app.use("/api/support", supportRoutes);
 
    404 Handler
 ========================== */
+
+app.use("/api/admin/agents", adminAgentRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
