@@ -359,8 +359,8 @@ async function scheduleConfiguration(
       animalRows.map(mapAnimalRow);
 
     assertCondition(
-      currentAnimals.length === 13,
-      "Exactly 13 active animals are required.",
+      currentAnimals.length === 12,
+      "Exactly 12 active animals are required.",
       500,
       "INVALID_ACTIVE_ANIMAL_COUNT"
     );
@@ -482,8 +482,8 @@ async function scheduleConfiguration(
         : [];
 
     assertCondition(
-      submittedAnimals.length === 13,
-      "Exactly 13 animal settings are required.",
+      submittedAnimals.length === 12,
+      "Exactly 12 animal settings are required.",
       400,
       "INVALID_ADMIN_ANIMAL_COUNT"
     );

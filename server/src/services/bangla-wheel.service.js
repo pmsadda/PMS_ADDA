@@ -570,12 +570,12 @@ async function getActiveAnimals(
       mapAnimalRow
     );
 
-  assertCondition(
-    animals.length === 13,
-"Bangla Wheel requires exactly 13 active animals.",
-    500,
-    "INVALID_ACTIVE_ANIMAL_COUNT"
-  );
+assertCondition(
+  animals.length === 12,
+  "Bangla Wheel requires exactly 12 active animals.",
+  500,
+  "INVALID_ACTIVE_ANIMAL_COUNT"
+);
 
   const segmentIndexes =
     animals.map(
@@ -588,12 +588,12 @@ async function getActiveAnimals(
       segmentIndexes
     );
 
-  assertCondition(
-    uniqueIndexes.size === 13,
-    "Bangla Wheel segment indexes must be unique.",
-    500,
-    "DUPLICATE_SEGMENT_INDEX"
-  );
+assertCondition(
+  uniqueIndexes.size === 12,
+  "Bangla Wheel segment indexes must be unique.",
+  500,
+  "DUPLICATE_SEGMENT_INDEX"
+);
 
   return animals;
 }
@@ -732,8 +732,8 @@ function createProbabilitySnapshot(
 ) {
   assertCondition(
     Array.isArray(animals) &&
-      animals.length === 13,
-    "Exactly 13 animals are required.",
+      animals.length === 12,
+    "Exactly 12 animals are required.",
     500,
     "INVALID_ANIMAL_LIST"
   );
@@ -818,8 +818,8 @@ function createProbabilitySnapshot(
   } else {
     assertCondition(
       totalWinningWeight ===
-        13,
-      "Fair equal mode requires 13 equal weights.",
+        12,
+      "Fair equal mode requires 12 equal weights.",
       500,
       "INVALID_FAIR_WEIGHT_TOTAL"
     );
@@ -858,8 +858,8 @@ function prepareWheelResult(
 ) {
   assertCondition(
     Array.isArray(animals) &&
-      animals.length === 13,
-    "Exactly 13 animals are required.",
+      animals.length === 12,
+    "Exactly 12 animals are required.",
     500,
     "INVALID_ANIMAL_LIST"
   );
@@ -1215,8 +1215,8 @@ async function applyPendingConfiguration(
     Array.isArray(
       animalsPayload
     ) &&
-      animalsPayload.length === 13,
-    "Pending configuration requires exactly 13 animals.",
+      animalsPayload.length === 12,
+    "Pending configuration requires exactly 12 animals.",
     500,
     "INVALID_PENDING_ANIMALS"
   );

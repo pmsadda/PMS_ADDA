@@ -271,7 +271,7 @@ async function startSpin(
       !Array.isArray(
         lockedSnapshot
       ) ||
-      lockedSnapshot.length !== 13
+      lockedSnapshot.length !== 12
     ) {
       const currentAnimals =
         await getActiveAnimals(
