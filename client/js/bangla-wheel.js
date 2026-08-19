@@ -220,20 +220,14 @@ walletBalance: 0,
     }
   }
 
-  function buildWheelBackground() {
+function buildWheelBackground() {
   if (!DOM.animalWheel) return;
 
-  DOM.animalWheel.style.backgroundImage =
-    'url("../assets/bangla-wheel/wheel-12-clean.png")';
-
-  DOM.animalWheel.style.backgroundPosition =
-    "center";
-
-  DOM.animalWheel.style.backgroundRepeat =
-    "no-repeat";
-
-  DOM.animalWheel.style.backgroundSize =
-    "contain";
+  DOM.animalWheel.style.setProperty(
+    "background",
+    'url("../assets/bangla-wheel/wheel-12-clean.png") center center / 100% 100% no-repeat',
+    "important"
+  );
 }
 
 function renderWheel() {
