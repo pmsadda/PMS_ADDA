@@ -566,8 +566,15 @@ function renderWheel() {
 
     const currentNormalized = ((state.wheelRotation % 360) + 360) % 360;
 
-    const desiredNormalized =
-      (((-winningIndex * SEGMENT_ANGLE) % 360) + 360) % 360;
+   const desiredNormalized =
+  (
+    (
+      (
+        -winningIndex * SEGMENT_ANGLE +
+        SEGMENT_ANGLE
+      ) % 360
+    ) + 360
+  ) % 360;
 
     const alignmentDelta = (desiredNormalized - currentNormalized + 360) % 360;
 
