@@ -1,7 +1,7 @@
 "use strict";
 
 (() => {
-  const SEGMENT_COUNT = 13;
+  const SEGMENT_COUNT = 12;
   const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
 
   const state = {
@@ -221,61 +221,77 @@ walletBalance: 0,
   }
 
   function buildWheelBackground() {
-    if (!DOM.animalWheel) return;
+  if (!DOM.animalWheel) return;
 
-    const colors = state.animals
-      .slice()
-      .sort((a, b) => animalSegmentIndex(a) - animalSegmentIndex(b))
-      .map((animal, index) => {
-        return index % 2 === 0 ? "#0b6846" : "#073d2d";
-      });
+  DOM.animalWheel.style.backgroundImage =
+    'url("../assets/bangla-wheel/wheel-12-clean.png")';
 
-    const stops = colors.map((color, index) => {
-      const start = index * SEGMENT_ANGLE;
-      const end = (index + 1) * SEGMENT_ANGLE;
-      return `${color} ${start}deg ${end}deg`;
-    });
+  DOM.animalWheel.style.backgroundPosition =
+    "center";
 
-    DOM.animalWheel.style.background = `conic-gradient(from ${-90 - SEGMENT_ANGLE / 2}deg, ${stops.join(",")})`;
-  }
+  DOM.animalWheel.style.backgroundRepeat =
+    "no-repeat";
 
-  function renderWheel() {
-    if (!DOM.wheelSegments) return;
+  DOM.animalWheel.style.backgroundSize =
+    "contain";
+}
 
-    const animals = state.animals
-      .slice()
-      .sort((a, b) => animalSegmentIndex(a) - animalSegmentIndex(b));
+function renderWheel() {
+  if (!DOM.wheelSegments) return;
 
-    buildWheelBackground();
+  const animals = state.animals
+    .filter(
+      (animal) =>
+        String(
+          animal.animalStatus ??
+          animal.animal_status ??
+          "active"
+        ).toLowerCase() !== "disabled"
+    )
+    .slice()
+    .sort(
+      (a, b) =>
+        animalSegmentIndex(a) -
+        animalSegmentIndex(b)
+    );
 
-    DOM.wheelSegments.innerHTML = animals
-      .map((animal) => {
-        const index = animalSegmentIndex(animal);
-        const angle = index * SEGMENT_ANGLE;
-        const nilClass = isBettable(animal) ? "" : " is-nil";
+  buildWheelBackground();
 
-        return `
+  DOM.wheelSegments.innerHTML = animals
+    .map((animal) => {
+      const index =
+        animalSegmentIndex(animal);
+
+      const angle =
+        index * SEGMENT_ANGLE;
+
+      const bettable =
+        isBettable(animal);
+
+      return `
         <div
-          class="wheel-segment${nilClass}"
-          data-code="${escapeHtml(animalCode(animal))}"
+          class="wheel-segment${
+            bettable ? "" : " is-nil"
+          }"
+          data-code="${escapeHtml(
+            animalCode(animal)
+          )}"
           style="--segment-angle:${angle}deg"
         >
           <div class="wheel-segment-content">
-            <img
-              src="${escapeHtml(animalImage(animal))}"
-              alt="${escapeHtml(animalName(animal))}"
-              draggable="false"
-            >
-            <strong>${escapeHtml(animalName(animal))}</strong>
-            <span>
-              ${isBettable(animal) ? `${animalMultiplier(animal)}x` : "NIL"}
+            <span class="dynamic-multiplier">
+              ${
+                bettable
+                  ? `${animalMultiplier(animal)}x`
+                  : "NIL"
+              }
             </span>
           </div>
         </div>
       `;
-      })
-      .join("");
-  }
+    })
+    .join("");
+}
 
   function renderAnimalOptions() {
     if (!DOM.animalOptions) return;
