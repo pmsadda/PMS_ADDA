@@ -45,6 +45,10 @@ const {
   initializeBanglaDiceSocket,
 } = require("./src/socket/bangla-dice.socket");
 
+const {
+  initializeKaitSocket,
+} = require("./src/socket/kait.socket");
+
 const PORT = Number(process.env.PORT) || 5000;
 
 const HOST = process.env.HOST || "0.0.0.0";
@@ -127,6 +131,14 @@ initializeAndarBaharSocket(io);
 initializeBanglaWheelSocket(io);
 
 initializeBanglaDiceSocket(io);
+
+const kaitSocket =
+  initializeKaitSocket(io);
+
+app.set(
+  "kaitSocket",
+  kaitSocket
+);
 
 /*
  * Server start।

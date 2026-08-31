@@ -4295,3 +4295,437 @@ button:focus{
         font-size: 10px;
     }
 }
+
+/* =========================================================
+   KAIT LOBBY CARD
+========================================================= */
+
+.kait-game-card {
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(15, 65, 45, 0.98),
+            rgba(4, 24, 17, 0.99)
+        );
+
+    border-color:
+        rgba(255, 215, 74, 0.3);
+}
+
+
+.kait-card-visual {
+    position: relative;
+
+    display: grid;
+
+    width: 100%;
+
+    min-height: 145px;
+
+    overflow: hidden;
+
+    place-items: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(255, 215, 74, 0.2),
+            transparent 56%
+        ),
+        linear-gradient(
+            145deg,
+            #115336,
+            #062719
+        );
+}
+
+
+.kait-card-visual::before {
+    position: absolute;
+
+    width: 190px;
+    height: 190px;
+
+    content: "";
+
+    border:
+        1px solid
+        rgba(255, 215, 74, 0.14);
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 45px
+        rgba(255, 215, 74, 0.08);
+}
+
+
+.kait-lobby-live-badge {
+    position: absolute;
+
+    z-index: 10;
+
+    top: 10px;
+    right: 10px;
+
+    display: flex;
+
+    padding:
+        5px
+        8px;
+
+    align-items: center;
+
+    gap: 4px;
+
+    color: #ffffff;
+
+    background:
+        rgba(210, 32, 54, 0.95);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 5px 15px
+        rgba(0, 0, 0, 0.25);
+
+    font-size: 8px;
+
+    font-weight: 900;
+}
+
+
+.kait-lobby-live-badge i {
+    font-size: 6px;
+
+    animation:
+        kaitLobbyLivePulse
+        1.2s
+        ease-in-out
+        infinite;
+}
+
+
+@keyframes kaitLobbyLivePulse {
+
+    0%,
+    100% {
+        opacity: 0.45;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+}
+
+
+.kait-lobby-cards {
+    position: relative;
+
+    width: 180px;
+    height: 105px;
+
+    margin-top: -8px;
+}
+
+
+.kait-preview-card {
+    position: absolute;
+
+    top: 4px;
+
+    width: 67px;
+    height: 94px;
+
+    padding:
+        8px;
+
+    background:
+        #ffffff;
+
+    border:
+        2px solid
+        rgba(255, 215, 74, 0.9);
+
+    border-radius: 9px;
+
+    box-shadow:
+        0 9px 22px
+        rgba(0, 0, 0, 0.38);
+
+    font-size: 18px;
+
+    font-weight: 900;
+}
+
+
+.kait-preview-card i {
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 17px;
+}
+
+
+.kait-preview-left {
+    left: 15px;
+
+    color: #d6293c;
+
+    transform:
+        rotate(-15deg);
+}
+
+
+.kait-preview-center {
+    z-index: 3;
+
+    left: 56px;
+
+    color: #101010;
+
+    transform:
+        translateY(-7px);
+}
+
+
+.kait-preview-right {
+    right: 15px;
+
+    color: #d6293c;
+
+    transform:
+        rotate(15deg);
+}
+
+
+.kait-preview-title {
+    position: absolute;
+
+    z-index: 8;
+
+    bottom: 6px;
+
+    color: #ffd54a;
+
+    text-shadow:
+        0 2px 8px
+        rgba(0, 0, 0, 0.8);
+
+    font-size: 19px;
+
+    font-weight: 1000;
+
+    letter-spacing: 5px;
+}
+
+
+.kait-game-card .game-info p {
+    display: block;
+
+    min-height: 0;
+
+    max-height: none;
+
+    overflow: visible;
+}
+
+
+.kait-lobby-features {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+    margin:
+        8px
+        0
+        10px;
+}
+
+
+.kait-lobby-features span {
+    display: flex;
+
+    padding:
+        5px
+        7px;
+
+    align-items: center;
+
+    gap: 4px;
+
+    color: #b8d6c7;
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 9px;
+
+    font-size: 8px;
+}
+
+
+.kait-lobby-features i {
+    color: #ffd54a;
+}
+
+
+.kait-lobby-play-btn {
+    display: flex !important;
+
+    width: 100%;
+
+    min-height: 44px !important;
+
+    margin-top: auto;
+
+    flex:
+        0
+        0
+        44px;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color:
+        #171000 !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffe474,
+            #eeb92a
+        ) !important;
+
+    overflow: visible !important;
+}
+
+
+@media (min-width: 900px) {
+
+    .kait-game-card {
+        min-height: 400px;
+    }
+
+
+    .kait-game-card .game-info {
+        display: flex;
+
+        min-height: 0;
+
+        padding-bottom: 14px;
+
+        flex: 1 1 auto;
+
+        flex-direction: column;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .kait-game-card {
+        min-height: 340px;
+    }
+
+
+    .kait-card-visual {
+        min-height: 105px;
+
+        max-height: 105px;
+    }
+
+
+    .kait-lobby-cards {
+        width: 145px;
+        height: 82px;
+    }
+
+
+    .kait-preview-card {
+        width: 52px;
+        height: 73px;
+
+        padding: 6px;
+
+        font-size: 13px;
+    }
+
+
+    .kait-preview-card i {
+        font-size: 12px;
+    }
+
+
+    .kait-preview-left {
+        left: 14px;
+    }
+
+
+    .kait-preview-center {
+        left: 47px;
+    }
+
+
+    .kait-preview-right {
+        right: 14px;
+    }
+
+
+    .kait-preview-title {
+        bottom: 3px;
+
+        font-size: 14px;
+
+        letter-spacing: 4px;
+    }
+
+
+    .kait-lobby-live-badge {
+        top: 7px;
+        right: 7px;
+
+        font-size: 7px;
+    }
+
+
+    .kait-lobby-features {
+        gap: 4px;
+
+        margin:
+            5px
+            0
+            7px;
+    }
+
+
+    .kait-lobby-features span {
+        padding:
+            4px
+            5px;
+
+        font-size: 7px;
+    }
+
+
+    .kait-lobby-play-btn {
+        min-height: 40px !important;
+
+        flex-basis: 40px;
+
+        font-size: 10px;
+    }
+
+}

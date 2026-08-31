@@ -117,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
     andarBaharButton: document.getElementById("andarBaharBtn"),
     banglaWheelButton: document.getElementById("banglaWheelBtn"),
     banglaDiceButton: document.getElementById("banglaDiceBtn"),
+    kaitButton: document.getElementById("kaitBtn"),
     lotteryButton: document.getElementById("lotteryBtn"),
 
     settingsButton: document.getElementById("settingsBtn"),
@@ -1526,13 +1527,11 @@ document.addEventListener("DOMContentLoaded", () => {
     navigateTo("./bangla-wheel.html"),
   );
 
-  DOM.banglaDiceButton?.addEventListener(
-  "click",
-  () =>
-    navigateTo(
-      "./bangla-dice.html",
-    ),
-);
+  DOM.banglaDiceButton?.addEventListener("click", () =>
+    navigateTo("./bangla-dice.html"),
+  );
+
+  DOM.kaitButton?.addEventListener("click", () => navigateTo("./kait.html"));
 
   DOM.lotteryButton?.addEventListener("click", () =>
     navigateTo("./lottery.html"),
