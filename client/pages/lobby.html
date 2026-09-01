@@ -10,8 +10,6 @@
 
         <title>PMS ADDA | Lobby</title>
         <script src="../js/app-config.js"></script>
-        <script src="../js/auth-guard.js"></script>
-
         <link rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
@@ -1164,6 +1162,53 @@
                         </div>
 
                     </div>
+
+                </div>
+            </div>
+
+            <!-- =====================================================
+     GUEST LOGIN / SIGNUP POPUP
+====================================================== -->
+
+            <div
+                class="guest-auth-modal"
+                id="guestAuthModal"
+                hidden>
+                <div class="guest-auth-box">
+
+                    <button
+                        type="button"
+                        class="guest-auth-close"
+                        id="guestAuthClose"
+                        aria-label="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                    <div class="guest-auth-icon">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+
+                    <h2>Join PMS ADDA</h2>
+
+                    <p>
+                        Create your account to play games,
+                        manage your wallet and access all features.
+                    </p>
+
+                    <button
+                        type="button"
+                        id="guestSignupBtn"
+                        class="guest-signup-btn">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Sign Up
+                    </button>
+
+                    <button
+                        type="button"
+                        id="guestLoginBtn"
+                        class="guest-login-btn">
+                        Already have an account? Login
+                    </button>
 
                 </div>
             </div>

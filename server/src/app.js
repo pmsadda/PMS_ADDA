@@ -267,7 +267,7 @@ app.use("/assets", express.static(path.join(clientRoot, "assets")));
 ========================================================= */
 
 app.get("/", (req, res) => {
-  return res.sendFile(path.join(clientPages, "login.html"));
+  return res.sendFile(path.join(clientPages, "lobby.html"));
 });
 
 /* =========================================================

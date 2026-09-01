@@ -4729,3 +4729,199 @@ button:focus{
     }
 
 }
+
+/* =========================================================
+   GUEST AUTH POPUP
+========================================================= */
+
+.guest-auth-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 18px;
+
+    background: rgba(0, 0, 0, 0.72);
+
+    backdrop-filter: blur(6px);
+}
+
+
+.guest-auth-modal[hidden] {
+    display: none !important;
+}
+
+
+.guest-auth-box {
+    position: relative;
+
+    width: min(100%, 390px);
+
+    padding: 30px 22px 22px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #10251a,
+            #08150e
+        );
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55);
+
+    text-align: center;
+}
+
+
+.guest-auth-close {
+    position: absolute;
+
+    top: 12px;
+    right: 12px;
+
+    width: 34px;
+    height: 34px;
+
+    display: grid;
+    place-items: center;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.07);
+
+    color: #ffffff;
+
+    cursor: pointer;
+}
+
+
+.guest-auth-icon {
+    width: 64px;
+    height: 64px;
+
+    margin:
+        4px
+        auto
+        14px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 18px;
+
+    background:
+        rgba(47, 211, 124, 0.13);
+
+    color: #32d67d;
+
+    font-size: 25px;
+}
+
+
+.guest-auth-box h2 {
+    margin:
+        0
+        0
+        8px;
+
+    color: #ffffff;
+
+    font-size: 23px;
+}
+
+
+.guest-auth-box p {
+    margin:
+        0
+        0
+        20px;
+
+    color: #93aa9d;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+
+.guest-signup-btn,
+.guest-login-btn {
+    width: 100%;
+
+    min-height: 46px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    font-weight: 700;
+}
+
+
+.guest-signup-btn {
+    border: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #39dc83,
+            #1ba45b
+        );
+
+    color: #041108;
+
+    font-size: 13px;
+}
+
+
+.guest-login-btn {
+    margin-top: 9px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color: #ffffff;
+
+    font-size: 12px;
+}
+
+
+@media (max-width: 480px) {
+
+    .guest-auth-box {
+        padding:
+            27px
+            17px
+            17px;
+
+        border-radius: 17px;
+    }
+
+
+    .guest-auth-icon {
+        width: 55px;
+        height: 55px;
+
+        font-size: 21px;
+    }
+
+
+    .guest-auth-box h2 {
+        font-size: 20px;
+    }
+
+}

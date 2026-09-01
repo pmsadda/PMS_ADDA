@@ -1604,7 +1604,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!token) {
-      redirectToLogin();
+      STATE.user = null;
+
+      hideLoader();
+
+      document.body.classList.add("guest-user");
+
+      console.log("Guest Lobby loaded");
+
       return;
     }
 
@@ -1664,4 +1671,118 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast(error.message || "App download করা যাচ্ছে না।", "error");
     }
   });
+
+  /* =========================================================
+   GUEST AUTH POPUP
+========================================================= */
+
+  const guestAuthModal = document.getElementById("guestAuthModal");
+
+  const guestAuthClose = document.getElementById("guestAuthClose");
+
+  const guestSignupButton = document.getElementById("guestSignupBtn");
+
+  const guestLoginButton = document.getElementById("guestLoginBtn");
+
+  function isGuestUser() {
+    return !(
+      localStorage.getItem("access_token") || localStorage.getItem("token")
+    );
+  }
+
+  function showGuestAuthPopup() {
+    if (!guestAuthModal || !isGuestUser()) {
+      return;
+    }
+
+    guestAuthModal.hidden = false;
+  }
+
+  function hideGuestAuthPopup() {
+    if (!guestAuthModal) {
+      return;
+    }
+
+    guestAuthModal.hidden = true;
+  }
+
+  /* CLOSE */
+
+  guestAuthClose?.addEventListener("click", () => {
+    hideGuestAuthPopup();
+  });
+
+  /* SIGN UP */
+
+  guestSignupButton?.addEventListener("click", () => {
+    window.location.href = "/register";
+  });
+
+  /* LOGIN */
+
+  guestLoginButton?.addEventListener("click", () => {
+    window.location.href = "/login";
+  });
+
+  /* =========================================================
+   PROTECTED BUTTONS FOR GUEST
+========================================================= */
+
+  const guestProtectedIds = new Set([
+    "depositBtn",
+    "withdrawBtn",
+    "walletBtn",
+    "profileBtn",
+    "settingsBtn",
+    "referBtn",
+
+    "teenPattiBtn",
+    "pokerBtn",
+    "ludoBtn",
+    "carromBtn",
+
+    "andarBaharBtn",
+    "banglaWheelBtn",
+    "banglaDiceBtn",
+    "kaitBtn",
+    "lotteryBtn",
+  ]);
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (!isGuestUser()) {
+        return;
+      }
+
+      const button = event.target.closest("button, a");
+
+      if (!button) {
+        return;
+      }
+
+      if (!guestProtectedIds.has(button.id)) {
+        return;
+      }
+
+      event.preventDefault();
+
+      event.stopPropagation();
+
+      event.stopImmediatePropagation();
+
+      showGuestAuthPopup();
+    },
+    true,
+  );
+
+  /* =========================================================
+   FIRST VISIT POPUP
+========================================================= */
+
+  if (isGuestUser()) {
+    window.setTimeout(() => {
+      showGuestAuthPopup();
+    }, 700);
+  }
 });
