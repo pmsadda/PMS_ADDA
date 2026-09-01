@@ -61,6 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     refreshButton: document.getElementById("refreshBtn"),
 
+    downloadAppButton: document.getElementById("downloadAppBtn"),
+
     loader: document.getElementById("loaderOverlay"),
 
     toast: document.getElementById("toast"),
@@ -1627,4 +1629,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initializeLobby();
+  DOM.downloadAppButton?.addEventListener("click", () => {
+  const link = document.createElement("a");
+
+  link.href = "../downloads/PMS_ADDA.apk";
+  link.download = "PMS_ADDA.apk";
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+});
 });

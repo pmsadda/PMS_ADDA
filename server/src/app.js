@@ -1,4 +1,18 @@
 const express = require("express");
+/* =========================================================
+   OLD DOMAIN → MAIN DOMAIN REDIRECT
+========================================================= */
+
+app.use((req, res, next) => {
+  const host = String(req.hostname || "").toLowerCase();
+
+  if (host === "pms-adda.live" || host === "www.pms-adda.live") {
+    return res.redirect(308, `https://pms-adda.site${req.originalUrl}`);
+  }
+
+  next();
+});
+
 const cors = require("cors");
 const helmet = require("helmet");
 const path = require("path");
