@@ -5426,3 +5426,130 @@ and
     }
 
 }
+
+/* =========================================================
+   KAIT DISTRIBUTION CARDS — NO CUT FIX
+========================================================= */
+
+.dealt-card-list {
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+
+    grid-auto-flow: row;
+
+    align-content: start !important;
+    align-items: start !important;
+    justify-content: stretch !important;
+
+    gap: 3px !important;
+
+    padding: 4px !important;
+
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+}
+
+
+.kait-dealt-card {
+    width: 100% !important;
+
+    height: auto !important;
+
+    aspect-ratio: 52 / 72;
+
+    min-width: 0 !important;
+    max-width: none !important;
+
+    flex: none !important;
+
+    border-radius: 4px;
+}
+
+
+.kait-dealt-card img {
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: fill !important;
+}
+
+
+/* 11+ cards = 6 columns */
+
+.dealt-card-list:has(
+    .kait-dealt-card:nth-child(11)
+) {
+    grid-template-columns:
+        repeat(6, minmax(0, 1fr));
+}
+
+
+/* 16+ cards = 7 columns */
+
+.dealt-card-list:has(
+    .kait-dealt-card:nth-child(16)
+) {
+    grid-template-columns:
+        repeat(7, minmax(0, 1fr));
+}
+
+
+/* 22+ cards = 8 columns */
+
+.dealt-card-list:has(
+    .kait-dealt-card:nth-child(22)
+) {
+    grid-template-columns:
+        repeat(8, minmax(0, 1fr));
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .dealt-card-list {
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 3px !important;
+
+        padding: 4px !important;
+    }
+
+
+    /* 9+ cards = 5 columns */
+
+    .dealt-card-list:has(
+        .kait-dealt-card:nth-child(9)
+    ) {
+        grid-template-columns:
+            repeat(5, minmax(0, 1fr));
+    }
+
+
+    /* 16+ cards = 6 columns */
+
+    .dealt-card-list:has(
+        .kait-dealt-card:nth-child(16)
+    ) {
+        grid-template-columns:
+            repeat(6, minmax(0, 1fr));
+    }
+
+
+    /* 22+ cards = 7 columns */
+
+    .dealt-card-list:has(
+        .kait-dealt-card:nth-child(22)
+    ) {
+        grid-template-columns:
+            repeat(7, minmax(0, 1fr));
+    }
+
+}
