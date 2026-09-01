@@ -6,173 +6,110 @@
   ======================================================= */
 
   const DOM = {
-    backButton:
-      document.getElementById("backBtn"),
+    backButton: document.getElementById("backBtn"),
 
-    soundButton:
-      document.getElementById("soundBtn"),
+    soundButton: document.getElementById("soundBtn"),
 
-    walletBalance:
-      document.getElementById("walletBalance"),
+    walletBalance: document.getElementById("walletBalance"),
 
-    connectionBar:
-      document.getElementById("connectionBar"),
+    connectionBar: document.getElementById("connectionBar"),
 
-    connectionText:
-      document.getElementById("connectionText"),
+    connectionText: document.getElementById("connectionText"),
 
-    roundCode:
-      document.getElementById("roundCode"),
+    roundCode: document.getElementById("roundCode"),
 
-    roundStatus:
-      document.getElementById("roundStatus"),
+    roundStatus: document.getElementById("roundStatus"),
 
-    totalPlayers:
-      document.getElementById("totalPlayers"),
+    totalPlayers: document.getElementById("totalPlayers"),
 
-    timerValue:
-      document.getElementById("timerValue"),
+    timerValue: document.getElementById("timerValue"),
 
-    roundTotalBet:
-      document.getElementById("roundTotalBet"),
+    roundTotalBet: document.getElementById("roundTotalBet"),
 
-    kaitTable:
-      document.querySelector(".kait-table"),
+    kaitTable: document.querySelector(".kait-table"),
 
-    frontSide:
-      document.getElementById("frontSide"),
+    frontSide: document.getElementById("frontSide"),
 
-    backSide:
-      document.getElementById("backSide"),
+    backSide: document.getElementById("backSide"),
 
-    frontCards:
-      document.getElementById("frontCards"),
+    frontCards: document.getElementById("frontCards"),
 
-    backCards:
-      document.getElementById("backCards"),
+    backCards: document.getElementById("backCards"),
 
-    dealStatusText:
-      document.getElementById("dealStatusText"),
+    deckZone: document.getElementById("kaitDeckZone"),
 
-    resolvedRankGrid:
-      document.getElementById("resolvedRankGrid"),
+    deckRemaining: document.getElementById("deckRemaining"),
 
-    resolvedCounter:
-      document.getElementById("resolvedCounter"),
+    dealStatusText: document.getElementById("dealStatusText"),
 
-    rankGrid:
-      document.getElementById("rankGrid"),
+    resolvedRankGrid: document.getElementById("resolvedRankGrid"),
 
-    selectedRankText:
-      document.getElementById("selectedRankText"),
+    resolvedCounter: document.getElementById("resolvedCounter"),
 
-    winMultiplier:
-      document.getElementById("winMultiplier"),
+    rankGrid: document.getElementById("rankGrid"),
 
-    serviceCharge:
-      document.getElementById("serviceCharge"),
+    selectedRankText: document.getElementById("selectedRankText"),
 
-    betLimitText:
-      document.getElementById("betLimitText"),
+    winMultiplier: document.getElementById("winMultiplier"),
 
-    decreaseBetButton:
-      document.getElementById("decreaseBetBtn"),
+    serviceCharge: document.getElementById("serviceCharge"),
 
-    increaseBetButton:
-      document.getElementById("increaseBetBtn"),
+    betLimitText: document.getElementById("betLimitText"),
 
-    betAmountInput:
-      document.getElementById("betAmountInput"),
+    decreaseBetButton: document.getElementById("decreaseBetBtn"),
 
-    quickBetOptions:
-      document.getElementById("quickBetOptions"),
+    increaseBetButton: document.getElementById("increaseBetBtn"),
 
-    betPreview:
-      document.getElementById("betPreview"),
+    betAmountInput: document.getElementById("betAmountInput"),
 
-    possibleWin:
-      document.getElementById("possibleWin"),
+    quickBetOptions: document.getElementById("quickBetOptions"),
 
-    placeBetButton:
-      document.getElementById("placeBetBtn"),
+    betPreview: document.getElementById("betPreview"),
 
-    placeBetText:
-      document.getElementById("placeBetText"),
+    possibleWin: document.getElementById("possibleWin"),
 
-    bettingMessage:
-      document.getElementById("bettingMessage"),
+    placeBetButton: document.getElementById("placeBetBtn"),
 
-    myBetCard:
-      document.getElementById("myBetCard"),
+    placeBetText: document.getElementById("placeBetText"),
 
-    myBetRank:
-      document.getElementById("myBetRank"),
+    bettingMessage: document.getElementById("bettingMessage"),
 
-    myBetAmount:
-      document.getElementById("myBetAmount"),
+    myBetCard: document.getElementById("myBetCard"),
 
-    myBetPossibleWin:
-      document.getElementById(
-        "myBetPossibleWin"
-      ),
+    myBetRank: document.getElementById("myBetRank"),
 
-    myBetStatus:
-      document.getElementById("myBetStatus"),
+    myBetAmount: document.getElementById("myBetAmount"),
 
-    resultOverlay:
-      document.getElementById("resultOverlay"),
+    myBetPossibleWin: document.getElementById("myBetPossibleWin"),
 
-    resultCloseButton:
-      document.getElementById(
-        "resultCloseBtn"
-      ),
+    myBetStatus: document.getElementById("myBetStatus"),
 
-    continueButton:
-      document.getElementById("continueBtn"),
+    resultOverlay: document.getElementById("resultOverlay"),
 
-    resultIcon:
-      document.getElementById("resultIcon"),
+    resultCloseButton: document.getElementById("resultCloseBtn"),
 
-    resultTitle:
-      document.getElementById("resultTitle"),
+    continueButton: document.getElementById("continueBtn"),
 
-    resultRank:
-      document.getElementById("resultRank"),
+    resultIcon: document.getElementById("resultIcon"),
 
-    resultCardImage:
-      document.getElementById(
-        "resultCardImage"
-      ),
+    resultTitle: document.getElementById("resultTitle"),
 
-    resultBetAmount:
-      document.getElementById(
-        "resultBetAmount"
-      ),
+    resultRank: document.getElementById("resultRank"),
 
-    resultPayout:
-      document.getElementById(
-        "resultPayout"
-      ),
+    resultCardImage: document.getElementById("resultCardImage"),
 
-    userResultMessage:
-      document.getElementById(
-        "userResultMessage"
-      ),
+    resultBetAmount: document.getElementById("resultBetAmount"),
 
-    loadingOverlay:
-      document.getElementById(
-        "loadingOverlay"
-      ),
+    resultPayout: document.getElementById("resultPayout"),
 
-    loadingText:
-      document.getElementById(
-        "loadingText"
-      ),
+    userResultMessage: document.getElementById("userResultMessage"),
 
-    toast:
-      document.getElementById("gameToast")
+    loadingOverlay: document.getElementById("loadingOverlay"),
+
+    loadingText: document.getElementById("loadingText"),
+
+    toast: document.getElementById("gameToast"),
   };
-
 
   /* =======================================================
      STATE
@@ -185,21 +122,7 @@
 
     gameEnabled: true,
 
-    ranks: [
-      "A",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "J",
-      "Q",
-      "K"
-    ],
+    ranks: ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"],
 
     round: null,
 
@@ -218,7 +141,7 @@
 
       resultDisplaySeconds: 5,
 
-      nextRoundDelaySeconds: 3
+      nextRoundDelaySeconds: 3,
     },
 
     selectedRank: null,
@@ -239,52 +162,30 @@
 
     soundEnabled: true,
 
-    renderedCards:
-      new Set(),
+    renderedCards: new Set(),
 
-    shownResultRoundIds:
-      new Set()
+    shownResultRoundIds: new Set(),
   };
-
 
   /* =======================================================
      AUDIO
   ======================================================= */
 
   const sounds = {
-    deal:
-      createAudio(
-        "../assets/sounds/card-deal.mp3",
-        0.42
-      ),
+    deal: createAudio("../assets/sounds/card-deal.mp3", 0.42),
 
-    bet:
-      createAudio(
-        "../assets/sounds/chip-throw.mp3",
-        0.55
-      ),
+    bet: createAudio("../assets/sounds/chip-throw.mp3", 0.55),
 
-    win:
-      createAudio(
-        "../assets/sounds/winner.mp3",
-        0.6
-      )
+    win: createAudio("../assets/sounds/winner.mp3", 0.6),
   };
 
-
-  function createAudio(
-    source,
-    volume
-  ) {
+  function createAudio(source, volume) {
     try {
-      const audio =
-        new Audio(source);
+      const audio = new Audio(source);
 
-      audio.preload =
-        "auto";
+      audio.preload = "auto";
 
-      audio.volume =
-        volume;
+      audio.volume = volume;
 
       return audio;
     } catch (_error) {
@@ -292,16 +193,12 @@
     }
   }
 
-
   function playSound(name) {
-    if (
-      !state.soundEnabled
-    ) {
+    if (!state.soundEnabled) {
       return;
     }
 
-    const audio =
-      sounds[name];
+    const audio = sounds[name];
 
     if (!audio) {
       return;
@@ -310,112 +207,67 @@
     try {
       audio.currentTime = 0;
 
-      const promise =
-        audio.play();
+      const promise = audio.play();
 
-      if (
-        promise?.catch
-      ) {
-        promise.catch(
-          () => {}
-        );
+      if (promise?.catch) {
+        promise.catch(() => {});
       }
     } catch (_error) {
       // ignore
     }
   }
 
-
   /* =======================================================
      AUTH
   ======================================================= */
 
   function getAccessToken() {
-    return localStorage.getItem(
-      "access_token"
-    );
+    return localStorage.getItem("access_token");
   }
-
 
   function redirectToLogin() {
-    localStorage.removeItem(
-      "access_token"
-    );
+    localStorage.removeItem("access_token");
 
-    window.location.replace(
-      "./login.html"
-    );
+    window.location.replace("./login.html");
   }
-
 
   /* =======================================================
      HELPERS
   ======================================================= */
 
   function parseAmount(value) {
-    const amount =
-      Number(value);
+    const amount = Number(value);
 
-    if (
-      !Number.isFinite(
-        amount
-      )
-    ) {
+    if (!Number.isFinite(amount)) {
       return 0;
     }
 
-    return Number(
-      amount.toFixed(2)
-    );
+    return Number(amount.toFixed(2));
   }
-
 
   function formatMoney(value) {
-    return parseAmount(
-      value
-    ).toLocaleString(
-      "en-BD",
-      {
-        minimumFractionDigits:
-          2,
+    return parseAmount(value).toLocaleString("en-BD", {
+      minimumFractionDigits: 2,
 
-        maximumFractionDigits:
-          2
-      }
-    );
+      maximumFractionDigits: 2,
+    });
   }
 
-
   function formatStatus(value) {
-    const status =
-      String(
-        value || ""
-      )
-        .trim()
-        .replace(
-          /_/g,
-          " "
-        );
+    const status = String(value || "")
+      .trim()
+      .replace(/_/g, " ");
 
     if (!status) {
       return "--";
     }
 
-    return status.replace(
-      /\b\w/g,
-      (character) =>
-        character
-          .toUpperCase()
-    );
+    return status.replace(/\b\w/g, (character) => character.toUpperCase());
   }
-
 
   function getApiUrl(path) {
-    return window
-      .APP_CONFIG
-      .api(path);
+    return window.APP_CONFIG.api(path);
   }
-
 
   /*
    * Kait backend:
@@ -429,303 +281,149 @@
    * DK.png
    */
 
-  function getCardAssetCode(
-    cardCode
-  ) {
-    const value =
-      String(
-        cardCode || ""
-      )
-        .trim()
-        .toUpperCase();
+  function getCardAssetCode(cardCode) {
+    const value = String(cardCode || "")
+      .trim()
+      .toUpperCase();
 
-    const backendMatch =
-      value.match(
-        /^(A|2|3|4|5|6|7|8|9|10|J|Q|K)(S|H|D|C)$/
-      );
+    const backendMatch = value.match(/^(A|2|3|4|5|6|7|8|9|10|J|Q|K)(S|H|D|C)$/);
 
-    if (
-      backendMatch
-    ) {
-      const rank =
-        backendMatch[1];
+    if (backendMatch) {
+      const rank = backendMatch[1];
 
-      const suit =
-        backendMatch[2];
+      const suit = backendMatch[2];
 
       return `${suit}${rank}`;
     }
 
-    const assetMatch =
-      value.match(
-        /^(S|H|D|C)(A|2|3|4|5|6|7|8|9|10|J|Q|K)$/
-      );
+    const assetMatch = value.match(/^(S|H|D|C)(A|2|3|4|5|6|7|8|9|10|J|Q|K)$/);
 
-    if (
-      assetMatch
-    ) {
+    if (assetMatch) {
       return value;
     }
 
     return "";
   }
 
-
-  function getCardImageUrl(
-    cardCode
-  ) {
-    const assetCode =
-      getCardAssetCode(
-        cardCode
-      );
+  function getCardImageUrl(cardCode) {
+    const assetCode = getCardAssetCode(cardCode);
 
     if (!assetCode) {
-      return (
-        "../assets/cards/" +
-        "card-back.png"
-      );
+      return "../assets/cards/" + "card-back.png";
     }
 
-    return (
-      "../assets/cards/" +
-      `${assetCode}.png`
-    );
+    return "../assets/cards/" + `${assetCode}.png`;
   }
 
-
-  function getRoundStatus(
-    round = state.round
-  ) {
-    return String(
-      round
-        ?.roundStatus ||
-      ""
-    )
+  function getRoundStatus(round = state.round) {
+    return String(round?.roundStatus || "")
       .trim()
       .toLowerCase();
   }
 
-
   function getBetStep() {
-    const minimum =
-      parseAmount(
-        state.settings
-          .minimumBet
-      );
+    const minimum = parseAmount(state.settings.minimumBet);
 
-    if (
-      minimum > 0
-    ) {
+    if (minimum > 0) {
       return minimum;
     }
 
     return 10;
   }
 
-
   /* =======================================================
      MESSAGE
   ======================================================= */
 
-  function setBettingMessage(
-    message,
-    type = ""
-  ) {
-    DOM
-      .bettingMessage
-      .textContent =
-        message;
+  function setBettingMessage(message, type = "") {
+    DOM.bettingMessage.textContent = message;
 
-    DOM
-      .bettingMessage
-      .classList
-      .remove(
-        "is-error",
-        "is-success"
-      );
+    DOM.bettingMessage.classList.remove("is-error", "is-success");
 
     if (type) {
-      DOM
-        .bettingMessage
-        .classList
-        .add(
-          `is-${type}`
-        );
+      DOM.bettingMessage.classList.add(`is-${type}`);
     }
   }
 
+  function showToast(message, type = "") {
+    window.clearTimeout(state.toastTimer);
 
-  function showToast(
-    message,
-    type = ""
-  ) {
-    window.clearTimeout(
-      state.toastTimer
-    );
+    DOM.toast.textContent = message;
 
-    DOM.toast.textContent =
-      message;
-
-    DOM.toast.classList.remove(
-      "is-error",
-      "is-success"
-    );
+    DOM.toast.classList.remove("is-error", "is-success");
 
     if (type) {
-      DOM.toast.classList.add(
-        `is-${type}`
-      );
+      DOM.toast.classList.add(`is-${type}`);
     }
 
-    DOM.toast.classList.add(
-      "is-visible"
-    );
+    DOM.toast.classList.add("is-visible");
 
-    state.toastTimer =
-      window.setTimeout(
-        () => {
-          DOM
-            .toast
-            .classList
-            .remove(
-              "is-visible"
-            );
-        },
-        3500
-      );
+    state.toastTimer = window.setTimeout(() => {
+      DOM.toast.classList.remove("is-visible");
+    }, 3500);
   }
-
 
   function hideLoading() {
-    DOM
-      .loadingOverlay
-      .classList
-      .add(
-        "is-hidden"
-      );
+    DOM.loadingOverlay.classList.add("is-hidden");
   }
 
+  function renderConnection(status, message) {
+    DOM.connectionBar.classList.remove("is-connected", "is-disconnected");
 
-  function renderConnection(
-    status,
-    message
-  ) {
-    DOM
-      .connectionBar
-      .classList
-      .remove(
-        "is-connected",
-        "is-disconnected"
-      );
-
-    if (
-      status ===
-      "connected"
-    ) {
-      DOM
-        .connectionBar
-        .classList
-        .add(
-          "is-connected"
-        );
+    if (status === "connected") {
+      DOM.connectionBar.classList.add("is-connected");
     }
 
-    if (
-      status ===
-      "disconnected"
-    ) {
-      DOM
-        .connectionBar
-        .classList
-        .add(
-          "is-disconnected"
-        );
+    if (status === "disconnected") {
+      DOM.connectionBar.classList.add("is-disconnected");
     }
 
-    DOM
-      .connectionText
-      .textContent =
-        message;
+    DOM.connectionText.textContent = message;
   }
-
 
   /* =======================================================
      API
   ======================================================= */
 
-  async function apiRequest(
-    path,
-    options = {}
-  ) {
-    const token =
-      getAccessToken();
+  async function apiRequest(path, options = {}) {
+    const token = getAccessToken();
 
     if (!token) {
       redirectToLogin();
 
-      throw new Error(
-        "Login session is required."
-      );
+      throw new Error("Login session is required.");
     }
 
-    const response =
-      await fetch(
-        getApiUrl(path),
-        {
-          ...options,
+    const response = await fetch(getApiUrl(path), {
+      ...options,
 
-          headers: {
-            "Content-Type":
-              "application/json",
+      headers: {
+        "Content-Type": "application/json",
 
-            Authorization:
-              `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
 
-            ...options.headers
-          }
-        }
-      );
+        ...options.headers,
+      },
+    });
 
-    const result =
-      await response
-        .json()
-        .catch(
-          () => ({
-            success: false,
+    const result = await response.json().catch(() => ({
+      success: false,
 
-            message:
-              "Invalid server response."
-          })
-        );
+      message: "Invalid server response.",
+    }));
 
-    if (
-      response.status ===
-      401
-    ) {
+    if (response.status === 401) {
       redirectToLogin();
 
-      throw new Error(
-        result.message ||
-        "Login session expired."
-      );
+      throw new Error(result.message || "Login session expired.");
     }
 
-    if (
-      !response.ok ||
-      !result.success
-    ) {
-      const error =
-        new Error(
-          result.message ||
-          "Request failed."
-        );
+    if (!response.ok || !result.success) {
+      const error = new Error(result.message || "Request failed.");
 
-      error.code =
-        result.code ||
-        null;
+      error.code = result.code || null;
 
-      error.statusCode =
-        response.status;
+      error.statusCode = response.status;
 
       throw error;
     }
@@ -733,12 +431,8 @@
     return result.data;
   }
 
-
   async function loadWallet() {
-    const data =
-      await apiRequest(
-        "/wallet/summary"
-      );
+    const data = await apiRequest("/wallet/summary");
 
     const balance =
       data?.wallet?.balance ??
@@ -746,53 +440,28 @@
       data?.walletBalance ??
       0;
 
-    DOM
-      .walletBalance
-      .textContent =
-        formatMoney(
-          balance
-        );
+    DOM.walletBalance.textContent = formatMoney(balance);
 
-    return parseAmount(
-      balance
-    );
+    return parseAmount(balance);
   }
 
-
   async function loadInitialState() {
-    const data =
-      await apiRequest(
-        "/kait/state"
-      );
+    const data = await apiRequest("/kait/state");
 
-    await applyGameState(
-      data,
-      {
-        loadUserBet: true
-      }
-    );
+    await applyGameState(data, {
+      loadUserBet: true,
+    });
 
     hideLoading();
 
     return data;
   }
 
+  async function loadMyBet(roundId, options = {}) {
+    const validRoundId = Number(roundId);
 
-  async function loadMyBet(
-    roundId,
-    options = {}
-  ) {
-    const validRoundId =
-      Number(roundId);
-
-    if (
-      !Number.isInteger(
-        validRoundId
-      ) ||
-      validRoundId < 1
-    ) {
-      state.myBet =
-        null;
+    if (!Number.isInteger(validRoundId) || validRoundId < 1) {
+      state.myBet = null;
 
       renderMyBet();
 
@@ -800,25 +469,14 @@
     }
 
     try {
-      const bet =
-        await apiRequest(
-          `/kait/bets/my/${validRoundId}`
-        );
+      const bet = await apiRequest(`/kait/bets/my/${validRoundId}`);
 
-      state.myBet =
-        bet ||
-        null;
+      state.myBet = bet || null;
 
       if (bet) {
-        state.selectedRank =
-          bet.selectedRank ||
-          state.selectedRank;
+        state.selectedRank = bet.selectedRank || state.selectedRank;
 
-        state.betAmount =
-          parseAmount(
-            bet.betAmount
-          ) ||
-          state.betAmount;
+        state.betAmount = parseAmount(bet.betAmount) || state.betAmount;
       }
 
       renderSelectedRank();
@@ -828,39 +486,21 @@
       renderBetControls();
 
       if (
-        options.showResult ===
-          true &&
+        options.showResult === true &&
         bet &&
-        [
-          "won",
-          "lost"
-        ].includes(
-          String(
-            bet.betStatus
-          ).toLowerCase()
-        )
+        ["won", "lost"].includes(String(bet.betStatus).toLowerCase())
       ) {
-        showBetResult(
-          bet
-        );
+        showBetResult(bet);
       }
 
       return bet;
-
     } catch (error) {
-      console.error(
-        "Kait my bet load error:",
-        error
-      );
+      console.error("Kait my bet load error:", error);
 
-      if (
-        options.silent !==
-        true
-      ) {
+      if (options.silent !== true) {
         showToast(
-          error.message ||
-          "Your Kait bet could not be loaded.",
-          "error"
+          error.message || "Your Kait bet could not be loaded.",
+          "error",
         );
       }
 
@@ -868,99 +508,58 @@
     }
   }
 
-
   /* =======================================================
      SETTINGS
   ======================================================= */
 
-  function updateSettingsFromRound(
-    round
-  ) {
+  function updateSettingsFromRound(round) {
     if (!round) {
       return;
     }
 
     state.settings = {
-      minimumBet:
-        parseAmount(
-          round.minimumBet
-        ) ||
-        state.settings
-          .minimumBet,
+      minimumBet: parseAmount(round.minimumBet) || state.settings.minimumBet,
 
-      maximumBet:
-        parseAmount(
-          round.maximumBet
-        ) ||
-        state.settings
-          .maximumBet,
+      maximumBet: parseAmount(round.maximumBet) || state.settings.maximumBet,
 
       winningMultiplier:
-        Number(
-          round.winningMultiplier
-        ) ||
-        state.settings
-          .winningMultiplier,
+        Number(round.winningMultiplier) || state.settings.winningMultiplier,
 
-      serviceChargePercent:
-        Number(
-          round.serviceChargePercent
-        ) ||
-        0,
+      serviceChargePercent: Number(round.serviceChargePercent) || 0,
 
       bettingDurationSeconds:
-        Number(
-          round
-            .bettingDurationSeconds
-        ) ||
-        state.settings
-          .bettingDurationSeconds,
+        Number(round.bettingDurationSeconds) ||
+        state.settings.bettingDurationSeconds,
 
       cardDealIntervalMs:
-        Number(
-          round
-            .cardDealIntervalMs
-        ) ||
-        state.settings
-          .cardDealIntervalMs,
+        Number(round.cardDealIntervalMs) || state.settings.cardDealIntervalMs,
 
       resultDisplaySeconds:
-        Number(
-          round
-            .resultDisplaySeconds
-        ) ||
-        state.settings
-          .resultDisplaySeconds,
+        Number(round.resultDisplaySeconds) ||
+        state.settings.resultDisplaySeconds,
 
       nextRoundDelaySeconds:
-        Number(
-          round
-            .nextRoundDelaySeconds
-        ) ||
-        state.settings
-          .nextRoundDelaySeconds
+        Number(round.nextRoundDelaySeconds) ||
+        state.settings.nextRoundDelaySeconds,
     };
   }
-
 
   /* =======================================================
      RESET ROUND
   ======================================================= */
 
   function resetRoundVisuals() {
-    state.selectedRank =
-      null;
+    state.selectedRank = null;
 
-    state.myBet =
-      null;
+    state.myBet = null;
 
-    state.placingBet =
-      false;
+    DOM.deckRemaining.textContent = "52";
 
-    state
-      .renderedCards
-      .clear();
+    DOM.deckZone.classList.remove("is-dealing");
 
+    state.placingBet = false;
+
+    state.renderedCards.clear();
 
     DOM.frontCards.innerHTML = `
       <span class="empty-card-message">
@@ -968,241 +567,95 @@
       </span>
     `;
 
-
     DOM.backCards.innerHTML = `
       <span class="empty-card-message">
         Cards will appear here
       </span>
     `;
 
+    DOM.frontSide.classList.remove("is-active");
 
-    DOM
-      .frontSide
-      .classList
-      .remove(
-        "is-active"
-      );
+    DOM.backSide.classList.remove("is-active");
 
-    DOM
-      .backSide
-      .classList
-      .remove(
-        "is-active"
-      );
+    DOM.kaitTable.classList.remove("is-dealing");
 
-    DOM
-      .kaitTable
-      .classList
-      .remove(
-        "is-dealing"
-      );
+    DOM.resolvedRankGrid
+      .querySelectorAll(".resolved-rank")
+      .forEach((element) => {
+        element.classList.remove("is-front", "is-back");
 
+        const resultText = element.querySelector("span");
 
-    DOM
-      .resolvedRankGrid
-      .querySelectorAll(
-        ".resolved-rank"
-      )
-      .forEach(
-        (element) => {
-
-          element
-            .classList
-            .remove(
-              "is-front",
-              "is-back"
-            );
-
-          const resultText =
-            element
-              .querySelector(
-                "span"
-              );
-
-          if (
-            resultText
-          ) {
-            resultText
-              .textContent =
-                "--";
-          }
+        if (resultText) {
+          resultText.textContent = "--";
         }
-      );
+      });
 
+    DOM.resolvedCounter.textContent = "0 / 13";
 
-    DOM
-      .resolvedCounter
-      .textContent =
-        "0 / 13";
+    DOM.rankGrid.querySelectorAll(".rank-button").forEach((button) => {
+      button.classList.remove("is-selected", "is-resolved", "is-winner-rank");
+    });
 
+    DOM.myBetCard.classList.add("is-hidden");
 
-    DOM
-      .rankGrid
-      .querySelectorAll(
-        ".rank-button"
-      )
-      .forEach(
-        (button) => {
-
-          button
-            .classList
-            .remove(
-              "is-selected",
-              "is-resolved",
-              "is-winner-rank"
-            );
-        }
-      );
-
-
-    DOM
-      .myBetCard
-      .classList
-      .add(
-        "is-hidden"
-      );
-
-
-    DOM
-      .resultOverlay
-      .classList
-      .add(
-        "is-hidden"
-      );
-
+    DOM.resultOverlay.classList.add("is-hidden");
 
     renderSelectedRank();
   }
-
 
   /* =======================================================
      GAME STATE
   ======================================================= */
 
-  async function applyGameState(
-    data,
-    options = {}
-  ) {
+  async function applyGameState(data, options = {}) {
     if (!data) {
       return;
     }
 
-    state.gameEnabled =
-      data.gameEnabled !==
-      false;
+    state.gameEnabled = data.gameEnabled !== false;
 
-
-    if (
-      Array.isArray(
-        data.ranks
-      ) &&
-      data.ranks.length > 0
-    ) {
-      state.ranks =
-        data.ranks.map(
-          (rank) =>
-            String(rank)
-              .toUpperCase()
-        );
+    if (Array.isArray(data.ranks) && data.ranks.length > 0) {
+      state.ranks = data.ranks.map((rank) => String(rank).toUpperCase());
     }
 
+    const incomingRound = data.round || null;
 
-    const incomingRound =
-      data.round ||
-      null;
+    const oldRoundId = Number(state.round?.id || 0);
 
+    const newRoundId = Number(incomingRound?.id || 0);
 
-    const oldRoundId =
-      Number(
-        state.round?.id ||
-        0
-      );
-
-
-    const newRoundId =
-      Number(
-        incomingRound?.id ||
-        0
-      );
-
-
-    if (
-      newRoundId &&
-      newRoundId !==
-        oldRoundId
-    ) {
+    if (newRoundId && newRoundId !== oldRoundId) {
       resetRoundVisuals();
     }
 
+    state.round = incomingRound;
 
-    state.round =
-      incomingRound;
+    if (incomingRound) {
+      updateSettingsFromRound(incomingRound);
 
+      const roundStatus = getRoundStatus(incomingRound);
 
-    if (
-      incomingRound
-    ) {
-      updateSettingsFromRound(
-        incomingRound
-      );
-
-
-      const roundStatus =
-        getRoundStatus(
-          incomingRound
-        );
-
-
-      const bettingEndsAt =
-        new Date(
-          incomingRound
-            .bettingEndsAt
-        ).getTime();
-
+      const bettingEndsAt = new Date(incomingRound.bettingEndsAt).getTime();
 
       state.bettingOpen =
         state.gameEnabled &&
-        roundStatus ===
-          "betting" &&
-        Number.isFinite(
-          bettingEndsAt
-        ) &&
-        bettingEndsAt >
-          Date.now();
+        roundStatus === "betting" &&
+        Number.isFinite(bettingEndsAt) &&
+        bettingEndsAt > Date.now();
 
-
-      if (
-        !state.betAmount ||
-        newRoundId !==
-          oldRoundId
-      ) {
-        state.betAmount =
-          state.settings
-            .minimumBet;
+      if (!state.betAmount || newRoundId !== oldRoundId) {
+        state.betAmount = state.settings.minimumBet;
       }
-
     } else {
-      state.bettingOpen =
-        false;
+      state.bettingOpen = false;
     }
-
 
     renderRound();
 
+    renderResolvedRanks(incomingRound?.resolvedRanks || []);
 
-    renderResolvedRanks(
-      incomingRound
-        ?.resolvedRanks ||
-      []
-    );
-
-
-    renderRecoveredResolvedCards(
-      incomingRound
-        ?.resolvedRanks ||
-      []
-    );
-
+    renderRecoveredDealtCards(incomingRound?.dealtCards || []);
 
     renderBetAmount();
 
@@ -1212,1141 +665,439 @@
 
     startCountdown();
 
-
-    if (
-      options
-        .loadUserBet ===
-        true &&
-      incomingRound?.id
-    ) {
-      await loadMyBet(
-        incomingRound.id,
-        {
-          silent: true
-        }
-      );
+    if (options.loadUserBet === true && incomingRound?.id) {
+      await loadMyBet(incomingRound.id, {
+        silent: true,
+      });
     }
   }
-
 
   /* =======================================================
      ROUND UI
   ======================================================= */
 
   function renderRound() {
-    const round =
-      state.round;
+    const round = state.round;
 
     if (!round) {
-      DOM
-        .roundCode
-        .textContent =
-          "Waiting...";
+      DOM.roundCode.textContent = "Waiting...";
 
-      DOM
-        .roundStatus
-        .textContent =
-          "Waiting";
+      DOM.roundStatus.textContent = "Waiting";
 
-      DOM
-        .totalPlayers
-        .textContent =
-          "0";
+      DOM.totalPlayers.textContent = "0";
 
-      DOM
-        .roundTotalBet
-        .textContent =
-          "0.00";
+      DOM.roundTotalBet.textContent = "0.00";
 
-      DOM
-        .timerValue
-        .textContent =
-          "--";
+      DOM.timerValue.textContent = "--";
 
-      DOM
-        .dealStatusText
-        .textContent =
-          "Waiting for a Kait round...";
+      DOM.dealStatusText.textContent = "Waiting for a Kait round...";
 
       return;
     }
 
+    DOM.roundCode.textContent = round.roundCode || `#${round.id}`;
 
-    DOM
-      .roundCode
-      .textContent =
-        round.roundCode ||
-        `#${round.id}`;
+    DOM.totalPlayers.textContent = String(Number(round.totalPlayers || 0));
 
+    DOM.roundTotalBet.textContent = formatMoney(round.totalBetAmount || 0);
 
-    DOM
-      .totalPlayers
-      .textContent =
-        String(
-          Number(
-            round.totalPlayers ||
-            0
-          )
-        );
+    DOM.winMultiplier.textContent = `${Number(
+      state.settings.winningMultiplier || 0,
+    ).toFixed(2)}x`;
 
+    DOM.serviceCharge.textContent = String(
+      Number(state.settings.serviceChargePercent || 0),
+    );
 
-    DOM
-      .roundTotalBet
-      .textContent =
-        formatMoney(
-          round.totalBetAmount ||
-          0
-        );
+    DOM.betLimitText.textContent = `Min ৳${formatMoney(
+      state.settings.minimumBet,
+    )} • Max ৳${formatMoney(state.settings.maximumBet)}`;
 
+    const status = getRoundStatus(round);
 
-    DOM
-      .winMultiplier
-      .textContent =
-        `${Number(
-          state.settings
-            .winningMultiplier ||
-          0
-        ).toFixed(2)}x`;
+    DOM.roundStatus.classList.remove("is-betting", "is-dealing", "is-settled");
 
+    if (status === "betting") {
+      DOM.roundStatus.textContent = state.bettingOpen
+        ? "Betting Open"
+        : "Closing";
 
-    DOM
-      .serviceCharge
-      .textContent =
-        String(
-          Number(
-            state.settings
-              .serviceChargePercent ||
-            0
-          )
-        );
+      DOM.roundStatus.classList.add("is-betting");
 
+      DOM.kaitTable.classList.remove("is-dealing");
 
-    DOM
-      .betLimitText
-      .textContent =
-        `Min ৳${formatMoney(
-          state.settings.minimumBet
-        )} • Max ৳${formatMoney(
-          state.settings.maximumBet
-        )}`;
+      DOM.dealStatusText.textContent = "Choose one rank and place your bet.";
+    } else if (["dealing", "settling"].includes(status)) {
+      DOM.roundStatus.textContent =
+        status === "settling" ? "Settling" : "Dealing";
 
+      DOM.roundStatus.classList.add("is-dealing");
 
-    const status =
-      getRoundStatus(
-        round
-      );
+      DOM.kaitTable.classList.add("is-dealing");
 
+      DOM.dealStatusText.textContent =
+        "Front and Back cards are being dealt live...";
+    } else if (status === "completed") {
+      DOM.roundStatus.textContent = "Completed";
 
-    DOM
-      .roundStatus
-      .classList
-      .remove(
-        "is-betting",
-        "is-dealing",
-        "is-settled"
-      );
+      DOM.roundStatus.classList.add("is-settled");
 
+      DOM.kaitTable.classList.remove("is-dealing");
 
-    if (
-      status ===
-      "betting"
-    ) {
-      DOM
-        .roundStatus
-        .textContent =
-          state.bettingOpen
-            ? "Betting Open"
-            : "Closing";
-
-
-      DOM
-        .roundStatus
-        .classList
-        .add(
-          "is-betting"
-        );
-
-
-      DOM
-        .kaitTable
-        .classList
-        .remove(
-          "is-dealing"
-        );
-
-
-      DOM
-        .dealStatusText
-        .textContent =
-          "Choose one rank and place your bet.";
-
-    } else if (
-      [
-        "dealing",
-        "settling"
-      ].includes(
-        status
-      )
-    ) {
-
-      DOM
-        .roundStatus
-        .textContent =
-          status ===
-          "settling"
-            ? "Settling"
-            : "Dealing";
-
-
-      DOM
-        .roundStatus
-        .classList
-        .add(
-          "is-dealing"
-        );
-
-
-      DOM
-        .kaitTable
-        .classList
-        .add(
-          "is-dealing"
-        );
-
-
-      DOM
-        .dealStatusText
-        .textContent =
-          "Front and Back cards are being dealt live...";
-
-    } else if (
-      status ===
-      "completed"
-    ) {
-
-      DOM
-        .roundStatus
-        .textContent =
-          "Completed";
-
-
-      DOM
-        .roundStatus
-        .classList
-        .add(
-          "is-settled"
-        );
-
-
-      DOM
-        .kaitTable
-        .classList
-        .remove(
-          "is-dealing"
-        );
-
-
-      DOM
-        .dealStatusText
-        .textContent =
-          "Round completed. Next round is coming...";
-
+      DOM.dealStatusText.textContent =
+        "Round completed. Next round is coming...";
     } else {
+      DOM.roundStatus.textContent = formatStatus(status || "Waiting");
 
-      DOM
-        .roundStatus
-        .textContent =
-          formatStatus(
-            status ||
-            "Waiting"
-          );
-
-
-      DOM
-        .dealStatusText
-        .textContent =
-          "Waiting for game update...";
+      DOM.dealStatusText.textContent = "Waiting for game update...";
     }
   }
-
 
   /* =======================================================
      TIMER
   ======================================================= */
 
   function startCountdown() {
-    window.clearInterval(
-      state.countdownTimer
-    );
-
+    window.clearInterval(state.countdownTimer);
 
     function tick() {
-      const round =
-        state.round;
+      const round = state.round;
 
+      const status = getRoundStatus(round);
 
-      const status =
-        getRoundStatus(
-          round
-        );
-
-
-      if (
-        !round ||
-        status !==
-          "betting"
-      ) {
-        DOM
-          .timerValue
-          .textContent =
-            status ===
-            "completed"
-              ? "0"
-              : "--";
+      if (!round || status !== "betting") {
+        DOM.timerValue.textContent = status === "completed" ? "0" : "--";
 
         return;
       }
 
+      const endTime = new Date(round.bettingEndsAt).getTime();
 
-      const endTime =
-        new Date(
-          round.bettingEndsAt
-        ).getTime();
-
-
-      if (
-        !Number.isFinite(
-          endTime
-        )
-      ) {
-        DOM
-          .timerValue
-          .textContent =
-            "--";
+      if (!Number.isFinite(endTime)) {
+        DOM.timerValue.textContent = "--";
 
         return;
       }
 
+      const remainingMs = endTime - Date.now();
 
-      const remainingMs =
-        endTime -
-        Date.now();
+      const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
 
+      DOM.timerValue.textContent = String(remainingSeconds);
 
-      const remainingSeconds =
-        Math.max(
-          0,
-          Math.ceil(
-            remainingMs /
-            1000
-          )
-        );
-
-
-      DOM
-        .timerValue
-        .textContent =
-          String(
-            remainingSeconds
-          );
-
-
-      const wasOpen =
-        state.bettingOpen;
-
+      const wasOpen = state.bettingOpen;
 
       state.bettingOpen =
-        state.gameEnabled &&
-        remainingSeconds > 0 &&
-        status ===
-          "betting";
+        state.gameEnabled && remainingSeconds > 0 && status === "betting";
 
+      if (remainingSeconds <= 0) {
+        state.bettingOpen = false;
 
-      if (
-        remainingSeconds <= 0
-      ) {
-        state.bettingOpen =
-          false;
+        DOM.roundStatus.textContent = "Betting Closed";
 
-
-        DOM
-          .roundStatus
-          .textContent =
-            "Betting Closed";
-
-
-        setBettingMessage(
-          "Betting time শেষ। Card deal শুরু হচ্ছে..."
-        );
+        setBettingMessage("Betting time শেষ। Card deal শুরু হচ্ছে...");
       }
 
-
-      if (
-        wasOpen !==
-          state.bettingOpen ||
-        remainingSeconds <= 1
-      ) {
+      if (wasOpen !== state.bettingOpen || remainingSeconds <= 1) {
         renderBetControls();
       }
     }
 
-
     tick();
 
-
-    state.countdownTimer =
-      window.setInterval(
-        tick,
-        250
-      );
+    state.countdownTimer = window.setInterval(tick, 250);
   }
-
 
   /* =======================================================
      CARD
   ======================================================= */
 
-  function removeEmptyCardMessage(
-    container
-  ) {
-    const emptyMessage =
-      container
-        .querySelector(
-          ".empty-card-message"
-        );
+  function removeEmptyCardMessage(container) {
+    const emptyMessage = container.querySelector(".empty-card-message");
 
-    if (
-      emptyMessage
-    ) {
+    if (emptyMessage) {
       emptyMessage.remove();
     }
   }
 
-
-  function appendCard(
-    side,
-    card,
-    options = {}
-  ) {
+  function appendCard(side, card, options = {}) {
     if (!card) {
       return;
     }
 
+    const cardCode = String(
+      card.code || card.firstCardCode || "",
+    ).toUpperCase();
 
-    const cardCode =
-      String(
-        card.code ||
-        card.firstCardCode ||
-        ""
-      )
-        .toUpperCase();
-
-
-    const deckPosition =
-      Number(
-        card.deckPosition ||
-        card.matchedDeckPosition ||
-        0
-      );
-
+    const deckPosition = Number(
+      card.deckPosition || card.matchedDeckPosition || 0,
+    );
 
     if (!cardCode) {
       return;
     }
 
+    const key = `${deckPosition || "x"}-${cardCode}`;
 
-    const key =
-      `${deckPosition || "x"}-${cardCode}`;
-
-
-    if (
-      state
-        .renderedCards
-        .has(key)
-    ) {
+    if (state.renderedCards.has(key)) {
       return;
     }
 
+    state.renderedCards.add(key);
 
-    state
-      .renderedCards
-      .add(key);
+    const container = side === "back" ? DOM.backCards : DOM.frontCards;
 
+    removeEmptyCardMessage(container);
 
-    const container =
-      side === "back"
-        ? DOM.backCards
-        : DOM.frontCards;
+    const wrapper = document.createElement("div");
 
+    wrapper.className = "kait-dealt-card";
 
-    removeEmptyCardMessage(
-      container
-    );
-
-
-    const wrapper =
-      document
-        .createElement(
-          "div"
-        );
-
-
-    wrapper.className =
-      "kait-dealt-card";
-
-
-    if (
-      options.matching ===
-      true
-    ) {
-      wrapper
-        .classList
-        .add(
-          "is-matching"
-        );
+    if (options.matching === true) {
+      wrapper.classList.add("is-matching");
     }
 
-
-    if (
-      deckPosition
-    ) {
-      wrapper.dataset.position =
-        String(
-          deckPosition
-        );
+    if (deckPosition) {
+      wrapper.dataset.position = String(deckPosition);
     }
 
+    wrapper.dataset.cardCode = cardCode;
 
-    wrapper.dataset.cardCode =
-      cardCode;
+    const image = document.createElement("img");
 
+    image.src = getCardImageUrl(cardCode);
 
-    const image =
-      document
-        .createElement(
-          "img"
-        );
+    image.alt = cardCode;
 
-
-    image.src =
-      getCardImageUrl(
-        cardCode
-      );
-
-
-    image.alt =
-      cardCode;
-
-
-    image.loading =
-      "eager";
-
+    image.loading = "eager";
 
     image.addEventListener(
       "error",
       () => {
-        image.src =
-          "../assets/cards/card-back.png";
+        image.src = "../assets/cards/card-back.png";
       },
       {
-        once: true
-      }
+        once: true,
+      },
     );
 
+    wrapper.appendChild(image);
 
-    wrapper.appendChild(
-      image
-    );
-
-
-    container.appendChild(
-      wrapper
-    );
+    container.appendChild(wrapper);
   }
-
 
   function pulseDealSides() {
-    window.clearTimeout(
-      state.sidePulseTimer
-    );
+    window.clearTimeout(state.sidePulseTimer);
 
+    DOM.frontSide.classList.add("is-active");
 
-    DOM
-      .frontSide
-      .classList
-      .add(
-        "is-active"
-      );
+    DOM.backSide.classList.add("is-active");
 
+    state.sidePulseTimer = window.setTimeout(() => {
+      DOM.frontSide.classList.remove("is-active");
 
-    DOM
-      .backSide
-      .classList
-      .add(
-        "is-active"
-      );
-
-
-    state.sidePulseTimer =
-      window.setTimeout(
-        () => {
-
-          DOM
-            .frontSide
-            .classList
-            .remove(
-              "is-active"
-            );
-
-
-          DOM
-            .backSide
-            .classList
-            .remove(
-              "is-active"
-            );
-
-        },
-        320
-      );
+      DOM.backSide.classList.remove("is-active");
+    }, 320);
   }
 
-
-  function renderRecoveredResolvedCards(
-    results
-  ) {
-    if (
-      !Array.isArray(
-        results
-      ) ||
-      results.length ===
-        0
-    ) {
+  function renderRecoveredDealtCards(cards) {
+    if (!Array.isArray(cards) || cards.length === 0) {
       return;
     }
 
+    [...cards]
+      .sort((a, b) => Number(a.deckPosition || 0) - Number(b.deckPosition || 0))
+      .forEach((card) => {
+        appendCard(
+          String(card.resultSide || "").toLowerCase(),
 
-    [...results]
-      .sort(
-        (
-          a,
-          b
-        ) =>
-          Number(
-            a.deckPosition ||
-            0
-          ) -
-          Number(
-            b.deckPosition ||
-            0
-          )
-      )
-      .forEach(
-        (result) => {
+          card,
+        );
+      });
 
-          appendCard(
-            result.resultSide,
-            {
-              code:
-                result
-                  .firstCardCode,
-
-              deckPosition:
-                result
-                  .deckPosition
-            },
-            {
-              matching: true
-            }
-          );
-
-        }
-      );
+    DOM.deckRemaining.textContent = String(Math.max(0, 52 - cards.length));
   }
 
-
-  function markMatchingCards(
-    results
-  ) {
-    const resolvedPositions =
-      new Set(
-        (
-          Array.isArray(
-            results
-          )
-            ? results
-            : []
-        )
-          .map(
-            (result) =>
-              Number(
-                result
-                  .deckPosition ||
-                0
-              )
-          )
-          .filter(
-            (position) =>
-              position > 0
-          )
-      );
-
+  function markMatchingCards(results) {
+    const resolvedPositions = new Set(
+      (Array.isArray(results) ? results : [])
+        .map((result) => Number(result.deckPosition || 0))
+        .filter((position) => position > 0),
+    );
 
     document
-      .querySelectorAll(
-        ".kait-dealt-card[data-position]"
-      )
-      .forEach(
-        (element) => {
+      .querySelectorAll(".kait-dealt-card[data-position]")
+      .forEach((element) => {
+        const position = Number(element.dataset.position || 0);
 
-          const position =
-            Number(
-              element
-                .dataset
-                .position ||
-              0
-            );
-
-
-          element
-            .classList
-            .toggle(
-              "is-matching",
-              resolvedPositions
-                .has(
-                  position
-                )
-            );
-
-        }
-      );
+        element.classList.toggle(
+          "is-matching",
+          resolvedPositions.has(position),
+        );
+      });
   }
-
 
   /* =======================================================
      RANK RESULTS
   ======================================================= */
 
-  function renderResolvedRanks(
-    results
-  ) {
-    const safeResults =
-      Array.isArray(
-        results
-      )
-        ? results
-        : [];
+  function renderResolvedRanks(results) {
+    const safeResults = Array.isArray(results) ? results : [];
 
+    const resultMap = new Map(
+      safeResults.map((result) => [
+        String(result.rankCode || "").toUpperCase(),
 
-    const resultMap =
-      new Map(
-        safeResults.map(
-          (result) => [
-            String(
-              result.rankCode ||
-              ""
-            )
-              .toUpperCase(),
-
-            result
-          ]
-        )
-      );
-
-
-    DOM
-      .resolvedRankGrid
-      .querySelectorAll(
-        ".resolved-rank"
-      )
-      .forEach(
-        (element) => {
-
-          const rank =
-            String(
-              element
-                .dataset
-                .resultRank ||
-              ""
-            )
-              .toUpperCase();
-
-
-          const result =
-            resultMap.get(
-              rank
-            );
-
-
-          const label =
-            element
-              .querySelector(
-                "span"
-              );
-
-
-          element
-            .classList
-            .remove(
-              "is-front",
-              "is-back"
-            );
-
-
-          if (!result) {
-            if (
-              label
-            ) {
-              label
-                .textContent =
-                  "--";
-            }
-
-            return;
-          }
-
-
-          const side =
-            String(
-              result
-                .resultSide ||
-              ""
-            )
-              .toLowerCase();
-
-
-          if (
-            side ===
-            "front"
-          ) {
-            element
-              .classList
-              .add(
-                "is-front"
-              );
-          }
-
-
-          if (
-            side ===
-            "back"
-          ) {
-            element
-              .classList
-              .add(
-                "is-back"
-              );
-          }
-
-
-          if (
-            label
-          ) {
-            label.textContent =
-              side ===
-              "front"
-                ? "FRONT"
-                : "BACK";
-          }
-
-        }
-      );
-
-
-    DOM
-      .resolvedCounter
-      .textContent =
-        `${safeResults.length} / 13`;
-
-
-    DOM
-      .rankGrid
-      .querySelectorAll(
-        ".rank-button"
-      )
-      .forEach(
-        (button) => {
-
-          const rank =
-            String(
-              button
-                .dataset
-                .rank ||
-              ""
-            )
-              .toUpperCase();
-
-
-          const result =
-            resultMap.get(
-              rank
-            );
-
-
-          button
-            .classList
-            .toggle(
-              "is-resolved",
-              Boolean(
-                result
-              )
-            );
-
-
-          button
-            .classList
-            .toggle(
-              "is-winner-rank",
-              String(
-                result
-                  ?.resultSide ||
-                ""
-              )
-                .toLowerCase() ===
-                "front"
-            );
-
-        }
-      );
-
-
-    markMatchingCards(
-      safeResults
+        result,
+      ]),
     );
-  }
 
+    DOM.resolvedRankGrid
+      .querySelectorAll(".resolved-rank")
+      .forEach((element) => {
+        const rank = String(element.dataset.resultRank || "").toUpperCase();
+
+        const result = resultMap.get(rank);
+
+        const label = element.querySelector("span");
+
+        element.classList.remove("is-front", "is-back");
+
+        if (!result) {
+          if (label) {
+            label.textContent = "--";
+          }
+
+          return;
+        }
+
+        const side = String(result.resultSide || "").toLowerCase();
+
+        if (side === "front") {
+          element.classList.add("is-front");
+        }
+
+        if (side === "back") {
+          element.classList.add("is-back");
+        }
+
+        if (label) {
+          label.textContent = side === "front" ? "FRONT" : "BACK";
+        }
+      });
+
+    DOM.resolvedCounter.textContent = `${safeResults.length} / 13`;
+
+    DOM.rankGrid.querySelectorAll(".rank-button").forEach((button) => {
+      const rank = String(button.dataset.rank || "").toUpperCase();
+
+      const result = resultMap.get(rank);
+
+      button.classList.toggle("is-resolved", Boolean(result));
+
+      button.classList.toggle(
+        "is-winner-rank",
+        String(result?.resultSide || "").toLowerCase() === "front",
+      );
+    });
+
+    markMatchingCards(safeResults);
+  }
 
   /* =======================================================
      BET AMOUNT
   ======================================================= */
 
-  function clampBetAmount(
-    value
-  ) {
-    const minimum =
-      parseAmount(
-        state.settings
-          .minimumBet
-      ) ||
-      10;
+  function clampBetAmount(value) {
+    const minimum = parseAmount(state.settings.minimumBet) || 10;
 
+    const maximum = parseAmount(state.settings.maximumBet) || 10000;
 
-    const maximum =
-      parseAmount(
-        state.settings
-          .maximumBet
-      ) ||
-      10000;
-
-
-    return Math.min(
-      maximum,
-      Math.max(
-        minimum,
-        parseAmount(
-          value
-        )
-      )
-    );
+    return Math.min(maximum, Math.max(minimum, parseAmount(value)));
   }
 
-
-  function setBetAmount(
-    value
-  ) {
-    state.betAmount =
-      clampBetAmount(
-        value
-      );
-
+  function setBetAmount(value) {
+    state.betAmount = clampBetAmount(value);
 
     renderBetAmount();
 
     renderBetControls();
   }
 
-
   function renderBetAmount() {
-    state.betAmount =
-      clampBetAmount(
-        state.betAmount ||
-        state.settings
-          .minimumBet
-      );
+    state.betAmount = clampBetAmount(
+      state.betAmount || state.settings.minimumBet,
+    );
 
+    DOM.betAmountInput.value = String(state.betAmount);
 
-    DOM
-      .betAmountInput
-      .value =
-        String(
-          state.betAmount
+    DOM.betPreview.textContent = formatMoney(state.betAmount);
+
+    const grossPayout = parseAmount(
+      state.betAmount * Number(state.settings.winningMultiplier || 0),
+    );
+
+    const serviceCharge = parseAmount(
+      grossPayout * (Number(state.settings.serviceChargePercent || 0) / 100),
+    );
+
+    const netPayout = parseAmount(grossPayout - serviceCharge);
+
+    DOM.possibleWin.textContent = formatMoney(netPayout);
+
+    DOM.quickBetOptions
+      .querySelectorAll("button[data-amount]")
+      .forEach((button) => {
+        button.classList.toggle(
+          "is-active",
+
+          parseAmount(button.dataset.amount) === state.betAmount,
         );
-
-
-    DOM
-      .betPreview
-      .textContent =
-        formatMoney(
-          state.betAmount
-        );
-
-
-    const grossPayout =
-      parseAmount(
-        state.betAmount *
-        Number(
-          state.settings
-            .winningMultiplier ||
-          0
-        )
-      );
-
-
-    const serviceCharge =
-      parseAmount(
-        grossPayout *
-        (
-          Number(
-            state.settings
-              .serviceChargePercent ||
-            0
-          ) /
-          100
-        )
-      );
-
-
-    const netPayout =
-      parseAmount(
-        grossPayout -
-        serviceCharge
-      );
-
-
-    DOM
-      .possibleWin
-      .textContent =
-        formatMoney(
-          netPayout
-        );
-
-
-    DOM
-      .quickBetOptions
-      .querySelectorAll(
-        "button[data-amount]"
-      )
-      .forEach(
-        (button) => {
-
-          button
-            .classList
-            .toggle(
-              "is-active",
-
-              parseAmount(
-                button
-                  .dataset
-                  .amount
-              ) ===
-              state.betAmount
-            );
-
-        }
-      );
+      });
   }
-
 
   /* =======================================================
      SELECT RANK
   ======================================================= */
 
-  function selectRank(
-    rank
-  ) {
-    if (
-      !state.bettingOpen ||
-      state.placingBet ||
-      state.myBet
-    ) {
+  function selectRank(rank) {
+    if (!state.bettingOpen || state.placingBet || state.myBet) {
       return;
     }
 
+    const normalizedRank = String(rank || "")
+      .trim()
+      .toUpperCase();
 
-    const normalizedRank =
-      String(
-        rank ||
-        ""
-      )
-        .trim()
-        .toUpperCase();
-
-
-    if (
-      !state.ranks.includes(
-        normalizedRank
-      )
-    ) {
+    if (!state.ranks.includes(normalizedRank)) {
       return;
     }
 
-
-    state.selectedRank =
-      normalizedRank;
-
+    state.selectedRank = normalizedRank;
 
     renderSelectedRank();
 
     renderBetControls();
   }
 
-
   function renderSelectedRank() {
-    DOM
-      .selectedRankText
-      .textContent =
-        state.selectedRank ||
-        "--";
+    DOM.selectedRankText.textContent = state.selectedRank || "--";
 
+    DOM.rankGrid.querySelectorAll(".rank-button").forEach((button) => {
+      button.classList.toggle(
+        "is-selected",
 
-    DOM
-      .rankGrid
-      .querySelectorAll(
-        ".rank-button"
-      )
-      .forEach(
-        (button) => {
-
-          button
-            .classList
-            .toggle(
-              "is-selected",
-
-              String(
-                button
-                  .dataset
-                  .rank ||
-                ""
-              )
-                .toUpperCase() ===
-              state.selectedRank
-            );
-
-        }
+        String(button.dataset.rank || "").toUpperCase() === state.selectedRank,
       );
+    });
   }
-
 
   /* =======================================================
      BET CONTROLS
   ======================================================= */
 
   function renderBetControls() {
-    const hasBet =
-      Boolean(
-        state.myBet
-      );
-
+    const hasBet = Boolean(state.myBet);
 
     const controlsDisabled =
       !state.gameEnabled ||
@@ -2355,300 +1106,124 @@
       state.placingBet ||
       hasBet;
 
+    DOM.rankGrid.querySelectorAll(".rank-button").forEach((button) => {
+      button.disabled = controlsDisabled;
+    });
 
-    DOM
-      .rankGrid
-      .querySelectorAll(
-        ".rank-button"
-      )
-      .forEach(
-        (button) => {
-          button.disabled =
-            controlsDisabled;
-        }
-      );
+    DOM.decreaseBetButton.disabled = controlsDisabled;
 
+    DOM.increaseBetButton.disabled = controlsDisabled;
 
-    DOM
-      .decreaseBetButton
-      .disabled =
-        controlsDisabled;
+    DOM.betAmountInput.disabled = controlsDisabled;
 
+    DOM.quickBetOptions.querySelectorAll("button").forEach((button) => {
+      const quickAmount = parseAmount(button.dataset.amount);
 
-    DOM
-      .increaseBetButton
-      .disabled =
-        controlsDisabled;
-
-
-    DOM
-      .betAmountInput
-      .disabled =
-        controlsDisabled;
-
-
-    DOM
-      .quickBetOptions
-      .querySelectorAll(
-        "button"
-      )
-      .forEach(
-        (button) => {
-
-          const quickAmount =
-            parseAmount(
-              button
-                .dataset
-                .amount
-            );
-
-
-          button.disabled =
-            controlsDisabled ||
-
-            quickAmount <
-              state.settings
-                .minimumBet ||
-
-            quickAmount >
-              state.settings
-                .maximumBet;
-
-        }
-      );
-
-
-    DOM
-      .placeBetButton
-      .disabled =
+      button.disabled =
         controlsDisabled ||
-        !state.selectedRank;
+        quickAmount < state.settings.minimumBet ||
+        quickAmount > state.settings.maximumBet;
+    });
 
+    DOM.placeBetButton.disabled = controlsDisabled || !state.selectedRank;
 
-    if (
-      !state.gameEnabled
-    ) {
-      DOM
-        .placeBetText
-        .textContent =
-          "Game Disabled";
+    if (!state.gameEnabled) {
+      DOM.placeBetText.textContent = "Game Disabled";
 
-
-      setBettingMessage(
-        "Kait is currently unavailable."
-      );
+      setBettingMessage("Kait is currently unavailable.");
 
       return;
     }
 
+    if (state.placingBet) {
+      DOM.placeBetText.textContent = "Placing Bet...";
 
-    if (
-      state.placingBet
-    ) {
-      DOM
-        .placeBetText
-        .textContent =
-          "Placing Bet...";
-
-
-      setBettingMessage(
-        "Please wait... Bet submit হচ্ছে।"
-      );
+      setBettingMessage("Please wait... Bet submit হচ্ছে।");
 
       return;
     }
 
-
-    if (
-      hasBet
-    ) {
-      DOM
-        .placeBetText
-        .textContent =
-          "Bet Placed";
-
+    if (hasBet) {
+      DOM.placeBetText.textContent = "Bet Placed";
 
       setBettingMessage(
         `এই round-এ ${state.myBet.selectedRank} rank-এ আপনার bet নেওয়া হয়েছে।`,
-        "success"
+        "success",
       );
 
       return;
     }
 
+    if (!state.connected) {
+      DOM.placeBetText.textContent = "Connecting...";
 
-    if (
-      !state.connected
-    ) {
-      DOM
-        .placeBetText
-        .textContent =
-          "Connecting...";
-
-
-      setBettingMessage(
-        "Live game connection-এর অপেক্ষা করুন।"
-      );
+      setBettingMessage("Live game connection-এর অপেক্ষা করুন।");
 
       return;
     }
 
+    if (!state.bettingOpen) {
+      DOM.placeBetText.textContent = "Betting Closed";
 
-    if (
-      !state.bettingOpen
-    ) {
-      DOM
-        .placeBetText
-        .textContent =
-          "Betting Closed";
-
-
-      setBettingMessage(
-        "এই round-এ betting বন্ধ। Next round-এর অপেক্ষা করুন।"
-      );
+      setBettingMessage("এই round-এ betting বন্ধ। Next round-এর অপেক্ষা করুন।");
 
       return;
     }
 
+    if (!state.selectedRank) {
+      DOM.placeBetText.textContent = "Select a Rank";
 
-    if (
-      !state.selectedRank
-    ) {
-      DOM
-        .placeBetText
-        .textContent =
-          "Select a Rank";
-
-
-      setBettingMessage(
-        "A থেকে K পর্যন্ত একটি rank নির্বাচন করুন।"
-      );
+      setBettingMessage("A থেকে K পর্যন্ত একটি rank নির্বাচন করুন।");
 
       return;
     }
 
-
-    DOM
-      .placeBetText
-      .textContent =
-        `Bet ৳${formatMoney(
-          state.betAmount
-        )} on ${state.selectedRank}`;
-
+    DOM.placeBetText.textContent = `Bet ৳${formatMoney(
+      state.betAmount,
+    )} on ${state.selectedRank}`;
 
     setBettingMessage(
-      `${state.selectedRank} selected — bet confirm করতে button চাপুন।`
+      `${state.selectedRank} selected — bet confirm করতে button চাপুন।`,
     );
   }
-
 
   /* =======================================================
      MY BET
   ======================================================= */
 
   function renderMyBet() {
-    const bet =
-      state.myBet;
+    const bet = state.myBet;
 
-
-    DOM
-      .myBetStatus
-      .classList
-      .remove(
-        "is-win",
-        "is-loss"
-      );
-
+    DOM.myBetStatus.classList.remove("is-win", "is-loss");
 
     if (!bet) {
-      DOM
-        .myBetCard
-        .classList
-        .add(
-          "is-hidden"
-        );
+      DOM.myBetCard.classList.add("is-hidden");
 
       return;
     }
 
+    DOM.myBetCard.classList.remove("is-hidden");
 
-    DOM
-      .myBetCard
-      .classList
-      .remove(
-        "is-hidden"
-      );
+    DOM.myBetRank.textContent = bet.selectedRank || "--";
 
+    DOM.myBetAmount.textContent = formatMoney(bet.betAmount || 0);
 
-    DOM
-      .myBetRank
-      .textContent =
-        bet.selectedRank ||
-        "--";
+    DOM.myBetPossibleWin.textContent = formatMoney(
+      bet.potentialNetPayout || bet.netPayout || 0,
+    );
 
+    const status = String(bet.betStatus || "accepted").toLowerCase();
 
-    DOM
-      .myBetAmount
-      .textContent =
-        formatMoney(
-          bet.betAmount ||
-          0
-        );
+    DOM.myBetStatus.textContent = formatStatus(status);
 
-
-    DOM
-      .myBetPossibleWin
-      .textContent =
-        formatMoney(
-          bet
-            .potentialNetPayout ||
-          bet.netPayout ||
-          0
-        );
-
-
-    const status =
-      String(
-        bet.betStatus ||
-        "accepted"
-      )
-        .toLowerCase();
-
-
-    DOM
-      .myBetStatus
-      .textContent =
-        formatStatus(
-          status
-        );
-
-
-    if (
-      status ===
-      "won"
-    ) {
-      DOM
-        .myBetStatus
-        .classList
-        .add(
-          "is-win"
-        );
+    if (status === "won") {
+      DOM.myBetStatus.classList.add("is-win");
     }
 
-
-    if (
-      status ===
-      "lost"
-    ) {
-      DOM
-        .myBetStatus
-        .classList
-        .add(
-          "is-loss"
-        );
+    if (status === "lost") {
+      DOM.myBetStatus.classList.add("is-loss");
     }
   }
-
 
   /* =======================================================
      PLACE BET
@@ -2665,75 +1240,38 @@
       return;
     }
 
+    const amount = clampBetAmount(DOM.betAmountInput.value);
 
-    const amount =
-      clampBetAmount(
-        DOM
-          .betAmountInput
-          .value
-      );
-
-
-    state.betAmount =
-      amount;
-
+    state.betAmount = amount;
 
     renderBetAmount();
 
-
-    state.placingBet =
-      true;
-
+    state.placingBet = true;
 
     renderBetControls();
 
-
     try {
+      const bet = await apiRequest("/kait/bets", {
+        method: "POST",
 
-      const bet =
-        await apiRequest(
-          "/kait/bets",
-          {
-            method:
-              "POST",
+        body: JSON.stringify({
+          roundId: state.round.id,
 
-            body:
-              JSON.stringify({
-                roundId:
-                  state.round.id,
+          selectedRank: state.selectedRank,
 
-                selectedRank:
-                  state.selectedRank,
-
-                betAmount:
-                  amount
-              })
-          }
-        );
-
+          betAmount: amount,
+        }),
+      });
 
       state.myBet = {
         ...bet,
 
-        betStatus:
-          bet?.betStatus ||
-          "accepted"
+        betStatus: bet?.betStatus || "accepted",
       };
 
-
-      if (
-        bet
-          ?.balanceAfterBet !==
-        undefined
-      ) {
-        DOM
-          .walletBalance
-          .textContent =
-            formatMoney(
-              bet.balanceAfterBet
-            );
+      if (bet?.balanceAfterBet !== undefined) {
+        DOM.walletBalance.textContent = formatMoney(bet.balanceAfterBet);
       }
-
 
       /*
        * Current backend bet API
@@ -2743,46 +1281,17 @@
        * instantly update হবে।
        */
 
-      if (
-        state.round
-      ) {
-        state.round
-          .totalBetAmount =
-            parseAmount(
-              Number(
-                state.round
-                  .totalBetAmount ||
-                0
-              ) +
-              amount
-            );
+      if (state.round) {
+        state.round.totalBetAmount = parseAmount(
+          Number(state.round.totalBetAmount || 0) + amount,
+        );
 
+        state.round.totalPlayers = Number(state.round.totalPlayers || 0) + 1;
 
-        state.round
-          .totalPlayers =
-            Number(
-              state.round
-                .totalPlayers ||
-              0
-            ) +
-            1;
-
-
-        state.round
-          .totalBets =
-            Number(
-              state.round
-                .totalBets ||
-              0
-            ) +
-            1;
+        state.round.totalBets = Number(state.round.totalBets || 0) + 1;
       }
 
-
-      playSound(
-        "bet"
-      );
-
+      playSound("bet");
 
       renderRound();
 
@@ -2790,33 +1299,16 @@
 
       renderBetControls();
 
-
       showToast(
         `${state.selectedRank} rank-এ ৳${formatMoney(amount)} bet placed.`,
-        "success"
+        "success",
       );
-
     } catch (error) {
+      console.error("Kait bet error:", error);
 
-      console.error(
-        "Kait bet error:",
-        error
-      );
+      showToast(error.message || "Kait bet could not be placed.", "error");
 
-
-      showToast(
-        error.message ||
-        "Kait bet could not be placed.",
-        "error"
-      );
-
-
-      setBettingMessage(
-        error.message ||
-        "Bet failed.",
-        "error"
-      );
-
+      setBettingMessage(error.message || "Bet failed.", "error");
 
       if (
         [
@@ -2824,501 +1316,268 @@
 
           "KAIT_BETTING_CLOSED",
 
-          "KAIT_BETTING_TIME_ENDED"
-
-        ].includes(
-          error.code
-        )
+          "KAIT_BETTING_TIME_ENDED",
+        ].includes(error.code)
       ) {
-        await loadMyBet(
-          state.round.id,
-          {
-            silent:
-              true
-          }
-        );
+        await loadMyBet(state.round.id, {
+          silent: true,
+        });
       }
-
     } finally {
-
-      state.placingBet =
-        false;
-
+      state.placingBet = false;
 
       renderBetControls();
     }
   }
 
-
   /* =======================================================
      RESULT
   ======================================================= */
 
-  function showBetResult(
-    bet
-  ) {
-    const roundId =
-      Number(
-        bet?.roundId ||
-        state.round?.id ||
-        0
-      );
+  function showBetResult(bet) {
+    const roundId = Number(bet?.roundId || state.round?.id || 0);
 
-
-    if (
-      !roundId ||
-      state
-        .shownResultRoundIds
-        .has(
-          roundId
-        )
-    ) {
+    if (!roundId || state.shownResultRoundIds.has(roundId)) {
       return;
     }
 
+    const status = String(bet?.betStatus || "").toLowerCase();
 
-    const status =
-      String(
-        bet?.betStatus ||
-        ""
-      )
-        .toLowerCase();
-
-
-    if (
-      ![
-        "won",
-        "lost"
-      ].includes(
-        status
-      )
-    ) {
+    if (!["won", "lost"].includes(status)) {
       return;
     }
 
+    state.shownResultRoundIds.add(roundId);
 
-    state
-      .shownResultRoundIds
-      .add(
-        roundId
-      );
+    const modal = DOM.resultOverlay.querySelector(".result-modal");
 
+    modal?.classList.remove("is-win", "is-loss");
 
-    const modal =
-      DOM
-        .resultOverlay
-        .querySelector(
-          ".result-modal"
-        );
+    const isWin = status === "won";
 
+    modal?.classList.add(isWin ? "is-win" : "is-loss");
 
-    modal
-      ?.classList
-      .remove(
-        "is-win",
-        "is-loss"
-      );
+    DOM.resultIcon.innerHTML = isWin
+      ? '<i class="fa-solid fa-crown"></i>'
+      : '<i class="fa-solid fa-xmark"></i>';
 
+    DOM.resultTitle.textContent = isWin ? "WIN" : "LOSE";
 
-    const isWin =
-      status ===
-      "won";
+    DOM.resultRank.textContent = bet.selectedRank || "--";
 
+    DOM.resultCardImage.src = getCardImageUrl(bet.matchedCardCode);
 
-    modal
-      ?.classList
-      .add(
-        isWin
-          ? "is-win"
-          : "is-loss"
-      );
+    DOM.resultCardImage.alt = bet.matchedCardCode || "Matching card";
 
+    DOM.resultBetAmount.textContent = formatMoney(bet.betAmount || 0);
 
-    DOM
-      .resultIcon
-      .innerHTML =
-        isWin
-          ? '<i class="fa-solid fa-crown"></i>'
-          : '<i class="fa-solid fa-xmark"></i>';
+    DOM.resultPayout.textContent = formatMoney(bet.netPayout || 0);
 
+    DOM.userResultMessage.textContent = isWin
+      ? `আপনার ${bet.selectedRank} rank Front side-এ প্রথম এসেছে। আপনি ৳${formatMoney(
+          bet.netPayout || 0,
+        )} পেয়েছেন।`
+      : `আপনার ${bet.selectedRank} rank Back side-এ প্রথম এসেছে। এই round-এ আপনি জিতেননি।`;
 
-    DOM
-      .resultTitle
-      .textContent =
-        isWin
-          ? "WIN"
-          : "LOSE";
+    DOM.resultOverlay.classList.remove("is-hidden");
 
-
-    DOM
-      .resultRank
-      .textContent =
-        bet.selectedRank ||
-        "--";
-
-
-    DOM
-      .resultCardImage
-      .src =
-        getCardImageUrl(
-          bet
-            .matchedCardCode
-        );
-
-
-    DOM
-      .resultCardImage
-      .alt =
-        bet
-          .matchedCardCode ||
-        "Matching card";
-
-
-    DOM
-      .resultBetAmount
-      .textContent =
-        formatMoney(
-          bet.betAmount ||
-          0
-        );
-
-
-    DOM
-      .resultPayout
-      .textContent =
-        formatMoney(
-          bet.netPayout ||
-          0
-        );
-
-
-    DOM
-      .userResultMessage
-      .textContent =
-        isWin
-
-          ? `আপনার ${bet.selectedRank} rank Front side-এ প্রথম এসেছে। আপনি ৳${formatMoney(
-              bet.netPayout ||
-              0
-            )} পেয়েছেন।`
-
-          : `আপনার ${bet.selectedRank} rank Back side-এ প্রথম এসেছে। এই round-এ আপনি জিতেননি।`;
-
-
-    DOM
-      .resultOverlay
-      .classList
-      .remove(
-        "is-hidden"
-      );
-
-
-    if (
-      isWin
-    ) {
-      playSound(
-        "win"
-      );
+    if (isWin) {
+      playSound("win");
     }
   }
-
 
   function closeResult() {
-    DOM
-      .resultOverlay
-      .classList
-      .add(
-        "is-hidden"
-      );
+    DOM.resultOverlay.classList.add("is-hidden");
   }
-
 
   /* =======================================================
      SOCKET STATE
   ======================================================= */
 
-  async function handleSocketState(
-    payload
-  ) {
-    const data =
-      payload?.data ||
-      payload;
+  async function handleSocketState(payload) {
+    const data = payload?.data || payload;
 
-
-    if (
-      !data?.round
-    ) {
+    if (!data?.round) {
       return;
     }
 
-
-    await applyGameState(
-      data,
-      {
-        loadUserBet:
-          true
-      }
-    );
-
+    await applyGameState(data, {
+      loadUserBet: true,
+    });
 
     hideLoading();
   }
-
 
   /* =======================================================
      NEW BETTING ROUND
   ======================================================= */
 
-  async function handleBettingOpen(
-    payload
-  ) {
-    const round =
-      payload?.round;
-
+  async function handleBettingOpen(payload) {
+    const round = payload?.round;
 
     if (!round) {
       return;
     }
 
-
     await applyGameState(
       {
-        gameEnabled:
-          true,
+        gameEnabled: true,
 
-        ranks:
-          state.ranks,
+        ranks: state.ranks,
 
-        round
+        round,
       },
       {
-        loadUserBet:
-          true
-      }
+        loadUserBet: true,
+      },
     );
 
-
-    showToast(
-      "New Kait betting round started.",
-      "success"
-    );
-
+    showToast("New Kait betting round started.", "success");
 
     hideLoading();
   }
-
 
   /* =======================================================
      DEAL START
   ======================================================= */
 
-  function handleDealingStarted(
-    payload
-  ) {
-    if (
-      Number(
-        payload?.roundId ||
-        0
-      ) !==
-      Number(
-        state.round?.id ||
-        0
-      )
-    ) {
+  function handleDealingStarted(payload) {
+    if (Number(payload?.roundId || 0) !== Number(state.round?.id || 0)) {
       return;
     }
 
+    state.bettingOpen = false;
 
-    state.bettingOpen =
-      false;
-
-
-    if (
-      state.round
-    ) {
-      state.round
-        .roundStatus =
-          "dealing";
+    if (state.round) {
+      state.round.roundStatus = "dealing";
     }
 
-
-    DOM
-      .timerValue
-      .textContent =
-        "0";
-
+    DOM.timerValue.textContent = "0";
 
     renderRound();
 
     renderBetControls();
 
-
-    setBettingMessage(
-      "Betting closed. Live card deal শুরু হয়েছে।"
-    );
+    setBettingMessage("Betting closed. Live card deal শুরু হয়েছে।");
   }
-
 
   /* =======================================================
      LIVE PAIR
   ======================================================= */
 
-  function handlePairDealt(
-    payload
-  ) {
-    if (
-      Number(
-        payload?.roundId ||
-        0
-      ) !==
-      Number(
-        state.round?.id ||
-        0
-      )
-    ) {
+  function handleCardDealt(payload) {
+    if (Number(payload?.roundId || 0) !== Number(state.round?.id || 0)) {
       return;
     }
 
+    const card = payload.card;
 
-    state.bettingOpen =
-      false;
-
-
-    if (
-      state.round
-    ) {
-      state.round
-        .roundStatus =
-          "dealing";
-
-
-      state.round
-        .lastDealtPosition =
-          Number(
-            payload
-              .lastDealtPosition ||
-            0
-          );
-
-
-      state.round
-        .resolvedRanks =
-          Array.isArray(
-            payload.resolvedRanks
-          )
-            ? payload
-                .resolvedRanks
-            : state.round
-                .resolvedRanks;
+    if (!card) {
+      return;
     }
 
+    state.bettingOpen = false;
 
-    appendCard(
-      "front",
-      payload.front
+    if (state.round) {
+      state.round.roundStatus = "dealing";
+
+      state.round.lastDealtPosition = Number(
+        payload.lastDealtPosition || card.deckPosition || 0,
+      );
+
+      state.round.resolvedRanks = Array.isArray(payload.resolvedRanks)
+        ? payload.resolvedRanks
+        : state.round.resolvedRanks;
+    }
+
+    const side = String(card.resultSide || "").toLowerCase();
+
+    appendCard(side, card);
+
+    renderResolvedRanks(payload.resolvedRanks || []);
+
+    DOM.deckRemaining.textContent = String(
+      Number(payload.remainingCards ?? 52 - Number(card.deckPosition || 0)),
     );
 
+    DOM.deckZone.classList.add("is-dealing");
 
-    appendCard(
-      "back",
-      payload.back
-    );
+    DOM.frontSide.classList.toggle("is-active", side === "front");
 
+    DOM.backSide.classList.toggle("is-active", side === "back");
 
-    renderResolvedRanks(
-      payload
-        .resolvedRanks ||
-      []
-    );
+    window.clearTimeout(state.sidePulseTimer);
 
+    state.sidePulseTimer = window.setTimeout(() => {
+      DOM.frontSide.classList.remove("is-active");
 
-    pulseDealSides();
+      DOM.backSide.classList.remove("is-active");
+    }, 300);
 
+    playSound("deal");
 
-    playSound(
-      "deal"
-    );
-
-
-    DOM
-      .dealStatusText
-      .textContent =
-        `Pair ${Number(
-          payload.pairNumber ||
-          0
-        )} dealt • ${
-          Array.isArray(
-            payload.resolvedRanks
-          )
-            ? payload
-                .resolvedRanks
-                .length
-            : 0
-        }/13 ranks resolved`;
-
+    DOM.dealStatusText.textContent = `${card.code} → ${
+      side === "front" ? "FRONT" : "BACK"
+    } • ${
+      Array.isArray(payload.resolvedRanks) ? payload.resolvedRanks.length : 0
+    }/13 ranks resolved`;
 
     renderRound();
 
     renderBetControls();
   }
 
+  function handleNoBets(payload) {
+    if (Number(payload?.roundId || 0) !== Number(state.round?.id || 0)) {
+      return;
+    }
+
+    state.bettingOpen = false;
+
+    if (state.round) {
+      state.round.roundStatus = "completed";
+    }
+
+    DOM.deckRemaining.textContent = "52";
+
+    DOM.deckZone.classList.remove("is-dealing");
+
+    DOM.dealStatusText.textContent =
+      "No bets were placed. No cards distributed.";
+
+    setBettingMessage(
+      "এই round-এ কোনো bet হয়নি। Deck থেকে কোনো card বের হয়নি।",
+    );
+
+    renderRound();
+
+    renderBetControls();
+  }
 
   /* =======================================================
      ROUND COMPLETE
   ======================================================= */
 
-  async function handleRoundCompleted(
-    payload
-  ) {
-    const roundId =
-      Number(
-        payload?.roundId ||
-        state.round?.id ||
-        0
-      );
+  async function handleRoundCompleted(payload) {
+    const roundId = Number(payload?.roundId || state.round?.id || 0);
 
-
-    if (
-      !roundId ||
-      roundId !==
-        Number(
-          state.round?.id ||
-          0
-        )
-    ) {
+    if (!roundId || roundId !== Number(state.round?.id || 0)) {
       return;
     }
 
+    state.bettingOpen = false;
 
-    state.bettingOpen =
-      false;
-
-
-    if (
-      state.round
-    ) {
-      state.round
-        .roundStatus =
-          "completed";
+    if (state.round) {
+      state.round.roundStatus = "completed";
     }
-
 
     renderRound();
 
     renderBetControls();
 
+    DOM.timerValue.textContent = "0";
 
-    DOM
-      .timerValue
-      .textContent =
-        "0";
-
-
-    DOM
-      .dealStatusText
-      .textContent =
-        "Round completed. Result settled.";
-
+    DOM.dealStatusText.textContent = "Round completed. Result settled.";
 
     /*
      * এখানে /kait/state
@@ -3329,49 +1588,30 @@
      */
 
     await Promise.allSettled([
-      loadMyBet(
-        roundId,
-        {
-          showResult:
-            true,
+      loadMyBet(roundId, {
+        showResult: true,
 
-          silent:
-            true
-        }
-      ),
+        silent: true,
+      }),
 
-      loadWallet()
+      loadWallet(),
     ]);
   }
-
 
   /* =======================================================
      SOCKET
   ======================================================= */
 
   function initializeSocket() {
-    if (
-      typeof window.io !==
-      "function"
-    ) {
-      renderConnection(
-        "disconnected",
-        "Socket.IO client unavailable"
-      );
+    if (typeof window.io !== "function") {
+      renderConnection("disconnected", "Socket.IO client unavailable");
 
-
-      DOM
-        .loadingText
-        .textContent =
-          "Game connection unavailable.";
+      DOM.loadingText.textContent = "Game connection unavailable.";
 
       return;
     }
 
-
-    const token =
-      getAccessToken();
-
+    const token = getAccessToken();
 
     if (!token) {
       redirectToLogin();
@@ -3379,532 +1619,201 @@
       return;
     }
 
+    const socket = window.io(`${window.APP_CONFIG.SERVER_URL}/kait`, {
+      auth: {
+        token,
+      },
 
-    const socket =
-      window.io(
-        `${window.APP_CONFIG.SERVER_URL}/kait`,
-        {
-          auth: {
-            token
-          },
+      transports: ["websocket", "polling"],
 
+      reconnection: true,
 
-          transports: [
-            "websocket",
-            "polling"
-          ],
+      reconnectionAttempts: Infinity,
 
+      reconnectionDelay: 1000,
 
-          reconnection:
-            true,
+      reconnectionDelayMax: 5000,
 
+      timeout: 15000,
+    });
 
-          reconnectionAttempts:
-            Infinity,
+    state.socket = socket;
 
+    socket.on("connect", () => {
+      state.connected = true;
 
-          reconnectionDelay:
-            1000,
+      renderConnection("connected", "Live Kait connected");
 
+      renderBetControls();
+    });
 
-          reconnectionDelayMax:
-            5000,
+    socket.on("disconnect", () => {
+      state.connected = false;
 
+      renderConnection("disconnected", "Connection lost — reconnecting...");
 
-          timeout:
-            15000
-        }
+      renderBetControls();
+    });
+
+    socket.on("connect_error", (error) => {
+      state.connected = false;
+
+      renderConnection(
+        "disconnected",
+        error?.message || "Kait connection failed",
       );
 
+      renderBetControls();
 
-    state.socket =
-      socket;
-
-
-    socket.on(
-      "connect",
-      () => {
-
-        state.connected =
-          true;
-
-
-        renderConnection(
-          "connected",
-          "Live Kait connected"
-        );
-
-
-        renderBetControls();
-
+      if (
+        ["AUTH_TOKEN_REQUIRED", "AUTH_TOKEN_INVALID"].includes(error?.message)
+      ) {
+        redirectToLogin();
       }
-    );
+    });
 
+    socket.on("kait:state", (payload) => {
+      handleSocketState(payload).catch((error) => {
+        console.error("Kait state socket error:", error);
+      });
+    });
 
-    socket.on(
-      "disconnect",
-      () => {
+    socket.on("kait:betting-open", (payload) => {
+      handleBettingOpen(payload).catch((error) => {
+        console.error("Kait betting open error:", error);
+      });
+    });
 
-        state.connected =
-          false;
+    socket.on("kait:dealing-started", (payload) => {
+      handleDealingStarted(payload);
+    });
 
+    socket.on("kait:card-dealt", (payload) => {
+      handleCardDealt(payload);
+    });
 
-        renderConnection(
-          "disconnected",
-          "Connection lost — reconnecting..."
-        );
+    socket.on("kait:no-bets", (payload) => {
+      handleNoBets(payload);
+    });
 
+    socket.on("kait:round-completed", (payload) => {
+      handleRoundCompleted(payload).catch((error) => {
+        console.error("Kait settlement UI error:", error);
+      });
+    });
 
-        renderBetControls();
+    socket.on("kait:error", (payload) => {
+      const message = payload?.message || "Kait game error.";
 
-      }
-    );
-
-
-    socket.on(
-      "connect_error",
-      (error) => {
-
-        state.connected =
-          false;
-
-
-        renderConnection(
-          "disconnected",
-          error?.message ||
-          "Kait connection failed"
-        );
-
-
-        renderBetControls();
-
-
-        if (
-          [
-            "AUTH_TOKEN_REQUIRED",
-            "AUTH_TOKEN_INVALID"
-          ].includes(
-            error?.message
-          )
-        ) {
-          redirectToLogin();
-        }
-
-      }
-    );
-
-
-    socket.on(
-      "kait:state",
-      (payload) => {
-
-        handleSocketState(
-          payload
-        ).catch(
-          (error) => {
-
-            console.error(
-              "Kait state socket error:",
-              error
-            );
-
-          }
-        );
-
-      }
-    );
-
-
-    socket.on(
-      "kait:betting-open",
-      (payload) => {
-
-        handleBettingOpen(
-          payload
-        ).catch(
-          (error) => {
-
-            console.error(
-              "Kait betting open error:",
-              error
-            );
-
-          }
-        );
-
-      }
-    );
-
-
-    socket.on(
-      "kait:dealing-started",
-      (payload) => {
-
-        handleDealingStarted(
-          payload
-        );
-
-      }
-    );
-
-
-    socket.on(
-      "kait:pair-dealt",
-      (payload) => {
-
-        handlePairDealt(
-          payload
-        );
-
-      }
-    );
-
-
-    socket.on(
-      "kait:round-completed",
-      (payload) => {
-
-        handleRoundCompleted(
-          payload
-        ).catch(
-          (error) => {
-
-            console.error(
-              "Kait settlement UI error:",
-              error
-            );
-
-          }
-        );
-
-      }
-    );
-
-
-    socket.on(
-      "kait:error",
-      (payload) => {
-
-        const message =
-          payload?.message ||
-          "Kait game error.";
-
-
-        showToast(
-          message,
-          "error"
-        );
-
-      }
-    );
+      showToast(message, "error");
+    });
   }
-
 
   /* =======================================================
      EVENTS
   ======================================================= */
 
   function bindEvents() {
-    DOM
-      .backButton
-      .addEventListener(
-        "click",
-        () => {
-
-          window.location.href =
-            "./lobby.html";
-
-        }
-      );
-
-
-    DOM
-      .soundButton
-      .addEventListener(
-        "click",
-        () => {
-
-          state.soundEnabled =
-            !state.soundEnabled;
-
-
-          DOM
-            .soundButton
-            .innerHTML =
-              state.soundEnabled
-
-                ? '<i class="fa-solid fa-volume-high"></i>'
-
-                : '<i class="fa-solid fa-volume-xmark"></i>';
-
-
-          showToast(
-            state.soundEnabled
-              ? "Game sound on."
-              : "Game sound off."
-          );
-
-        }
-      );
-
-
-    DOM
-      .rankGrid
-      .querySelectorAll(
-        ".rank-button[data-rank]"
-      )
-      .forEach(
-        (button) => {
-
-          button.addEventListener(
-            "click",
-            () => {
-
-              selectRank(
-                button
-                  .dataset
-                  .rank
-              );
-
-            }
-          );
-
-        }
-      );
-
-
-    DOM
-      .decreaseBetButton
-      .addEventListener(
-        "click",
-        () => {
-
-          setBetAmount(
-            state.betAmount -
-            getBetStep()
-          );
-
-        }
-      );
-
-
-    DOM
-      .increaseBetButton
-      .addEventListener(
-        "click",
-        () => {
-
-          setBetAmount(
-            state.betAmount +
-            getBetStep()
-          );
-
-        }
-      );
-
-
-    DOM
-      .betAmountInput
-      .addEventListener(
-        "input",
-        () => {
-
-          const value =
-            parseAmount(
-              DOM
-                .betAmountInput
-                .value
-            );
-
-
-          if (
-            value > 0
-          ) {
-
-            state.betAmount =
-              value;
-
-
-            const grossPayout =
-              parseAmount(
-                state.betAmount *
-                Number(
-                  state.settings
-                    .winningMultiplier ||
-                  0
-                )
-              );
-
-
-            const charge =
-              parseAmount(
-                grossPayout *
-                (
-                  Number(
-                    state.settings
-                      .serviceChargePercent ||
-                    0
-                  ) /
-                  100
-                )
-              );
-
-
-            DOM
-              .betPreview
-              .textContent =
-                formatMoney(
-                  state.betAmount
-                );
-
-
-            DOM
-              .possibleWin
-              .textContent =
-                formatMoney(
-                  grossPayout -
-                  charge
-                );
-          }
-
-        }
-      );
-
-
-    DOM
-      .betAmountInput
-      .addEventListener(
-        "change",
-        () => {
-
-          setBetAmount(
-            DOM
-              .betAmountInput
-              .value
-          );
-
-        }
-      );
-
-
-    DOM
-      .quickBetOptions
-      .querySelectorAll(
-        "button[data-amount]"
-      )
-      .forEach(
-        (button) => {
-
-          button.addEventListener(
-            "click",
-            () => {
-
-              setBetAmount(
-                button
-                  .dataset
-                  .amount
-              );
-
-            }
-          );
-
-        }
-      );
-
-
-    DOM
-      .placeBetButton
-      .addEventListener(
-        "click",
-        () => {
-
-          placeBet()
-            .catch(
-              (error) => {
-
-                console.error(
-                  "Kait place bet error:",
-                  error
-                );
-
-              }
-            );
-
-        }
-      );
-
-
-    DOM
-      .resultCloseButton
-      .addEventListener(
-        "click",
-        closeResult
-      );
-
-
-    DOM
-      .continueButton
-      .addEventListener(
-        "click",
-        closeResult
-      );
-
-
-    DOM
-      .resultOverlay
-      .addEventListener(
-        "click",
-        (event) => {
-
-          if (
-            event.target ===
-            DOM.resultOverlay
-          ) {
-            closeResult();
-          }
-
-        }
-      );
-
-
-    window.addEventListener(
-      "beforeunload",
-      () => {
-
-        window.clearInterval(
-          state.countdownTimer
+    DOM.backButton.addEventListener("click", () => {
+      window.location.href = "./lobby.html";
+    });
+
+    DOM.soundButton.addEventListener("click", () => {
+      state.soundEnabled = !state.soundEnabled;
+
+      DOM.soundButton.innerHTML = state.soundEnabled
+        ? '<i class="fa-solid fa-volume-high"></i>'
+        : '<i class="fa-solid fa-volume-xmark"></i>';
+
+      showToast(state.soundEnabled ? "Game sound on." : "Game sound off.");
+    });
+
+    DOM.rankGrid
+      .querySelectorAll(".rank-button[data-rank]")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          selectRank(button.dataset.rank);
+        });
+      });
+
+    DOM.decreaseBetButton.addEventListener("click", () => {
+      setBetAmount(state.betAmount - getBetStep());
+    });
+
+    DOM.increaseBetButton.addEventListener("click", () => {
+      setBetAmount(state.betAmount + getBetStep());
+    });
+
+    DOM.betAmountInput.addEventListener("input", () => {
+      const value = parseAmount(DOM.betAmountInput.value);
+
+      if (value > 0) {
+        state.betAmount = value;
+
+        const grossPayout = parseAmount(
+          state.betAmount * Number(state.settings.winningMultiplier || 0),
         );
 
+        const charge = parseAmount(
+          grossPayout *
+            (Number(state.settings.serviceChargePercent || 0) / 100),
+        );
 
-        state.socket
-          ?.disconnect();
+        DOM.betPreview.textContent = formatMoney(state.betAmount);
 
+        DOM.possibleWin.textContent = formatMoney(grossPayout - charge);
       }
-    );
-  }
+    });
 
+    DOM.betAmountInput.addEventListener("change", () => {
+      setBetAmount(DOM.betAmountInput.value);
+    });
+
+    DOM.quickBetOptions
+      .querySelectorAll("button[data-amount]")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          setBetAmount(button.dataset.amount);
+        });
+      });
+
+    DOM.placeBetButton.addEventListener("click", () => {
+      placeBet().catch((error) => {
+        console.error("Kait place bet error:", error);
+      });
+    });
+
+    DOM.resultCloseButton.addEventListener("click", closeResult);
+
+    DOM.continueButton.addEventListener("click", closeResult);
+
+    DOM.resultOverlay.addEventListener("click", (event) => {
+      if (event.target === DOM.resultOverlay) {
+        closeResult();
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      window.clearInterval(state.countdownTimer);
+
+      state.socket?.disconnect();
+    });
+  }
 
   /* =======================================================
      INITIALIZE
   ======================================================= */
 
   async function initialize() {
-    if (
-      !getAccessToken()
-    ) {
+    if (!getAccessToken()) {
       redirectToLogin();
 
       return;
     }
 
-
     bindEvents();
 
-
-    state.betAmount =
-      state.settings
-        .minimumBet;
-
+    state.betAmount = state.settings.minimumBet;
 
     renderBetAmount();
 
@@ -3912,42 +1821,19 @@
 
     renderBetControls();
 
-
     initializeSocket();
 
-
     try {
-
-      await Promise.all([
-        loadWallet(),
-
-        loadInitialState()
-      ]);
-
+      await Promise.all([loadWallet(), loadInitialState()]);
     } catch (error) {
+      console.error("Kait initialization error:", error);
 
-      console.error(
-        "Kait initialization error:",
-        error
-      );
+      DOM.loadingText.textContent =
+        error.message || "Kait could not be loaded.";
 
-
-      DOM
-        .loadingText
-        .textContent =
-          error.message ||
-          "Kait could not be loaded.";
-
-
-      showToast(
-        error.message ||
-        "Kait could not be loaded.",
-        "error"
-      );
+      showToast(error.message || "Kait could not be loaded.", "error");
     }
   }
 
-
   void initialize();
-
 })();

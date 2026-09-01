@@ -2,1248 +2,1216 @@
 
 <html lang="en">
 
-<head>
+    <head>
 
-    <meta charset="UTF-8">
+        <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <meta
-        name="theme-color"
-        content="#071510">
+        <meta
+            name="theme-color"
+            content="#071510">
 
-    <title>Kait | PMS ADDA</title>
+        <title>Kait | PMS ADDA</title>
 
-    <link
-        rel="icon"
-        type="image/png"
-        href="../assets/logo/logo.png">
+        <link
+            rel="icon"
+            type="image/png"
+            href="../assets/logo/logo.png">
 
-    <link
-        rel="preconnect"
-        href="https://cdnjs.cloudflare.com">
+        <link
+            rel="preconnect"
+            href="https://cdnjs.cloudflare.com">
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/common.css">
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/kait.css">
+        <link
+            rel="stylesheet"
+            href="../css/kait.css">
 
-</head>
+    </head>
 
-<body>
+    <body>
 
-    <main class="kait-app">
+        <main class="kait-app">
 
-        <!-- =========================================
+            <!-- =========================================
              HEADER
         ========================================== -->
 
-        <header class="game-header">
-
-            <button
-                class="header-icon-btn"
-                id="backBtn"
-                type="button"
-                aria-label="Return to lobby">
-
-                <i class="fa-solid fa-arrow-left"></i>
-
-            </button>
-
-            <a
-                class="game-brand"
-                href="./lobby.html">
-
-                <img
-                    src="../assets/logo/logo.png"
-                    alt="PMS ADDA">
-
-                <div class="brand-text">
-
-                    <strong>PMS ADDA</strong>
-
-                    <span>Kait</span>
-
-                </div>
-
-            </a>
-
-            <div class="header-actions">
-
-                <div class="wallet-display">
-
-                    <i class="fa-solid fa-wallet"></i>
-
-                    <span>৳</span>
-
-                    <strong id="walletBalance">
-                        0.00
-                    </strong>
-
-                </div>
+            <header class="game-header">
 
                 <button
                     class="header-icon-btn"
-                    id="soundBtn"
+                    id="backBtn"
                     type="button"
-                    aria-label="Toggle sound">
+                    aria-label="Return to lobby">
 
-                    <i class="fa-solid fa-volume-high"></i>
+                    <i class="fa-solid fa-arrow-left"></i>
 
                 </button>
 
-            </div>
+                <a
+                    class="game-brand"
+                    href="./lobby.html">
 
-        </header>
+                    <img
+                        src="../assets/logo/logo.png"
+                        alt="PMS ADDA">
 
+                    <div class="brand-text">
 
-        <!-- =========================================
-             CONNECTION STATUS
-        ========================================== -->
+                        <strong>PMS ADDA</strong>
 
-        <section
-            class="connection-bar"
-            id="connectionBar">
-
-            <span
-                class="connection-dot"
-                id="connectionDot">
-            </span>
-
-            <span id="connectionText">
-                Connecting to Kait...
-            </span>
-
-        </section>
-
-
-        <!-- =========================================
-             ROUND INFORMATION
-        ========================================== -->
-
-        <section class="round-information">
-
-            <div class="round-number">
-
-                <span>
-                    Round
-                </span>
-
-                <strong id="roundCode">
-                    Waiting...
-                </strong>
-
-            </div>
-
-            <div class="round-center">
-
-                <span
-                    class="round-status-badge"
-                    id="roundStatus">
-
-                    Connecting
-
-                </span>
-
-                <span
-                    class="player-stat">
-
-                    <i class="fa-solid fa-users"></i>
-
-                    <strong id="totalPlayers">
-                        0
-                    </strong>
-
-                    Players
-
-                </span>
-
-            </div>
-
-            <div class="round-timer">
-
-                <i class="fa-regular fa-clock"></i>
-
-                <strong id="timerValue">
-                    --
-                </strong>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             MAIN KAIT TABLE
-        ========================================== -->
-
-        <section class="kait-table">
-
-            <div
-                class="table-glow"
-                aria-hidden="true">
-            </div>
-
-
-            <!-- ===============================
-                 TABLE TITLE
-            ================================ -->
-
-            <div class="kait-table-heading">
-
-                <div>
-
-                    <span>
-                        LIVE CARD TABLE
-                    </span>
-
-                    <h1>
-                        KAIT
-                    </h1>
-
-                </div>
-
-                <div class="table-bet-total">
-
-                    <span>
-                        Total Bet
-                    </span>
-
-                    <strong>
-
-                        ৳<span id="roundTotalBet">
-                            0.00
-                        </span>
-
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <!-- ===============================
-                 FRONT / BACK
-            ================================ -->
-
-            <div class="deal-area">
-
-
-                <!-- FRONT -->
-
-                <article
-                    class="deal-side front-side"
-                    id="frontSide">
-
-                    <div class="deal-side-header">
-
-                        <div class="side-badge front-badge">
-
-                            F
-
-                        </div>
-
-                        <div>
-
-                            <h2>
-                                FRONT
-                            </h2>
-
-                            <p>
-                                Winning Side
-                            </p>
-
-                        </div>
+                        <span>Kait</span>
 
                     </div>
 
+                </a>
 
-                    <div
-                        class="dealt-card-list"
-                        id="frontCards">
+                <div class="header-actions">
 
-                        <span class="empty-card-message">
+                    <div class="wallet-display">
 
-                            Cards will appear here
-
-                        </span>
-
-                    </div>
-
-                </article>
-
-
-                <!-- CENTER -->
-
-                <div class="deal-center">
-
-                    <span>
-                        VS
-                    </span>
-
-                </div>
-
-
-                <!-- BACK -->
-
-                <article
-                    class="deal-side back-side"
-                    id="backSide">
-
-                    <div class="deal-side-header">
-
-                        <div class="side-badge back-badge">
-
-                            B
-
-                        </div>
-
-                        <div>
-
-                            <h2>
-                                BACK
-                            </h2>
-
-                            <p>
-                                Losing Side
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        class="dealt-card-list"
-                        id="backCards">
-
-                        <span class="empty-card-message">
-
-                            Cards will appear here
-
-                        </span>
-
-                    </div>
-
-                </article>
-
-            </div>
-
-
-            <!-- ===============================
-                 DEAL STATUS
-            ================================ -->
-
-            <div class="deal-status">
-
-                <i class="fa-solid fa-layer-group"></i>
-
-                <span id="dealStatusText">
-
-                    Betting round শুরু হওয়ার অপেক্ষা...
-
-                </span>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             RESOLVED RANKS
-        ========================================== -->
-
-        <section class="resolved-section">
-
-            <div class="section-title">
-
-                <div>
-
-                    <span>
-                        Live Result
-                    </span>
-
-                    <h2>
-                        Rank Status
-                    </h2>
-
-                </div>
-
-                <strong id="resolvedCounter">
-
-                    0 / 13
-
-                </strong>
-
-            </div>
-
-
-            <div
-                class="resolved-rank-grid"
-                id="resolvedRankGrid">
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="A">
-
-                    <strong>A</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="2">
-
-                    <strong>2</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="3">
-
-                    <strong>3</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="4">
-
-                    <strong>4</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="5">
-
-                    <strong>5</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="6">
-
-                    <strong>6</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="7">
-
-                    <strong>7</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="8">
-
-                    <strong>8</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="9">
-
-                    <strong>9</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="10">
-
-                    <strong>10</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="J">
-
-                    <strong>J</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="Q">
-
-                    <strong>Q</strong>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div
-                    class="resolved-rank"
-                    data-result-rank="K">
-
-                    <strong>K</strong>
-
-                    <span>--</span>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             BETTING SECTION
-        ========================================== -->
-
-        <section class="betting-section">
-
-            <div class="section-title">
-
-                <div>
-
-                    <span>
-                        Place Your Bet
-                    </span>
-
-                    <h2>
-                        Choose Rank
-                    </h2>
-
-                </div>
-
-
-                <div class="selected-rank-display">
-
-                    <span>
-                        Selected
-                    </span>
-
-                    <strong id="selectedRankText">
-                        --
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <!-- ===============================
-                 RANK BUTTONS
-            ================================ -->
-
-            <div
-                class="rank-grid"
-                id="rankGrid">
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="A">
-
-                    A
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="2">
-
-                    2
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="3">
-
-                    3
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="4">
-
-                    4
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="5">
-
-                    5
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="6">
-
-                    6
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="7">
-
-                    7
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="8">
-
-                    8
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="9">
-
-                    9
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="10">
-
-                    10
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="J">
-
-                    J
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="Q">
-
-                    Q
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="rank-button"
-                    data-rank="K">
-
-                    K
-
-                </button>
-
-            </div>
-
-
-            <!-- ===============================
-                 PAYOUT INFORMATION
-            ================================ -->
-
-            <div class="payout-information">
-
-                <div>
-
-                    <span>
-                        Win Multiplier
-                    </span>
-
-                    <strong id="winMultiplier">
-                        2.00x
-                    </strong>
-
-                </div>
-
-
-                <div>
-
-                    <span>
-                        Service Charge
-                    </span>
-
-                    <strong>
-
-                        <span id="serviceCharge">
-                            5
-                        </span>%
-
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <!-- ===============================
-                 BET AMOUNT
-            ================================ -->
-
-            <div class="bet-amount-card">
-
-                <div class="bet-amount-heading">
-
-                    <span>
-                        Bet Amount
-                    </span>
-
-                    <small id="betLimitText">
-
-                        Min ৳10 • Max ৳10,000
-
-                    </small>
-
-                </div>
-
-
-                <div class="amount-control">
-
-                    <button
-                        type="button"
-                        id="decreaseBetBtn">
-
-                        <i class="fa-solid fa-minus"></i>
-
-                    </button>
-
-
-                    <div>
+                        <i class="fa-solid fa-wallet"></i>
 
                         <span>৳</span>
 
-                        <input
-                            type="number"
-                            id="betAmountInput"
-                            value="10"
-                            min="10"
-                            step="10"
-                            inputmode="decimal">
+                        <strong id="walletBalance">
+                            0.00
+                        </strong>
 
                     </div>
 
-
                     <button
+                        class="header-icon-btn"
+                        id="soundBtn"
                         type="button"
-                        id="increaseBetBtn">
+                        aria-label="Toggle sound">
 
-                        <i class="fa-solid fa-plus"></i>
+                        <i class="fa-solid fa-volume-high"></i>
 
                     </button>
 
                 </div>
 
+            </header>
 
-                <!-- QUICK BET -->
-
-                <div
-                    class="quick-bet-options"
-                    id="quickBetOptions">
-
-                    <button
-                        type="button"
-                        data-amount="10">
-
-                        ৳10
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-amount="50">
-
-                        ৳50
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-amount="100">
-
-                        ৳100
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-amount="500">
-
-                        ৳500
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-amount="1000">
-
-                        ৳1000
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- ===============================
-                 POSSIBLE WIN
-            ================================ -->
-
-            <div class="possible-win">
-
-                <div>
-
-                    <span>
-                        Bet
-                    </span>
-
-                    <strong>
-
-                        ৳<span id="betPreview">
-                            10.00
-                        </span>
-
-                    </strong>
-
-                </div>
-
-
-                <i class="fa-solid fa-arrow-right"></i>
-
-
-                <div>
-
-                    <span>
-                        Possible Win
-                    </span>
-
-                    <strong class="possible-win-value">
-
-                        ৳<span id="possibleWin">
-                            19.00
-                        </span>
-
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <!-- ===============================
-                 PLACE BET
-            ================================ -->
-
-            <button
-                class="place-bet-btn"
-                id="placeBetBtn"
-                type="button"
-                disabled>
-
-                <i class="fa-solid fa-coins"></i>
-
-                <span id="placeBetText">
-
-                    Select a Rank
-
-                </span>
-
-            </button>
-
-
-            <p
-                class="betting-message"
-                id="bettingMessage">
-
-                Betting round-এর অপেক্ষা করুন।
-
-            </p>
-
-        </section>
-
-
-        <!-- =========================================
-             MY BET
+            <!-- =========================================
+             CONNECTION STATUS
         ========================================== -->
 
-        <section
-            class="my-bet-card is-hidden"
-            id="myBetCard">
+            <section
+                class="connection-bar"
+                id="connectionBar">
 
-            <div class="my-bet-heading">
+                <span
+                    class="connection-dot"
+                    id="connectionDot">
+                </span>
 
-                <div>
+                <span id="connectionText">
+                    Connecting to Kait...
+                </span>
+
+            </section>
+
+            <!-- =========================================
+             ROUND INFORMATION
+        ========================================== -->
+
+            <section class="round-information">
+
+                <div class="round-number">
 
                     <span>
-                        Current Round
+                        Round
                     </span>
 
-                    <h2>
-                        My Bet
-                    </h2>
+                    <strong id="roundCode">
+                        Waiting...
+                    </strong>
 
                 </div>
 
-                <i class="fa-solid fa-ticket"></i>
+                <div class="round-center">
 
-            </div>
+                    <span
+                        class="round-status-badge"
+                        id="roundStatus">
 
+                        Connecting
 
-            <div class="my-bet-grid">
-
-                <div>
-
-                    <span>
-                        Rank
                     </span>
 
-                    <strong id="myBetRank">
+                    <span
+                        class="player-stat">
+
+                        <i class="fa-solid fa-users"></i>
+
+                        <strong id="totalPlayers">
+                            0
+                        </strong>
+
+                        Players
+
+                    </span>
+
+                </div>
+
+                <div class="round-timer">
+
+                    <i class="fa-regular fa-clock"></i>
+
+                    <strong id="timerValue">
                         --
                     </strong>
 
                 </div>
 
+            </section>
 
-                <div>
+            <!-- =========================================
+             MAIN KAIT TABLE
+        ========================================== -->
 
-                    <span>
-                        Amount
-                    </span>
+            <section class="kait-table">
 
-                    <strong>
+                <div
+                    class="table-glow"
+                    aria-hidden="true">
+                </div>
 
-                        ৳<span id="myBetAmount">
-                            0.00
+                <!-- ===============================
+                 TABLE TITLE
+            ================================ -->
+
+                <div class="kait-table-heading">
+
+                    <div>
+
+                        <span>
+                            LIVE CARD TABLE
                         </span>
 
-                    </strong>
+                        <h1>
+                            KAIT
+                        </h1>
 
-                </div>
+                    </div>
 
+                    <div class="table-bet-total">
 
-                <div>
-
-                    <span>
-                        Possible Win
-                    </span>
-
-                    <strong>
-
-                        ৳<span id="myBetPossibleWin">
-                            0.00
+                        <span>
+                            Total Bet
                         </span>
 
-                    </strong>
+                        <strong>
+
+                            ৳<span id="roundTotalBet">
+                                0.00
+                            </span>
+
+                        </strong>
+
+                    </div>
 
                 </div>
 
+                <!-- ===============================
+     CARD DECK
+=============================== -->
 
-                <div>
+                <div
+                    class="kait-deck-zone"
+                    id="kaitDeckZone">
 
-                    <span>
-                        Status
+                    <div class="kait-deck-stack">
+
+                        <div class="deck-card deck-card-3"></div>
+
+                        <div class="deck-card deck-card-2"></div>
+
+                        <div class="deck-card deck-card-1">
+
+                            <img
+                                src="../assets/cards/card-back.png"
+                                alt="Kait card deck">
+
+                        </div>
+
+                    </div>
+
+                    <div class="kait-deck-info">
+
+                        <span>
+                            CARD DECK
+                        </span>
+
+                        <strong>
+
+                            <span id="deckRemaining">
+                                52
+                            </span>
+
+                            Cards
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <!-- ===============================
+                 FRONT / BACK
+            ================================ -->
+
+                <div class="deal-area">
+
+                    <!-- FRONT -->
+
+                    <article
+                        class="deal-side front-side"
+                        id="frontSide">
+
+                        <div class="deal-side-header">
+
+                            <div class="side-badge front-badge">
+
+                                F
+
+                            </div>
+
+                            <div>
+
+                                <h2>
+                                    FRONT
+                                </h2>
+
+                                <p>
+                                    Winning Side
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="dealt-card-list"
+                            id="frontCards">
+
+                            <span class="empty-card-message">
+
+                                Cards will appear here
+
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                    <!-- CENTER -->
+
+                    <div class="deal-center">
+
+                        <span>
+                            VS
+                        </span>
+
+                    </div>
+
+                    <!-- BACK -->
+
+                    <article
+                        class="deal-side back-side"
+                        id="backSide">
+
+                        <div class="deal-side-header">
+
+                            <div class="side-badge back-badge">
+
+                                B
+
+                            </div>
+
+                            <div>
+
+                                <h2>
+                                    BACK
+                                </h2>
+
+                                <p>
+                                    Losing Side
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="dealt-card-list"
+                            id="backCards">
+
+                            <span class="empty-card-message">
+
+                                Cards will appear here
+
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+                <!-- ===============================
+                 DEAL STATUS
+            ================================ -->
+
+                <div class="deal-status">
+
+                    <i class="fa-solid fa-layer-group"></i>
+
+                    <span id="dealStatusText">
+
+                        Betting round শুরু হওয়ার অপেক্ষা...
+
                     </span>
 
-                    <strong id="myBetStatus">
-                        Accepted
+                </div>
+
+            </section>
+
+            <!-- =========================================
+             RESOLVED RANKS
+        ========================================== -->
+
+            <section class="resolved-section">
+
+                <div class="section-title">
+
+                    <div>
+
+                        <span>
+                            Live Result
+                        </span>
+
+                        <h2>
+                            Rank Status
+                        </h2>
+
+                    </div>
+
+                    <strong id="resolvedCounter">
+
+                        0 / 13
+
                     </strong>
 
                 </div>
 
-            </div>
+                <div
+                    class="resolved-rank-grid"
+                    id="resolvedRankGrid">
 
-        </section>
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="A">
 
+                        <strong>A</strong>
 
-        <!-- =========================================
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="2">
+
+                        <strong>2</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="3">
+
+                        <strong>3</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="4">
+
+                        <strong>4</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="5">
+
+                        <strong>5</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="6">
+
+                        <strong>6</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="7">
+
+                        <strong>7</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="8">
+
+                        <strong>8</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="9">
+
+                        <strong>9</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="10">
+
+                        <strong>10</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="J">
+
+                        <strong>J</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="Q">
+
+                        <strong>Q</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                    <div
+                        class="resolved-rank"
+                        data-result-rank="K">
+
+                        <strong>K</strong>
+
+                        <span>--</span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- =========================================
+             BETTING SECTION
+        ========================================== -->
+
+            <section class="betting-section">
+
+                <div class="section-title">
+
+                    <div>
+
+                        <span>
+                            Place Your Bet
+                        </span>
+
+                        <h2>
+                            Choose Rank
+                        </h2>
+
+                    </div>
+
+                    <div class="selected-rank-display">
+
+                        <span>
+                            Selected
+                        </span>
+
+                        <strong id="selectedRankText">
+                            --
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <!-- ===============================
+                 RANK BUTTONS
+            ================================ -->
+
+                <div
+                    class="rank-grid"
+                    id="rankGrid">
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="A">
+
+                        A
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="2">
+
+                        2
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="3">
+
+                        3
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="4">
+
+                        4
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="5">
+
+                        5
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="6">
+
+                        6
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="7">
+
+                        7
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="8">
+
+                        8
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="9">
+
+                        9
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="10">
+
+                        10
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="J">
+
+                        J
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="Q">
+
+                        Q
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rank-button"
+                        data-rank="K">
+
+                        K
+
+                    </button>
+
+                </div>
+
+                <!-- ===============================
+                 PAYOUT INFORMATION
+            ================================ -->
+
+                <div class="payout-information">
+
+                    <div>
+
+                        <span>
+                            Win Multiplier
+                        </span>
+
+                        <strong id="winMultiplier">
+                            2.00x
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Service Charge
+                        </span>
+
+                        <strong>
+
+                            <span id="serviceCharge">
+                                5
+                            </span>%
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <!-- ===============================
+                 BET AMOUNT
+            ================================ -->
+
+                <div class="bet-amount-card">
+
+                    <div class="bet-amount-heading">
+
+                        <span>
+                            Bet Amount
+                        </span>
+
+                        <small id="betLimitText">
+
+                            Min ৳10 • Max ৳10,000
+
+                        </small>
+
+                    </div>
+
+                    <div class="amount-control">
+
+                        <button
+                            type="button"
+                            id="decreaseBetBtn">
+
+                            <i class="fa-solid fa-minus"></i>
+
+                        </button>
+
+                        <div>
+
+                            <span>৳</span>
+
+                            <input
+                                type="number"
+                                id="betAmountInput"
+                                value="10"
+                                min="10"
+                                step="10"
+                                inputmode="decimal">
+
+                        </div>
+
+                        <button
+                            type="button"
+                            id="increaseBetBtn">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                        </button>
+
+                    </div>
+
+                    <!-- QUICK BET -->
+
+                    <div
+                        class="quick-bet-options"
+                        id="quickBetOptions">
+
+                        <button
+                            type="button"
+                            data-amount="10">
+
+                            ৳10
+
+                        </button>
+
+                        <button
+                            type="button"
+                            data-amount="50">
+
+                            ৳50
+
+                        </button>
+
+                        <button
+                            type="button"
+                            data-amount="100">
+
+                            ৳100
+
+                        </button>
+
+                        <button
+                            type="button"
+                            data-amount="500">
+
+                            ৳500
+
+                        </button>
+
+                        <button
+                            type="button"
+                            data-amount="1000">
+
+                            ৳1000
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- ===============================
+                 POSSIBLE WIN
+            ================================ -->
+
+                <div class="possible-win">
+
+                    <div>
+
+                        <span>
+                            Bet
+                        </span>
+
+                        <strong>
+
+                            ৳<span id="betPreview">
+                                10.00
+                            </span>
+
+                        </strong>
+
+                    </div>
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
+                    <div>
+
+                        <span>
+                            Possible Win
+                        </span>
+
+                        <strong class="possible-win-value">
+
+                            ৳<span id="possibleWin">
+                                19.00
+                            </span>
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <!-- ===============================
+                 PLACE BET
+            ================================ -->
+
+                <button
+                    class="place-bet-btn"
+                    id="placeBetBtn"
+                    type="button"
+                    disabled>
+
+                    <i class="fa-solid fa-coins"></i>
+
+                    <span id="placeBetText">
+
+                        Select a Rank
+
+                    </span>
+
+                </button>
+
+                <p
+                    class="betting-message"
+                    id="bettingMessage">
+
+                    Betting round-এর অপেক্ষা করুন।
+
+                </p>
+
+            </section>
+
+            <!-- =========================================
+             MY BET
+        ========================================== -->
+
+            <section
+                class="my-bet-card is-hidden"
+                id="myBetCard">
+
+                <div class="my-bet-heading">
+
+                    <div>
+
+                        <span>
+                            Current Round
+                        </span>
+
+                        <h2>
+                            My Bet
+                        </h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-ticket"></i>
+
+                </div>
+
+                <div class="my-bet-grid">
+
+                    <div>
+
+                        <span>
+                            Rank
+                        </span>
+
+                        <strong id="myBetRank">
+                            --
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Amount
+                        </span>
+
+                        <strong>
+
+                            ৳<span id="myBetAmount">
+                                0.00
+                            </span>
+
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Possible Win
+                        </span>
+
+                        <strong>
+
+                            ৳<span id="myBetPossibleWin">
+                                0.00
+                            </span>
+
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong id="myBetStatus">
+                            Accepted
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- =========================================
              GAME RULE
         ========================================== -->
 
-        <section class="game-rule-card">
+            <section class="game-rule-card">
 
-            <div class="game-rule-icon">
+                <div class="game-rule-icon">
 
-                <i class="fa-solid fa-circle-info"></i>
+                    <i class="fa-solid fa-circle-info"></i>
 
-            </div>
+                </div>
 
-            <div>
+                <div>
 
-                <h3>
-                    How to Play
-                </h3>
+                    <h3>
+                        How to Play
+                    </h3>
 
-                <p>
-                    A থেকে K পর্যন্ত একটি rank নির্বাচন করুন।
-                    প্রতিটি pair-এ একটি Front এবং একটি Back card
-                    deal হবে। আপনার selected rank-এর প্রথম card
-                    Front-এ এলে আপনি জিতবেন, Back-এ এলে হারবেন।
-                </p>
+                    <p>
+                        A থেকে K পর্যন্ত একটি rank নির্বাচন করুন।
+                        প্রতিটি pair-এ একটি Front এবং একটি Back card
+                        deal হবে। আপনার selected rank-এর প্রথম card
+                        Front-এ এলে আপনি জিতবেন, Back-এ এলে হারবেন।
+                    </p>
 
-            </div>
+                </div>
 
-        </section>
+            </section>
 
-    </main>
+        </main>
 
-
-    <!-- =========================================
+        <!-- =========================================
          RESULT OVERLAY
     ========================================== -->
 
-    <div
-        class="result-overlay is-hidden"
-        id="resultOverlay">
+        <div
+            class="result-overlay is-hidden"
+            id="resultOverlay">
 
-        <div class="result-modal">
+            <div class="result-modal">
 
-            <button
-                class="result-close-btn"
-                id="resultCloseBtn"
-                type="button">
+                <button
+                    class="result-close-btn"
+                    id="resultCloseBtn"
+                    type="button">
 
-                <i class="fa-solid fa-xmark"></i>
+                    <i class="fa-solid fa-xmark"></i>
 
-            </button>
+                </button>
 
+                <div
+                    class="result-icon"
+                    id="resultIcon">
 
-            <div
-                class="result-icon"
-                id="resultIcon">
+                    <i class="fa-solid fa-crown"></i>
 
-                <i class="fa-solid fa-crown"></i>
+                </div>
 
-            </div>
+                <span class="result-label">
 
+                    YOUR RESULT
 
-            <span class="result-label">
-
-                YOUR RESULT
-
-            </span>
-
-
-            <h2 id="resultTitle">
-
-                WIN
-
-            </h2>
-
-
-            <div class="result-rank">
-
-                <span>
-                    Selected Rank
                 </span>
 
-                <strong id="resultRank">
-                    A
-                </strong>
+                <h2 id="resultTitle">
 
-            </div>
+                    WIN
 
+                </h2>
 
-            <div class="result-card-display">
-
-                <span>
-                    Matching Card
-                </span>
-
-                <img
-                    id="resultCardImage"
-                    src="../assets/cards/card-back.png"
-                    alt="Matching card">
-
-            </div>
-
-
-            <div class="result-details">
-
-                <div>
+                <div class="result-rank">
 
                     <span>
-                        Bet
+                        Selected Rank
                     </span>
 
-                    <strong>
-
-                        ৳<span id="resultBetAmount">
-                            0.00
-                        </span>
-
+                    <strong id="resultRank">
+                        A
                     </strong>
 
                 </div>
 
-
-                <div>
+                <div class="result-card-display">
 
                     <span>
-                        Payout
+                        Matching Card
                     </span>
 
-                    <strong>
-
-                        ৳<span id="resultPayout">
-                            0.00
-                        </span>
-
-                    </strong>
+                    <img
+                        id="resultCardImage"
+                        src="../assets/cards/card-back.png"
+                        alt="Matching card">
 
                 </div>
 
+                <div class="result-details">
+
+                    <div>
+
+                        <span>
+                            Bet
+                        </span>
+
+                        <strong>
+
+                            ৳<span id="resultBetAmount">
+                                0.00
+                            </span>
+
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Payout
+                        </span>
+
+                        <strong>
+
+                            ৳<span id="resultPayout">
+                                0.00
+                            </span>
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <p id="userResultMessage">
+
+                    Round completed.
+
+                </p>
+
+                <button
+                    class="continue-btn"
+                    id="continueBtn"
+                    type="button">
+
+                    Continue Playing
+
+                </button>
+
             </div>
-
-
-            <p id="userResultMessage">
-
-                Round completed.
-
-            </p>
-
-
-            <button
-                class="continue-btn"
-                id="continueBtn"
-                type="button">
-
-                Continue Playing
-
-            </button>
 
         </div>
 
-    </div>
-
-
-    <!-- =========================================
+        <!-- =========================================
          LOADING
     ========================================== -->
 
-    <div
-        class="loading-overlay"
-        id="loadingOverlay">
+        <div
+            class="loading-overlay"
+            id="loadingOverlay">
 
-        <img
-            src="../assets/logo/logo.png"
-            alt="PMS ADDA">
+            <img
+                src="../assets/logo/logo.png"
+                alt="PMS ADDA">
 
-        <div class="loading-spinner"></div>
+            <div class="loading-spinner"></div>
 
-        <p id="loadingText">
+            <p id="loadingText">
 
-            Loading Kait...
+                Loading Kait...
 
-        </p>
+            </p>
 
-    </div>
+        </div>
 
-
-    <!-- =========================================
+        <!-- =========================================
          TOAST
     ========================================== -->
 
-    <div
-        class="game-toast"
-        id="gameToast"
-        role="status"
-        aria-live="polite">
-    </div>
+        <div
+            class="game-toast"
+            id="gameToast"
+            role="status"
+            aria-live="polite">
+        </div>
 
-
-    <!-- =========================================
+        <!-- =========================================
          SCRIPTS
     ========================================== -->
 
-    <script src="../js/app-config.js"></script>
+        <script src="../js/app-config.js"></script>
 
-    <script src="../js/auth-guard.js"></script>
+        <script src="../js/auth-guard.js"></script>
 
-    <script src="/socket.io/socket.io.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
 
-    <script src="../js/kait.js"></script>
+        <script src="../js/kait.js"></script>
 
-</body>
+    </body>
 
 </html>

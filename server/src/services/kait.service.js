@@ -10,8 +10,8 @@ const {
   createServerSeed,
   hashServerSeed,
   shuffleDeck,
-createDealPairs,
-resolveRankResults
+  getPositionSide,
+  resolveRankResults,
 } = require("./kait-deck.service");
 
 function createServiceError(
@@ -133,7 +133,29 @@ function normalizeRound(row) {
   } catch (_error) {
     resolvedRanks = [];
   }
+  const lastDealtPosition = Number(row.last_dealt_position || 0);
 
+  let dealtCards = [];
+
+  if (lastDealtPosition > 0 && row.deck_order_json) {
+    try {
+      const deck = parseStoredDeck(row.deck_order_json);
+
+      dealtCards = deck.slice(0, lastDealtPosition).map((card, index) => {
+        const deckPosition = index + 1;
+
+        return {
+          ...card,
+
+          deckPosition,
+
+          resultSide: getPositionSide(deckPosition),
+        };
+      });
+    } catch (_error) {
+      dealtCards = [];
+    }
+  }
   return {
     id: Number(row.id),
 
@@ -157,7 +179,8 @@ function normalizeRound(row) {
 
     nextRoundDelaySeconds: Number(row.next_round_delay_seconds_snapshot),
 
-    lastDealtPosition: Number(row.last_dealt_position || 0),
+    lastDealtPosition,
+    dealtCards,
 
     resolvedRanks,
 
@@ -367,27 +390,25 @@ async function ensureCurrentRound() {
   try {
     await connection.beginTransaction();
 
-    /*
-     * Settings row lock করার কারণে একই সময়ে
-     * দুই request দুটি round তৈরি করতে পারবে না।
-     */
     const settings = await getSettings(connection, {
       forUpdate: true,
     });
 
-    if (!settings.gameEnabled) {
-      throw createServiceError(
-        "Kait is currently disabled.",
-        409,
-        "KAIT_DISABLED",
-      );
-    }
-
+    /*
+     * আগে active round আছে কি না দেখব।
+     *
+     * Game OFF হলেও existing round
+     * finish করার জন্য এটাকে return করব।
+     */
     let round = await findActiveRound(connection, {
       forUpdate: true,
     });
 
-    if (!round) {
+    /*
+     * Active round নেই এবং game ON
+     * থাকলেই শুধু নতুন round তৈরি হবে।
+     */
+    if (!round && settings.gameEnabled) {
       round = await createBettingRound(connection, settings);
     }
 
@@ -395,6 +416,7 @@ async function ensureCurrentRound() {
 
     return {
       settings,
+
       round: normalizeRound(round),
     };
   } catch (error) {
@@ -437,6 +459,18 @@ async function placeKaitBet({ userId, roundId, selectedRank, betAmount }) {
 
   try {
     await connection.beginTransaction();
+
+    const settings = await getSettings(connection, {
+      forUpdate: true,
+    });
+
+    if (!settings.gameEnabled) {
+      throw createServiceError(
+        "Kait is currently disabled.",
+        409,
+        "KAIT_DISABLED",
+      );
+    }
 
     const [roundRows] = await connection.query(
       `
@@ -774,55 +808,36 @@ function parseStoredDeck(value) {
   let deck;
 
   try {
-    deck =
-      typeof value === "string"
-        ? JSON.parse(value)
-        : value;
+    deck = typeof value === "string" ? JSON.parse(value) : value;
   } catch (_error) {
     deck = null;
   }
 
-  if (
-    !Array.isArray(deck) ||
-    deck.length !== 52
-  ) {
+  if (!Array.isArray(deck) || deck.length !== 52) {
     throw createServiceError(
       "Stored Kait deck is invalid.",
       500,
-      "KAIT_STORED_DECK_INVALID"
+      "KAIT_STORED_DECK_INVALID",
     );
   }
 
   return deck;
 }
 
-async function beginKaitDealing(
-  roundId
-) {
-  const validRoundId =
-    Number(roundId);
+async function beginKaitDealing(roundId) {
+  const validRoundId = Number(roundId);
 
-  if (
-    !Number.isInteger(validRoundId) ||
-    validRoundId < 1
-  ) {
-    throw createServiceError(
-      "Invalid Kait round.",
-      400,
-      "KAIT_ROUND_INVALID"
-    );
+  if (!Number.isInteger(validRoundId) || validRoundId < 1) {
+    throw createServiceError("Invalid Kait round.", 400, "KAIT_ROUND_INVALID");
   }
 
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
-    await connection
-      .beginTransaction();
+    await connection.beginTransaction();
 
-    const [rows] =
-      await connection.query(
-        `
+    const [rows] = await connection.query(
+      `
           SELECT *
 
           FROM kait_rounds
@@ -833,45 +848,88 @@ async function beginKaitDealing(
 
           FOR UPDATE
         `,
-        [
-          validRoundId
-        ]
-      );
+      [validRoundId],
+    );
 
-    const round =
-      rows[0];
+    const round = rows[0];
 
     if (!round) {
       throw createServiceError(
         "Kait round was not found.",
         404,
-        "KAIT_ROUND_NOT_FOUND"
+        "KAIT_ROUND_NOT_FOUND",
       );
     }
 
-    if (
-      round.round_status ===
-      "betting"
-    ) {
-      if (
-        new Date(
-          round.betting_ends_at
-        ).getTime() > Date.now()
-      ) {
+    if (round.round_status === "betting") {
+      if (new Date(round.betting_ends_at).getTime() > Date.now()) {
         throw createServiceError(
           "Kait betting is still open.",
           409,
-          "KAIT_BETTING_STILL_OPEN"
+          "KAIT_BETTING_STILL_OPEN",
         );
       }
 
-      if (
-        !round.server_seed_secret
-      ) {
+      /* =====================================
+         NO BET = NO CARD DISTRIBUTION
+      ===================================== */
+
+      if (Number(round.total_bets || 0) < 1) {
+        await connection.query(
+          `
+            UPDATE kait_rounds
+
+            SET
+              round_status =
+                'completed',
+
+              server_seed_reveal =
+                server_seed_secret,
+
+              server_seed_secret =
+                NULL,
+
+              resolved_ranks_json =
+                '[]',
+
+              settled_at =
+                CURRENT_TIMESTAMP(3)
+
+            WHERE id = ?
+              AND round_status =
+                'betting'
+          `,
+          [validRoundId],
+        );
+
+        await connection.commit();
+
+        return {
+          roundId: validRoundId,
+
+          roundCode: round.round_code,
+
+          noBets: true,
+
+          totalBets: 0,
+
+          cardDealIntervalMs: Number(round.card_deal_interval_ms_snapshot),
+
+          lastDealtPosition: 0,
+
+          cards: [],
+        };
+      }
+
+      /* =====================================
+         BET আছে = DEAL START
+      ===================================== */
+
+      if (!round.server_seed_secret) {
         throw createServiceError(
           "Kait server seed is missing.",
           500,
-          "KAIT_SERVER_SEED_MISSING"
+          "KAIT_SERVER_SEED_MISSING",
         );
       }
 
@@ -896,72 +954,71 @@ async function beginKaitDealing(
             AND round_status =
               'betting'
         `,
-        [
-          validRoundId
-        ]
+        [validRoundId],
       );
 
-      round.round_status =
-        "dealing";
+      round.round_status = "dealing";
 
-      round.server_seed_reveal =
-        round.server_seed_secret;
+      round.server_seed_reveal = round.server_seed_secret;
 
-      round.server_seed_secret =
-        null;
+      round.server_seed_secret = null;
     }
 
-    if (
-      round.round_status !==
-      "dealing"
-    ) {
+    if (round.round_status !== "dealing") {
       throw createServiceError(
         "Kait round is not ready for dealing.",
         409,
-        "KAIT_ROUND_NOT_DEALING"
+        "KAIT_ROUND_NOT_DEALING",
       );
     }
 
-    const deck =
-      parseStoredDeck(
-        round.deck_order_json
-      );
+    const deck = parseStoredDeck(round.deck_order_json);
 
-    const pairs =
-      createDealPairs(deck);
+    /*
+     * Deck:
+     *
+     * 1 = FRONT
+     * 2 = BACK
+     * 3 = FRONT
+     * 4 = BACK
+     * ...
+     */
+
+    const cards = deck.map((card, index) => {
+      const deckPosition = index + 1;
+
+      return {
+        ...card,
+
+        deckPosition,
+
+        resultSide: getPositionSide(deckPosition),
+      };
+    });
 
     await connection.commit();
 
     return {
-      roundId:
-        validRoundId,
+      roundId: validRoundId,
 
-      roundCode:
-        round.round_code,
+      roundCode: round.round_code,
 
-      serverSeedHash:
-        round.server_seed_hash,
+      noBets: false,
 
-      serverSeedReveal:
-        round.server_seed_reveal,
+      totalBets: Number(round.total_bets || 0),
 
-      cardDealIntervalMs:
-        Number(
-          round
-            .card_deal_interval_ms_snapshot
-        ),
+      serverSeedHash: round.server_seed_hash,
 
-      lastDealtPosition:
-        Number(
-          round.last_dealt_position ||
-          0
-        ),
+      serverSeedReveal: round.server_seed_reveal,
 
-      pairs
+      cardDealIntervalMs: Number(round.card_deal_interval_ms_snapshot),
+
+      lastDealtPosition: Number(round.last_dealt_position || 0),
+
+      cards,
     };
   } catch (error) {
-    await connection
-      .rollback();
+    await connection.rollback();
 
     throw error;
   } finally {
@@ -969,45 +1026,35 @@ async function beginKaitDealing(
   }
 }
 
-async function recordKaitDealPair({
-  roundId,
-  pair
-}) {
-  const validRoundId =
-    Number(roundId);
+async function recordKaitDealCard({ roundId, card }) {
+  const validRoundId = Number(roundId);
 
-  if (
-    !Number.isInteger(validRoundId) ||
-    validRoundId < 1
-  ) {
-    throw createServiceError(
-      "Invalid Kait round.",
-      400,
-      "KAIT_ROUND_INVALID"
-    );
+  if (!Number.isInteger(validRoundId) || validRoundId < 1) {
+    throw createServiceError("Invalid Kait round.", 400, "KAIT_ROUND_INVALID");
   }
 
+  const deckPosition = Number(card?.deckPosition);
+
   if (
-    !pair?.front ||
-    !pair?.back
+    !card?.rank ||
+    !card?.code ||
+    !card?.suit ||
+    !Number.isInteger(deckPosition) ||
+    deckPosition < 1 ||
+    deckPosition > 52
   ) {
-    throw createServiceError(
-      "Invalid Kait card pair.",
-      400,
-      "KAIT_PAIR_INVALID"
-    );
+    throw createServiceError("Invalid Kait card.", 400, "KAIT_CARD_INVALID");
   }
 
-  const connection =
-    await pool.getConnection();
+  const resultSide = getPositionSide(deckPosition);
+
+  const connection = await pool.getConnection();
 
   try {
-    await connection
-      .beginTransaction();
+    await connection.beginTransaction();
 
-    const [roundRows] =
-      await connection.query(
-        `
+    const [roundRows] = await connection.query(
+      `
           SELECT
             id,
             round_status,
@@ -1021,113 +1068,91 @@ async function recordKaitDealPair({
 
           FOR UPDATE
         `,
-        [
-          validRoundId
-        ]
-      );
+      [validRoundId],
+    );
 
-    const round =
-      roundRows[0];
+    const round = roundRows[0];
 
     if (!round) {
       throw createServiceError(
         "Kait round was not found.",
         404,
-        "KAIT_ROUND_NOT_FOUND"
+        "KAIT_ROUND_NOT_FOUND",
       );
     }
 
-    if (
-      round.round_status !==
-      "dealing"
-    ) {
+    if (round.round_status !== "dealing") {
       throw createServiceError(
         "Kait round is not dealing.",
         409,
-        "KAIT_ROUND_NOT_DEALING"
+        "KAIT_ROUND_NOT_DEALING",
       );
     }
 
-    const newlyResolved = [];
+    const previousPosition = Number(round.last_dealt_position || 0);
 
     /*
-     * Front card আগে insert হবে।
-     * একই pair-এ একই rank হলে unique constraint
-     * Back card-কে ignore করবে।
+     * Card অবশ্যই একটার পর একটা।
      */
-    for (
-      const card of [
-        pair.front,
-        pair.back
-      ]
-    ) {
-      const [insertResult] =
-        await connection.query(
-          `
-            INSERT IGNORE INTO
-              kait_round_rank_results (
-                round_id,
-                rank_code,
-                first_card_code,
-                first_card_suit,
-                deck_position,
-                result_side,
-                resolved_at
-              )
 
-            VALUES (
-              ?,
-              ?,
-              ?,
-              ?,
-              ?,
-              ?,
-              CURRENT_TIMESTAMP(3)
-            )
-          `,
-          [
-            validRoundId,
-            card.rank,
-            card.code,
-            card.suit,
-            card.deckPosition,
-            card.resultSide
-          ]
-        );
-
-      if (
-        insertResult.affectedRows ===
-        1
-      ) {
-        newlyResolved.push({
-          rankCode:
-            card.rank,
-
-          firstCardCode:
-            card.code,
-
-          firstCardSuit:
-            card.suit,
-
-          deckPosition:
-            Number(
-              card.deckPosition
-            ),
-
-          resultSide:
-            card.resultSide,
-
-          pairNumber:
-            Number(
-              pair.pairNumber
-            )
-        });
-      }
+    if (deckPosition !== previousPosition + 1) {
+      throw createServiceError(
+        "Kait card sequence is invalid.",
+        409,
+        "KAIT_CARD_SEQUENCE_INVALID",
+      );
     }
 
-    const [resultRows] =
-      await connection.query(
-        `
+    /*
+     * এই rank আগে বের না হলে
+     * result তৈরি হবে।
+     */
+
+    const [insertResult] = await connection.query(
+      `
+          INSERT IGNORE INTO
+            kait_round_rank_results (
+              round_id,
+              rank_code,
+              first_card_code,
+              first_card_suit,
+              deck_position,
+              result_side,
+              resolved_at
+            )
+
+          VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            CURRENT_TIMESTAMP(3)
+          )
+        `,
+      [validRoundId, card.rank, card.code, card.suit, deckPosition, resultSide],
+    );
+
+    const newlyResolved =
+      insertResult.affectedRows === 1
+        ? [
+            {
+              rankCode: card.rank,
+
+              firstCardCode: card.code,
+
+              firstCardSuit: card.suit,
+
+              deckPosition,
+
+              resultSide,
+            },
+          ]
+        : [];
+
+    const [resultRows] = await connection.query(
+      `
           SELECT
             rank_code,
             first_card_code,
@@ -1139,59 +1164,25 @@ async function recordKaitDealPair({
 
           WHERE round_id = ?
 
-          ORDER BY deck_position ASC
+          ORDER BY
+            deck_position ASC
         `,
-        [
-          validRoundId
-        ]
-      );
+      [validRoundId],
+    );
 
-    const resolvedRanks =
-      resultRows.map(
-        (result) => ({
-          rankCode:
-            result.rank_code,
+    const resolvedRanks = resultRows.map((result) => ({
+      rankCode: result.rank_code,
 
-          firstCardCode:
-            result.first_card_code,
+      firstCardCode: result.first_card_code,
 
-          firstCardSuit:
-            result.first_card_suit,
+      firstCardSuit: result.first_card_suit,
 
-          deckPosition:
-            Number(
-              result.deck_position
-            ),
+      deckPosition: Number(result.deck_position),
 
-          resultSide:
-            result.result_side,
+      resultSide: result.result_side,
+    }));
 
-          pairNumber:
-            Math.ceil(
-              Number(
-                result.deck_position
-              ) / 2
-            )
-        })
-      );
-
-    const lastDealtPosition =
-      Math.max(
-        Number(
-          round
-            .last_dealt_position ||
-          0
-        ),
-
-        Number(
-          pair.back
-            .deckPosition
-        )
-      );
-
-    const allRanksResolved =
-      resolvedRanks.length ===
-      RANKS.length;
+    const allRanksResolved = resolvedRanks.length === RANKS.length;
 
     await connection.query(
       `
@@ -1199,45 +1190,41 @@ async function recordKaitDealPair({
 
         SET
           last_dealt_position = ?,
+
           resolved_ranks_json = ?,
 
           dealing_completed_at =
             CASE
               WHEN ? = 1
-                THEN CURRENT_TIMESTAMP(3)
+              THEN CURRENT_TIMESTAMP(3)
               ELSE dealing_completed_at
             END
 
         WHERE id = ?
       `,
       [
-        lastDealtPosition,
-        JSON.stringify(
-          resolvedRanks
-        ),
-        allRanksResolved
-          ? 1
-          : 0,
-        validRoundId
-      ]
+        deckPosition,
+
+        JSON.stringify(resolvedRanks),
+
+        allRanksResolved ? 1 : 0,
+
+        validRoundId,
+      ],
     );
 
     await connection.commit();
 
     return {
-      roundId:
-        validRoundId,
+      roundId: validRoundId,
 
-      pairNumber:
-        Number(
-          pair.pairNumber
-        ),
+      card: {
+        ...card,
 
-      front:
-        pair.front,
+        deckPosition,
 
-      back:
-        pair.back,
+        resultSide,
+      },
 
       newlyResolved,
 
@@ -1245,11 +1232,12 @@ async function recordKaitDealPair({
 
       allRanksResolved,
 
-      lastDealtPosition
+      lastDealtPosition: deckPosition,
+
+      remainingCards: Math.max(0, 52 - deckPosition),
     };
   } catch (error) {
-    await connection
-      .rollback();
+    await connection.rollback();
 
     throw error;
   } finally {
@@ -1257,33 +1245,20 @@ async function recordKaitDealPair({
   }
 }
 
-async function settleKaitRound(
-  roundId
-) {
-  const validRoundId =
-    Number(roundId);
+async function settleKaitRound(roundId) {
+  const validRoundId = Number(roundId);
 
-  if (
-    !Number.isInteger(validRoundId) ||
-    validRoundId < 1
-  ) {
-    throw createServiceError(
-      "Invalid Kait round.",
-      400,
-      "KAIT_ROUND_INVALID"
-    );
+  if (!Number.isInteger(validRoundId) || validRoundId < 1) {
+    throw createServiceError("Invalid Kait round.", 400, "KAIT_ROUND_INVALID");
   }
 
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
-    await connection
-      .beginTransaction();
+    await connection.beginTransaction();
 
-    const [roundRows] =
-      await connection.query(
-        `
+    const [roundRows] = await connection.query(
+      `
           SELECT *
 
           FROM kait_rounds
@@ -1294,19 +1269,16 @@ async function settleKaitRound(
 
           FOR UPDATE
         `,
-        [
-          validRoundId
-        ]
-      );
+      [validRoundId],
+    );
 
-    const round =
-      roundRows[0];
+    const round = roundRows[0];
 
     if (!round) {
       throw createServiceError(
         "Kait round was not found.",
         404,
-        "KAIT_ROUND_NOT_FOUND"
+        "KAIT_ROUND_NOT_FOUND",
       );
     }
 
@@ -1314,57 +1286,34 @@ async function settleKaitRound(
      * Retry অথবা server restart-এর পরে
      * completed round আবার settle হবে না।
      */
-    if (
-      round.round_status ===
-      "completed"
-    ) {
+    if (round.round_status === "completed") {
       await connection.commit();
 
       return {
-        roundId:
-          validRoundId,
+        roundId: validRoundId,
 
-        roundCode:
-          round.round_code,
+        roundCode: round.round_code,
 
-        alreadySettled:
-          true,
+        alreadySettled: true,
 
-        totalGrossPayout:
-          normalizeMoney(
-            round.total_gross_payout
-          ),
+        totalGrossPayout: normalizeMoney(round.total_gross_payout),
 
-        totalServiceCharge:
-          normalizeMoney(
-            round.total_service_charge
-          ),
+        totalServiceCharge: normalizeMoney(round.total_service_charge),
 
-        totalNetPayout:
-          normalizeMoney(
-            round.total_net_payout
-          )
+        totalNetPayout: normalizeMoney(round.total_net_payout),
       };
     }
 
-    if (
-      ![
-        "dealing",
-        "settling"
-      ].includes(
-        round.round_status
-      )
-    ) {
+    if (!["dealing", "settling"].includes(round.round_status)) {
       throw createServiceError(
         "Kait round is not ready for settlement.",
         409,
-        "KAIT_ROUND_NOT_SETTLEABLE"
+        "KAIT_ROUND_NOT_SETTLEABLE",
       );
     }
 
-    const [rankRows] =
-      await connection.query(
-        `
+    const [rankRows] = await connection.query(
+      `
           SELECT
             rank_code,
             first_card_code,
@@ -1380,31 +1329,20 @@ async function settleKaitRound(
 
           FOR UPDATE
         `,
-        [
-          validRoundId
-        ]
-      );
+      [validRoundId],
+    );
 
-    if (
-      rankRows.length !==
-      RANKS.length
-    ) {
+    if (rankRows.length !== RANKS.length) {
       throw createServiceError(
         "All Kait ranks are not resolved yet.",
         409,
-        "KAIT_RESULTS_INCOMPLETE"
+        "KAIT_RESULTS_INCOMPLETE",
       );
     }
 
-    const resultMap =
-      new Map(
-        rankRows.map(
-          (result) => [
-            result.rank_code,
-            result
-          ]
-        )
-      );
+    const resultMap = new Map(
+      rankRows.map((result) => [result.rank_code, result]),
+    );
 
     await connection.query(
       `
@@ -1417,14 +1355,11 @@ async function settleKaitRound(
           AND round_status =
             'dealing'
       `,
-      [
-        validRoundId
-      ]
+      [validRoundId],
     );
 
-    const [bets] =
-      await connection.query(
-        `
+    const [bets] = await connection.query(
+      `
           SELECT *
 
           FROM kait_bets
@@ -1439,10 +1374,8 @@ async function settleKaitRound(
 
           FOR UPDATE
         `,
-        [
-          validRoundId
-        ]
-      );
+      [validRoundId],
+    );
 
     let winningBets = 0;
     let losingBets = 0;
@@ -1452,16 +1385,13 @@ async function settleKaitRound(
     let totalNetPayout = 0;
 
     for (const bet of bets) {
-      const result =
-        resultMap.get(
-          bet.selected_rank
-        );
+      const result = resultMap.get(bet.selected_rank);
 
       if (!result) {
         throw createServiceError(
           `Result missing for rank ${bet.selected_rank}.`,
           500,
-          "KAIT_BET_RESULT_MISSING"
+          "KAIT_BET_RESULT_MISSING",
         );
       }
 
@@ -1469,13 +1399,9 @@ async function settleKaitRound(
        * Back result হলে bet lost।
        * User-এর wallet থেকে bet আগেই কাটা হয়েছে।
        */
-      if (
-        result.result_side ===
-        "back"
-      ) {
-        const [lostResult] =
-          await connection.query(
-            `
+      if (result.result_side === "back") {
+        const [lostResult] = await connection.query(
+          `
               UPDATE kait_bets
 
               SET
@@ -1502,22 +1428,10 @@ async function settleKaitRound(
                 AND bet_status =
                   'accepted'
             `,
-            [
-              result
-                .first_card_code,
+          [result.first_card_code, Number(result.deck_position), bet.id],
+        );
 
-              Number(
-                result.deck_position
-              ),
-
-              bet.id
-            ]
-          );
-
-        if (
-          lostResult.affectedRows ===
-          1
-        ) {
+        if (lostResult.affectedRows === 1) {
           losingBets += 1;
         }
 
@@ -1527,30 +1441,16 @@ async function settleKaitRound(
       /*
        * Front result হলে winner।
        */
-      const userId =
-        Number(bet.user_id);
+      const userId = Number(bet.user_id);
 
-      const grossPayout =
-        normalizeMoney(
-          bet
-            .potential_gross_payout
-        );
+      const grossPayout = normalizeMoney(bet.potential_gross_payout);
 
-      const serviceCharge =
-        normalizeMoney(
-          bet
-            .potential_service_charge
-        );
+      const serviceCharge = normalizeMoney(bet.potential_service_charge);
 
-      const netPayout =
-        normalizeMoney(
-          bet
-            .potential_net_payout
-        );
+      const netPayout = normalizeMoney(bet.potential_net_payout);
 
-      const [userRows] =
-        await connection.query(
-          `
+      const [userRows] = await connection.query(
+        `
             SELECT
               id,
               wallet_balance
@@ -1563,54 +1463,32 @@ async function settleKaitRound(
 
             FOR UPDATE
           `,
-          [
-            userId
-          ]
-        );
+        [userId],
+      );
 
-      const user =
-        userRows[0];
+      const user = userRows[0];
 
       if (!user) {
         throw createServiceError(
           "Kait winner user was not found.",
           500,
-          "KAIT_WINNER_NOT_FOUND"
+          "KAIT_WINNER_NOT_FOUND",
         );
       }
 
-      const balanceBefore =
-        normalizeMoney(
-          user.wallet_balance
-        );
+      const balanceBefore = normalizeMoney(user.wallet_balance);
 
-      const balanceAfterGross =
-        normalizeMoney(
-          balanceBefore +
-          grossPayout
-        );
+      const balanceAfterGross = normalizeMoney(balanceBefore + grossPayout);
 
-      const balanceAfterSettlement =
-        normalizeMoney(
-          balanceBefore +
-          netPayout
-        );
+      const balanceAfterSettlement = normalizeMoney(balanceBefore + netPayout);
 
-      const payoutTransactionId =
-        createReferenceCode(
-          "KT-WIN"
-        );
+      const payoutTransactionId = createReferenceCode("KT-WIN");
 
       const chargeTransactionId =
-        serviceCharge > 0
-          ? createReferenceCode(
-              "KT-FEE"
-            )
-          : null;
+        serviceCharge > 0 ? createReferenceCode("KT-FEE") : null;
 
-      const [creditResult] =
-        await connection.query(
-          `
+      const [creditResult] = await connection.query(
+        `
             UPDATE users
 
             SET wallet_balance =
@@ -1618,20 +1496,14 @@ async function settleKaitRound(
 
             WHERE id = ?
           `,
-          [
-            netPayout,
-            userId
-          ]
-        );
+        [netPayout, userId],
+      );
 
-      if (
-        creditResult.affectedRows !==
-        1
-      ) {
+      if (creditResult.affectedRows !== 1) {
         throw createServiceError(
           "Kait winner payout failed.",
           500,
-          "KAIT_WINNER_CREDIT_FAILED"
+          "KAIT_WINNER_CREDIT_FAILED",
         );
       }
 
@@ -1675,17 +1547,15 @@ async function settleKaitRound(
           balanceBefore,
           balanceAfterGross,
           bet.bet_code,
-          `Kait ${bet.selected_rank} gross win for round ${round.round_code}`
-        ]
+          `Kait ${bet.selected_rank} gross win for round ${round.round_code}`,
+        ],
       );
 
       /*
        * দ্বিতীয় ledger row-এ dynamic
        * service charge।
        */
-      if (
-        serviceCharge > 0
-      ) {
+      if (serviceCharge > 0) {
         await connection.query(
           `
             INSERT INTO wallet_transactions (
@@ -1723,14 +1593,13 @@ async function settleKaitRound(
             balanceAfterGross,
             balanceAfterSettlement,
             bet.bet_code,
-            `Kait service charge for round ${round.round_code}`
-          ]
+            `Kait service charge for round ${round.round_code}`,
+          ],
         );
       }
 
-      const [wonResult] =
-        await connection.query(
-          `
+      const [wonResult] = await connection.query(
+        `
             UPDATE kait_bets
 
             SET
@@ -1760,50 +1629,32 @@ async function settleKaitRound(
               AND bet_status =
                 'accepted'
           `,
-          [
-            result
-              .first_card_code,
+        [
+          result.first_card_code,
 
-            Number(
-              result.deck_position
-            ),
+          Number(result.deck_position),
 
-            grossPayout,
-            serviceCharge,
-            netPayout,
+          grossPayout,
+          serviceCharge,
+          netPayout,
 
-            balanceAfterSettlement,
+          balanceAfterSettlement,
 
-            payoutTransactionId,
-            chargeTransactionId,
+          payoutTransactionId,
+          chargeTransactionId,
 
-            bet.id
-          ]
-        );
+          bet.id,
+        ],
+      );
 
-      if (
-        wonResult.affectedRows ===
-        1
-      ) {
+      if (wonResult.affectedRows === 1) {
         winningBets += 1;
 
-        totalGrossPayout =
-          normalizeMoney(
-            totalGrossPayout +
-            grossPayout
-          );
+        totalGrossPayout = normalizeMoney(totalGrossPayout + grossPayout);
 
-        totalServiceCharge =
-          normalizeMoney(
-            totalServiceCharge +
-            serviceCharge
-          );
+        totalServiceCharge = normalizeMoney(totalServiceCharge + serviceCharge);
 
-        totalNetPayout =
-          normalizeMoney(
-            totalNetPayout +
-            netPayout
-          );
+        totalNetPayout = normalizeMoney(totalNetPayout + netPayout);
       }
     }
 
@@ -1830,39 +1681,29 @@ async function settleKaitRound(
 
         WHERE id = ?
       `,
-      [
-        totalGrossPayout,
-        totalServiceCharge,
-        totalNetPayout,
-        validRoundId
-      ]
+      [totalGrossPayout, totalServiceCharge, totalNetPayout, validRoundId],
     );
 
     await connection.commit();
 
     return {
-      roundId:
-        validRoundId,
+      roundId: validRoundId,
 
-      roundCode:
-        round.round_code,
+      roundCode: round.round_code,
 
-      alreadySettled:
-        false,
+      alreadySettled: false,
 
-      totalBets:
-        bets.length,
+      totalBets: bets.length,
 
       winningBets,
       losingBets,
 
       totalGrossPayout,
       totalServiceCharge,
-      totalNetPayout
+      totalNetPayout,
     };
   } catch (error) {
-    await connection
-      .rollback();
+    await connection.rollback();
 
     throw error;
   } finally {
@@ -1870,37 +1711,21 @@ async function settleKaitRound(
   }
 }
 
-async function getMyKaitBet({
-  userId,
-  roundId
-}) {
-  const validUserId =
-    Number(userId);
+async function getMyKaitBet({ userId, roundId }) {
+  const validUserId = Number(userId);
 
-  const validRoundId =
-    Number(roundId);
+  const validRoundId = Number(roundId);
 
-  if (
-    !Number.isInteger(validUserId) ||
-    validUserId < 1
-  ) {
-    throw createServiceError(
-      "Invalid user.",
-      401,
-      "KAIT_USER_INVALID"
-    );
+  if (!Number.isInteger(validUserId) || validUserId < 1) {
+    throw createServiceError("Invalid user.", 401, "KAIT_USER_INVALID");
   }
 
-  if (
-    !Number.isInteger(validRoundId) ||
-    validRoundId < 1
-  ) {
+  if (!Number.isInteger(validRoundId) || validRoundId < 1) {
     return null;
   }
 
-  const [rows] =
-    await pool.query(
-      `
+  const [rows] = await pool.query(
+    `
         SELECT
           id,
           bet_code,
@@ -1939,111 +1764,62 @@ async function getMyKaitBet({
 
         LIMIT 1
       `,
-      [
-        validRoundId,
-        validUserId
-      ]
-    );
+    [validRoundId, validUserId],
+  );
 
-  const bet =
-    rows[0];
+  const bet = rows[0];
 
   if (!bet) {
     return null;
   }
 
   return {
-    id:
-      Number(bet.id),
+    id: Number(bet.id),
 
-    betCode:
-      bet.bet_code,
+    betCode: bet.bet_code,
 
-    roundId:
-      Number(bet.round_id),
+    roundId: Number(bet.round_id),
 
-    selectedRank:
-      bet.selected_rank,
+    selectedRank: bet.selected_rank,
 
-    lockedMultiplier:
-      Number(
-        bet.locked_multiplier
-      ),
+    lockedMultiplier: Number(bet.locked_multiplier),
 
-    betAmount:
-      normalizeMoney(
-        bet.bet_amount
-      ),
+    betAmount: normalizeMoney(bet.bet_amount),
 
-    potentialGrossPayout:
-      normalizeMoney(
-        bet.potential_gross_payout
-      ),
+    potentialGrossPayout: normalizeMoney(bet.potential_gross_payout),
 
-    potentialServiceCharge:
-      normalizeMoney(
-        bet.potential_service_charge
-      ),
+    potentialServiceCharge: normalizeMoney(bet.potential_service_charge),
 
-    potentialNetPayout:
-      normalizeMoney(
-        bet.potential_net_payout
-      ),
+    potentialNetPayout: normalizeMoney(bet.potential_net_payout),
 
-    betStatus:
-      bet.bet_status,
+    betStatus: bet.bet_status,
 
-    resultSide:
-      bet.result_side || null,
+    resultSide: bet.result_side || null,
 
-    matchedCardCode:
-      bet.matched_card_code || null,
+    matchedCardCode: bet.matched_card_code || null,
 
-    matchedDeckPosition:
-      bet.matched_deck_position
-        ? Number(
-            bet.matched_deck_position
-          )
-        : null,
+    matchedDeckPosition: bet.matched_deck_position
+      ? Number(bet.matched_deck_position)
+      : null,
 
-    grossPayout:
-      normalizeMoney(
-        bet.gross_payout
-      ),
+    grossPayout: normalizeMoney(bet.gross_payout),
 
-    serviceCharge:
-      normalizeMoney(
-        bet.service_charge
-      ),
+    serviceCharge: normalizeMoney(bet.service_charge),
 
-    netPayout:
-      normalizeMoney(
-        bet.net_payout
-      ),
+    netPayout: normalizeMoney(bet.net_payout),
 
-    balanceBefore:
-      normalizeMoney(
-        bet.balance_before
-      ),
+    balanceBefore: normalizeMoney(bet.balance_before),
 
-    balanceAfterBet:
-      normalizeMoney(
-        bet.balance_after_bet
-      ),
+    balanceAfterBet: normalizeMoney(bet.balance_after_bet),
 
     balanceAfterSettlement:
-      bet.balance_after_settlement !==
-      null
-        ? normalizeMoney(
-            bet.balance_after_settlement
-          )
+      bet.balance_after_settlement !== null
+        ? normalizeMoney(bet.balance_after_settlement)
         : null,
 
-    settledAt:
-      bet.settled_at,
+    settledAt: bet.settled_at,
 
-    createdAt:
-      bet.created_at
+    createdAt: bet.created_at,
   };
 }
 
@@ -2056,6 +1832,6 @@ module.exports = {
   placeKaitBet,
   getMyKaitBet,
   beginKaitDealing,
-  recordKaitDealPair,
-  settleKaitRound
+  recordKaitDealCard,
+  settleKaitRound,
 };

@@ -1,115 +1,61 @@
 "use strict";
 
-const jwt =
-  require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
-const {
-  pool
-} = require(
-  "../config/database"
-);
+const { pool } = require("../config/database");
 
 const {
   ensureCurrentRound,
   getPublicGameState,
   beginKaitDealing,
-  recordKaitDealPair,
-  settleKaitRound
-} = require(
-  "../services/kait.service"
-);
+  recordKaitDealCard,
+  settleKaitRound,
+} = require("../services/kait.service");
 
 function wait(milliseconds) {
-  return new Promise(
-    (resolve) => {
-      setTimeout(
-        resolve,
-        Math.max(
-          0,
-          Number(milliseconds) || 0
-        )
-      );
-    }
-  );
+  return new Promise((resolve) => {
+    setTimeout(resolve, Math.max(0, Number(milliseconds) || 0));
+  });
 }
 
 function getSocketToken(socket) {
-  const authToken =
-    String(
-      socket.handshake
-        ?.auth?.token ||
-      ""
-    ).trim();
+  const authToken = String(socket.handshake?.auth?.token || "").trim();
 
   if (authToken) {
     return authToken;
   }
 
-  const authorization =
-    String(
-      socket.handshake
-        ?.headers
-        ?.authorization ||
-      ""
-    ).trim();
+  const authorization = String(
+    socket.handshake?.headers?.authorization || "",
+  ).trim();
 
-  if (
-    authorization.startsWith(
-      "Bearer "
-    )
-  ) {
-    return authorization
-      .slice(7)
-      .trim();
+  if (authorization.startsWith("Bearer ")) {
+    return authorization.slice(7).trim();
   }
 
   return "";
 }
 
-async function authenticateSocket(
-  socket,
-  next
-) {
+async function authenticateSocket(socket, next) {
   try {
-    const token =
-      getSocketToken(socket);
+    const token = getSocketToken(socket);
 
     if (!token) {
-      return next(
-        new Error(
-          "AUTH_TOKEN_REQUIRED"
-        )
-      );
+      return next(new Error("AUTH_TOKEN_REQUIRED"));
     }
 
-    const decoded =
-      jwt.verify(
-        token,
-        process.env.JWT_SECRET,
-        {
-          algorithms: [
-            "HS256"
-          ]
-        }
-      );
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
 
-    const userId =
-      Number(decoded.id);
+    const userId = Number(decoded.id);
 
-    if (
-      !Number.isInteger(userId) ||
-      userId < 1
-    ) {
-      return next(
-        new Error(
-          "AUTH_TOKEN_INVALID"
-        )
-      );
+    if (!Number.isInteger(userId) || userId < 1) {
+      return next(new Error("AUTH_TOKEN_INVALID"));
     }
 
-    const [rows] =
-      await pool.query(
-        `
+    const [rows] = await pool.query(
+      `
           SELECT
             id,
             uid,
@@ -122,181 +68,179 @@ async function authenticateSocket(
 
           LIMIT 1
         `,
-        [
-          userId
-        ]
-      );
+      [userId],
+    );
 
-    const user =
-      rows[0];
+    const user = rows[0];
 
-    if (
-      !user ||
-      user.account_status !==
-        "active" ||
-      user.role === "agent"
-    ) {
-      return next(
-        new Error(
-          "AUTH_USER_FORBIDDEN"
-        )
-      );
+    if (!user || user.account_status !== "active" || user.role === "agent") {
+      return next(new Error("AUTH_USER_FORBIDDEN"));
     }
 
     socket.user = {
-      id:
-        Number(user.id),
+      id: Number(user.id),
 
-      uid:
-        user.uid,
+      uid: user.uid,
 
-      role:
-        user.role
+      role: user.role,
     };
 
-    socket.accessToken =
-      token;
+    socket.accessToken = token;
 
     return next();
   } catch (_error) {
-    return next(
-      new Error(
-        "AUTH_TOKEN_INVALID"
-      )
-    );
+    return next(new Error("AUTH_TOKEN_INVALID"));
   }
 }
 
 function initializeKaitSocket(io) {
-  const namespace =
-    io.of("/kait");
+  const namespace = io.of("/kait");
 
-  namespace.use(
-    authenticateSocket
-  );
+  namespace.use(authenticateSocket);
 
   let engineRunning = false;
   let engineStopped = false;
 
   async function emitPublicState() {
-    const state =
-      await getPublicGameState();
+    const state = await getPublicGameState();
 
-    namespace.emit(
-      "kait:state",
-      state
-    );
+    namespace.emit("kait:state", state);
 
     return state;
   }
 
-  async function runRound(
-    round
-  ) {
-    const roundId =
-      Number(round.id);
+  async function runRound(round) {
+    const roundId = Number(round.id);
 
-    if (
-      round.roundStatus ===
-      "betting"
-    ) {
-      namespace.emit(
-        "kait:betting-open",
-        {
-          round
-        }
-      );
+    const roundStatus = String(round.roundStatus || "")
+      .trim()
+      .toLowerCase();
 
-      const bettingEndsAt =
-        new Date(
-          round.bettingEndsAt
-        ).getTime();
+    /*
+     * Restart-এর সময় settlement
+     * pending থাকলে resume।
+     */
 
-      await wait(
-        bettingEndsAt -
-        Date.now()
-      );
+    if (roundStatus === "settling") {
+      const settlement = await settleKaitRound(roundId);
+
+      namespace.emit("kait:round-completed", settlement);
+
+      return settlement;
     }
 
-    const dealPlan =
-      await beginKaitDealing(
-        roundId
-      );
+    /*
+     * BETTING
+     */
 
-    namespace.emit(
-      "kait:dealing-started",
-      {
-        roundId:
-          dealPlan.roundId,
+    if (roundStatus === "betting") {
+      namespace.emit("kait:betting-open", {
+        round,
+      });
 
-        roundCode:
-          dealPlan.roundCode,
+      const bettingEndsAt = new Date(round.bettingEndsAt).getTime();
 
-        serverSeedHash:
-          dealPlan.serverSeedHash,
+      await wait(bettingEndsAt - Date.now());
+    }
 
-        serverSeedReveal:
-          dealPlan.serverSeedReveal,
+    const dealPlan = await beginKaitDealing(roundId);
 
-        cardDealIntervalMs:
-          dealPlan
-            .cardDealIntervalMs
-      }
-    );
+    /* ===========================================
+     ZERO BET = ZERO CARD
+  =========================================== */
 
-    for (
-      const pair of
-      dealPlan.pairs
-    ) {
+    if (dealPlan.noBets === true) {
+      const noBetResult = {
+        roundId: dealPlan.roundId,
+
+        roundCode: dealPlan.roundCode,
+
+        noBets: true,
+
+        totalBets: 0,
+
+        winningBets: 0,
+
+        losingBets: 0,
+
+        totalGrossPayout: 0,
+
+        totalServiceCharge: 0,
+
+        totalNetPayout: 0,
+      };
+
+      namespace.emit("kait:no-bets", noBetResult);
+
+      namespace.emit("kait:round-completed", noBetResult);
+
+      return noBetResult;
+    }
+
+    /* ===========================================
+     DEAL START
+  =========================================== */
+
+    namespace.emit("kait:dealing-started", {
+      roundId: dealPlan.roundId,
+
+      roundCode: dealPlan.roundCode,
+
+      serverSeedHash: dealPlan.serverSeedHash,
+
+      serverSeedReveal: dealPlan.serverSeedReveal,
+
+      cardDealIntervalMs: dealPlan.cardDealIntervalMs,
+
+      deckSize: 52,
+
+      lastDealtPosition: dealPlan.lastDealtPosition,
+    });
+
+    /* ===========================================
+     ONE CARD AT A TIME
+  =========================================== */
+
+    for (const card of dealPlan.cards) {
       /*
-       * Render restart হলে already dealt
-       * pair skip করে পরের pair থেকে চলবে।
+       * Server restart হলে
+       * already distributed cards skip।
        */
-      if (
-        Number(
-          pair.back.deckPosition
-        ) <=
-        Number(
-          dealPlan
-            .lastDealtPosition
-        )
-      ) {
+
+      if (Number(card.deckPosition) <= Number(dealPlan.lastDealtPosition)) {
         continue;
       }
 
-      await wait(
-        dealPlan
-          .cardDealIntervalMs
-      );
+      await wait(dealPlan.cardDealIntervalMs);
 
-      const progress =
-        await recordKaitDealPair({
-          roundId,
-          pair
-        });
+      const progress = await recordKaitDealCard({
+        roundId,
+        card,
+      });
 
-      namespace.emit(
-        "kait:pair-dealt",
-        progress
-      );
+      /*
+       * একবারে শুধু ONE CARD emit।
+       */
 
-      if (
-        progress
-          .allRanksResolved
-      ) {
+      namespace.emit("kait:card-dealt", progress);
+
+      /*
+       * A থেকে K সব rank resolve
+       * হয়ে গেলে আর card দরকার নেই।
+       */
+
+      if (progress.allRanksResolved) {
         break;
       }
     }
 
-    const settlement =
-      await settleKaitRound(
-        roundId
-      );
+    /* ===========================================
+     SETTLEMENT
+  =========================================== */
 
-    namespace.emit(
-      "kait:round-completed",
-      settlement
-    );
+    const settlement = await settleKaitRound(roundId);
+
+    namespace.emit("kait:round-completed", settlement);
 
     return settlement;
   }
@@ -310,40 +254,34 @@ function initializeKaitSocket(io) {
 
     while (!engineStopped) {
       try {
-        const {
-          settings,
-          round
-        } =
-          await ensureCurrentRound();
+        const { settings, round } = await ensureCurrentRound();
 
-        await runRound(round);
+        /*
+         * Game OFF এবং কোনো active round নেই।
+         * তাই নতুন card/bet round শুরু হবে না।
+         */
+        if (!round) {
+          await wait(5000);
 
-        await wait(
-          (
-            Number(
-              settings
-                .resultDisplaySeconds
-            ) +
-            Number(
-              settings
-                .nextRoundDelaySeconds
-            )
-          ) * 1000
-        );
+          continue;
+        }
+
+        const roundResult = await runRound(round);
+
+        const delaySeconds = roundResult?.noBets
+          ? Number(settings.nextRoundDelaySeconds)
+          : Number(settings.resultDisplaySeconds) +
+            Number(settings.nextRoundDelaySeconds);
+
+        await wait(delaySeconds * 1000);
 
         await emitPublicState();
       } catch (error) {
-        console.error(
-          "KAIT ROUND ENGINE ERROR:",
-          {
-            message:
-              error.message,
+        console.error("KAIT ROUND ENGINE ERROR:", {
+          message: error.message,
 
-            code:
-              error.code ||
-              null
-          }
-        );
+          code: error.code || null,
+        });
 
         /*
          * Temporary database error অথবা
@@ -356,89 +294,58 @@ function initializeKaitSocket(io) {
     engineRunning = false;
   }
 
-  namespace.on(
-    "connection",
-    async (socket) => {
-      socket.join(
-        "kait-public"
-      );
+  namespace.on("connection", async (socket) => {
+    socket.join("kait-public");
 
-      try {
-        const state =
-          await getPublicGameState();
+    try {
+      const state = await getPublicGameState();
 
-        socket.emit(
-          "kait:state",
-          state
-        );
-      } catch (error) {
-        socket.emit(
-          "kait:error",
-          {
-            code:
-              error.code ||
-              "KAIT_STATE_ERROR",
+      socket.emit("kait:state", state);
+    } catch (error) {
+      socket.emit("kait:error", {
+        code: error.code || "KAIT_STATE_ERROR",
 
-            message:
-              error.message ||
-              "Kait state could not be loaded."
-          }
-        );
-      }
-
-      socket.on(
-        "kait:refresh",
-        async (_payload, callback) => {
-          try {
-            const state =
-              await getPublicGameState();
-
-            if (
-              typeof callback ===
-              "function"
-            ) {
-              callback({
-                success: true,
-                data: state
-              });
-            }
-          } catch (error) {
-            if (
-              typeof callback ===
-              "function"
-            ) {
-              callback({
-                success: false,
-
-                code:
-                  error.code ||
-                  "KAIT_REFRESH_FAILED",
-
-                message:
-                  error.message
-              });
-            }
-          }
-        }
-      );
+        message: error.message || "Kait state could not be loaded.",
+      });
     }
-  );
+
+    socket.on("kait:refresh", async (_payload, callback) => {
+      try {
+        const state = await getPublicGameState();
+
+        if (typeof callback === "function") {
+          callback({
+            success: true,
+            data: state,
+          });
+        }
+      } catch (error) {
+        if (typeof callback === "function") {
+          callback({
+            success: false,
+
+            code: error.code || "KAIT_REFRESH_FAILED",
+
+            message: error.message,
+          });
+        }
+      }
+    });
+  });
 
   void runEngine();
 
-  console.log(
-    "✅ Kait Socket.IO initialized"
-  );
+  console.log("✅ Kait Socket.IO initialized");
 
   return {
     namespace,
 
     stop() {
       engineStopped = true;
-    }
+    },
   };
 }
 
 module.exports = {
-  initializeKaitSocket
+  initializeKaitSocket,
 };
