@@ -5009,3 +5009,420 @@ and
     }
 
 }
+
+/* =========================================================
+   KAIT — BIGGER CARDS + BET PANEL SPACE FIX
+========================================================= */
+
+
+/* =========================================================
+   DESKTOP
+========================================================= */
+
+@media (min-width: 601px) {
+
+    /*
+     * Left game table একটু বেশি জায়গা পাবে
+     */
+
+    .kait-app {
+        grid-template-columns:
+            minmax(0, 1.75fr)
+            minmax(380px, 0.85fr);
+    }
+
+
+    /* =========================
+       DECK BIGGER
+    ========================= */
+
+    .kait-deck-zone {
+        flex-basis: 82px;
+
+        min-height: 82px;
+
+        margin:
+            2px
+            auto
+            7px;
+
+        gap: 15px;
+    }
+
+
+    .kait-deck-stack {
+        width: 58px;
+        height: 75px;
+    }
+
+
+    .deck-card {
+        width: 52px;
+        height: 72px;
+
+        border-width: 2px;
+
+        border-radius: 6px;
+    }
+
+
+    .deck-card-3 {
+        top: 6px;
+        left: 6px;
+    }
+
+
+    .deck-card-2 {
+        top: 3px;
+        left: 3px;
+    }
+
+
+    .kait-deck-info > span {
+        font-size: 8px;
+    }
+
+
+    .kait-deck-info strong {
+        font-size: 13px;
+    }
+
+
+    /* =========================
+       DISTRIBUTED CARDS BIGGER
+    ========================= */
+
+    .dealt-card-list {
+        padding: 7px;
+
+        gap: 5px;
+    }
+
+
+    .kait-dealt-card {
+        width: 47px;
+        height: 67px;
+
+        flex:
+            0
+            0
+            47px;
+
+        border-width: 1px;
+
+        border-radius: 5px;
+
+        box-shadow:
+            0 5px 12px
+            rgba(0, 0, 0, 0.38);
+    }
+
+
+    /*
+     * FRONT / BACK area-এর usable height বাড়বে
+     */
+
+    .deal-side {
+        padding: 8px;
+    }
+
+
+    .deal-side-header {
+        flex-basis: 32px;
+    }
+
+
+    .side-badge {
+        width: 30px;
+        height: 30px;
+
+        flex-basis: 30px;
+
+        font-size: 13px;
+    }
+
+
+    .deal-side-header h2 {
+        font-size: 12px;
+    }
+
+
+    /*
+     * Betting panel-এর নিচে বড় blank
+     * না রেখে controls ছড়িয়ে থাকবে
+     */
+
+    .betting-section {
+        justify-content:
+            space-between;
+    }
+
+
+    .betting-section .section-title,
+    .rank-grid,
+    .payout-information,
+    .bet-amount-card,
+    .possible-win,
+    .place-bet-btn,
+    .betting-message {
+        flex-shrink: 0;
+    }
+
+
+    /*
+     * Rank buttons একটু বড়
+     */
+
+    .rank-button {
+        min-height: 37px;
+
+        font-size: 12px;
+    }
+
+
+    .amount-control > button,
+    .amount-control > div {
+        min-height: 38px;
+        height: 38px;
+    }
+
+
+    .quick-bet-options button {
+        min-height: 30px;
+    }
+
+
+    .place-bet-btn {
+        flex-basis: 42px;
+
+        min-height: 42px;
+
+        font-size: 11px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    /*
+     * Table একটু বেশি height পাবে।
+     * Betting এখনও same screen-এ থাকবে।
+     */
+
+    .kait-app {
+        grid-template-rows:
+            31px
+            228px
+            minmax(0, 1fr)
+            41px;
+    }
+
+
+    /* =========================
+       MOBILE DECK BIGGER
+    ========================= */
+
+    .kait-deck-zone {
+        flex-basis: 48px;
+
+        min-height: 48px;
+
+        margin:
+            1px
+            auto
+            4px;
+
+        gap: 10px;
+    }
+
+
+    .kait-deck-stack {
+        width: 39px;
+        height: 49px;
+    }
+
+
+    .deck-card {
+        width: 35px;
+        height: 48px;
+
+        border-width: 1px;
+
+        border-radius: 4px;
+    }
+
+
+    .deck-card-3 {
+        top: 4px;
+        left: 4px;
+    }
+
+
+    .deck-card-2 {
+        top: 2px;
+        left: 2px;
+    }
+
+
+    .kait-deck-info > span {
+        font-size: 6px;
+    }
+
+
+    .kait-deck-info strong {
+        font-size: 9px;
+    }
+
+
+    /* =========================
+       MOBILE DISTRIBUTED CARDS
+    ========================= */
+
+    .dealt-card-list {
+        padding:
+            4px
+            3px;
+
+        gap: 3px;
+    }
+
+
+    .kait-dealt-card {
+        width: 30px;
+        height: 43px;
+
+        flex:
+            0
+            0
+            30px;
+
+        border-width: 1px;
+
+        border-radius: 4px;
+
+        box-shadow:
+            0 3px 8px
+            rgba(0, 0, 0, 0.4);
+    }
+
+
+    .deal-side {
+        padding: 4px;
+    }
+
+
+    .deal-side-header {
+        flex-basis: 23px;
+    }
+
+
+    .side-badge {
+        width: 22px;
+        height: 22px;
+
+        flex-basis: 22px;
+
+        font-size: 9px;
+    }
+
+
+    .deal-side-header h2 {
+        font-size: 8px;
+    }
+
+
+    /*
+     * Betting panel-এর blank space কমবে
+     */
+
+    .betting-section {
+        justify-content:
+            space-between;
+    }
+
+
+    .rank-button {
+        min-height: 29px;
+
+        font-size: 9px;
+    }
+
+
+    .amount-control > button,
+    .amount-control > div {
+        min-height: 31px;
+        height: 31px;
+    }
+
+
+    .quick-bet-options button {
+        min-height: 23px;
+    }
+
+
+    .place-bet-btn {
+        flex-basis: 34px;
+
+        min-height: 34px;
+
+        font-size: 9px;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SHORT MOBILE
+========================================================= */
+
+@media
+(max-width: 600px)
+and
+(max-height: 700px) {
+
+    /*
+     * ছোট screen-এ card বড় থাকবে,
+     * শুধু table height সামান্য কমবে
+     */
+
+    .kait-app {
+        grid-template-rows:
+            28px
+            195px
+            minmax(0, 1fr)
+            36px;
+    }
+
+
+    .kait-deck-zone {
+        flex-basis: 42px;
+
+        min-height: 42px;
+    }
+
+
+    .kait-deck-stack {
+        width: 34px;
+        height: 43px;
+    }
+
+
+    .deck-card {
+        width: 31px;
+        height: 42px;
+    }
+
+
+    .kait-dealt-card {
+        width: 27px;
+        height: 38px;
+
+        flex-basis: 27px;
+    }
+
+}
