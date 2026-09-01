@@ -101,6 +101,72 @@ function initializeKaitSocket(io) {
   let engineRunning = false;
   let engineStopped = false;
 
+  function getOnlinePlayerCount() {
+    return namespace.sockets.size;
+  }
+
+  async function waitForPlayer() {
+    while (!engineStopped && getOnlinePlayerCount() < 1) {
+      await wait(1000);
+    }
+  }
+
+  async function closeEmptyRoundIfNoPlayers(roundId) {
+    if (getOnlinePlayerCount() > 0) {
+      return false;
+    }
+
+    const [result] = await pool.query(
+      `
+        UPDATE kait_rounds
+
+        SET
+          betting_ends_at =
+            CURRENT_TIMESTAMP(3)
+
+        WHERE id = ?
+
+          AND round_status =
+            'betting'
+
+          AND total_bets = 0
+      `,
+      [roundId],
+    );
+
+    return Number(result.affectedRows || 0) > 0;
+  }
+
+  async function waitForBettingWindow(round) {
+    const roundId = Number(round.id);
+
+    const bettingEndsAt = new Date(round.bettingEndsAt).getTime();
+
+    while (!engineStopped) {
+      const remaining = bettingEndsAt - Date.now();
+
+      if (remaining <= 0) {
+        return;
+      }
+
+      /*
+       * কোনো player নেই।
+       *
+       * যদি bet-ও না থাকে,
+       * round এখনই শেষ হবে।
+       */
+      if (getOnlinePlayerCount() < 1) {
+        const closed = await closeEmptyRoundIfNoPlayers(roundId);
+
+        if (closed) {
+          return;
+        }
+      }
+
+      await wait(Math.min(500, remaining));
+    }
+  }
+
   async function emitPublicState() {
     const state = await getPublicGameState();
 
@@ -138,9 +204,7 @@ function initializeKaitSocket(io) {
         round,
       });
 
-      const bettingEndsAt = new Date(round.bettingEndsAt).getTime();
-
-      await wait(bettingEndsAt - Date.now());
+      await waitForBettingWindow(round);
     }
 
     const dealPlan = await beginKaitDealing(roundId);
@@ -254,6 +318,11 @@ function initializeKaitSocket(io) {
 
     while (!engineStopped) {
       try {
+        await waitForPlayer();
+
+        if (engineStopped) {
+          break;
+        }
         const { settings, round } = await ensureCurrentRound();
 
         /*

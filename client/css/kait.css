@@ -3634,3 +3634,1378 @@ span {
     }
 
 }
+
+/* =========================================================
+   KAIT — ONE SCREEN MODE
+   Desktop + Mobile
+========================================================= */
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden !important;
+}
+
+body {
+    overscroll-behavior: none;
+}
+
+
+/* =========================================================
+   MAIN SCREEN
+========================================================= */
+
+.kait-app {
+    width: 100%;
+    max-width: 1600px;
+
+    height: 100dvh;
+
+    margin: 0 auto;
+
+    padding:
+        69px
+        8px
+        7px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.25fr)
+        minmax(340px, 0.75fr);
+
+    grid-template-rows:
+        27px
+        42px
+        minmax(0, 1fr)
+        52px;
+
+    grid-template-areas:
+        "connection connection"
+        "round round"
+        "table betting"
+        "resolved betting";
+
+    gap: 5px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   HEADER SMALL
+========================================================= */
+
+.game-header {
+    width: 100%;
+    max-width: 1600px;
+
+    height: 64px;
+    min-height: 64px;
+
+    padding:
+        7px
+        12px;
+}
+
+
+.game-brand img {
+    width: 40px;
+    height: 40px;
+}
+
+
+.header-icon-btn {
+    width: 38px;
+    height: 38px;
+
+    flex-basis: 38px;
+}
+
+
+.wallet-display {
+    min-height: 38px;
+}
+
+
+/* =========================================================
+   CONNECTION
+========================================================= */
+
+.connection-bar {
+    grid-area: connection;
+
+    min-height: 0;
+
+    margin: 0;
+
+    padding:
+        3px
+        10px;
+
+    border-radius: 7px;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   ROUND
+========================================================= */
+
+.round-information {
+    grid-area: round;
+
+    min-height: 0;
+
+    margin: 0;
+
+    padding:
+        5px
+        10px;
+
+    gap: 8px;
+
+    border-radius: 9px;
+}
+
+
+.round-number {
+    gap: 1px;
+}
+
+
+.round-number span {
+    font-size: 7px;
+}
+
+
+.round-number strong {
+    font-size: 11px;
+}
+
+
+.round-status-badge {
+    min-height: 25px;
+
+    padding:
+        0
+        9px;
+
+    font-size: 8px;
+}
+
+
+.round-timer {
+    min-height: 30px;
+
+    padding:
+        3px
+        8px;
+}
+
+
+.round-timer strong {
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   GAME TABLE
+========================================================= */
+
+.kait-table {
+    grid-area: table;
+
+    display: flex;
+
+    height: 100%;
+    min-height: 0;
+
+    margin: 0;
+
+    padding:
+        8px;
+
+    flex-direction: column;
+
+    border-radius: 14px;
+
+    overflow: hidden;
+}
+
+
+.table-glow {
+    inset: 4px;
+
+    border-radius: 10px;
+}
+
+
+.kait-table-heading {
+    flex:
+        0
+        0
+        auto;
+
+    margin-bottom: 3px;
+}
+
+
+.kait-table-heading > div:first-child span {
+    font-size: 6px;
+
+    letter-spacing: 1px;
+}
+
+
+.kait-table-heading h1 {
+    margin: 0;
+
+    font-size: 16px;
+
+    letter-spacing: 3px;
+}
+
+
+.table-bet-total {
+    padding:
+        3px
+        7px;
+
+    border-radius: 7px;
+}
+
+
+.table-bet-total span {
+    font-size: 6px;
+}
+
+
+.table-bet-total strong {
+    margin-top: 1px;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   DECK COMPACT
+========================================================= */
+
+.kait-deck-zone {
+    flex:
+        0
+        0
+        43px;
+
+    min-height: 43px;
+
+    margin:
+        0
+        auto
+        3px;
+
+    gap: 8px;
+}
+
+
+.kait-deck-stack {
+    width: 33px;
+    height: 42px;
+}
+
+
+.deck-card {
+    width: 29px;
+    height: 40px;
+
+    border-width: 1px;
+
+    border-radius: 4px;
+}
+
+
+.deck-card-3 {
+    top: 3px;
+    left: 3px;
+}
+
+
+.deck-card-2 {
+    top: 2px;
+    left: 2px;
+}
+
+
+.kait-deck-info {
+    gap: 1px;
+}
+
+
+.kait-deck-info > span {
+    font-size: 6px;
+}
+
+
+.kait-deck-info strong {
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   FRONT / BACK
+========================================================= */
+
+.deal-area {
+    flex: 1;
+
+    min-height: 0;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        25px
+        minmax(0, 1fr);
+
+    gap: 3px;
+
+    overflow: hidden;
+}
+
+
+.deal-side {
+    display: flex;
+
+    min-height: 0;
+
+    padding:
+        4px;
+
+    flex-direction: column;
+
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+
+.deal-side-header {
+    flex:
+        0
+        0
+        24px;
+
+    gap: 4px;
+}
+
+
+.side-badge {
+    width: 24px;
+    height: 24px;
+
+    flex-basis: 24px;
+
+    font-size: 10px;
+}
+
+
+.deal-side-header h2 {
+    font-size: 9px;
+}
+
+
+.deal-side-header p {
+    display: none;
+}
+
+
+.deal-center span {
+    width: 22px;
+    height: 22px;
+
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   MANY CARDS FIT WITHOUT SCROLL
+========================================================= */
+
+.dealt-card-list {
+    flex: 1;
+
+    min-height: 0;
+
+    margin-top: 3px;
+
+    padding:
+        3px;
+
+    align-content: flex-start;
+
+    justify-content: center;
+
+    gap: 2px;
+
+    overflow: hidden;
+}
+
+
+.empty-card-message {
+    min-height: 40px;
+
+    font-size: 7px;
+}
+
+
+.kait-dealt-card {
+    width: 26px;
+    height: 37px;
+
+    flex:
+        0
+        0
+        26px;
+
+    border-width: 1px;
+
+    border-radius: 3px;
+
+    box-shadow:
+        0 2px 5px
+        rgba(0, 0, 0, 0.3);
+}
+
+
+/* =========================================================
+   DEAL STATUS
+========================================================= */
+
+.deal-status {
+    flex:
+        0
+        0
+        22px;
+
+    min-height: 22px;
+
+    margin-top: 3px;
+
+    padding:
+        2px
+        6px;
+
+    border-radius: 6px;
+
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   RESOLVED RANK
+========================================================= */
+
+.resolved-section {
+    grid-area: resolved;
+
+    height: 100%;
+
+    margin: 0;
+
+    padding:
+        4px
+        7px;
+
+    border-radius: 9px;
+
+    overflow: hidden;
+}
+
+
+.resolved-section .section-title {
+    display: none;
+}
+
+
+.resolved-rank-grid {
+    height: 100%;
+
+    margin: 0;
+
+    grid-template-columns:
+        repeat(
+            13,
+            minmax(0, 1fr)
+        );
+
+    gap: 2px;
+}
+
+
+.resolved-rank {
+    min-height: 0;
+    height: 100%;
+
+    padding:
+        2px;
+
+    gap: 1px;
+
+    border-radius: 5px;
+}
+
+
+.resolved-rank strong {
+    font-size: 9px;
+}
+
+
+.resolved-rank span {
+    font-size: 5px;
+}
+
+
+/* =========================================================
+   BETTING PANEL
+========================================================= */
+
+.betting-section {
+    grid-area: betting;
+
+    display: flex;
+
+    height: 100%;
+    min-height: 0;
+
+    margin: 0;
+
+    padding:
+        8px;
+
+    flex-direction: column;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+}
+
+
+.betting-section .section-title {
+    flex:
+        0
+        0
+        30px;
+}
+
+
+.section-title > div:first-child span {
+    font-size: 6px;
+}
+
+
+.section-title h2 {
+    margin-top: 1px;
+
+    font-size: 12px;
+}
+
+
+.selected-rank-display {
+    min-width: 60px;
+
+    padding:
+        3px
+        6px;
+
+    border-radius: 7px;
+}
+
+
+.selected-rank-display span {
+    font-size: 5px;
+}
+
+
+.selected-rank-display strong {
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   13 RANKS
+========================================================= */
+
+.rank-grid {
+    flex:
+        0
+        0
+        auto;
+
+    margin-top: 4px;
+
+    grid-template-columns:
+        repeat(
+            7,
+            minmax(0, 1fr)
+        );
+
+    gap: 3px;
+}
+
+
+.rank-button {
+    min-height: 30px;
+
+    padding: 2px;
+
+    border-radius: 6px;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   PAYOUT
+========================================================= */
+
+.payout-information {
+    flex:
+        0
+        0
+        auto;
+
+    gap: 4px;
+
+    margin-top: 5px;
+}
+
+
+.payout-information > div {
+    min-height: 28px;
+
+    padding:
+        3px
+        6px;
+
+    border-radius: 6px;
+}
+
+
+.payout-information span {
+    font-size: 6px;
+}
+
+
+.payout-information strong {
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   BET AMOUNT
+========================================================= */
+
+.bet-amount-card {
+    flex:
+        0
+        0
+        auto;
+
+    margin-top: 5px;
+
+    padding: 5px;
+
+    border-radius: 7px;
+}
+
+
+.bet-amount-heading > span {
+    font-size: 7px;
+}
+
+
+.bet-amount-heading small {
+    font-size: 6px;
+}
+
+
+.amount-control {
+    grid-template-columns:
+        33px
+        minmax(0, 1fr)
+        33px;
+
+    gap: 4px;
+
+    margin-top: 4px;
+}
+
+
+.amount-control > button,
+.amount-control > div {
+    min-height: 32px;
+    height: 32px;
+
+    border-radius: 6px;
+}
+
+
+.amount-control input {
+    font-size: 11px;
+}
+
+
+.amount-control > div span {
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   QUICK BET
+========================================================= */
+
+.quick-bet-options {
+    gap: 3px;
+
+    margin-top: 4px;
+}
+
+
+.quick-bet-options button {
+    min-height: 25px;
+
+    padding: 2px;
+
+    border-radius: 5px;
+
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   POSSIBLE WIN
+========================================================= */
+
+.possible-win {
+    flex:
+        0
+        0
+        auto;
+
+    min-height: 29px;
+
+    margin-top: 5px;
+
+    padding:
+        3px
+        6px;
+
+    border-radius: 6px;
+}
+
+
+.possible-win span {
+    font-size: 6px;
+}
+
+
+.possible-win strong {
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   BET BUTTON
+========================================================= */
+
+.place-bet-btn {
+    flex:
+        0
+        0
+        36px;
+
+    min-height: 36px;
+
+    margin-top: 5px;
+
+    padding: 5px;
+
+    border-radius: 7px;
+
+    font-size: 9px;
+}
+
+
+.betting-message {
+    flex:
+        0
+        0
+        12px;
+
+    min-height: 12px;
+
+    margin:
+        2px
+        0
+        0;
+
+    font-size: 6px;
+
+    line-height: 1.2;
+}
+
+
+/* =========================================================
+   HOW TO PLAY HIDE
+   Already one-screen game
+========================================================= */
+
+.game-rule-card {
+    display: none !important;
+}
+
+
+/* =========================================================
+   MY BET = SMALL FLOATING BAR
+========================================================= */
+
+.my-bet-card {
+    position: fixed;
+
+    z-index: 150;
+
+    right: 8px;
+    bottom: 8px;
+
+    width:
+        min(
+            410px,
+            calc(100vw - 16px)
+        );
+
+    margin: 0;
+
+    padding:
+        6px;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 5px 20px
+        rgba(0, 0, 0, 0.5);
+}
+
+
+.my-bet-heading {
+    display: none;
+}
+
+
+.my-bet-grid {
+    margin: 0;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    gap: 3px;
+}
+
+
+.my-bet-grid > div {
+    padding:
+        4px;
+
+    border-radius: 5px;
+}
+
+
+.my-bet-grid span {
+    font-size: 5px;
+}
+
+
+.my-bet-grid strong {
+    margin-top: 1px;
+
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   MOBILE ONE SCREEN
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .game-header {
+        height: 52px;
+        min-height: 52px;
+
+        padding:
+            4px
+            6px;
+    }
+
+
+    .game-brand img {
+        width: 34px;
+        height: 34px;
+    }
+
+
+    .header-icon-btn {
+        width: 33px;
+        height: 33px;
+
+        flex-basis: 33px;
+    }
+
+
+    .wallet-display {
+        min-height: 33px;
+
+        padding:
+            0
+            6px;
+
+        font-size: 9px;
+    }
+
+
+    .wallet-display strong {
+        font-size: 9px;
+    }
+
+
+    .kait-app {
+        height: 100dvh;
+
+        padding:
+            56px
+            4px
+            4px;
+
+        grid-template-columns:
+            1fr;
+
+        grid-template-rows:
+            32px
+            205px
+            minmax(0, 1fr)
+            43px;
+
+        grid-template-areas:
+            "round"
+            "table"
+            "betting"
+            "resolved";
+
+        gap: 3px;
+    }
+
+
+    /*
+     * Connected player থাকলেই game চলছে,
+     * mobile-এ এই bar hide করে space save।
+     */
+
+    .connection-bar {
+        display: none;
+    }
+
+
+    .round-information {
+        padding:
+            3px
+            6px;
+
+        border-radius: 6px;
+    }
+
+
+    .round-number strong {
+        font-size: 9px;
+    }
+
+
+    .round-center {
+        gap: 3px;
+    }
+
+
+    .round-status-badge {
+        min-height: 22px;
+
+        padding:
+            0
+            6px;
+
+        font-size: 6px;
+    }
+
+
+    .round-timer {
+        min-height: 24px;
+
+        padding:
+            2px
+            5px;
+    }
+
+
+    .round-timer strong {
+        font-size: 10px;
+    }
+
+
+    /* TABLE */
+
+    .kait-table {
+        padding:
+            5px;
+
+        border-width: 1px;
+
+        border-radius: 10px;
+    }
+
+
+    .kait-table-heading {
+        margin-bottom: 1px;
+    }
+
+
+    .kait-table-heading h1 {
+        font-size: 12px;
+    }
+
+
+    .kait-deck-zone {
+        flex-basis: 32px;
+
+        min-height: 32px;
+
+        margin-bottom: 1px;
+    }
+
+
+    .kait-deck-stack {
+        width: 26px;
+        height: 31px;
+    }
+
+
+    .deck-card {
+        width: 22px;
+        height: 30px;
+    }
+
+
+    .kait-deck-info strong {
+        font-size: 7px;
+    }
+
+
+    /* FRONT BACK */
+
+    .deal-area {
+        grid-template-columns:
+            minmax(0, 1fr)
+            17px
+            minmax(0, 1fr);
+
+        gap: 2px;
+    }
+
+
+    .deal-side {
+        padding: 3px;
+    }
+
+
+    .deal-side-header {
+        flex-basis: 18px;
+    }
+
+
+    .side-badge {
+        width: 18px;
+        height: 18px;
+
+        flex-basis: 18px;
+
+        font-size: 7px;
+    }
+
+
+    .deal-side-header h2 {
+        font-size: 7px;
+    }
+
+
+    .deal-center span {
+        width: 16px;
+        height: 16px;
+
+        font-size: 5px;
+    }
+
+
+    .dealt-card-list {
+        margin-top: 2px;
+
+        padding: 2px;
+
+        gap: 1px;
+    }
+
+
+    .kait-dealt-card {
+        width: 20px;
+        height: 28px;
+
+        flex-basis: 20px;
+    }
+
+
+    .deal-status {
+        flex-basis: 17px;
+
+        min-height: 17px;
+
+        margin-top: 2px;
+
+        padding:
+            1px
+            3px;
+
+        font-size: 5px;
+    }
+
+
+    /* BET */
+
+    .betting-section {
+        padding: 5px;
+    }
+
+
+    .betting-section .section-title {
+        flex-basis: 23px;
+    }
+
+
+    .section-title h2 {
+        font-size: 9px;
+    }
+
+
+    .selected-rank-display {
+        min-width: 48px;
+
+        padding:
+            2px
+            4px;
+    }
+
+
+    .selected-rank-display strong {
+        font-size: 8px;
+    }
+
+
+    .rank-grid {
+        margin-top: 3px;
+
+        gap: 2px;
+    }
+
+
+    .rank-button {
+        min-height: 26px;
+
+        font-size: 8px;
+    }
+
+
+    .payout-information {
+        margin-top: 3px;
+    }
+
+
+    .payout-information > div {
+        min-height: 23px;
+
+        padding:
+            2px
+            4px;
+    }
+
+
+    .bet-amount-card {
+        margin-top: 3px;
+
+        padding: 3px;
+    }
+
+
+    .bet-amount-heading {
+        height: 11px;
+    }
+
+
+    .amount-control {
+        grid-template-columns:
+            29px
+            minmax(0, 1fr)
+            29px;
+
+        margin-top: 2px;
+    }
+
+
+    .amount-control > button,
+    .amount-control > div {
+        height: 28px;
+        min-height: 28px;
+    }
+
+
+    .quick-bet-options {
+        margin-top: 2px;
+
+        gap: 2px;
+    }
+
+
+    .quick-bet-options button {
+        min-height: 21px;
+
+        font-size: 6px;
+    }
+
+
+    .possible-win {
+        min-height: 24px;
+
+        margin-top: 3px;
+
+        padding:
+            2px
+            4px;
+    }
+
+
+    .place-bet-btn {
+        flex-basis: 31px;
+
+        min-height: 31px;
+
+        margin-top: 3px;
+
+        font-size: 8px;
+    }
+
+
+    .betting-message {
+        margin-top: 1px;
+
+        font-size: 5px;
+    }
+
+
+    /* RESOLVED */
+
+    .resolved-section {
+        padding:
+            3px;
+    }
+
+
+    .resolved-rank-grid {
+        gap: 1px;
+    }
+
+
+    .resolved-rank {
+        padding: 1px;
+    }
+
+
+    .resolved-rank strong {
+        font-size: 7px;
+    }
+
+
+    .resolved-rank span {
+        font-size: 4px;
+    }
+
+
+    /* MY BET */
+
+    .my-bet-card {
+        right: 4px;
+        bottom: 4px;
+
+        width:
+            calc(
+                100vw - 8px
+            );
+
+        padding: 4px;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SHORT MOBILE SCREEN
+========================================================= */
+
+@media
+(max-width: 600px)
+and
+(max-height: 700px) {
+
+    .kait-app {
+        grid-template-rows:
+            29px
+            176px
+            minmax(0, 1fr)
+            38px;
+    }
+
+
+    .payout-information {
+        display: none;
+    }
+
+
+    .bet-amount-heading {
+        display: none;
+    }
+
+
+    .betting-message {
+        display: none;
+    }
+
+
+    .kait-table-heading > div:first-child span {
+        display: none;
+    }
+
+
+    .kait-dealt-card {
+        width: 18px;
+        height: 25px;
+
+        flex-basis: 18px;
+    }
+
+}
