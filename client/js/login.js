@@ -683,7 +683,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (userRole === "agent") {
           window.location.href = "../agent/dashboard.html";
         } else {
-          window.location.href = "./lobby.html";
+          window.location.href = "/lobby";
         }
       }, 700);
     } catch (error) {

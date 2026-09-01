@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       window.setTimeout(() => {
-        window.location.href = "lobby.html";
+        window.location.href = "/lobby";
       }, 700);
     } catch (error) {
       console.error("Registration error:", error);
