@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    App Management | PMS ADDA Admin
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../css/common.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../css/admin-app-download.css"
+  >
+</head>
+
+<body>
+
+  <div class="app-admin-layout">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="app-admin-sidebar">
+
+      <div class="app-admin-logo">
+        <i class="fa-solid fa-shield-halved"></i>
+
+        <div>
+          <strong>PMS ADDA</strong>
+          <span>Control Center</span>
+        </div>
+      </div>
+
+
+      <nav class="app-admin-menu">
+
+        <a href="dashboard.html">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="games.html">
+          <i class="fa-solid fa-gamepad"></i>
+          <span>Games</span>
+        </a>
+
+        <a
+          href="app-download.html"
+          class="active"
+        >
+          <i class="fa-brands fa-android"></i>
+          <span>App Management</span>
+        </a>
+
+      </nav>
+
+
+      <button
+        type="button"
+        id="backDashboardBtn"
+        class="sidebar-back-btn"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+        Dashboard
+      </button>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="app-admin-main">
+
+      <!-- HEADER -->
+
+      <header class="app-admin-header">
+
+        <div>
+          <span class="admin-eyebrow">
+            PMS ADDA ADMIN
+          </span>
+
+          <h1>
+            <i class="fa-brands fa-android"></i>
+            App Management
+          </h1>
+
+          <p>
+            Upload and manage the PMS ADDA Android application.
+          </p>
+        </div>
+
+
+        <div
+          id="appStatusBadge"
+          class="app-status-badge"
+        >
+          Loading...
+        </div>
+
+      </header>
+
+
+      <!-- ===================================================
+           SUMMARY
+      ==================================================== -->
+
+      <section class="app-summary-grid">
+
+        <article class="app-summary-card">
+
+          <div class="summary-icon">
+            <i class="fa-solid fa-code-branch"></i>
+          </div>
+
+          <div>
+            <span>Current Version</span>
+
+            <strong id="currentVersion">
+              -
+            </strong>
+          </div>
+
+        </article>
+
+
+        <article class="app-summary-card">
+
+          <div class="summary-icon">
+            <i class="fa-solid fa-file-arrow-down"></i>
+          </div>
+
+          <div>
+            <span>APK Size</span>
+
+            <strong id="currentApkSize">
+              -
+            </strong>
+          </div>
+
+        </article>
+
+
+        <article class="app-summary-card">
+
+          <div class="summary-icon">
+            <i class="fa-solid fa-download"></i>
+          </div>
+
+          <div>
+            <span>Total Downloads</span>
+
+            <strong id="totalDownloads">
+              0
+            </strong>
+          </div>
+
+        </article>
+
+
+        <article class="app-summary-card">
+
+          <div class="summary-icon">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+
+          <div>
+            <span>Last Upload</span>
+
+            <strong id="lastUploadedAt">
+              -
+            </strong>
+          </div>
+
+        </article>
+
+      </section>
+
+
+      <!-- ===================================================
+           CURRENT APP
+      ==================================================== -->
+
+      <section class="admin-panel-card">
+
+        <div class="panel-heading">
+
+          <div>
+            <span>
+              CURRENT APPLICATION
+            </span>
+
+            <h2>
+              PMS ADDA Android App
+            </h2>
+          </div>
+
+          <div class="android-logo">
+            <i class="fa-brands fa-android"></i>
+          </div>
+
+        </div>
+
+
+        <div class="current-app-information">
+
+          <div class="app-info-row">
+            <span>App Name</span>
+
+            <strong id="appName">
+              PMS ADDA
+            </strong>
+          </div>
+
+
+          <div class="app-info-row">
+            <span>APK File</span>
+
+            <strong id="apkFileName">
+              No APK uploaded
+            </strong>
+          </div>
+
+
+          <div class="app-info-row">
+            <span>Version</span>
+
+            <strong id="appVersion">
+              -
+            </strong>
+          </div>
+
+
+          <div class="app-info-row">
+            <span>Availability</span>
+
+            <strong id="appAvailability">
+              -
+            </strong>
+          </div>
+
+        </div>
+
+
+        <button
+          type="button"
+          id="testDownloadBtn"
+          class="test-download-btn"
+        >
+          <i class="fa-solid fa-download"></i>
+
+          Test Current APK Download
+        </button>
+
+      </section>
+
+
+      <!-- ===================================================
+           UPLOAD NEW APK
+      ==================================================== -->
+
+      <section class="admin-panel-card">
+
+        <div class="panel-heading">
+
+          <div>
+            <span>
+              NEW RELEASE
+            </span>
+
+            <h2>
+              Upload New APK
+            </h2>
+          </div>
+
+          <i class="fa-solid fa-cloud-arrow-up panel-icon"></i>
+
+        </div>
+
+
+        <form
+          id="apkUploadForm"
+          class="apk-upload-form"
+        >
+
+          <!-- VERSION -->
+
+          <label class="admin-field">
+
+            <span>
+              App Version
+            </span>
+
+            <input
+              type="text"
+              id="appVersionInput"
+              name="appVersion"
+              placeholder="Example: 1.0.1"
+              maxlength="50"
+              required
+            >
+
+          </label>
+
+
+          <!-- FILE -->
+
+          <div class="admin-field">
+
+            <span>
+              APK File
+            </span>
+
+            <label
+              for="apkFileInput"
+              class="apk-file-picker"
+              id="apkFilePicker"
+            >
+
+              <i class="fa-brands fa-android"></i>
+
+              <div>
+
+                <strong id="selectedApkName">
+                  Choose APK File
+                </strong>
+
+                <small id="selectedApkSize">
+                  Maximum file size: 100 MB
+                </small>
+
+              </div>
+
+              <span class="choose-file-text">
+                Browse
+              </span>
+
+            </label>
+
+
+            <input
+              type="file"
+              id="apkFileInput"
+              name="apk"
+              accept=".apk,application/vnd.android.package-archive"
+              hidden
+              required
+            >
+
+          </div>
+
+
+          <!-- PROGRESS -->
+
+          <div
+            id="uploadProgressContainer"
+            class="upload-progress-container"
+            hidden
+          >
+
+            <div class="upload-progress-heading">
+
+              <span>
+                Uploading APK...
+              </span>
+
+              <strong id="uploadProgressText">
+                0%
+              </strong>
+
+            </div>
+
+
+            <div class="upload-progress-track">
+
+              <div
+                id="uploadProgressBar"
+                class="upload-progress-bar"
+              ></div>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="submit"
+            id="uploadApkBtn"
+            class="upload-apk-btn"
+          >
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+
+            Upload New Version
+          </button>
+
+        </form>
+
+      </section>
+
+
+      <!-- ===================================================
+           DOWNLOAD CONTROL
+      ==================================================== -->
+
+      <section class="admin-panel-card">
+
+        <div class="panel-heading">
+
+          <div>
+            <span>
+              DOWNLOAD CONTROL
+            </span>
+
+            <h2>
+              User Download Access
+            </h2>
+          </div>
+
+          <i class="fa-solid fa-sliders panel-icon"></i>
+
+        </div>
+
+
+        <div class="download-control-row">
+
+          <div>
+
+            <strong>
+              Download App Button
+            </strong>
+
+            <p>
+              Turn this off to temporarily stop users from
+              downloading the application.
+            </p>
+
+          </div>
+
+
+          <label class="admin-switch">
+
+            <input
+              type="checkbox"
+              id="downloadEnabledInput"
+            >
+
+            <span class="switch-slider"></span>
+
+          </label>
+
+        </div>
+
+
+        <button
+          type="button"
+          id="saveDownloadSettingsBtn"
+          class="save-settings-btn"
+        >
+          <i class="fa-solid fa-floppy-disk"></i>
+
+          Save Download Settings
+        </button>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    id="adminAppLoader"
+    class="admin-app-loader"
+  >
+
+    <div class="loader-spinner"></div>
+
+    <span>
+      Loading App Management...
+    </span>
+
+  </div>
+
+
+  <!-- =====================================================
+       TOAST
+  ====================================================== -->
+
+  <div
+    id="adminAppToast"
+    class="admin-app-toast"
+    hidden
+  >
+
+    <i
+      id="adminAppToastIcon"
+      class="fa-solid fa-circle-info"
+    ></i>
+
+    <span id="adminAppToastMessage">
+      Message
+    </span>
+
+  </div>
+
+
+  <script src="../js/app-config.js"></script>
+
+  <script src="../js/admin-app-download.js"></script>
+
+</body>
+</html>

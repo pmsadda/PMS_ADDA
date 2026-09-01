@@ -70,6 +70,8 @@ const adminLotteryRoutes = require("./routes/admin-lottery.routes");
 
 const adminAgentRoutes = require("./routes/admin-agent.routes");
 
+const appDownloadRoutes = require("./routes/app-download.routes");
+
 const app = express();
 
 /* =========================================================
@@ -79,14 +81,8 @@ const app = express();
 app.use((req, res, next) => {
   const host = String(req.hostname || "").toLowerCase();
 
-  if (
-    host === "pms-adda.live" ||
-    host === "www.pms-adda.live"
-  ) {
-    return res.redirect(
-      308,
-      `https://pms-adda.site${req.originalUrl}`,
-    );
+  if (host === "pms-adda.live" || host === "www.pms-adda.live") {
+    return res.redirect(308, `https://pms-adda.site${req.originalUrl}`);
   }
 
   next();
@@ -250,8 +246,72 @@ app.use(
    Health Route
 ========================== */
 
+/* =========================================================
+   CLEAN FRONTEND URLS
+========================================================= */
+
+const clientRoot = path.join(__dirname, "../../client");
+
+const clientPages = path.join(clientRoot, "pages");
+
+/* Assets for clean URLs */
+
+app.use("/css", express.static(path.join(clientRoot, "css")));
+
+app.use("/js", express.static(path.join(clientRoot, "js")));
+
+app.use("/assets", express.static(path.join(clientRoot, "assets")));
+
+/* =========================================================
+   LOGIN = MAIN DOMAIN
+========================================================= */
+
 app.get("/", (req, res) => {
-  return res.redirect(302, "/client/pages/login.html");
+  return res.sendFile(path.join(clientPages, "login.html"));
+});
+
+/* =========================================================
+   OLD URL → CLEAN URL
+========================================================= */
+
+app.get("/client/pages/login.html", (req, res) => {
+  return res.redirect(301, "/");
+});
+
+app.get("/client/pages/:page.html", (req, res) => {
+  return res.redirect(301, `/${req.params.page}`);
+});
+
+/* =========================================================
+   /lobby.html → /lobby
+========================================================= */
+
+app.get("/:page.html", (req, res) => {
+  return res.redirect(301, `/${req.params.page}`);
+});
+
+/* =========================================================
+   CLEAN PAGE ROUTE
+   /lobby
+   /wallet
+   /profile
+   etc.
+========================================================= */
+
+app.get("/:page", (req, res, next) => {
+  const page = String(req.params.page || "").replace(/[^a-zA-Z0-9_-]/g, "");
+
+  if (!page) {
+    return next();
+  }
+
+  const filePath = path.join(clientPages, `${page}.html`);
+
+  return res.sendFile(filePath, (error) => {
+    if (error) {
+      next();
+    }
+  });
 });
 
 app.get("/api/health", (req, res) => {
@@ -283,6 +343,8 @@ app.use("/api/lobby-notices", lobbyNoticeRoutes);
 app.use("/api/lobby-banner", lobbyBannerRoutes);
 
 app.use("/api/admin/lobby-banner", adminLobbyBannerRoutes);
+
+app.use("/api/app-download", appDownloadRoutes);
 
 /*
  * Lobby game availability

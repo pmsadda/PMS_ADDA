@@ -1629,14 +1629,39 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initializeLobby();
-  DOM.downloadAppButton?.addEventListener("click", () => {
-  const link = document.createElement("a");
+  DOM.downloadAppButton?.addEventListener("click", async () => {
+    try {
+      const result = await requestAPI("/app-download/info");
 
-  link.href = "../downloads/PMS_ADDA.apk";
-  link.download = "PMS_ADDA.apk";
+      const app = result?.data?.app || result?.app || null;
 
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-});
+      if (!app?.downloadEnabled) {
+        showToast("App download এখন বন্ধ আছে।", "error");
+
+        return;
+      }
+
+      if (!app?.available) {
+        showToast("App এখনো upload করা হয়নি।", "error");
+
+        return;
+      }
+
+      const link = document.createElement("a");
+
+      link.href = window.APP_CONFIG.api("/app-download/download");
+
+      link.download = "PMS_ADDA.apk";
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+    } catch (error) {
+      console.error("APP DOWNLOAD ERROR:", error);
+
+      showToast(error.message || "App download করা যাচ্ছে না।", "error");
+    }
+  });
 });
