@@ -1864,13 +1864,7 @@ document.addEventListener("DOMContentLoaded", () => {
     true,
   );
 
-  /* =========================================================
-   FIRST VISIT POPUP
-========================================================= */
+ 
 
-  if (isGuestUser()) {
-    window.setTimeout(() => {
-      showGuestAuthPopup();
-    }, 700);
-  }
+  
 });
