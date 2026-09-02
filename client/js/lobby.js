@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
      CONFIGURATION
   ========================================================= */
 
-  const LOGIN_PAGE = "./login.html";
+  const LOGIN_PAGE = "/login";
 
   const token =
     localStorage.getItem("access_token") || localStorage.getItem("token") || "";
@@ -287,12 +287,38 @@ document.addEventListener("DOMContentLoaded", () => {
     return result;
   }
 
+  async function requestPublicAPI(path) {
+    const response = await fetch(window.APP_CONFIG.api(path), {
+      method: "GET",
+
+      headers: {
+        Accept: "application/json",
+      },
+
+      cache: "no-store",
+    });
+
+    let result = null;
+
+    try {
+      result = await response.json();
+    } catch (error) {
+      result = null;
+    }
+
+    if (!response.ok) {
+      throw new Error(result?.message || "Public Lobby data load করা যায়নি.");
+    }
+
+    return result;
+  }
+
   function extractReferral(result) {
     return result?.data?.referral || result?.referral || null;
   }
 
   function buildReferralLink(referralCode) {
-    const url = new URL("./register.html", window.location.href);
+    const url = new URL("/register", window.location.origin);
 
     url.search = "";
     url.hash = "";
@@ -1234,6 +1260,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
     selectLobbyBanner(selectedIndex);
   });
+
+  async function loadGuestLobbyData(options = {}) {
+    if (STATE.loading) {
+      return;
+    }
+
+    const showFullLoader = options.showLoader === true;
+
+    if (showFullLoader) {
+      showLoader();
+    } else if (DOM.refreshButton) {
+      DOM.refreshButton.disabled = true;
+      DOM.refreshButton.setAttribute("aria-busy", "true");
+    }
+
+    try {
+      const [noticeResult, bannerResult, gameResult] = await Promise.allSettled(
+        [
+          requestPublicAPI("/lobby-notices/public"),
+
+          requestPublicAPI("/lobby-banner"),
+
+          requestPublicAPI("/games/availability"),
+        ],
+      );
+
+      STATE.lobbyNotices =
+        noticeResult.status === "fulfilled"
+          ? extractLobbyNotices(noticeResult.value)
+          : [];
+
+      STATE.lobbyBanners =
+        bannerResult.status === "fulfilled"
+          ? extractLobbyBanners(bannerResult.value)
+          : [];
+
+      STATE.lobbyBannerIndex = 0;
+
+      STATE.gameAvailability =
+        gameResult.status === "fulfilled"
+          ? extractGameAvailability(gameResult.value)
+          : {};
+
+      renderLobbyNotice();
+      renderLobbyBanner();
+      renderGameAvailability();
+
+      STATE.lastLoadedAt = Date.now();
+
+      if (options.showSuccess === true) {
+        showToast("Lobby updated successfully.", "success");
+      }
+    } catch (error) {
+      console.error("GUEST LOBBY LOAD ERROR:", error);
+
+      showToast(error.message || "Lobby data load করা যায়নি.", "error");
+    } finally {
+      hideLoader();
+    }
+  }
   /* =========================================================
      LOAD DYNAMIC LOBBY DATA
   ========================================================= */
@@ -1358,7 +1444,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * পুরোনো data হলে notification খোলার সময় refresh।
      */
     if (Date.now() - STATE.lastLoadedAt > 15000) {
-      await loadLobbyData();
+      loadLobbyData();
     }
   });
 
@@ -1482,66 +1568,62 @@ document.addEventListener("DOMContentLoaded", () => {
 
     icon?.classList.add("fa-spin");
 
-    await loadLobbyData({
-      showSuccess: true,
-    });
+    if (isGuestUser()) {
+      await loadGuestLobbyData({
+        showSuccess: true,
+      });
+    } else {
+      await loadLobbyData({
+        showSuccess: true,
+      });
+    }
 
     icon?.classList.remove("fa-spin");
   });
 
   /* =========================================================
-     QUICK MENU NAVIGATION
-  ========================================================= */
+   QUICK MENU NAVIGATION
+========================================================= */
 
-  DOM.depositButton?.addEventListener("click", () =>
-    navigateTo("./deposit.html"),
-  );
+  DOM.depositButton?.addEventListener("click", () => navigateTo("/deposit"));
 
-  DOM.withdrawButton?.addEventListener("click", () =>
-    navigateTo("./withdraw.html"),
-  );
+  DOM.withdrawButton?.addEventListener("click", () => navigateTo("/withdraw"));
 
   /* =========================================================
-     GAME NAVIGATION
-  ========================================================= */
+   GAME NAVIGATION
+========================================================= */
 
   DOM.teenPattiButton?.addEventListener("click", () =>
-    navigateTo("./teenpatti-rooms.html"),
+    navigateTo("/teenpatti-rooms"),
   );
 
-  DOM.pokerButton?.addEventListener("click", () =>
-    navigateTo("./poker-rooms.html"),
-  );
+  DOM.pokerButton?.addEventListener("click", () => navigateTo("/poker-rooms"));
 
-  DOM.ludoButton?.addEventListener("click", () =>
-    navigateTo("./ludo-rooms.html"),
-  );
+  DOM.ludoButton?.addEventListener("click", () => navigateTo("/ludo-rooms"));
 
   DOM.carromButton?.addEventListener("click", () => {
     showToast("Carrom-এর কাজ চলছে। শীঘ্রই চালু হবে।", "info");
   });
 
   DOM.andarBaharButton?.addEventListener("click", () =>
-    navigateTo("./andar-bahar.html"),
+    navigateTo("/andar-bahar"),
   );
 
   DOM.banglaWheelButton?.addEventListener("click", () =>
-    navigateTo("./bangla-wheel.html"),
+    navigateTo("/bangla-wheel"),
   );
 
   DOM.banglaDiceButton?.addEventListener("click", () =>
-    navigateTo("./bangla-dice.html"),
+    navigateTo("/bangla-dice"),
   );
 
-  DOM.kaitButton?.addEventListener("click", () => navigateTo("./kait.html"));
+  DOM.kaitButton?.addEventListener("click", () => navigateTo("/kait"));
 
-  DOM.lotteryButton?.addEventListener("click", () =>
-    navigateTo("./lottery.html"),
-  );
+  DOM.lotteryButton?.addEventListener("click", () => navigateTo("/lottery"));
 
   /* =========================================================
-     BOTTOM NAVIGATION
-  ========================================================= */
+   BOTTOM NAVIGATION
+========================================================= */
 
   DOM.homeButton?.addEventListener("click", () => {
     window.scrollTo({
@@ -1550,21 +1632,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  DOM.walletButton?.addEventListener("click", () =>
-    navigateTo("./wallet.html"),
-  );
+  DOM.walletButton?.addEventListener("click", () => navigateTo("/wallet"));
 
-  DOM.supportButton?.addEventListener("click", () =>
-    navigateTo("./support.html"),
-  );
+  DOM.supportButton?.addEventListener("click", () => navigateTo("/support"));
 
-  DOM.profileButton?.addEventListener("click", () =>
-    navigateTo("./profile.html"),
-  );
+  DOM.profileButton?.addEventListener("click", () => navigateTo("/profile"));
 
-  DOM.settingsButton?.addEventListener("click", () =>
-    navigateTo("./settings.html"),
-  );
+  DOM.settingsButton?.addEventListener("click", () => {
+  showToast("Settings-এর কাজ চলছে। শীঘ্রই চালু হবে।", "info");
+});
 
   /* =========================================================
      PAGE VISIBILITY REFRESH
@@ -1579,13 +1655,21 @@ document.addEventListener("DOMContentLoaded", () => {
     startLobbyBannerTimer();
 
     if (Date.now() - STATE.lastLoadedAt > 15000) {
-      loadLobbyData();
+      if (isGuestUser()) {
+        loadGuestLobbyData();
+      } else {
+        loadLobbyData();
+      }
     }
   });
 
   window.addEventListener("focus", () => {
     if (Date.now() - STATE.lastLoadedAt > 15000) {
-      loadLobbyData();
+      if (isGuestUser()) {
+        loadGuestLobbyData();
+      } else {
+        loadLobbyData();
+      }
     }
   });
 
@@ -1606,11 +1690,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!token) {
       STATE.user = null;
 
-      hideLoader();
-
       document.body.classList.add("guest-user");
 
-      console.log("Guest Lobby loaded");
+      await loadGuestLobbyData({
+        showLoader: true,
+      });
+
+      console.log("✅ Guest Lobby loaded");
 
       return;
     }
@@ -1638,7 +1724,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeLobby();
   DOM.downloadAppButton?.addEventListener("click", async () => {
     try {
-      const result = await requestAPI("/app-download/info");
+      const result = await requestPublicAPI("/app-download/info");
 
       const app = result?.data?.app || result?.app || null;
 
@@ -1729,9 +1815,11 @@ document.addEventListener("DOMContentLoaded", () => {
 ========================================================= */
 
   const guestProtectedIds = new Set([
+    "notifyBtn",
     "depositBtn",
     "withdrawBtn",
     "walletBtn",
+    "supportBtn",
     "profileBtn",
     "settingsBtn",
     "referBtn",

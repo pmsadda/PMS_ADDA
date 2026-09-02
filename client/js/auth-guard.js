@@ -1,105 +1,155 @@
 (function () {
-    "use strict";
+  "use strict";
 
-    const token =
-        localStorage.getItem("access_token");
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token") ||
+    "";
 
-    const userText =
-        localStorage.getItem("current_user");
+  const userText =
+    localStorage.getItem("current_user");
 
-    let currentUser = null;
+  let currentUser = null;
 
-    try {
-        currentUser =
-            userText
-                ? JSON.parse(userText)
-                : null;
-    } catch (error) {
-        currentUser = null;
+  try {
+    currentUser = userText
+      ? JSON.parse(userText)
+      : null;
+  } catch (error) {
+    currentUser = null;
+  }
+
+  const currentPath =
+    String(window.location.pathname || "/")
+      .toLowerCase()
+      .replace(/\/+$/, "") || "/";
+
+  const isAdminPage =
+    currentPath.includes("/client/admin/") ||
+    currentPath.startsWith("/admin/");
+
+  const isAgentPage =
+    currentPath.includes("/client/agent/") ||
+    currentPath.startsWith("/agent/");
+
+  const isPublicPage =
+    currentPath === "/" ||
+    currentPath === "/lobby" ||
+    currentPath === "/login" ||
+    currentPath === "/register" ||
+    currentPath.endsWith("/login.html") ||
+    currentPath.endsWith("/register.html") ||
+    currentPath.endsWith("/lobby.html");
+
+
+  function goToLogin() {
+    window.location.replace("/login");
+  }
+
+
+  function goToLobby() {
+    window.location.replace("/lobby");
+  }
+
+
+  function goToAdminDashboard() {
+    window.location.replace(
+      "/client/admin/dashboard.html"
+    );
+  }
+
+
+  function goToAgentDashboard() {
+    window.location.replace(
+      "/client/agent/dashboard.html"
+    );
+  }
+
+
+  function getRole() {
+    return String(
+      currentUser?.role || ""
+    )
+      .trim()
+      .toLowerCase();
+  }
+
+
+  function goToRoleHome() {
+    const role = getRole();
+
+    if (role === "admin") {
+      goToAdminDashboard();
+      return;
     }
 
-    const currentPath =
-        window.location.pathname.toLowerCase();
-
-    const isAdminPage =
-        currentPath.includes("/admin/");
-
-    const isLoginPage =
-        currentPath.endsWith("/login.html");
-
-    const isRegisterPage =
-        currentPath.endsWith("/register.html");
-
-    function goToLogin() {
-        if (isAdminPage) {
-            window.location.replace(
-                "../pages/login.html"
-            );
-        } else {
-            window.location.replace(
-                "login.html"
-            );
-        }
+    if (role === "agent") {
+      goToAgentDashboard();
+      return;
     }
 
-    function goToLobby() {
-        if (isAdminPage) {
-            window.location.replace(
-                "../pages/lobby.html"
-            );
-        } else {
-            window.location.replace(
-                "lobby.html"
-            );
-        }
+    goToLobby();
+  }
+
+
+  /* =========================================================
+     PUBLIC PAGES
+  ========================================================= */
+
+  if (isPublicPage) {
+    return;
+  }
+
+
+  /* =========================================================
+     LOGIN REQUIRED
+  ========================================================= */
+
+  if (!token || !currentUser) {
+    goToLogin();
+    return;
+  }
+
+
+  const role = getRole();
+
+
+  /* =========================================================
+     ADMIN PAGE
+  ========================================================= */
+
+  if (isAdminPage) {
+    if (role !== "admin") {
+      goToRoleHome();
     }
 
-    function goToAdminDashboard() {
-        window.location.replace(
-            "../admin/dashboard.html"
-        );
+    return;
+  }
+
+
+  /* =========================================================
+     AGENT PAGE
+  ========================================================= */
+
+  if (isAgentPage) {
+    if (role !== "agent") {
+      goToRoleHome();
     }
 
-    /* Login/Register page guard */
+    return;
+  }
 
-    if (
-        isLoginPage ||
-        isRegisterPage
-    ) {
-        if (token && currentUser) {
-            if (currentUser.role === "admin") {
-                goToAdminDashboard();
-            } else {
-                goToLobby();
-            }
-        }
 
-        return;
-    }
+  /* =========================================================
+     NORMAL USER PAGE
+  ========================================================= */
 
-    /* Protected page guard */
+  if (role === "admin") {
+    goToAdminDashboard();
+    return;
+  }
 
-    if (!token || !currentUser) {
-        goToLogin();
-        return;
-    }
-
-    /* Admin page guard */
-
-    if (
-        isAdminPage &&
-        currentUser.role !== "admin"
-    ) {
-        goToLobby();
-        return;
-    }
-
-    /* User page guard */
-
-    if (
-        !isAdminPage &&
-        currentUser.role === "admin"
-    ) {
-        goToAdminDashboard();
-    }
+  if (role === "agent") {
+    goToAgentDashboard();
+  }
 })();

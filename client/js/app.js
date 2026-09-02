@@ -6,6 +6,6 @@ console.log("PMS ADDA Started");
 
 setTimeout(() => {
 
-    window.location.href = "pages/login.html";
+    window.location.href = "/login";
 
 },3000);

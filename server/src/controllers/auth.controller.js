@@ -154,12 +154,12 @@ async function login(req, res, next) {
 
     const token = createAccessToken(user);
 
-    let redirectTo = "/pages/lobby.html";
+    let redirectTo = "/lobby";
 
     if (user.role === "admin") {
-      redirectTo = "/admin/dashboard.html";
+      redirectTo = "/client/admin/dashboard.html";
     } else if (user.role === "agent") {
-      redirectTo = "/agent/dashboard.html";
+      redirectTo = "/client/agent/dashboard.html";
     }
 
     return res.status(200).json({

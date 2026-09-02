@@ -228,7 +228,7 @@
   function redirectToLogin() {
     localStorage.removeItem("access_token");
 
-    window.location.replace("./login.html");
+    window.location.replace("/login");
   }
 
   /* =======================================================
@@ -1715,7 +1715,7 @@
 
   function bindEvents() {
     DOM.backButton.addEventListener("click", () => {
-      window.location.href = "./lobby.html";
+      window.location.href = "/lobby";
     });
 
     DOM.soundButton.addEventListener("click", () => {

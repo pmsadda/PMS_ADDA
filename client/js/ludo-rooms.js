@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     localStorage.removeItem("current_user");
 
-    window.location.replace("login.html");
+    window.location.replace("/login");
   }
 
   function initializeUser() {
@@ -630,7 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       window.location.assign(
-        `./ludo-table.html?matchId=${encodeURIComponent(
+        `/ludo-table?matchId=${encodeURIComponent(
           matchId,
         )}&entryAmount=${encodeURIComponent(selectedRoom.entryAmount)}`,
       );
@@ -694,7 +694,7 @@ document.addEventListener("DOMContentLoaded", () => {
   elements.roomGrid.addEventListener("click", handleRoomGridClick);
 
   elements.backBtn.addEventListener("click", () => {
-    window.location.href = "lobby.html";
+    window.location.href = "lobby";
   });
 
   elements.refreshBalanceBtn.addEventListener("click", () => {

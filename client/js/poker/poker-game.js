@@ -269,7 +269,7 @@ const POKER_GAME = {
     const token = localStorage.getItem("access_token");
 
     if (!token) {
-      window.location.replace("login.html");
+      window.location.replace("/login");
 
       return;
     }
@@ -378,39 +378,28 @@ const POKER_GAME = {
       this.setRoundStatus(error.message || "Unable to connect.");
     });
 
-    this.socket.on(
-  "account:blocked",
-  (payload = {}) => {
-    window.alert(
-      payload.message ||
-      "Your account has been banned.",
-    );
+    this.socket.on("account:blocked", (payload = {}) => {
+      window.alert(payload.message || "Your account has been banned.");
 
-    if (
-      typeof window.AUTH_SESSION
-        ?.logout === "function"
-    ) {
-      window.AUTH_SESSION.logout();
-      return;
-    }
+      if (typeof window.AUTH_SESSION?.logout === "function") {
+        window.AUTH_SESSION.logout();
+        return;
+      }
 
-    [
-      "access_token",
-      "token",
-      "refresh_token",
-      "current_user",
-      "user",
-      "user_id",
-    ].forEach((key) => {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
+      [
+        "access_token",
+        "token",
+        "refresh_token",
+        "current_user",
+        "user",
+        "user_id",
+      ].forEach((key) => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+
+      window.location.replace("/login");
     });
-
-    window.location.replace(
-      "login.html",
-    );
-  },
-);
 
     this.socket.on("disconnect", () => {
       this.setConnection("Reconnecting…", false);
@@ -819,7 +808,7 @@ const POKER_GAME = {
 
     localStorage.removeItem("current_poker_table");
 
-    window.location.replace("poker-rooms.html");
+    window.location.replace("/poker-rooms");
   },
 
   async exitPokerTableViaHttp() {

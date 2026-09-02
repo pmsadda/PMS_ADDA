@@ -1077,7 +1077,7 @@ function renderMyBet(bet) {
     });
 
     $("backBtn")?.addEventListener("click", () => {
-      window.location.href = "./lobby.html";
+      window.location.href = "/lobby";
     });
 
     DOM.soundToggle?.addEventListener("click", () => {
@@ -1144,7 +1144,7 @@ function renderMyBet(bet) {
     const token = getToken();
 
     if (!token) {
-      window.location.href = "../login.html";
+      window.location.href = "/login";
       return;
     }
 

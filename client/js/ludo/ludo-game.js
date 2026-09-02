@@ -286,7 +286,7 @@ const LUDO_DESIGN = {
     const returnLobbyButton = document.getElementById("returnLobbyButton");
 
     const goToLobby = () => {
-      window.location.href = "lobby.html";
+      window.location.href = "/lobby";
     };
 
     backButton?.addEventListener("click", goToLobby);
@@ -454,7 +454,7 @@ const LUDO_LIVE = {
     this.currentUserId = this.decodeUserId(token || "");
 
     if (!token) {
-      window.location.replace("login.html");
+      window.location.replace("/login");
 
       return;
     }
@@ -531,39 +531,28 @@ const LUDO_LIVE = {
       this.setMessage(error.message || "Unable to connect.");
     });
 
-    this.socket.on(
-  "account:blocked",
-  (payload = {}) => {
-    window.alert(
-      payload.message ||
-      "Your account has been banned.",
-    );
+    this.socket.on("account:blocked", (payload = {}) => {
+      window.alert(payload.message || "Your account has been banned.");
 
-    if (
-      typeof window.AUTH_SESSION
-        ?.logout === "function"
-    ) {
-      window.AUTH_SESSION.logout();
-      return;
-    }
+      if (typeof window.AUTH_SESSION?.logout === "function") {
+        window.AUTH_SESSION.logout();
+        return;
+      }
 
-    [
-      "access_token",
-      "token",
-      "refresh_token",
-      "current_user",
-      "user",
-      "user_id",
-    ].forEach((key) => {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
+      [
+        "access_token",
+        "token",
+        "refresh_token",
+        "current_user",
+        "user",
+        "user_id",
+      ].forEach((key) => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+
+      window.location.replace("/login");
     });
-
-    window.location.replace(
-      "login.html",
-    );
-  },
-);
 
     this.socket.on("disconnect", () => {
       this.setLiveStatus("Reconnecting…", false);
@@ -1655,7 +1644,7 @@ const LUDO_LIVE = {
 
   leaveMatch() {
     const goBack = () => {
-      window.location.href = "ludo-rooms.html";
+      window.location.href = "/ludo-rooms";
     };
 
     if (!this.socket?.connected || !this.matchId) {

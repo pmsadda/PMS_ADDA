@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ========================== */
 
   if (!token) {
-    window.location.replace("login.html");
+    window.location.replace("/login");
     return;
   }
 
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       localStorage.removeItem("current_user");
 
-      window.location.replace("login.html");
+     window.location.replace("/login");
 
       throw new Error("Your login session has expired.");
     }
@@ -505,7 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         localStorage.removeItem("current_user");
 
-        window.location.replace("login.html");
+        window.location.replace("/login");
 
         return;
       }

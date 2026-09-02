@@ -231,7 +231,7 @@ app.use(
     parameterLimit: 100,
   }),
 );
-app.use("/client", express.static(path.join(__dirname, "../../client")));
+
 
 app.use(
   "/uploads",
@@ -275,20 +275,61 @@ app.get("/", (req, res) => {
 ========================================================= */
 
 app.get("/client/pages/login.html", (req, res) => {
-  return res.redirect(301, "/");
+  return res.redirect(301, "/login");
 });
 
 app.get("/client/pages/:page.html", (req, res) => {
-  return res.redirect(301, `/${req.params.page}`);
+  const queryIndex = req.originalUrl.indexOf("?");
+
+  const query =
+    queryIndex >= 0
+      ? req.originalUrl.slice(queryIndex)
+      : "";
+
+  return res.redirect(
+    301,
+    `/${req.params.page}${query}`,
+  );
 });
 
 /* =========================================================
    /lobby.html → /lobby
 ========================================================= */
 
-app.get("/:page.html", (req, res) => {
-  return res.redirect(301, `/${req.params.page}`);
+app.get("/pages/:page.html", (req, res) => {
+  const queryIndex = req.originalUrl.indexOf("?");
+
+  const query =
+    queryIndex >= 0
+      ? req.originalUrl.slice(queryIndex)
+      : "";
+
+  return res.redirect(
+    301,
+    `/${req.params.page}${query}`,
+  );
 });
+
+app.get("/:page.html", (req, res) => {
+  const queryIndex = req.originalUrl.indexOf("?");
+
+  const query =
+    queryIndex >= 0
+      ? req.originalUrl.slice(queryIndex)
+      : "";
+
+  return res.redirect(
+    301,
+    `/${req.params.page}${query}`,
+  );
+});
+
+app.use(
+  "/client",
+  express.static(clientRoot, {
+    index: false,
+  }),
+);
 
 /* =========================================================
    CLEAN PAGE ROUTE
@@ -351,7 +392,6 @@ app.use("/api/app-download", appDownloadRoutes);
  */
 app.get(
   "/api/games/availability",
-  requireAuth,
   adminGamesController.getPublicGameAvailability,
 );
 

@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("current_user");
 
-    window.location.replace("login.html");
+    window.location.replace("/login");
   }
 
   function initializeUser() {
@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const tableId = encodeURIComponent(tableData.tableId);
 
-      window.location.href = `poker-table.html?tableId=${tableId}`;
+      window.location.href = `/poker-table?tableId=${tableId}`;
     } catch (error) {
       console.error("Join Poker room error:", error);
 
@@ -546,7 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    window.location.href = "lobby.html";
+    window.location.href = "lobby";
   });
 
   elements.refreshBalanceBtn.addEventListener("click", () => {
@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !state.isJoining) {
-      window.location.href = "lobby.html";
+      window.location.href = "lobby";
     }
   });
 

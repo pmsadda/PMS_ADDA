@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function redirectToLogin() {
     clearAuthentication();
-    window.location.replace("./login.html");
+    window.location.replace("/login");
   }
 
   function showLoader() {
@@ -496,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  DOM.backButton?.addEventListener("click", () => navigateTo("./lobby.html"));
+  DOM.backButton?.addEventListener("click", () => navigateTo("/lobby"));
 
   DOM.refreshButton?.addEventListener("click", async () => {
     const icon = DOM.refreshButton.querySelector("i");
@@ -511,15 +511,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   DOM.walletAction?.addEventListener("click", () =>
-    navigateTo("./wallet.html"),
+    navigateTo("/wallet"),
   );
 
   DOM.historyAction?.addEventListener("click", () =>
-    navigateTo("./wallet.html#transactionHistory"),
+   navigateTo("/wallet#transactionHistory"),
   );
 
   DOM.supportAction?.addEventListener("click", () =>
-    navigateTo("./support.html"),
+    navigateTo("/support"),
   );
 
   DOM.logoutAction?.addEventListener("click", openLogoutModal);
@@ -540,7 +540,7 @@ document.addEventListener("DOMContentLoaded", () => {
       clearAuthentication();
 
       window.location.replace(
-        "./login.html",
+        "/login",
       );
     },
   );
@@ -559,15 +559,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* Bottom navigation */
 
-  DOM.homeNav?.addEventListener("click", () => navigateTo("./lobby.html"));
+  DOM.homeNav?.addEventListener("click", () => navigateTo("/lobby"));
 
-  DOM.walletNav?.addEventListener("click", () => navigateTo("./wallet.html"));
+  DOM.walletNav?.addEventListener("click", () => navigateTo("/wallet"));
 
   DOM.gamesNav?.addEventListener("click", () =>
-    navigateTo("./lobby.html#games"),
+    navigateTo("/lobby#games"),
   );
 
-  DOM.supportNav?.addEventListener("click", () => navigateTo("./support.html"));
+  DOM.supportNav?.addEventListener("click", () => navigateTo("/support"));
 
   /* =========================================================
      INITIALIZE

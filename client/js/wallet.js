@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function redirectToLogin() {
     clearAuthentication();
-    window.location.replace("./login.html");
+    window.location.replace("/login");
   }
 
   function showLoader() {
@@ -691,11 +691,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   DOM.depositButton?.addEventListener("click", () =>
-    navigateTo("./deposit.html"),
+    navigateTo("/deposit"),
   );
 
   DOM.withdrawButton?.addEventListener("click", () =>
-    navigateTo("./withdraw.html"),
+    navigateTo("/withdraw"),
   );
 
   DOM.historyButton?.addEventListener("click", scrollToTransactionHistory);
@@ -713,7 +713,7 @@ document.addEventListener("DOMContentLoaded", () => {
      BOTTOM NAVIGATION
   ========================================================= */
 
-  DOM.homeButton?.addEventListener("click", () => navigateTo("./lobby.html"));
+  DOM.homeButton?.addEventListener("click", () => navigateTo("/lobby"));
 
   DOM.walletButton?.addEventListener("click", () => {
     window.scrollTo({
@@ -723,15 +723,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   DOM.gamesButton?.addEventListener("click", () =>
-    navigateTo("./lobby.html#games"),
+    navigateTo("/lobby#games"),
   );
 
   DOM.supportButton?.addEventListener("click", () =>
-    navigateTo("./support.html"),
+    navigateTo("/support"),
   );
 
   DOM.profileButton?.addEventListener("click", () =>
-    navigateTo("./profile.html"),
+    navigateTo("/profile"),
   );
 
   /* =========================================================

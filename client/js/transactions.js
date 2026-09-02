@@ -263,7 +263,7 @@ async function apiRequest(url) {
 
   if (!token) {
     window.location.href =
-      "../pages/login.html";
+      "/login";
 
     throw new Error(
       "Admin login required.",
@@ -313,8 +313,8 @@ async function apiRequest(url) {
       "access_token",
     );
 
-    window.location.href =
-      "../pages/login.html";
+   window.location.href =
+  "/login";
 
     throw new Error(
       "Login session expired.",
@@ -2285,7 +2285,7 @@ function logoutAdmin() {
   );
 
   window.location.href =
-    "../pages/login.html";
+    "/login";
 }
 
 /* =========================

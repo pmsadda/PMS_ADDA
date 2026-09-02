@@ -6,134 +6,91 @@
   ======================================================= */
 
   const DOM = {
-    backButton:
-      document.getElementById("backBtn"),
+    backButton: document.getElementById("backBtn"),
 
-    soundButton:
-      document.getElementById("soundBtn"),
+    soundButton: document.getElementById("soundBtn"),
 
-    walletBalance:
-      document.getElementById("walletBalance"),
+    walletBalance: document.getElementById("walletBalance"),
 
-    connectionBar:
-      document.getElementById("connectionBar"),
+    connectionBar: document.getElementById("connectionBar"),
 
-    connectionText:
-      document.getElementById("connectionText"),
+    connectionText: document.getElementById("connectionText"),
 
-    roundCode:
-      document.getElementById("roundCode"),
+    roundCode: document.getElementById("roundCode"),
 
-    roundStatusText:
-      document.getElementById("roundStatusText"),
+    roundStatusText: document.getElementById("roundStatusText"),
 
-    timerValue:
-      document.getElementById("timerValue"),
+    timerValue: document.getElementById("timerValue"),
 
-    jokerCardImage:
-      document.getElementById("jokerCardImage"),
+    jokerCardImage: document.getElementById("jokerCardImage"),
 
-    andarSide:
-      document.getElementById("andarSide"),
+    andarSide: document.getElementById("andarSide"),
 
-    baharSide:
-      document.getElementById("baharSide"),
+    baharSide: document.getElementById("baharSide"),
 
-    andarCards:
-      document.getElementById("andarCards"),
+    andarCards: document.getElementById("andarCards"),
 
-    baharCards:
-      document.getElementById("baharCards"),
+    baharCards: document.getElementById("baharCards"),
 
-    andarPlayers:
-      document.getElementById("andarPlayers"),
+    andarPlayers: document.getElementById("andarPlayers"),
 
-    baharPlayers:
-      document.getElementById("baharPlayers"),
+    baharPlayers: document.getElementById("baharPlayers"),
 
-    andarTotal:
-      document.getElementById("andarTotal"),
+    andarTotal: document.getElementById("andarTotal"),
 
-    baharTotal:
-      document.getElementById("baharTotal"),
+    baharTotal: document.getElementById("baharTotal"),
 
-    andarBetButton:
-      document.getElementById("andarBetBtn"),
+    andarBetButton: document.getElementById("andarBetBtn"),
 
-    baharBetButton:
-      document.getElementById("baharBetBtn"),
+    baharBetButton: document.getElementById("baharBetBtn"),
 
-    selectedSideText:
-      document.getElementById("selectedSideText"),
+    selectedSideText: document.getElementById("selectedSideText"),
 
-    decreaseBetButton:
-      document.getElementById("decreaseBetBtn"),
+    decreaseBetButton: document.getElementById("decreaseBetBtn"),
 
-    increaseBetButton:
-      document.getElementById("increaseBetBtn"),
+    increaseBetButton: document.getElementById("increaseBetBtn"),
 
-    betAmountInput:
-      document.getElementById("betAmountInput"),
+    betAmountInput: document.getElementById("betAmountInput"),
 
-    quickBetOptions:
-      document.getElementById("quickBetOptions"),
+    quickBetOptions: document.getElementById("quickBetOptions"),
 
-    placeBetButton:
-      document.getElementById("placeBetBtn"),
+    placeBetButton: document.getElementById("placeBetBtn"),
 
-    placeBetText:
-      document.getElementById("placeBetText"),
+    placeBetText: document.getElementById("placeBetText"),
 
-    bettingMessage:
-      document.getElementById("bettingMessage"),
+    bettingMessage: document.getElementById("bettingMessage"),
 
-    myBetCard:
-      document.getElementById("myBetCard"),
+    myBetCard: document.getElementById("myBetCard"),
 
-    myBetSide:
-      document.getElementById("myBetSide"),
+    myBetSide: document.getElementById("myBetSide"),
 
-    myBetAmount:
-      document.getElementById("myBetAmount"),
+    myBetAmount: document.getElementById("myBetAmount"),
 
-    myBetStatus:
-      document.getElementById("myBetStatus"),
+    myBetStatus: document.getElementById("myBetStatus"),
 
-    refreshHistoryButton:
-      document.getElementById("refreshHistoryBtn"),
+    refreshHistoryButton: document.getElementById("refreshHistoryBtn"),
 
-    recentResults:
-      document.getElementById("recentResults"),
+    recentResults: document.getElementById("recentResults"),
 
-    resultOverlay:
-      document.getElementById("resultOverlay"),
+    resultOverlay: document.getElementById("resultOverlay"),
 
-    resultCloseButton:
-      document.getElementById("resultCloseBtn"),
+    resultCloseButton: document.getElementById("resultCloseBtn"),
 
-    continueButton:
-      document.getElementById("continueBtn"),
+    continueButton: document.getElementById("continueBtn"),
 
-    resultTitle:
-      document.getElementById("resultTitle"),
+    resultTitle: document.getElementById("resultTitle"),
 
-    resultJokerCard:
-      document.getElementById("resultJokerCard"),
+    resultJokerCard: document.getElementById("resultJokerCard"),
 
-    resultMatchingCard:
-      document.getElementById("resultMatchingCard"),
+    resultMatchingCard: document.getElementById("resultMatchingCard"),
 
-    userResultMessage:
-      document.getElementById("userResultMessage"),
+    userResultMessage: document.getElementById("userResultMessage"),
 
-    loadingOverlay:
-      document.getElementById("loadingOverlay"),
+    loadingOverlay: document.getElementById("loadingOverlay"),
 
-    loadingText:
-      document.getElementById("loadingText"),
+    loadingText: document.getElementById("loadingText"),
 
-    toast:
-      document.getElementById("gameToast"),
+    toast: document.getElementById("gameToast"),
   };
 
   /* =======================================================
@@ -154,22 +111,22 @@
       serviceChargePercent: 5,
     },
 
-   selectedSide: null,
-betAmount: 5,
+    selectedSide: null,
+    betAmount: 5,
 
-/*
- * userBet পুরোনো client compatibility-এর জন্য।
- * userBets-এ current round-এর সব bet থাকবে।
- */
-userBet: null,
-userBets: [],
+    /*
+     * userBet পুরোনো client compatibility-এর জন্য।
+     * userBets-এ current round-এর সব bet থাকবে।
+     */
+    userBet: null,
+    userBets: [],
 
-userBetSummary: {
-  totalBets: 0,
-  totalBetAmount: 0,
-  andarBetAmount: 0,
-  baharBetAmount: 0,
-},
+    userBetSummary: {
+      totalBets: 0,
+      totalBetAmount: 0,
+      andarBetAmount: 0,
+      baharBetAmount: 0,
+    },
 
     bettingOpen: false,
     placingBet: false,
@@ -189,19 +146,13 @@ userBetSummary: {
   ======================================================= */
 
   function getAccessToken() {
-    return localStorage.getItem(
-      "access_token",
-    );
+    return localStorage.getItem("access_token");
   }
 
   function redirectToLogin() {
-    localStorage.removeItem(
-      "access_token",
-    );
+    localStorage.removeItem("access_token");
 
-    window.location.replace(
-      "./login.html",
-    );
+    window.location.replace("/login");
   }
 
   /* =======================================================
@@ -215,28 +166,20 @@ userBetSummary: {
       return 0;
     }
 
-    return Number(
-      amount.toFixed(2),
-    );
+    return Number(amount.toFixed(2));
   }
 
   function formatMoney(value) {
-    return parseAmount(
-      value,
-    ).toLocaleString(
-      "en-BD",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      },
-    );
+    return parseAmount(value).toLocaleString("en-BD", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   }
 
   function formatSide(value) {
-    const side =
-      String(value || "")
-        .trim()
-        .toLowerCase();
+    const side = String(value || "")
+      .trim()
+      .toLowerCase();
 
     if (side === "andar") {
       return "Andar";
@@ -252,203 +195,119 @@ userBetSummary: {
   function formatStatus(value) {
     return String(value || "")
       .replace(/_/g, " ")
-      .replace(
-        /\b\w/g,
-        (character) =>
-          character.toUpperCase(),
-      );
+      .replace(/\b\w/g, (character) => character.toUpperCase());
   }
 
   function getApiUrl(path) {
-    return window.APP_CONFIG.api(
-      path,
-    );
+    return window.APP_CONFIG.api(path);
   }
 
-  function getCardImageUrl(
-    cardCode,
-  ) {
+  function getCardImageUrl(cardCode) {
     if (!cardCode) {
       return "../assets/cards/card-back.png";
     }
 
-    return `../assets/cards/${String(
-      cardCode,
-    ).toUpperCase()}.png`;
+    return `../assets/cards/${String(cardCode).toUpperCase()}.png`;
   }
 
   /* =======================================================
      MESSAGE HELPERS
   ======================================================= */
 
-  function setBettingMessage(
-    message,
-    type = "",
-  ) {
-    DOM.bettingMessage.textContent =
-      message;
+  function setBettingMessage(message, type = "") {
+    DOM.bettingMessage.textContent = message;
 
-    DOM.bettingMessage.classList.remove(
-      "is-error",
-      "is-success",
-    );
+    DOM.bettingMessage.classList.remove("is-error", "is-success");
 
     if (type) {
-      DOM.bettingMessage.classList.add(
-        `is-${type}`,
-      );
+      DOM.bettingMessage.classList.add(`is-${type}`);
     }
   }
 
-  function showToast(
-    message,
-    type = "",
-  ) {
-    window.clearTimeout(
-      state.toastTimer,
-    );
+  function showToast(message, type = "") {
+    window.clearTimeout(state.toastTimer);
 
-    DOM.toast.textContent =
-      message;
+    DOM.toast.textContent = message;
 
-    DOM.toast.classList.remove(
-      "is-error",
-      "is-success",
-    );
+    DOM.toast.classList.remove("is-error", "is-success");
 
     if (type) {
-      DOM.toast.classList.add(
-        `is-${type}`,
-      );
+      DOM.toast.classList.add(`is-${type}`);
     }
 
-    DOM.toast.classList.add(
-      "is-visible",
-    );
+    DOM.toast.classList.add("is-visible");
 
-    state.toastTimer =
-      window.setTimeout(
-        () => {
-          DOM.toast.classList.remove(
-            "is-visible",
-          );
-        },
-        3500,
-      );
+    state.toastTimer = window.setTimeout(() => {
+      DOM.toast.classList.remove("is-visible");
+    }, 3500);
   }
 
   function hideLoading() {
-    DOM.loadingOverlay.classList.add(
-      "is-hidden",
-    );
+    DOM.loadingOverlay.classList.add("is-hidden");
   }
 
   /* =======================================================
      API REQUESTS
   ======================================================= */
 
-  async function apiRequest(
-    path,
-    options = {},
-  ) {
-    const token =
-      getAccessToken();
+  async function apiRequest(path, options = {}) {
+    const token = getAccessToken();
 
     if (!token) {
       redirectToLogin();
 
-      throw new Error(
-        "Login session is required.",
-      );
+      throw new Error("Login session is required.");
     }
 
-    const response =
-      await fetch(
-        getApiUrl(path),
-        {
-          ...options,
+    const response = await fetch(getApiUrl(path), {
+      ...options,
 
-          headers: {
-            "Content-Type":
-              "application/json",
+      headers: {
+        "Content-Type": "application/json",
 
-            Authorization:
-              `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
 
-            ...options.headers,
-          },
-        },
-      );
+        ...options.headers,
+      },
+    });
 
-    const result =
-      await response.json()
-        .catch(() => ({
-          success: false,
-          message:
-            "Invalid server response.",
-        }));
+    const result = await response.json().catch(() => ({
+      success: false,
+      message: "Invalid server response.",
+    }));
 
-    if (
-      response.status === 401
-    ) {
+    if (response.status === 401) {
       redirectToLogin();
 
-      throw new Error(
-        result.message ||
-          "Login session expired.",
-      );
+      throw new Error(result.message || "Login session expired.");
     }
 
-    if (
-      !response.ok ||
-      !result.success
-    ) {
-      throw new Error(
-        result.message ||
-          "Request failed.",
-      );
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Request failed.");
     }
 
     return result.data;
   }
 
   async function loadWallet() {
-    const data =
-      await apiRequest(
-        "/wallet/summary",
-      );
+    const data = await apiRequest("/wallet/summary");
 
-    const balance =
-      data?.wallet?.balance ??
-      data?.user?.walletBalance ??
-      0;
+    const balance = data?.wallet?.balance ?? data?.user?.walletBalance ?? 0;
 
-    DOM.walletBalance.textContent =
-      formatMoney(balance);
+    DOM.walletBalance.textContent = formatMoney(balance);
 
-    return parseAmount(
-      balance,
-    );
+    return parseAmount(balance);
   }
 
   async function loadRecentResults() {
     try {
-      DOM.refreshHistoryButton.disabled =
-        true;
+      DOM.refreshHistoryButton.disabled = true;
 
-      const data =
-        await apiRequest(
-          "/andar-bahar/results/recent",
-        );
+      const data = await apiRequest("/andar-bahar/results/recent");
 
-      renderRecentResults(
-        data?.results || [],
-      );
+      renderRecentResults(data?.results || []);
     } catch (error) {
-      console.error(
-        "Andar Bahar history error:",
-        error,
-      );
+      console.error("Andar Bahar history error:", error);
 
       DOM.recentResults.innerHTML = `
         <p class="history-placeholder">
@@ -456,8 +315,7 @@ userBetSummary: {
         </p>
       `;
     } finally {
-      DOM.refreshHistoryButton.disabled =
-        false;
+      DOM.refreshHistoryButton.disabled = false;
     }
   }
 
@@ -465,33 +323,18 @@ userBetSummary: {
      CONNECTION UI
   ======================================================= */
 
-  function renderConnection(
-    status,
-    message,
-  ) {
-    DOM.connectionBar.classList.remove(
-      "is-connected",
-      "is-disconnected",
-    );
+  function renderConnection(status, message) {
+    DOM.connectionBar.classList.remove("is-connected", "is-disconnected");
 
-    if (
-      status === "connected"
-    ) {
-      DOM.connectionBar.classList.add(
-        "is-connected",
-      );
+    if (status === "connected") {
+      DOM.connectionBar.classList.add("is-connected");
     }
 
-    if (
-      status === "disconnected"
-    ) {
-      DOM.connectionBar.classList.add(
-        "is-disconnected",
-      );
+    if (status === "disconnected") {
+      DOM.connectionBar.classList.add("is-disconnected");
     }
 
-    DOM.connectionText.textContent =
-      message;
+    DOM.connectionText.textContent = message;
   }
 
   /* =======================================================
@@ -499,44 +342,24 @@ userBetSummary: {
   ======================================================= */
 
   function clampBetAmount(value) {
-    const minimum =
-      parseAmount(
-        state.settings.minimumBet,
-      ) || 5;
+    const minimum = parseAmount(state.settings.minimumBet) || 5;
 
-    const maximum =
-      parseAmount(
-        state.settings.maximumBet,
-      ) || 1000;
+    const maximum = parseAmount(state.settings.maximumBet) || 1000;
 
-    return Math.min(
-      maximum,
-      Math.max(
-        minimum,
-        parseAmount(value),
-      ),
-    );
+    return Math.min(maximum, Math.max(minimum, parseAmount(value)));
   }
 
   function setBetAmount(value) {
-    state.betAmount =
-      clampBetAmount(value);
+    state.betAmount = clampBetAmount(value);
 
-    DOM.betAmountInput.value =
-      String(
-        state.betAmount,
-      );
+    DOM.betAmountInput.value = String(state.betAmount);
 
     DOM.quickBetOptions
-      .querySelectorAll(
-        "button[data-amount]",
-      )
+      .querySelectorAll("button[data-amount]")
       .forEach((button) => {
         button.classList.toggle(
           "is-active",
-          parseAmount(
-            button.dataset.amount,
-          ) === state.betAmount,
+          parseAmount(button.dataset.amount) === state.betAmount,
         );
       });
 
@@ -544,167 +367,103 @@ userBetSummary: {
   }
 
   function selectSide(side) {
-   if (
-  !state.bettingOpen ||
-  state.placingBet
-) {
-  return;
-}
+    if (!state.bettingOpen || state.placingBet) {
+      return;
+    }
 
-    state.selectedSide =
-      side;
+    state.selectedSide = side;
 
-    DOM.andarSide.classList.toggle(
-      "is-selected",
-      side === "andar",
-    );
+    DOM.andarSide.classList.toggle("is-selected", side === "andar");
 
-    DOM.baharSide.classList.toggle(
-      "is-selected",
-      side === "bahar",
-    );
+    DOM.baharSide.classList.toggle("is-selected", side === "bahar");
 
-    DOM.selectedSideText.textContent =
-      formatSide(side);
+    DOM.selectedSideText.textContent = formatSide(side);
 
     renderBetControls();
   }
 
- function renderBetControls() {
-  const maximumBet =
-    Number(
-      state.settings
-        ?.maximumBet ||
-      1000
-    );
+  function renderBetControls() {
+    const maximumBet = Number(state.settings?.maximumBet || 1000);
 
-  const currentRoundTotal =
-    Number(
-      state.userBetSummary
-        ?.totalBetAmount ||
-      0
-    );
+    const currentRoundTotal = Number(state.userBetSummary?.totalBetAmount || 0);
 
-  const remainingLimit =
-    Math.max(
-      0,
-      maximumBet -
-        currentRoundTotal
-    );
+    const remainingLimit = Math.max(0, maximumBet - currentRoundTotal);
 
-  const controlsDisabled =
-    !state.bettingOpen ||
-    state.placingBet ||
-    remainingLimit <= 0;
+    const controlsDisabled =
+      !state.bettingOpen || state.placingBet || remainingLimit <= 0;
 
-  DOM.andarBetButton.disabled =
-    controlsDisabled;
+    DOM.andarBetButton.disabled = controlsDisabled;
 
-  DOM.baharBetButton.disabled =
-    controlsDisabled;
+    DOM.baharBetButton.disabled = controlsDisabled;
 
-  DOM.decreaseBetButton.disabled =
-    controlsDisabled;
+    DOM.decreaseBetButton.disabled = controlsDisabled;
 
-  DOM.increaseBetButton.disabled =
-    controlsDisabled;
+    DOM.increaseBetButton.disabled = controlsDisabled;
 
-  DOM.betAmountInput.disabled =
-    controlsDisabled;
+    DOM.betAmountInput.disabled = controlsDisabled;
 
-  DOM.quickBetOptions
-    .querySelectorAll("button")
-    .forEach((button) => {
-      const quickAmount =
-        Number(
-          button.dataset.amount ||
-          0
-        );
+    DOM.quickBetOptions.querySelectorAll("button").forEach((button) => {
+      const quickAmount = Number(button.dataset.amount || 0);
 
-      button.disabled =
-        controlsDisabled ||
-        quickAmount >
-          remainingLimit;
+      button.disabled = controlsDisabled || quickAmount > remainingLimit;
     });
 
-  const selectedAmount =
-    Number(
-      state.betAmount ||
-      0
-    );
+    const selectedAmount = Number(state.betAmount || 0);
 
-  const canPlaceBet =
-    state.bettingOpen &&
-    !state.placingBet &&
-    Boolean(
-      state.selectedSide
-    ) &&
-    remainingLimit > 0 &&
-    selectedAmount <=
-      remainingLimit;
+    const canPlaceBet =
+      state.bettingOpen &&
+      !state.placingBet &&
+      Boolean(state.selectedSide) &&
+      remainingLimit > 0 &&
+      selectedAmount <= remainingLimit;
 
-  DOM.placeBetButton.disabled =
-    !canPlaceBet;
+    DOM.placeBetButton.disabled = !canPlaceBet;
 
-  if (state.placingBet) {
-    DOM.placeBetText.textContent =
-      "Placing Bet...";
+    if (state.placingBet) {
+      DOM.placeBetText.textContent = "Placing Bet...";
 
-    return;
-  }
+      return;
+    }
 
-  if (!state.bettingOpen) {
-    DOM.placeBetText.textContent =
-      "Betting Closed";
+    if (!state.bettingOpen) {
+      DOM.placeBetText.textContent = "Betting Closed";
 
-    return;
-  }
+      return;
+    }
 
-  if (remainingLimit <= 0) {
-    DOM.placeBetText.textContent =
-      "Round Bet Limit Reached";
+    if (remainingLimit <= 0) {
+      DOM.placeBetText.textContent = "Round Bet Limit Reached";
 
-    return;
-  }
+      return;
+    }
 
-  if (!state.selectedSide) {
-    DOM.placeBetText.textContent =
-      "Select Andar or Bahar";
+    if (!state.selectedSide) {
+      DOM.placeBetText.textContent = "Select Andar or Bahar";
 
-    return;
-  }
+      return;
+    }
 
-  if (
-    selectedAmount >
-    remainingLimit
-  ) {
-    DOM.placeBetText.textContent =
-      `Remaining limit ৳${formatMoney(
-        remainingLimit
+    if (selectedAmount > remainingLimit) {
+      DOM.placeBetText.textContent = `Remaining limit ৳${formatMoney(
+        remainingLimit,
       )}`;
 
-    return;
-  }
+      return;
+    }
 
-  DOM.placeBetText.textContent =
-    `Bet ৳${formatMoney(
-      state.betAmount
-    )} on ${formatSide(
-      state.selectedSide
-    )}`;
-}
+    DOM.placeBetText.textContent = `Bet ৳${formatMoney(
+      state.betAmount,
+    )} on ${formatSide(state.selectedSide)}`;
+  }
 
   /* =======================================================
      ROUND RENDERING
   ======================================================= */
 
   function clearCardAnimationTimers() {
-    state.cardAnimationTimers
-      .forEach((timer) => {
-        window.clearTimeout(
-          timer,
-        );
-      });
+    state.cardAnimationTimers.forEach((timer) => {
+      window.clearTimeout(timer);
+    });
 
     state.cardAnimationTimers = [];
   }
@@ -712,8 +471,7 @@ userBetSummary: {
   function resetCards() {
     clearCardAnimationTimers();
 
-    DOM.jokerCardImage.src =
-      getCardImageUrl(null);
+    DOM.jokerCardImage.src = getCardImageUrl(null);
 
     DOM.andarCards.innerHTML = `
       <span class="empty-card-message">
@@ -727,54 +485,37 @@ userBetSummary: {
       </span>
     `;
 
-    DOM.andarSide.classList.remove(
-      "is-winner",
-    );
+    DOM.andarSide.classList.remove("is-winner");
 
-    DOM.baharSide.classList.remove(
-      "is-winner",
-    );
+    DOM.baharSide.classList.remove("is-winner");
   }
 
   function resetForNewRound() {
     state.selectedSide = null;
-state.userBet = null;
-state.userBets = [];
+    state.userBet = null;
+    state.userBets = [];
 
-state.userBetSummary = {
-  totalBets: 0,
-  totalBetAmount: 0,
-  andarBetAmount: 0,
-  baharBetAmount: 0,
-};
+    state.userBetSummary = {
+      totalBets: 0,
+      totalBetAmount: 0,
+      andarBetAmount: 0,
+      baharBetAmount: 0,
+    };
     state.privateResult = null;
 
-    DOM.andarSide.classList.remove(
-      "is-selected",
-      "is-winner",
-    );
+    DOM.andarSide.classList.remove("is-selected", "is-winner");
 
-    DOM.baharSide.classList.remove(
-      "is-selected",
-      "is-winner",
-    );
+    DOM.baharSide.classList.remove("is-selected", "is-winner");
 
-    DOM.selectedSideText.textContent =
-      "Choose Andar or Bahar";
+    DOM.selectedSideText.textContent = "Choose Andar or Bahar";
 
-    DOM.myBetCard.classList.add(
-      "is-hidden",
-    );
+    DOM.myBetCard.classList.add("is-hidden");
 
-    DOM.resultOverlay.classList.add(
-      "is-hidden",
-    );
+    DOM.resultOverlay.classList.add("is-hidden");
 
     resetCards();
 
-    setBetAmount(
-      state.settings.minimumBet,
-    );
+    setBetAmount(state.settings.minimumBet);
   }
 
   function renderSettings(settings) {
@@ -787,22 +528,14 @@ state.userBetSummary = {
       ...settings,
     };
 
-    DOM.betAmountInput.min =
-      String(
-        state.settings.minimumBet,
-      );
+    DOM.betAmountInput.min = String(state.settings.minimumBet);
 
-    DOM.betAmountInput.max =
-      String(
-        state.settings.maximumBet,
-      );
+    DOM.betAmountInput.max = String(state.settings.maximumBet);
 
     setBettingMessage(
       `Minimum bet ৳${formatMoney(
         state.settings.minimumBet,
-      )} and maximum bet ৳${formatMoney(
-        state.settings.maximumBet,
-      )}.`,
+      )} and maximum bet ৳${formatMoney(state.settings.maximumBet)}.`,
     );
   }
 
@@ -811,140 +544,82 @@ state.userBetSummary = {
       state.round = null;
       state.bettingOpen = false;
 
-      DOM.roundCode.textContent =
-        "Waiting...";
+      DOM.roundCode.textContent = "Waiting...";
 
-      DOM.roundStatusText.textContent =
-        "Waiting for round";
+      DOM.roundStatusText.textContent = "Waiting for round";
 
-      DOM.timerValue.textContent =
-        "--";
+      DOM.timerValue.textContent = "--";
 
       renderBetControls();
 
       return;
     }
 
-    const previousRoundId =
-      state.round?.id || null;
+    const previousRoundId = state.round?.id || null;
 
     state.round = round;
 
-    if (
-      previousRoundId !==
-      round.id
-    ) {
+    if (previousRoundId !== round.id) {
       resetForNewRound();
     }
 
-    DOM.roundCode.textContent =
-      round.roundCode ||
-      `#${round.id}`;
+    DOM.roundCode.textContent = round.roundCode || `#${round.id}`;
 
-      DOM.jokerCardImage.src =
-  getCardImageUrl(
-    round.jokerCard,
-  );
+    DOM.jokerCardImage.src = getCardImageUrl(round.jokerCard);
 
-    DOM.roundStatusText.textContent =
-      formatStatus(
-        round.roundStatus,
-      );
+    DOM.roundStatusText.textContent = formatStatus(round.roundStatus);
 
-    state.bettingOpen =
-      round.roundStatus ===
-      "betting";
+    state.bettingOpen = round.roundStatus === "betting";
 
     startCountdown();
 
     renderBetControls();
   }
 
-  function updateServerTimeOffset(
-    serverTime,
-  ) {
-    const serverTimestamp =
-      new Date(
-        serverTime,
-      ).getTime();
+  function updateServerTimeOffset(serverTime) {
+    const serverTimestamp = new Date(serverTime).getTime();
 
-    if (
-      Number.isFinite(
-        serverTimestamp,
-      )
-    ) {
-      state.serverTimeOffset =
-        serverTimestamp -
-        Date.now();
+    if (Number.isFinite(serverTimestamp)) {
+      state.serverTimeOffset = serverTimestamp - Date.now();
     }
   }
 
   function getServerNow() {
-    return (
-      Date.now() +
-      state.serverTimeOffset
-    );
+    return Date.now() + state.serverTimeOffset;
   }
 
   function startCountdown() {
-    window.clearInterval(
-      state.countdownTimer,
-    );
+    window.clearInterval(state.countdownTimer);
 
     function updateCountdown() {
-      if (
-        !state.round ||
-        !state.round
-          .bettingClosesAt
-      ) {
-        DOM.timerValue.textContent =
-          "--";
+      if (!state.round || !state.round.bettingClosesAt) {
+        DOM.timerValue.textContent = "--";
 
         return;
       }
 
-      const closesAt =
-        new Date(
-          state.round
-            .bettingClosesAt,
-        ).getTime();
+      const closesAt = new Date(state.round.bettingClosesAt).getTime();
 
-      const remaining =
-        Math.max(
-          0,
-          closesAt -
-            getServerNow(),
-        );
+      const remaining = Math.max(0, closesAt - getServerNow());
 
-      const seconds =
-        Math.ceil(
-          remaining / 1000,
-        );
+      const seconds = Math.ceil(remaining / 1000);
 
-      DOM.timerValue.textContent =
-        String(seconds);
+      DOM.timerValue.textContent = String(seconds);
 
       if (remaining <= 0) {
         state.bettingOpen = false;
 
-        DOM.roundStatusText.textContent =
-          "Betting Closed";
+        DOM.roundStatusText.textContent = "Betting Closed";
 
         renderBetControls();
 
-        window.clearInterval(
-          state.countdownTimer,
-        );
+        window.clearInterval(state.countdownTimer);
       }
     }
 
     updateCountdown();
 
-    state.countdownTimer =
-      window.setInterval(
-        updateCountdown,
-        250,
-      );
+    state.countdownTimer = window.setInterval(updateCountdown, 250);
   }
 
   /* =======================================================
@@ -952,300 +627,164 @@ state.userBetSummary = {
   ======================================================= */
 
   function renderBetTotals(totals) {
-    DOM.andarPlayers.textContent =
-      String(
-        totals?.andarPlayers ||
-        0,
-      );
+    DOM.andarPlayers.textContent = String(totals?.andarPlayers || 0);
 
-    DOM.baharPlayers.textContent =
-      String(
-        totals?.baharPlayers ||
-        0,
-      );
+    DOM.baharPlayers.textContent = String(totals?.baharPlayers || 0);
 
-    DOM.andarTotal.textContent =
-      formatMoney(
-        totals?.totalAndarBet ||
-        0,
-      );
+    DOM.andarTotal.textContent = formatMoney(totals?.totalAndarBet || 0);
 
-    DOM.baharTotal.textContent =
-      formatMoney(
-        totals?.totalBaharBet ||
-        0,
-      );
+    DOM.baharTotal.textContent = formatMoney(totals?.totalBaharBet || 0);
   }
 
   function renderUserBet(bet) {
-    state.userBet =
-      bet || null;
+    state.userBet = bet || null;
 
     if (!bet) {
-      DOM.myBetCard.classList.add(
-        "is-hidden",
-      );
+      DOM.myBetCard.classList.add("is-hidden");
 
       renderBetControls();
 
       return;
     }
 
-    DOM.myBetCard.classList.remove(
-      "is-hidden",
-    );
+    DOM.myBetCard.classList.remove("is-hidden");
 
-    DOM.myBetSide.textContent =
-      formatSide(
-        bet.selectedSide,
-      );
+    DOM.myBetSide.textContent = formatSide(bet.selectedSide);
 
-    DOM.myBetAmount.textContent =
-      formatMoney(
-        bet.betAmount,
-      );
+    DOM.myBetAmount.textContent = formatMoney(bet.betAmount);
 
-    DOM.myBetStatus.textContent =
-      formatStatus(
-        bet.betStatus,
-      );
+    DOM.myBetStatus.textContent = formatStatus(bet.betStatus);
 
-    state.selectedSide =
-      bet.selectedSide;
+    state.selectedSide = bet.selectedSide;
 
-    DOM.andarSide.classList.toggle(
-      "is-selected",
-      bet.selectedSide ===
-        "andar",
-    );
+    DOM.andarSide.classList.toggle("is-selected", bet.selectedSide === "andar");
 
-    DOM.baharSide.classList.toggle(
-      "is-selected",
-      bet.selectedSide ===
-        "bahar",
-    );
+    DOM.baharSide.classList.toggle("is-selected", bet.selectedSide === "bahar");
 
-    DOM.selectedSideText.textContent =
-      formatSide(
-        bet.selectedSide,
-      );
+    DOM.selectedSideText.textContent = formatSide(bet.selectedSide);
 
     renderBetControls();
   }
-function renderUserBets(
-  bets = [],
-  serverSummary = null
-) {
-  const validBets =
-    Array.isArray(bets)
-      ? bets.filter(Boolean)
-      : [];
+  function renderUserBets(bets = [], serverSummary = null) {
+    const validBets = Array.isArray(bets) ? bets.filter(Boolean) : [];
 
-  state.userBets =
-    validBets;
+    state.userBets = validBets;
 
-  state.userBet =
-    validBets[
-      validBets.length -
-        1
-    ] ||
-    null;
+    state.userBet = validBets[validBets.length - 1] || null;
 
-  const calculatedSummary =
-    validBets.reduce(
-      (
-        summary,
-        bet
-      ) => {
-        const amount =
-          Number(
-            bet.betAmount ||
-              0
-          );
+    const calculatedSummary = validBets.reduce(
+      (summary, bet) => {
+        const amount = Number(bet.betAmount || 0);
 
-        summary.totalBetAmount +=
-          amount;
+        summary.totalBetAmount += amount;
 
-        if (
-          bet.selectedSide ===
-          "andar"
-        ) {
-          summary.andarBetAmount +=
-            amount;
+        if (bet.selectedSide === "andar") {
+          summary.andarBetAmount += amount;
         }
 
-        if (
-          bet.selectedSide ===
-          "bahar"
-        ) {
-          summary.baharBetAmount +=
-            amount;
+        if (bet.selectedSide === "bahar") {
+          summary.baharBetAmount += amount;
         }
 
         return summary;
       },
       {
-        totalBets:
-          validBets.length,
+        totalBets: validBets.length,
 
         totalBetAmount: 0,
         andarBetAmount: 0,
         baharBetAmount: 0,
-      }
+      },
     );
 
-  state.userBetSummary = {
-    ...calculatedSummary,
-    ...(serverSummary || {}),
-  };
+    state.userBetSummary = {
+      ...calculatedSummary,
+      ...(serverSummary || {}),
+    };
 
-  if (
-    validBets.length === 0
-  ) {
-    DOM.myBetCard.classList.add(
-      "is-hidden"
+    if (validBets.length === 0) {
+      DOM.myBetCard.classList.add("is-hidden");
+
+      renderBetControls();
+
+      return;
+    }
+
+    DOM.myBetCard.classList.remove("is-hidden");
+
+    const hasAndarBet = state.userBetSummary.andarBetAmount > 0;
+
+    const hasBaharBet = state.userBetSummary.baharBetAmount > 0;
+
+    if (hasAndarBet && hasBaharBet) {
+      DOM.myBetSide.textContent = "Andar + Bahar";
+    } else if (hasAndarBet) {
+      DOM.myBetSide.textContent = "Andar";
+    } else {
+      DOM.myBetSide.textContent = "Bahar";
+    }
+
+    DOM.myBetAmount.textContent = formatMoney(
+      state.userBetSummary.totalBetAmount,
     );
 
-    renderBetControls();
-
-    return;
-  }
-
-  DOM.myBetCard.classList.remove(
-    "is-hidden"
-  );
-
-  const hasAndarBet =
-    state.userBetSummary
-      .andarBetAmount > 0;
-
-  const hasBaharBet =
-    state.userBetSummary
-      .baharBetAmount > 0;
-
-  if (
-    hasAndarBet &&
-    hasBaharBet
-  ) {
-    DOM.myBetSide.textContent =
-      "Andar + Bahar";
-  } else if (hasAndarBet) {
-    DOM.myBetSide.textContent =
-      "Andar";
-  } else {
-    DOM.myBetSide.textContent =
-      "Bahar";
-  }
-
-  DOM.myBetAmount.textContent =
-    formatMoney(
-      state.userBetSummary
-        .totalBetAmount
-    );
-
-  DOM.myBetStatus.textContent =
-    `${state.userBetSummary.totalBets} Bet${
-      state.userBetSummary
-        .totalBets === 1
-        ? ""
-        : "s"
+    DOM.myBetStatus.textContent = `${state.userBetSummary.totalBets} Bet${
+      state.userBetSummary.totalBets === 1 ? "" : "s"
     }`;
 
-  renderBetControls();
-}
+    renderBetControls();
+  }
   /* =======================================================
      CARD ANIMATION
   ======================================================= */
 
   function createCardElement(card) {
-    const image =
-      document.createElement(
-        "img",
-      );
+    const image = document.createElement("img");
 
-    image.className =
-      "dealt-card";
+    image.className = "dealt-card";
 
-    if (
-      card.isMatchingCard
-    ) {
-      image.classList.add(
-        "is-matching",
-      );
+    if (card.isMatchingCard) {
+      image.classList.add("is-matching");
     }
 
-    image.src =
-      getCardImageUrl(
-        card.code,
-      );
+    image.src = getCardImageUrl(card.code);
 
-    image.alt =
-      `${formatSide(
-        card.side,
-      )} ${card.rank}`;
+    image.alt = `${formatSide(card.side)} ${card.rank}`;
 
     return image;
   }
 
-  function animateCardFromJoker(
-  image,
-  side,
-) {
-  if (
-    !image ||
-    typeof image.animate !==
-      "function"
-  ) {
-    return;
-  }
+  function animateCardFromJoker(image, side) {
+    if (!image || typeof image.animate !== "function") {
+      return;
+    }
 
-  const reduceMotion =
-    window.matchMedia(
+    const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-  if (reduceMotion) {
-    return;
-  }
+    if (reduceMotion) {
+      return;
+    }
 
-  window.requestAnimationFrame(
-    () => {
-      const jokerRect =
-        DOM.jokerCardImage
-          .getBoundingClientRect();
+    window.requestAnimationFrame(() => {
+      const jokerRect = DOM.jokerCardImage.getBoundingClientRect();
 
-      const cardRect =
-        image
-          .getBoundingClientRect();
+      const cardRect = image.getBoundingClientRect();
 
-      const sourceCenterX =
-        jokerRect.left +
-        jokerRect.width / 2;
+      const sourceCenterX = jokerRect.left + jokerRect.width / 2;
 
-      const sourceCenterY =
-        jokerRect.top +
-        jokerRect.height / 2;
+      const sourceCenterY = jokerRect.top + jokerRect.height / 2;
 
-      const targetCenterX =
-        cardRect.left +
-        cardRect.width / 2;
+      const targetCenterX = cardRect.left + cardRect.width / 2;
 
-      const targetCenterY =
-        cardRect.top +
-        cardRect.height / 2;
+      const targetCenterY = cardRect.top + cardRect.height / 2;
 
-      const translateX =
-        sourceCenterX -
-        targetCenterX;
+      const translateX = sourceCenterX - targetCenterX;
 
-      const translateY =
-        sourceCenterY -
-        targetCenterY;
+      const translateY = sourceCenterY - targetCenterY;
 
-      const startingRotation =
-        side === "andar"
-          ? -14
-          : 14;
+      const startingRotation = side === "andar" ? -14 : 14;
 
       image.animate(
         [
@@ -1256,15 +795,13 @@ function renderUserBets(
               `translate(${translateX}px, ${translateY}px) ` +
               `scale(0.72) rotate(${startingRotation}deg)`,
 
-            filter:
-              "drop-shadow(0 16px 15px rgba(0, 0, 0, 0.7))",
+            filter: "drop-shadow(0 16px 15px rgba(0, 0, 0, 0.7))",
           },
 
           {
             opacity: 1,
 
-            transform:
-              "translate(0, 0) scale(1.08) rotate(0deg)",
+            transform: "translate(0, 0) scale(1.08) rotate(0deg)",
 
             offset: 0.82,
           },
@@ -1272,27 +809,23 @@ function renderUserBets(
           {
             opacity: 1,
 
-            transform:
-              "translate(0, 0) scale(1) rotate(0deg)",
+            transform: "translate(0, 0) scale(1) rotate(0deg)",
 
-            filter:
-              cardRect.width
-                ? "drop-shadow(0 7px 8px rgba(0, 0, 0, 0.55))"
-                : "none",
+            filter: cardRect.width
+              ? "drop-shadow(0 7px 8px rgba(0, 0, 0, 0.55))"
+              : "none",
           },
         ],
         {
           duration: 560,
 
-          easing:
-            "cubic-bezier(0.18, 0.82, 0.28, 1)",
+          easing: "cubic-bezier(0.18, 0.82, 0.28, 1)",
 
           fill: "both",
         },
       );
-    },
-  );
-}
+    });
+  }
 
   function showRoundResult(result) {
     if (!result?.round) {
@@ -1301,200 +834,102 @@ function renderUserBets(
 
     clearCardAnimationTimers();
 
-    const round =
-      result.round;
+    const round = result.round;
 
-    const cards =
-      Array.isArray(
-        result.cards,
-      )
-        ? result.cards
-        : [];
+    const cards = Array.isArray(result.cards) ? result.cards : [];
 
-    DOM.jokerCardImage.src =
-      getCardImageUrl(
-        round.jokerCard,
-      );
+    DOM.jokerCardImage.src = getCardImageUrl(round.jokerCard);
 
-    DOM.andarCards.innerHTML =
-      "";
+    DOM.andarCards.innerHTML = "";
 
-    DOM.baharCards.innerHTML =
-      "";
+    DOM.baharCards.innerHTML = "";
 
-    const dealtCards =
-      cards.filter(
-        (card) =>
-          card.side !== "joker",
-      );
+    const dealtCards = cards.filter((card) => card.side !== "joker");
 
-    dealtCards.forEach(
-      (card, index) => {
-        const timer =
-          window.setTimeout(
-            () => {
-              const container =
-                card.side ===
-                "andar"
-                  ? DOM.andarCards
-                  : DOM.baharCards;
+    dealtCards.forEach((card, index) => {
+      const timer = window.setTimeout(() => {
+        const container =
+          card.side === "andar" ? DOM.andarCards : DOM.baharCards;
 
-              const cardImage =
-  createCardElement(
-    card,
-  );
+        const cardImage = createCardElement(card);
 
-container.appendChild(
-  cardImage,
-);
+        container.appendChild(cardImage);
 
-animateCardFromJoker(
-  cardImage,
-  card.side,
-);
+        animateCardFromJoker(cardImage, card.side);
 
-container.scrollLeft =
-  container.scrollWidth;
-            },
-            index * 750,
-          );
+        container.scrollLeft = container.scrollWidth;
+      }, index * 750);
 
-        state.cardAnimationTimers.push(
-          timer,
-        );
-      },
-    );
+      state.cardAnimationTimers.push(timer);
+    });
 
-   const resultDelay =
-  dealtCards.length *
-    750 +
-  700;
+    const resultDelay = dealtCards.length * 750 + 700;
 
-    const resultTimer =
-      window.setTimeout(
-        () => {
-          const winningSide =
-            round.winningSide;
+    const resultTimer = window.setTimeout(() => {
+      const winningSide = round.winningSide;
 
-          DOM.andarSide.classList.toggle(
-            "is-winner",
-            winningSide ===
-              "andar",
-          );
+      DOM.andarSide.classList.toggle("is-winner", winningSide === "andar");
 
-          DOM.baharSide.classList.toggle(
-            "is-winner",
-            winningSide ===
-              "bahar",
-          );
+      DOM.baharSide.classList.toggle("is-winner", winningSide === "bahar");
 
-          DOM.resultTitle.textContent =
-            formatSide(
-              winningSide,
-            ).toUpperCase();
+      DOM.resultTitle.textContent = formatSide(winningSide).toUpperCase();
 
-          DOM.resultJokerCard.src =
-            getCardImageUrl(
-              round.jokerCard,
-            );
+      DOM.resultJokerCard.src = getCardImageUrl(round.jokerCard);
 
-          DOM.resultMatchingCard.src =
-            getCardImageUrl(
-              round.matchingCard,
-            );
+      DOM.resultMatchingCard.src = getCardImageUrl(round.matchingCard);
 
-          renderPrivateResultMessage(
-            state.privateResult,
-            winningSide,
-          );
+      renderPrivateResultMessage(state.privateResult, winningSide);
 
-          DOM.resultOverlay.classList.remove(
-            "is-hidden",
-          );
+      DOM.resultOverlay.classList.remove("is-hidden");
 
-          loadRecentResults();
-        },
-        resultDelay,
-      );
+      loadRecentResults();
+    }, resultDelay);
 
-    state.cardAnimationTimers.push(
-      resultTimer,
-    );
+    state.cardAnimationTimers.push(resultTimer);
   }
 
-  function renderPrivateResultMessage(
-  privateResult,
-  winningSide
-) {
-  const userBets =
-    Array.isArray(
-      privateResult?.userBets
-    )
+  function renderPrivateResultMessage(privateResult, winningSide) {
+    const userBets = Array.isArray(privateResult?.userBets)
       ? privateResult.userBets
       : state.userBets;
 
-  const validBets =
-    Array.isArray(userBets)
-      ? userBets.filter(Boolean)
-      : [];
+    const validBets = Array.isArray(userBets) ? userBets.filter(Boolean) : [];
 
-  if (validBets.length === 0) {
-    DOM.userResultMessage.textContent =
-      `${formatSide(
-        winningSide
+    if (validBets.length === 0) {
+      DOM.userResultMessage.textContent = `${formatSide(
+        winningSide,
       )} won this round.`;
 
-    return;
-  }
+      return;
+    }
 
-  renderUserBets(
-    validBets,
-    privateResult?.userBetSummary
-  );
+    renderUserBets(validBets, privateResult?.userBetSummary);
 
-  const calculatedResult =
-    validBets.reduce(
+    const calculatedResult = validBets.reduce(
       (summary, bet) => {
-        const status =
-          String(
-            bet.betStatus ??
-            bet.bet_status ??
-            ""
-          ).toLowerCase();
+        const status = String(
+          bet.betStatus ?? bet.bet_status ?? "",
+        ).toLowerCase();
 
-        const amount =
-          Number(
-            bet.betAmount ??
-            bet.bet_amount ??
-            0
-          );
+        const amount = Number(bet.betAmount ?? bet.bet_amount ?? 0);
 
-        const payout =
-          Number(
-            bet.netPayout ??
-            bet.net_payout ??
-            0
-          );
+        const payout = Number(bet.netPayout ?? bet.net_payout ?? 0);
 
-        summary.totalBetAmount +=
-          amount;
+        summary.totalBetAmount += amount;
 
         if (status === "won") {
           summary.winningBets += 1;
-          summary.netPayout +=
-            payout;
+          summary.netPayout += payout;
         }
 
         if (status === "lost") {
           summary.losingBets += 1;
-          summary.lostAmount +=
-            amount;
+          summary.lostAmount += amount;
         }
 
         if (status === "refunded") {
           summary.refundedBets += 1;
-          summary.refundedAmount +=
-            amount;
+          summary.refundedAmount += amount;
         }
 
         return summary;
@@ -1506,78 +941,53 @@ container.scrollLeft =
         totalBetAmount: 0,
         lostAmount: 0,
         refundedAmount: 0,
-        netPayout: 0
-      }
+        netPayout: 0,
+      },
     );
 
-  const serverResult =
-    privateResult?.resultSummary ||
-    {};
+    const serverResult = privateResult?.resultSummary || {};
 
-  const result = {
-    ...calculatedResult,
-    ...serverResult
-  };
+    const result = {
+      ...calculatedResult,
+      ...serverResult,
+    };
 
-  if (
-    result.winningBets > 0 &&
-    result.losingBets > 0
-  ) {
-    DOM.userResultMessage.textContent =
-      `${result.winningBets} bet won, ` +
-      `${result.losingBets} bet lost. ` +
-      `Total payout ৳${formatMoney(
-        result.netPayout
-      )}.`;
+    if (result.winningBets > 0 && result.losingBets > 0) {
+      DOM.userResultMessage.textContent =
+        `${result.winningBets} bet won, ` +
+        `${result.losingBets} bet lost. ` +
+        `Total payout ৳${formatMoney(result.netPayout)}.`;
 
-    return;
+      return;
+    }
+
+    if (result.winningBets > 0) {
+      DOM.userResultMessage.textContent = `${result.winningBets} bet${
+        result.winningBets === 1 ? "" : "s"
+      } won. Total payout ৳${formatMoney(result.netPayout)}.`;
+
+      return;
+    }
+
+    if (result.refundedBets > 0) {
+      DOM.userResultMessage.textContent = `${result.refundedBets} bet${
+        result.refundedBets === 1 ? "" : "s"
+      } refunded. Amount ৳${formatMoney(result.refundedAmount)}.`;
+
+      return;
+    }
+
+    DOM.userResultMessage.textContent = `${result.losingBets} bet${
+      result.losingBets === 1 ? "" : "s"
+    } lost. Total bet ৳${formatMoney(result.totalBetAmount)}.`;
   }
-
-  if (result.winningBets > 0) {
-    DOM.userResultMessage.textContent =
-      `${result.winningBets} bet${
-        result.winningBets === 1
-          ? ""
-          : "s"
-      } won. Total payout ৳${formatMoney(
-        result.netPayout
-      )}.`;
-
-    return;
-  }
-
-  if (result.refundedBets > 0) {
-    DOM.userResultMessage.textContent =
-      `${result.refundedBets} bet${
-        result.refundedBets === 1
-          ? ""
-          : "s"
-      } refunded. Amount ৳${formatMoney(
-        result.refundedAmount
-      )}.`;
-
-    return;
-  }
-
-  DOM.userResultMessage.textContent =
-    `${result.losingBets} bet${
-      result.losingBets === 1
-        ? ""
-        : "s"
-    } lost. Total bet ৳${formatMoney(
-      result.totalBetAmount
-    )}.`;
-}
 
   /* =======================================================
      HISTORY
   ======================================================= */
 
   function renderRecentResults(results) {
-    if (
-      !Array.isArray(results) ||
-      results.length === 0
-    ) {
+    if (!Array.isArray(results) || results.length === 0) {
       DOM.recentResults.innerHTML = `
         <p class="history-placeholder">
           No completed rounds yet.
@@ -1587,47 +997,25 @@ container.scrollLeft =
       return;
     }
 
-    DOM.recentResults.innerHTML =
-      "";
+    DOM.recentResults.innerHTML = "";
 
-    results.forEach(
-      (result) => {
-        const item =
-          document.createElement(
-            "div",
-          );
+    results.forEach((result) => {
+      const item = document.createElement("div");
 
-        item.className =
-          "history-item";
+      item.className = "history-item";
 
-        const side =
-          document.createElement(
-            "strong",
-          );
+      const side = document.createElement("strong");
 
-        side.textContent =
-          formatSide(
-            result.winningSide,
-          );
+      side.textContent = formatSide(result.winningSide);
 
-        const card =
-          document.createElement(
-            "span",
-          );
+      const card = document.createElement("span");
 
-        card.textContent =
-          `${result.jokerCard || "--"} → ${result.matchingCard || "--"}`;
+      card.textContent = `${result.jokerCard || "--"} → ${result.matchingCard || "--"}`;
 
-        item.append(
-          side,
-          card,
-        );
+      item.append(side, card);
 
-        DOM.recentResults.appendChild(
-          item,
-        );
-      },
-    );
+      DOM.recentResults.appendChild(item);
+    });
   }
 
   /* =======================================================
@@ -1635,45 +1023,25 @@ container.scrollLeft =
   ======================================================= */
 
   function submitBet() {
-    if (
-      !state.socket ||
-      !state.connected
-    ) {
-      showToast(
-        "Game server is not connected.",
-        "error",
-      );
+    if (!state.socket || !state.connected) {
+      showToast("Game server is not connected.", "error");
 
       return;
     }
 
-    if (
-      !state.round?.id ||
-      !state.bettingOpen
-    ) {
-      showToast(
-        "Betting is closed.",
-        "error",
-      );
+    if (!state.round?.id || !state.bettingOpen) {
+      showToast("Betting is closed.", "error");
 
       return;
     }
 
-    if (
-      !state.selectedSide
-    ) {
-      showToast(
-        "Select Andar or Bahar.",
-        "error",
-      );
+    if (!state.selectedSide) {
+      showToast("Select Andar or Bahar.", "error");
 
       return;
     }
 
-    const amount =
-      clampBetAmount(
-        DOM.betAmountInput.value,
-      );
+    const amount = clampBetAmount(DOM.betAmountInput.value);
 
     state.placingBet = true;
 
@@ -1684,75 +1052,42 @@ container.scrollLeft =
     state.socket.emit(
       "andar-bahar:place-bet",
       {
-        roundId:
-          state.round.id,
+        roundId: state.round.id,
 
-        selectedSide:
-          state.selectedSide,
+        selectedSide: state.selectedSide,
 
-        betAmount:
-          amount,
+        betAmount: amount,
       },
       (response) => {
         state.placingBet = false;
 
-        if (
-          !response?.success
-        ) {
-          const message =
-            response?.message ||
-            "Bet could not be placed.";
+        if (!response?.success) {
+          const message = response?.message || "Bet could not be placed.";
 
-          setBettingMessage(
-            message,
-            "error",
-          );
+          setBettingMessage(message, "error");
 
-          showToast(
-            message,
-            "error",
-          );
+          showToast(message, "error");
 
           renderBetControls();
 
           return;
         }
 
-       const placedBet =
-  response.data?.bet ||
-  null;
+        const placedBet = response.data?.bet || null;
 
-if (placedBet) {
-  renderUserBets(
-    [
-      ...state.userBets,
-      placedBet,
-    ],
-  );
-}
-
-        if (
-          response.data?.wallet
-            ?.balanceAfter !==
-          undefined
-        ) {
-          DOM.walletBalance.textContent =
-            formatMoney(
-              response.data
-                .wallet
-                .balanceAfter,
-            );
+        if (placedBet) {
+          renderUserBets([...state.userBets, placedBet]);
         }
 
-        setBettingMessage(
-          "Your bet was accepted successfully.",
-          "success",
-        );
+        if (response.data?.wallet?.balanceAfter !== undefined) {
+          DOM.walletBalance.textContent = formatMoney(
+            response.data.wallet.balanceAfter,
+          );
+        }
 
-        showToast(
-          "Bet placed successfully.",
-          "success",
-        );
+        setBettingMessage("Your bet was accepted successfully.", "success");
+
+        showToast("Bet placed successfully.", "success");
       },
     );
   }
@@ -1762,23 +1097,15 @@ if (placedBet) {
   ======================================================= */
 
   function initializeSocket() {
-    if (
-      typeof window.io !==
-      "function"
-    ) {
-      renderConnection(
-        "disconnected",
-        "Socket.IO client unavailable",
-      );
+    if (typeof window.io !== "function") {
+      renderConnection("disconnected", "Socket.IO client unavailable");
 
-      DOM.loadingText.textContent =
-        "Game connection unavailable.";
+      DOM.loadingText.textContent = "Game connection unavailable.";
 
       return;
     }
 
-    const token =
-      getAccessToken();
+    const token = getAccessToken();
 
     if (!token) {
       redirectToLogin();
@@ -1786,271 +1113,142 @@ if (placedBet) {
       return;
     }
 
-    const socket =
-      window.io(
-        `${window.APP_CONFIG.SERVER_URL}/andar-bahar`,
-        {
-          auth: {
-            token,
-          },
+    const socket = window.io(`${window.APP_CONFIG.SERVER_URL}/andar-bahar`, {
+      auth: {
+        token,
+      },
 
-          transports: [
-            "websocket",
-            "polling",
-          ],
+      transports: ["websocket", "polling"],
 
-          reconnection: true,
-          reconnectionAttempts:
-            Infinity,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          timeout: 15000,
-        },
-      );
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 15000,
+    });
 
     state.socket = socket;
 
-    socket.on(
-      "connect",
-      () => {
-        state.connected = true;
+    socket.on("connect", () => {
+      state.connected = true;
 
-        renderConnection(
-          "connected",
-          "Live game connected",
-        );
-      },
-    );
+      renderConnection("connected", "Live game connected");
+    });
 
-    socket.on(
-      "disconnect",
-      () => {
-        state.connected = false;
+    socket.on("disconnect", () => {
+      state.connected = false;
 
-        state.bettingOpen = false;
+      state.bettingOpen = false;
 
-        renderConnection(
-          "disconnected",
-          "Connection lost — reconnecting...",
-        );
+      renderConnection("disconnected", "Connection lost — reconnecting...");
 
-        renderBetControls();
-      },
-    );
+      renderBetControls();
+    });
 
-    socket.on(
-      "connect_error",
-      (error) => {
-        state.connected = false;
+    socket.on("connect_error", (error) => {
+      state.connected = false;
 
-        renderConnection(
-          "disconnected",
-          error.message ||
-            "Connection failed",
-        );
+      renderConnection("disconnected", error.message || "Connection failed");
 
-        if (
-          error.data
-            ?.statusCode === 401
-        ) {
-          redirectToLogin();
-        }
-      },
-    );
+      if (error.data?.statusCode === 401) {
+        redirectToLogin();
+      }
+    });
 
-    socket.on(
-      "andar-bahar:connected",
-      (payload) => {
-        updateServerTimeOffset(
-          payload.serverTime,
-        );
-      },
-    );
+    socket.on("andar-bahar:connected", (payload) => {
+      updateServerTimeOffset(payload.serverTime);
+    });
 
-    socket.on(
-      "andar-bahar:state",
-      (payload) => {
-        const data =
-          payload?.data;
+    socket.on("andar-bahar:state", (payload) => {
+      const data = payload?.data;
 
-        if (!data) {
-          return;
-        }
+      if (!data) {
+        return;
+      }
 
-        updateServerTimeOffset(
-          data.serverTime,
-        );
+      updateServerTimeOffset(data.serverTime);
 
-        renderSettings(
-          data.settings,
-        );
+      renderSettings(data.settings);
 
-        renderRound(
-          data.activeRound,
-        );
+      renderRound(data.activeRound);
 
-        renderBetTotals(
-          data.betTotals,
-        );
+      renderBetTotals(data.betTotals);
 
-      if (
-  data.userBets !==
-  undefined
-) {
-  renderUserBets(
-    data.userBets,
-    data.userBetSummary,
-  );
-} else if (
-  data.userBet !==
-  undefined
-) {
-  renderUserBet(
-    data.userBet,
-  );
-}
+      if (data.userBets !== undefined) {
+        renderUserBets(data.userBets, data.userBetSummary);
+      } else if (data.userBet !== undefined) {
+        renderUserBet(data.userBet);
+      }
 
-        hideLoading();
-      },
-    );
+      hideLoading();
+    });
 
-    socket.on(
-      "andar-bahar:round-started",
-      (payload) => {
-        renderSettings(
-          payload.settings,
-        );
+    socket.on("andar-bahar:round-started", (payload) => {
+      renderSettings(payload.settings);
 
-        renderRound(
-          payload.round,
-        );
+      renderRound(payload.round);
 
-        renderBetTotals({
-          andarPlayers: 0,
-          baharPlayers: 0,
-          totalAndarBet: 0,
-          totalBaharBet: 0,
-        });
+      renderBetTotals({
+        andarPlayers: 0,
+        baharPlayers: 0,
+        totalAndarBet: 0,
+        totalBaharBet: 0,
+      });
 
-        hideLoading();
+      hideLoading();
 
-        showToast(
-          "New betting round started.",
-          "success",
-        );
-      },
-    );
+      showToast("New betting round started.", "success");
+    });
 
-    socket.on(
-      "andar-bahar:bet-totals",
-      (payload) => {
-        if (
-          Number(
-            payload.roundId,
-          ) !==
-          Number(
-            state.round?.id,
-          )
-        ) {
-          return;
-        }
+    socket.on("andar-bahar:bet-totals", (payload) => {
+      if (Number(payload.roundId) !== Number(state.round?.id)) {
+        return;
+      }
 
-        renderBetTotals(
-          payload.totals,
-        );
-      },
-    );
+      renderBetTotals(payload.totals);
+    });
 
-    socket.on(
-      "andar-bahar:betting-closed",
-      () => {
-        state.bettingOpen = false;
+    socket.on("andar-bahar:betting-closed", () => {
+      state.bettingOpen = false;
 
-        DOM.roundStatusText.textContent =
-          "Betting Closed";
+      DOM.roundStatusText.textContent = "Betting Closed";
 
-        DOM.timerValue.textContent =
-          "0";
+      DOM.timerValue.textContent = "0";
 
-        renderBetControls();
+      renderBetControls();
 
-        setBettingMessage(
-          "Betting is closed. Cards are being prepared.",
-        );
-      },
-    );
+      setBettingMessage("Betting is closed. Cards are being prepared.");
+    });
 
-    socket.on(
-      "andar-bahar:dealing",
-      () => {
-        DOM.roundStatusText.textContent =
-          "Dealing Cards";
-      },
-    );
+    socket.on("andar-bahar:dealing", () => {
+      DOM.roundStatusText.textContent = "Dealing Cards";
+    });
 
-    socket.on(
-      "andar-bahar:user-result",
-      (payload) => {
-        state.privateResult =
-          payload?.data || null;
+    socket.on("andar-bahar:user-result", (payload) => {
+      state.privateResult = payload?.data || null;
 
-        if (
-          payload?.data
-            ?.walletBalance !==
-          undefined
-        ) {
-          DOM.walletBalance.textContent =
-            formatMoney(
-              payload.data
-                .walletBalance,
-            );
-        }
+      if (payload?.data?.walletBalance !== undefined) {
+        DOM.walletBalance.textContent = formatMoney(payload.data.walletBalance);
+      }
 
-        if (
-  Array.isArray(
-    payload?.data?.userBets
-  )
-) {
-  renderUserBets(
-    payload.data.userBets,
-    payload.data
-      .userBetSummary,
-  );
-} else if (
-  payload?.data?.userBet
-) {
-  renderUserBet(
-    payload.data.userBet,
-  );
-}
-      },
-    );
+      if (Array.isArray(payload?.data?.userBets)) {
+        renderUserBets(payload.data.userBets, payload.data.userBetSummary);
+      } else if (payload?.data?.userBet) {
+        renderUserBet(payload.data.userBet);
+      }
+    });
 
-    socket.on(
-      "andar-bahar:result",
-      (payload) => {
-        DOM.roundStatusText.textContent =
-          "Round Completed";
+    socket.on("andar-bahar:result", (payload) => {
+      DOM.roundStatusText.textContent = "Round Completed";
 
-        showRoundResult(
-          payload?.data,
-        );
-      },
-    );
+      showRoundResult(payload?.data);
+    });
 
-    socket.on(
-      "andar-bahar:error",
-      (payload) => {
-        const message =
-          payload?.message ||
-          "Andar Bahar game error.";
+    socket.on("andar-bahar:error", (payload) => {
+      const message = payload?.message || "Andar Bahar game error.";
 
-        showToast(
-          message,
-          "error",
-        );
-      },
-    );
+      showToast(message, "error");
+    });
   }
 
   /* =======================================================
@@ -2058,126 +1256,68 @@ if (placedBet) {
   ======================================================= */
 
   function bindEvents() {
-    DOM.backButton.addEventListener(
-      "click",
-      () => {
-        window.location.href =
-          "./lobby.html";
-      },
-    );
+    DOM.backButton.addEventListener("click", () => {
+      window.location.href =
+  "/lobby";
+    });
 
-    DOM.soundButton.addEventListener(
-      "click",
-      () => {
-        state.soundEnabled =
-          !state.soundEnabled;
+    DOM.soundButton.addEventListener("click", () => {
+      state.soundEnabled = !state.soundEnabled;
 
-        DOM.soundButton.innerHTML =
-          state.soundEnabled
-            ? '<i class="fa-solid fa-volume-high"></i>'
-            : '<i class="fa-solid fa-volume-xmark"></i>';
-      },
-    );
+      DOM.soundButton.innerHTML = state.soundEnabled
+        ? '<i class="fa-solid fa-volume-high"></i>'
+        : '<i class="fa-solid fa-volume-xmark"></i>';
+    });
 
-    DOM.andarBetButton.addEventListener(
-      "click",
-      () => {
-        selectSide("andar");
-      },
-    );
+    DOM.andarBetButton.addEventListener("click", () => {
+      selectSide("andar");
+    });
 
-    DOM.baharBetButton.addEventListener(
-      "click",
-      () => {
-        selectSide("bahar");
-      },
-    );
+    DOM.baharBetButton.addEventListener("click", () => {
+      selectSide("bahar");
+    });
 
-    DOM.decreaseBetButton.addEventListener(
-      "click",
-      () => {
-        setBetAmount(
-          state.betAmount - 5,
-        );
-      },
-    );
+    DOM.decreaseBetButton.addEventListener("click", () => {
+      setBetAmount(state.betAmount - 5);
+    });
 
-    DOM.increaseBetButton.addEventListener(
-      "click",
-      () => {
-        setBetAmount(
-          state.betAmount + 5,
-        );
-      },
-    );
+    DOM.increaseBetButton.addEventListener("click", () => {
+      setBetAmount(state.betAmount + 5);
+    });
 
-    DOM.betAmountInput.addEventListener(
-      "change",
-      () => {
-        setBetAmount(
-          DOM.betAmountInput.value,
-        );
-      },
-    );
+    DOM.betAmountInput.addEventListener("change", () => {
+      setBetAmount(DOM.betAmountInput.value);
+    });
 
-    DOM.quickBetOptions.addEventListener(
-      "click",
-      (event) => {
-        const button =
-          event.target.closest(
-            "button[data-amount]",
-          );
+    DOM.quickBetOptions.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-amount]");
 
-        if (!button) {
-          return;
-        }
+      if (!button) {
+        return;
+      }
 
-        setBetAmount(
-          button.dataset.amount,
-        );
-      },
-    );
+      setBetAmount(button.dataset.amount);
+    });
 
-    DOM.placeBetButton.addEventListener(
-      "click",
-      submitBet,
-    );
+    DOM.placeBetButton.addEventListener("click", submitBet);
 
-    DOM.refreshHistoryButton.addEventListener(
-      "click",
-      loadRecentResults,
-    );
+    DOM.refreshHistoryButton.addEventListener("click", loadRecentResults);
 
-    DOM.resultCloseButton.addEventListener(
-      "click",
-      () => {
-        DOM.resultOverlay.classList.add(
-          "is-hidden",
-        );
-      },
-    );
+    DOM.resultCloseButton.addEventListener("click", () => {
+      DOM.resultOverlay.classList.add("is-hidden");
+    });
 
-    DOM.continueButton.addEventListener(
-      "click",
-      () => {
-        DOM.resultOverlay.classList.add(
-          "is-hidden",
-        );
-      },
-    );
+    DOM.continueButton.addEventListener("click", () => {
+      DOM.resultOverlay.classList.add("is-hidden");
+    });
 
-    window.addEventListener(
-      "beforeunload",
-      () => {
-        window.clearInterval(
-          state.countdownTimer,
-        );
+    window.addEventListener("beforeunload", () => {
+      window.clearInterval(state.countdownTimer);
 
-        clearCardAnimationTimers();
+      clearCardAnimationTimers();
 
-        state.socket?.disconnect();
-      },
-    );
+      state.socket?.disconnect();
+    });
   }
 
   /* =======================================================
@@ -2185,9 +1325,7 @@ if (placedBet) {
   ======================================================= */
 
   async function startGame() {
-    if (
-      !getAccessToken()
-    ) {
+    if (!getAccessToken()) {
       redirectToLogin();
 
       return;
@@ -2198,15 +1336,9 @@ if (placedBet) {
     setBetAmount(5);
 
     try {
-      await Promise.all([
-        loadWallet(),
-        loadRecentResults(),
-      ]);
+      await Promise.all([loadWallet(), loadRecentResults()]);
     } catch (error) {
-      console.error(
-        "Andar Bahar initial data error:",
-        error,
-      );
+      console.error("Andar Bahar initial data error:", error);
     }
 
     initializeSocket();
@@ -2214,23 +1346,13 @@ if (placedBet) {
     /*
      * Socket response দেরি হলেও loading screen আটকে থাকবে না।
      */
-    window.setTimeout(
-      hideLoading,
-      15000,
-    );
+    window.setTimeout(hideLoading, 15000);
   }
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      startGame,
-      {
-        once: true,
-      },
-    );
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startGame, {
+      once: true,
+    });
   } else {
     startGame();
   }

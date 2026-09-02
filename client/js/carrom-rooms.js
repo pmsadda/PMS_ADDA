@@ -12,54 +12,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const API_TIMEOUT_MS = 15000;
 
-
   /* ==================================
      DOM Elements
   ================================== */
 
   const elements = {
-    roomGrid:
-      document.getElementById("roomGrid"),
+    roomGrid: document.getElementById("roomGrid"),
 
-    modeSelector:
-      document.getElementById("carromPlayerMode"),
+    modeSelector: document.getElementById("carromPlayerMode"),
 
-    walletBalance:
-      document.getElementById("walletBalance"),
+    walletBalance: document.getElementById("walletBalance"),
 
-    serviceChargePreview:
-      document.getElementById(
-        "serviceChargePreview",
-      ),
+    serviceChargePreview: document.getElementById("serviceChargePreview"),
 
-    emptyState:
-      document.getElementById("emptyState"),
+    emptyState: document.getElementById("emptyState"),
 
-    retryRoomsBtn:
-      document.getElementById("retryRoomsBtn"),
+    retryRoomsBtn: document.getElementById("retryRoomsBtn"),
 
-    backBtn:
-      document.getElementById("backBtn"),
+    backBtn: document.getElementById("backBtn"),
 
-    refreshBalanceBtn:
-      document.getElementById(
-        "refreshBalanceBtn",
-      ),
+    refreshBalanceBtn: document.getElementById("refreshBalanceBtn"),
 
-    loaderOverlay:
-      document.getElementById("loaderOverlay"),
+    loaderOverlay: document.getElementById("loaderOverlay"),
 
-    loaderMessage:
-      document.getElementById("loaderMessage"),
+    loaderMessage: document.getElementById("loaderMessage"),
 
-    toast:
-      document.getElementById("toast"),
+    toast: document.getElementById("toast"),
 
-    toastMessage:
-      document.getElementById("toastMessage"),
+    toastMessage: document.getElementById("toastMessage"),
 
-    toastIcon:
-      document.getElementById("toastIcon"),
+    toastIcon: document.getElementById("toastIcon"),
   };
 
   /* ==================================
@@ -85,14 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
   ================================== */
 
   function getAccessToken() {
-    return localStorage.getItem(
-      "access_token",
-    );
+    return localStorage.getItem("access_token");
   }
 
   function getStoredUser() {
-    const storedUser =
-      localStorage.getItem("current_user");
+    const storedUser = localStorage.getItem("current_user");
 
     if (!storedUser) {
       return null;
@@ -101,58 +80,38 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       return JSON.parse(storedUser);
     } catch (error) {
-      console.error(
-        "Invalid current_user:",
-        error,
-      );
+      console.error("Invalid current_user:", error);
 
-      localStorage.removeItem(
-        "current_user",
-      );
+      localStorage.removeItem("current_user");
 
       return null;
     }
   }
 
   function saveCurrentUser(user) {
-    localStorage.setItem(
-      "current_user",
-      JSON.stringify(user),
-    );
+    localStorage.setItem("current_user", JSON.stringify(user));
   }
 
   function saveSelectedRoom(room) {
     const selectedRoom = {
       game: "carrom",
 
-      roomId:
-        Number(room.id),
+      roomId: Number(room.id),
 
-      roomCode:
-        room.roomCode,
+      roomCode: room.roomCode,
 
-      roomName:
-        room.roomName,
+      roomName: room.roomName,
 
-      entryAmount:
-        Number(room.entryAmount),
+      entryAmount: Number(room.entryAmount),
 
-      playerMode:
-        state.playerMode,
+      playerMode: state.playerMode,
 
-      serviceChargePercent:
-        Number(
-          room.serviceChargePercent,
-        ),
+      serviceChargePercent: Number(room.serviceChargePercent),
 
-      selectedAt:
-        new Date().toISOString(),
+      selectedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(
-      "selected_carrom_room",
-      JSON.stringify(selectedRoom),
-    );
+    localStorage.setItem("selected_carrom_room", JSON.stringify(selectedRoom));
 
     return selectedRoom;
   }
@@ -164,10 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function toValidAmount(value) {
     const amount = Number(value);
 
-    if (
-      !Number.isFinite(amount) ||
-      amount < 0
-    ) {
+    if (!Number.isFinite(amount) || amount < 0) {
       return 0;
     }
 
@@ -175,54 +131,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function roundMoney(value) {
-    return Number(
-      toValidAmount(value).toFixed(2),
-    );
+    return Number(toValidAmount(value).toFixed(2));
   }
 
   function formatMoney(value) {
-    return toValidAmount(value)
-      .toLocaleString("en-BD", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
+    return toValidAmount(value).toLocaleString("en-BD", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   }
 
   function getWalletBalance() {
-    return toValidAmount(
-      state.user?.walletBalance,
-    );
+    return toValidAmount(state.user?.walletBalance);
   }
 
   function calculateRoomMoney(room) {
-    const entryAmount =
-      toValidAmount(room.entryAmount);
+    const entryAmount = toValidAmount(room.entryAmount);
 
-    const playerCount =
-      Number(state.playerMode);
+    const playerCount = Number(state.playerMode);
 
-    const serviceChargePercent =
-      toValidAmount(
-        room.serviceChargePercent,
-      );
+    const serviceChargePercent = toValidAmount(room.serviceChargePercent);
 
-    const grossPot =
-      roundMoney(
-        entryAmount * playerCount,
-      );
+    const grossPot = roundMoney(entryAmount * playerCount);
 
-    const serviceChargeAmount =
-      roundMoney(
-        grossPot *
-          serviceChargePercent /
-          100,
-      );
+    const serviceChargeAmount = roundMoney(
+      (grossPot * serviceChargePercent) / 100,
+    );
 
-    const winnerPrize =
-      roundMoney(
-        grossPot -
-          serviceChargeAmount,
-      );
+    const winnerPrize = roundMoney(grossPot - serviceChargeAmount);
 
     return {
       entryAmount,
@@ -239,25 +175,17 @@ document.addEventListener("DOMContentLoaded", () => {
   ================================== */
 
   function redirectToLogin() {
-    localStorage.removeItem(
-      "access_token",
-    );
+    localStorage.removeItem("access_token");
 
-    localStorage.removeItem(
-      "current_user",
-    );
+    localStorage.removeItem("current_user");
 
-    window.location.replace(
-      "login.html",
-    );
+    window.location.replace("/login");
   }
 
   function initializeUser() {
-    const token =
-      getAccessToken();
+    const token = getAccessToken();
 
-    const user =
-      getStoredUser();
+    const user = getStoredUser();
 
     if (!token || !user) {
       redirectToLogin();
@@ -279,63 +207,37 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    elements.walletBalance.textContent =
-      formatMoney(
-        getWalletBalance(),
-      );
+    elements.walletBalance.textContent = formatMoney(getWalletBalance());
   }
 
   function updateServiceChargePreview() {
-    if (
-      !elements.serviceChargePreview
-    ) {
+    if (!elements.serviceChargePreview) {
       return;
     }
 
-    const activeRoom =
-      state.rooms.find(
-        (room) =>
-          room.status === "active",
-      );
+    const activeRoom = state.rooms.find((room) => room.status === "active");
 
     if (!activeRoom) {
-      elements
-        .serviceChargePreview
-        .textContent = "--%";
+      elements.serviceChargePreview.textContent = "--%";
 
       return;
     }
 
-    elements
-      .serviceChargePreview
-      .textContent =
-        `${toValidAmount(
-          activeRoom
-            .serviceChargePercent,
-        )}%`;
+    elements.serviceChargePreview.textContent = `${toValidAmount(
+      activeRoom.serviceChargePercent,
+    )}%`;
   }
 
-  function showLoader(
-    message = "Please wait...",
-  ) {
-    if (
-      !elements.loaderOverlay ||
-      !elements.loaderMessage
-    ) {
+  function showLoader(message = "Please wait...") {
+    if (!elements.loaderOverlay || !elements.loaderMessage) {
       return;
     }
 
-    elements.loaderMessage.textContent =
-      message;
+    elements.loaderMessage.textContent = message;
 
-    elements.loaderOverlay
-      .classList.add("is-visible");
+    elements.loaderOverlay.classList.add("is-visible");
 
-    elements.loaderOverlay
-      .setAttribute(
-        "aria-hidden",
-        "false",
-      );
+    elements.loaderOverlay.setAttribute("aria-hidden", "false");
   }
 
   function hideLoader() {
@@ -343,152 +245,95 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    elements.loaderOverlay
-      .classList.remove("is-visible");
+    elements.loaderOverlay.classList.remove("is-visible");
 
-    elements.loaderOverlay
-      .setAttribute(
-        "aria-hidden",
-        "true",
-      );
+    elements.loaderOverlay.setAttribute("aria-hidden", "true");
   }
 
-  function showToast(
-    message,
-    type = "info",
-  ) {
-    if (
-      !elements.toast ||
-      !elements.toastMessage ||
-      !elements.toastIcon
-    ) {
+  function showToast(message, type = "info") {
+    if (!elements.toast || !elements.toastMessage || !elements.toastIcon) {
       return;
     }
 
     if (state.toastTimer) {
-      window.clearTimeout(
-        state.toastTimer,
-      );
+      window.clearTimeout(state.toastTimer);
     }
 
-    elements.toast.classList.remove(
-      "is-error",
-      "is-success",
-      "is-visible",
-    );
+    elements.toast.classList.remove("is-error", "is-success", "is-visible");
 
-    elements.toastMessage.textContent =
-      message;
+    elements.toastMessage.textContent = message;
 
     if (type === "error") {
-      elements.toast.classList.add(
-        "is-error",
-      );
+      elements.toast.classList.add("is-error");
 
-      elements.toastIcon.className =
-        "fa-solid fa-circle-exclamation";
+      elements.toastIcon.className = "fa-solid fa-circle-exclamation";
     } else if (type === "success") {
-      elements.toast.classList.add(
-        "is-success",
-      );
+      elements.toast.classList.add("is-success");
 
-      elements.toastIcon.className =
-        "fa-solid fa-circle-check";
+      elements.toastIcon.className = "fa-solid fa-circle-check";
     } else {
-      elements.toastIcon.className =
-        "fa-solid fa-circle-info";
+      elements.toastIcon.className = "fa-solid fa-circle-info";
     }
 
     window.requestAnimationFrame(() => {
-      elements.toast.classList.add(
-        "is-visible",
-      );
+      elements.toast.classList.add("is-visible");
     });
 
-    state.toastTimer =
-      window.setTimeout(() => {
-        elements.toast.classList.remove(
-          "is-visible",
-        );
-      }, 3000);
+    state.toastTimer = window.setTimeout(() => {
+      elements.toast.classList.remove("is-visible");
+    }, 3000);
   }
 
-  function setRefreshLoading(
-    isLoading,
-  ) {
+  function setRefreshLoading(isLoading) {
     if (!elements.refreshBalanceBtn) {
       return;
     }
 
-    elements.refreshBalanceBtn.disabled =
-      isLoading;
+    elements.refreshBalanceBtn.disabled = isLoading;
 
-    elements.refreshBalanceBtn
-      .classList.toggle(
-        "is-loading",
-        isLoading,
-      );
+    elements.refreshBalanceBtn.classList.toggle("is-loading", isLoading);
 
-    const icon =
-      elements.refreshBalanceBtn
-        .querySelector("i");
+    const icon = elements.refreshBalanceBtn.querySelector("i");
 
-    icon?.classList.toggle(
-      "fa-spin",
-      isLoading,
-    );
+    icon?.classList.toggle("fa-spin", isLoading);
   }
 
   /* ==================================
      API Helper
   ================================== */
 
-  async function apiRequest(
-    endpoint,
-    options = {},
-  ) {
-    const controller =
-      new AbortController();
+  async function apiRequest(endpoint, options = {}) {
+    const controller = new AbortController();
 
-    const timeoutId =
-      window.setTimeout(() => {
-        controller.abort();
-      }, API_TIMEOUT_MS);
+    const timeoutId = window.setTimeout(() => {
+      controller.abort();
+    }, API_TIMEOUT_MS);
 
     try {
-      const response =
-        await fetch(
-          APP_CONFIG.api(endpoint),
-          {
-            ...options,
+      const response = await fetch(APP_CONFIG.api(endpoint), {
+        ...options,
 
-            headers: {
-              Accept:
-                "application/json",
+        headers: {
+          Accept: "application/json",
 
-              ...(options.body
-                ? {
-                    "Content-Type":
-                      "application/json",
-                  }
-                : {}),
+          ...(options.body
+            ? {
+                "Content-Type": "application/json",
+              }
+            : {}),
 
-              Authorization:
-                `Bearer ${getAccessToken()}`,
+          Authorization: `Bearer ${getAccessToken()}`,
 
-              ...(options.headers || {}),
-            },
+          ...(options.headers || {}),
+        },
 
-            signal:
-              controller.signal,
-          },
-        );
+        signal: controller.signal,
+      });
 
       let result = null;
 
       try {
-        result =
-          await response.json();
+        result = await response.json();
       } catch (_error) {
         result = null;
       }
@@ -496,35 +341,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.status === 401) {
         redirectToLogin();
 
-        throw new Error(
-          "Session expired",
-        );
+        throw new Error("Session expired");
       }
 
       if (!response.ok) {
-        throw new Error(
-          result?.message ||
-            result?.error ||
-            "Request failed",
-        );
+        throw new Error(result?.message || result?.error || "Request failed");
       }
 
       return result;
     } catch (error) {
-      if (
-        error.name ===
-        "AbortError"
-      ) {
-        throw new Error(
-          "Server response timeout",
-        );
+      if (error.name === "AbortError") {
+        throw new Error("Server response timeout");
       }
 
       throw error;
     } finally {
-      window.clearTimeout(
-        timeoutId,
-      );
+      window.clearTimeout(timeoutId);
     }
   }
 
@@ -533,60 +365,39 @@ document.addEventListener("DOMContentLoaded", () => {
   ================================== */
 
   function escapeHtml(value) {
-    const element =
-      document.createElement("div");
+    const element = document.createElement("div");
 
-    element.textContent =
-      String(value ?? "");
+    element.textContent = String(value ?? "");
 
     return element.innerHTML;
   }
 
   function createRoomCard(room) {
-    const money =
-      calculateRoomMoney(room);
+    const money = calculateRoomMoney(room);
 
-    const hasEnoughBalance =
-      getWalletBalance() >=
-      money.entryAmount;
+    const hasEnoughBalance = getWalletBalance() >= money.entryAmount;
 
-    const isRoomActive =
-      room.status === "active";
+    const isRoomActive = room.status === "active";
 
-    const canJoin =
-      hasEnoughBalance &&
-      isRoomActive;
+    const canJoin = hasEnoughBalance && isRoomActive;
 
-    const card =
-      document.createElement(
-        "article",
-      );
+    const card = document.createElement("article");
 
-    card.className =
-      "carrom-room-card";
+    card.className = "carrom-room-card";
 
     if (!canJoin) {
-      card.classList.add(
-        "is-disabled",
-      );
+      card.classList.add("is-disabled");
     }
 
-    const statusText =
-      isRoomActive
-        ? "OPEN"
-        : "CLOSED";
+    const statusText = isRoomActive ? "OPEN" : "CLOSED";
 
-    const buttonText =
-      !isRoomActive
-        ? "Room Closed"
-        : hasEnoughBalance
-          ? "Select Room"
-          : "Low Balance";
+    const buttonText = !isRoomActive
+      ? "Room Closed"
+      : hasEnoughBalance
+        ? "Select Room"
+        : "Low Balance";
 
-    const buttonIcon =
-      canJoin
-        ? "fa-solid fa-play"
-        : "fa-solid fa-lock";
+    const buttonIcon = canJoin ? "fa-solid fa-play" : "fa-solid fa-lock";
 
     card.innerHTML = `
       <div class="carrom-room-card-header">
@@ -600,28 +411,18 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="carrom-room-name">
 
             <span>
-              ${escapeHtml(
-                room.roomCode ||
-                  "CARROM",
-              )}
+              ${escapeHtml(room.roomCode || "CARROM")}
             </span>
 
             <h3>
-              ${escapeHtml(
-                room.roomName ||
-                  "Carrom Room",
-              )}
+              ${escapeHtml(room.roomName || "Carrom Room")}
             </h3>
 
           </div>
 
         </div>
 
-        <div class="carrom-room-status ${
-          isRoomActive
-            ? ""
-            : "is-closed"
-        }">
+        <div class="carrom-room-status ${isRoomActive ? "" : "is-closed"}">
           ${statusText}
         </div>
 
@@ -632,9 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <small>ENTRY FEE</small>
 
         <strong>
-          ৳${formatMoney(
-            money.entryAmount,
-          )}
+          ৳${formatMoney(money.entryAmount)}
         </strong>
 
         <span>
@@ -651,9 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <small>Total Pot</small>
 
           <strong>
-            ৳${formatMoney(
-              money.grossPot,
-            )}
+            ৳${formatMoney(money.grossPot)}
           </strong>
 
         </div>
@@ -673,9 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <small>Winner Prize</small>
 
           <strong>
-            ৳${formatMoney(
-              money.winnerPrize,
-            )}
+            ৳${formatMoney(money.winnerPrize)}
           </strong>
 
         </div>
@@ -690,9 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </span>
 
         <strong>
-          ৳${formatMoney(
-            money.serviceChargeAmount,
-          )}
+          ৳${formatMoney(money.serviceChargeAmount)}
         </strong>
 
       </div>
@@ -716,211 +509,126 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderRooms() {
-    if (
-      !elements.roomGrid ||
-      !elements.emptyState
-    ) {
+    if (!elements.roomGrid || !elements.emptyState) {
       return;
     }
 
-    elements.roomGrid
-      .replaceChildren();
+    elements.roomGrid.replaceChildren();
 
-    if (
-      state.isLoadingRooms
-    ) {
-      elements.emptyState.hidden =
-        true;
+    if (state.isLoadingRooms) {
+      elements.emptyState.hidden = true;
 
       return;
     }
 
     if (!state.rooms.length) {
-      elements.emptyState.hidden =
-        false;
+      elements.emptyState.hidden = false;
 
       return;
     }
 
-    elements.emptyState.hidden =
-      true;
+    elements.emptyState.hidden = true;
 
-    const fragment =
-      document
-        .createDocumentFragment();
+    const fragment = document.createDocumentFragment();
 
     state.rooms.forEach((room) => {
-      fragment.appendChild(
-        createRoomCard(room),
-      );
+      fragment.appendChild(createRoomCard(room));
     });
 
-    elements.roomGrid
-      .appendChild(fragment);
+    elements.roomGrid.appendChild(fragment);
 
     updateServiceChargePreview();
   }
-async function loadAvailableRooms() {
-  if (state.isLoadingRooms) {
-    return;
-  }
+  async function loadAvailableRooms() {
+    if (state.isLoadingRooms) {
+      return;
+    }
 
-  state.isLoadingRooms = true;
+    state.isLoadingRooms = true;
 
-  state.rooms = [];
+    state.rooms = [];
 
-  elements.emptyState.hidden =
-    true;
+    elements.emptyState.hidden = true;
 
-  renderRooms();
+    renderRooms();
 
-  showLoader(
-    `Loading ${state.playerMode}-player Carrom rooms...`,
-  );
+    showLoader(`Loading ${state.playerMode}-player Carrom rooms...`);
 
-  try {
-    const result =
-      await apiRequest(
-        `/carrom/rooms?playerMode=${encodeURIComponent(
-          state.playerMode,
-        )}`,
+    try {
+      const result = await apiRequest(
+        `/carrom/rooms?playerMode=${encodeURIComponent(state.playerMode)}`,
       );
 
-    const rooms =
-      Array.isArray(
-        result?.data?.rooms,
-      )
-        ? result.data.rooms
-        : [];
+      const rooms = Array.isArray(result?.data?.rooms) ? result.data.rooms : [];
 
-    state.rooms =
-      rooms
+      state.rooms = rooms
         .map((room) => ({
-          id:
-            Number(room.id),
+          id: Number(room.id),
 
-          roomCode:
-            room.roomCode ||
-            null,
+          roomCode: room.roomCode || null,
 
-          roomName:
-            room.roomName ||
-            "Carrom Room",
+          roomName: room.roomName || "Carrom Room",
 
-          playerMode:
-            Number(
-              room.playerMode,
-            ),
+          playerMode: Number(room.playerMode),
 
-          entryAmount:
-            Number(
-              room.entryAmount,
-            ),
+          entryAmount: Number(room.entryAmount),
 
-          serviceChargePercent:
-            Number(
-              room.serviceChargePercent,
-            ),
+          serviceChargePercent: Number(room.serviceChargePercent),
 
-          matchmakingWaitSeconds:
-            Number(
-              room.matchmakingWaitSeconds ||
-              20,
-            ),
+          matchmakingWaitSeconds: Number(room.matchmakingWaitSeconds || 20),
 
-          turnSeconds:
-            Number(
-              room.turnSeconds ||
-              20,
-            ),
+          turnSeconds: Number(room.turnSeconds || 20),
 
-          grossPoolAmount:
-            Number(
-              room.grossPoolAmount,
-            ),
+          grossPoolAmount: Number(room.grossPoolAmount),
 
-          serviceChargeAmount:
-            Number(
-              room.serviceChargeAmount,
-            ),
+          serviceChargeAmount: Number(room.serviceChargeAmount),
 
-          prizePoolAmount:
-            Number(
-              room.prizePoolAmount,
-            ),
+          prizePoolAmount: Number(room.prizePoolAmount),
 
-          winnerCount:
-            Number(
-              room.winnerCount,
-            ),
+          winnerCount: Number(room.winnerCount),
 
-          prizePerWinner:
-            Number(
-              room.prizePerWinner,
-            ),
+          prizePerWinner: Number(room.prizePerWinner),
 
-          status:
-            room.status ||
-            "active",
+          status: room.status || "active",
         }))
         .filter(
           (room) =>
-            Number.isInteger(
-              room.id,
-            ) &&
+            Number.isInteger(room.id) &&
             room.id > 0 &&
-            room.playerMode ===
-              state.playerMode &&
-            Number.isFinite(
-              room.entryAmount,
-            ) &&
+            room.playerMode === state.playerMode &&
+            Number.isFinite(room.entryAmount) &&
             room.entryAmount > 0 &&
-            Number.isFinite(
-              room.serviceChargePercent,
-            ),
+            Number.isFinite(room.serviceChargePercent),
         );
-  } catch (error) {
-    state.rooms = [];
+    } catch (error) {
+      state.rooms = [];
 
-    console.error(
-      "Load Carrom rooms error:",
-      error,
-    );
+      console.error("Load Carrom rooms error:", error);
 
-    showToast(
-      error.message ||
-        "Unable to load Carrom rooms",
-      "error",
-    );
-  } finally {
-    state.isLoadingRooms = false;
+      showToast(error.message || "Unable to load Carrom rooms", "error");
+    } finally {
+      state.isLoadingRooms = false;
 
-    hideLoader();
+      hideLoader();
 
-    renderRooms();
+      renderRooms();
+    }
   }
-}
 
   /* ==================================
      Latest User Data
   ================================== */
 
-  async function loadLatestUserData({
-    showFeedback = false,
-  } = {}) {
+  async function loadLatestUserData({ showFeedback = false } = {}) {
     setRefreshLoading(true);
 
     try {
-      const result =
-        await apiRequest("/auth/me");
+      const result = await apiRequest("/auth/me");
 
-      const user =
-        result?.data?.user;
+      const user = result?.data?.user;
 
       if (!user) {
-        throw new Error(
-          "Unable to load account information",
-        );
+        throw new Error("Unable to load account information");
       }
 
       state.user = user;
@@ -932,23 +640,13 @@ async function loadAvailableRooms() {
       renderRooms();
 
       if (showFeedback) {
-        showToast(
-          "Balance updated",
-          "success",
-        );
+        showToast("Balance updated", "success");
       }
     } catch (error) {
-      console.error(
-        "Load Carrom user error:",
-        error,
-      );
+      console.error("Load Carrom user error:", error);
 
       if (showFeedback) {
-        showToast(
-          error.message ||
-            "Unable to update balance",
-          "error",
-        );
+        showToast(error.message || "Unable to update balance", "error");
       }
     } finally {
       setRefreshLoading(false);
@@ -959,277 +657,153 @@ async function loadAvailableRooms() {
      Room Selection
   ================================== */
 
- async function selectRoom(roomId) {
-  if (state.isSelectingRoom) {
-    return;
-  }
-
-  const validRoomId =
-    Number(roomId);
-
-  const room =
-    state.rooms.find(
-      (item) =>
-        Number(item.id) ===
-        validRoomId,
-    );
-
-  if (!room) {
-    showToast(
-      "Invalid Carrom room selected",
-      "error",
-    );
-
-    return;
-  }
-
-  if (room.status !== "active") {
-    showToast(
-      "This Carrom room is closed",
-      "error",
-    );
-
-    return;
-  }
-
-  if (
-    getWalletBalance() <
-    Number(room.entryAmount)
-  ) {
-    showToast(
-      `Minimum ৳${formatMoney(
-        room.entryAmount,
-      )} balance required`,
-      "error",
-    );
-
-    return;
-  }
-
-  state.isSelectingRoom =
-    true;
-
-  showLoader(
-    "Joining Carrom matchmaking...",
-  );
-
-  try {
-    const result =
-      await apiRequest(
-        "/carrom/matchmaking/join",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            roomId:
-              validRoomId,
-          }),
-        },
-      );
-
-    const data =
-      result?.data || {};
-
-    const match =
-      data.match ||
-      data.matchState?.match ||
-      null;
-
-    const matchId =
-      Number(
-        match?.matchId ||
-        match?.id ||
-        data.matchId,
-      );
-
-    if (
-      !Number.isInteger(matchId) ||
-      matchId < 1
-    ) {
-      throw new Error(
-        "Carrom match ID was not returned by the server",
-      );
+  async function selectRoom(roomId) {
+    if (state.isSelectingRoom) {
+      return;
     }
 
-    saveSelectedRoom(room);
+    const validRoomId = Number(roomId);
 
-    localStorage.setItem(
-      "current_carrom_match",
-      JSON.stringify({
-        matchId,
+    const room = state.rooms.find((item) => Number(item.id) === validRoomId);
 
-        roomId:
-          validRoomId,
+    if (!room) {
+      showToast("Invalid Carrom room selected", "error");
 
-        matchCode:
-          match?.matchCode ||
-          match?.code ||
-          null,
+      return;
+    }
 
-        status:
-          match?.status ||
-          "waiting",
+    if (room.status !== "active") {
+      showToast("This Carrom room is closed", "error");
 
-        savedAt:
-          new Date()
-            .toISOString(),
+      return;
+    }
 
-        state:
-          data,
-      }),
-    );
+    if (getWalletBalance() < Number(room.entryAmount)) {
+      showToast(
+        `Minimum ৳${formatMoney(room.entryAmount)} balance required`,
+        "error",
+      );
 
-    showToast(
-      result?.message ||
-        "Carrom matchmaking joined",
-      "success",
-    );
+      return;
+    }
 
-    window.setTimeout(() => {
-      window.location.href =
-        `carrom-table.html?matchId=${encodeURIComponent(
+    state.isSelectingRoom = true;
+
+    showLoader("Joining Carrom matchmaking...");
+
+    try {
+      const result = await apiRequest("/carrom/matchmaking/join", {
+        method: "POST",
+
+        body: JSON.stringify({
+          roomId: validRoomId,
+        }),
+      });
+
+      const data = result?.data || {};
+
+      const match = data.match || data.matchState?.match || null;
+
+      const matchId = Number(match?.matchId || match?.id || data.matchId);
+
+      if (!Number.isInteger(matchId) || matchId < 1) {
+        throw new Error("Carrom match ID was not returned by the server");
+      }
+
+      saveSelectedRoom(room);
+
+      localStorage.setItem(
+        "current_carrom_match",
+        JSON.stringify({
+          matchId,
+
+          roomId: validRoomId,
+
+          matchCode: match?.matchCode || match?.code || null,
+
+          status: match?.status || "waiting",
+
+          savedAt: new Date().toISOString(),
+
+          state: data,
+        }),
+      );
+
+      showToast(result?.message || "Carrom matchmaking joined", "success");
+
+      window.setTimeout(() => {
+        window.location.href = `/carrom-table?matchId=${encodeURIComponent(
           matchId,
         )}`;
-    }, 500);
-  } catch (error) {
-    console.error(
-      "JOIN CARROM MATCHMAKING ERROR:",
-      error,
-    );
+      }, 500);
+    } catch (error) {
+      console.error("JOIN CARROM MATCHMAKING ERROR:", error);
 
-    showToast(
-      error.message ||
-        "Unable to join Carrom matchmaking",
-      "error",
-    );
+      showToast(error.message || "Unable to join Carrom matchmaking", "error");
 
-    state.isSelectingRoom =
-      false;
-  } finally {
-    hideLoader();
+      state.isSelectingRoom = false;
+    } finally {
+      hideLoader();
+    }
   }
-}
 
   /* ==================================
      Events
   ================================== */
 
-  elements.modeSelector
-    ?.addEventListener(
-      "click",
-      (event) => {
-        const button =
-          event.target.closest(
-            ".carrom-mode-button",
-          );
+  elements.modeSelector?.addEventListener("click", (event) => {
+    const button = event.target.closest(".carrom-mode-button");
 
-        if (
-          !button ||
-          state.isSelectingRoom
-        ) {
-          return;
-        }
+    if (!button || state.isSelectingRoom) {
+      return;
+    }
 
-        const selectedMode =
-          Number(
-            button.dataset.playerMode,
-          );
+    const selectedMode = Number(button.dataset.playerMode);
 
-        if (
-          selectedMode !== 2 &&
-          selectedMode !== 4
-        ) {
-          return;
-        }
+    if (selectedMode !== 2 && selectedMode !== 4) {
+      return;
+    }
 
-        state.playerMode =
-          selectedMode;
+    state.playerMode = selectedMode;
 
-        elements.modeSelector
-          .querySelectorAll(
-            ".carrom-mode-button",
-          )
-          .forEach(
-            (modeButton) => {
-              const isActive =
-                Number(
-                  modeButton
-                    .dataset
-                    .playerMode,
-                ) ===
-                selectedMode;
+    elements.modeSelector
+      .querySelectorAll(".carrom-mode-button")
+      .forEach((modeButton) => {
+        const isActive = Number(modeButton.dataset.playerMode) === selectedMode;
 
-              modeButton
-                .classList.toggle(
-                  "is-active",
-                  isActive,
-                );
+        modeButton.classList.toggle("is-active", isActive);
 
-              modeButton
-                .setAttribute(
-                  "aria-pressed",
-                  String(isActive),
-                );
-            },
-          );
+        modeButton.setAttribute("aria-pressed", String(isActive));
+      });
 
-       loadAvailableRooms();
+    loadAvailableRooms();
 
-showToast(
-  `${selectedMode}-player Carrom selected`,
-  "success",
-);
-      },
-    );
+    showToast(`${selectedMode}-player Carrom selected`, "success");
+  });
 
-  elements.roomGrid
-    ?.addEventListener(
-      "click",
-      (event) => {
-        const button =
-          event.target.closest(
-            ".carrom-join-button",
-          );
+  elements.roomGrid?.addEventListener("click", (event) => {
+    const button = event.target.closest(".carrom-join-button");
 
-        if (
-          !button ||
-          button.disabled
-        ) {
-          return;
-        }
+    if (!button || button.disabled) {
+      return;
+    }
 
-        selectRoom(
-          button.dataset.roomId,
-        );
-      },
-    );
+    selectRoom(button.dataset.roomId);
+  });
 
-  elements.backBtn
-    ?.addEventListener(
-      "click",
-      () => {
-        window.location.href =
-          "lobby.html";
-      },
-    );
+  elements.backBtn?.addEventListener("click", () => {
+    window.location.href = "lobby";
+  });
 
-  elements.refreshBalanceBtn
-    ?.addEventListener(
-      "click",
-      () => {
-        loadLatestUserData({
-          showFeedback: true,
-        });
-      },
-    );
+  elements.refreshBalanceBtn?.addEventListener("click", () => {
+    loadLatestUserData({
+      showFeedback: true,
+    });
+  });
 
-  elements.retryRoomsBtn
-    ?.addEventListener(
-      "click",
-      () => {
-        loadAvailableRooms();
-      },
-    );
+  elements.retryRoomsBtn?.addEventListener("click", () => {
+    loadAvailableRooms();
+  });
 
   /* ==================================
      Start

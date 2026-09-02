@@ -18,7 +18,6 @@ const router = express.Router();
  */
 router.get(
   "/public",
-  requireAuth,
   lobbyNoticeController.getPublicNotices,
 );
 

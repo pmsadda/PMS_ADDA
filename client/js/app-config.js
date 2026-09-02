@@ -100,50 +100,27 @@
   let activeToken = null;
   let logoutStarted = false;
 
-  function isPublicAuthPage() {
-    const pathname =
-      String(
-        window.location.pathname,
-      ).toLowerCase();
+ function isPublicAuthPage() {
+  const pathname =
+    String(
+      window.location.pathname || "/"
+    )
+      .toLowerCase()
+      .replace(/\/+$/, "") || "/";
 
-    return (
-      pathname.endsWith(
-        "/login.html",
-      ) ||
-      pathname.endsWith(
-        "/register.html",
-      )
-    );
-  }
+  return (
+    pathname === "/" ||
+    pathname === "/lobby" ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname.endsWith("/login.html") ||
+    pathname.endsWith("/register.html")
+  );
+}
 
-  function getLoginPageUrl() {
-    const configScript =
-      Array.from(
-        document.scripts,
-      ).find((script) => {
-        const source = String(
-          script.getAttribute("src") ||
-          "",
-        );
-
-        return (
-          /(?:^|\/)app-config\.js(?:\?.*)?$/i
-            .test(source)
-        );
-      });
-
-    if (configScript?.src) {
-      return new URL(
-        "../pages/login.html",
-        configScript.src,
-      ).href;
-    }
-
-    return new URL(
-      "./login.html",
-      window.location.href,
-    ).href;
-  }
+function getLoginPageUrl() {
+  return `${window.location.origin}/login`;
+}
 
   function clearAuthStorage() {
     AUTH_STORAGE_KEYS.forEach(

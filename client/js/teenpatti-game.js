@@ -7,7 +7,7 @@
 
   const CARD_BACK_PATH = "../assets/cards/card-back.png";
 
-  const ROOMS_PAGE_PATH = "./teenpatti-rooms.html";
+  const ROOMS_PAGE_PATH = "/teenpatti-rooms";
 
   const TURN_SECONDS = 15;
 
@@ -385,7 +385,7 @@
       showToast("Login token পাওয়া যায়নি। আবার login করুন।", "error");
 
       setTimeout(() => {
-        window.location.href = "./login.html";
+        window.location.href = "/login";
       }, 1400);
 
       return false;
@@ -1779,39 +1779,28 @@
       );
     });
 
-    STATE.socket.on(
-  "account:blocked",
-  (payload = {}) => {
-    window.alert(
-      payload.message ||
-      "Your account has been banned.",
-    );
+    STATE.socket.on("account:blocked", (payload = {}) => {
+      window.alert(payload.message || "Your account has been banned.");
 
-    if (
-      typeof window.AUTH_SESSION
-        ?.logout === "function"
-    ) {
-      window.AUTH_SESSION.logout();
-      return;
-    }
+      if (typeof window.AUTH_SESSION?.logout === "function") {
+        window.AUTH_SESSION.logout();
+        return;
+      }
 
-    [
-      "access_token",
-      "token",
-      "refresh_token",
-      "current_user",
-      "user",
-      "user_id",
-    ].forEach((key) => {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
+      [
+        "access_token",
+        "token",
+        "refresh_token",
+        "current_user",
+        "user",
+        "user_id",
+      ].forEach((key) => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+
+      window.location.replace("/login");
     });
-
-    window.location.replace(
-      "./login.html",
-    );
-  },
-);
 
     STATE.socket.on("disconnect", (reason) => {
       if (STATE.leavingTable) {

@@ -4,12 +4,6 @@ const express =
   require("express");
 
 const {
-  requireAuth
-} = require(
-  "../middleware/auth.middleware"
-);
-
-const {
   getPublicBanners,
   getPublicBannerImage
 } = require(
@@ -21,7 +15,6 @@ const router =
 
 router.get(
   "/",
-  requireAuth,
   getPublicBanners
 );
 

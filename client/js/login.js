@@ -669,8 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       window.setTimeout(() => {
         if (redirectTo) {
-          window.location.href = `..${redirectTo}`;
-
+          window.location.href = redirectTo;
           return;
         }
 
@@ -679,9 +678,9 @@ document.addEventListener("DOMContentLoaded", () => {
           .toLowerCase();
 
         if (userRole === "admin") {
-          window.location.href = "../admin/dashboard.html";
+          window.location.href = "/client/admin/dashboard.html";
         } else if (userRole === "agent") {
-          window.location.href = "../agent/dashboard.html";
+          window.location.href = "/client/agent/dashboard.html";
         } else {
           window.location.href = "/lobby";
         }
