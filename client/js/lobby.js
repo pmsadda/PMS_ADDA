@@ -1584,99 +1584,13 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================================
    QUICK MENU NAVIGATION
 ========================================================= */
-
- DOM.depositButton?.addEventListener("click", async () => {
+DOM.depositButton?.addEventListener("click", () => {
   if (!token) {
     navigateTo("/login");
     return;
   }
 
-  const paymentMethod = window.prompt(
-    "Payment method লিখুন:\nBKASH\nNAGAD\nROCKET",
-    "BKASH",
-  );
-
-  if (paymentMethod === null) {
-    return;
-  }
-
-  const payType = String(paymentMethod)
-    .trim()
-    .toUpperCase();
-
-  const allowedMethods = [
-    "BKASH",
-    "NAGAD",
-    "ROCKET",
-  ];
-
-  if (!allowedMethods.includes(payType)) {
-    window.alert(
-      "Payment method হবে BKASH, NAGAD অথবা ROCKET.",
-    );
-    return;
-  }
-
-  const amountInput = window.prompt(
-    "Deposit amount লিখুন (Minimum ৳100):",
-    "500",
-  );
-
-  if (amountInput === null) {
-    return;
-  }
-
-  const amount = Number(amountInput);
-
-  if (!Number.isFinite(amount) || amount < 100) {
-    window.alert("Minimum deposit amount ৳100.");
-    return;
-  }
-
-  try {
-    DOM.depositButton.disabled = true;
-
-    const response = await fetch(
-      "/api/deposits/gateway/create",
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-
-        body: JSON.stringify({
-          amount,
-          payType,
-        }),
-      },
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.message || "Payment gateway open করা যায়নি.",
-      );
-    }
-
-    const paymentUrl = data?.data?.paymentUrl;
-
-    if (!paymentUrl) {
-      throw new Error("Payment URL পাওয়া যায়নি.");
-    }
-
-    window.location.href = paymentUrl;
-  } catch (error) {
-    console.error("Gateway payment error:", error);
-
-    window.alert(
-      error.message || "Payment gateway open করা যায়নি.",
-    );
-  } finally {
-    DOM.depositButton.disabled = false;
-  }
+  navigateTo("/deposit");
 });
 
   DOM.withdrawButton?.addEventListener("click", () => navigateTo("/withdraw"));

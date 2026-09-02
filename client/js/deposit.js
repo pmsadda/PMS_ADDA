@@ -2,109 +2,107 @@ document.addEventListener("DOMContentLoaded", () => {
   "use strict";
 
   /* ==========================
-       Elements
-    ========================== */
+     Elements
+  ========================== */
 
   const backBtn = document.getElementById("backBtn");
-
   const balance = document.getElementById("balance");
-
   const amountInput = document.getElementById("amount");
 
-  const senderNumberInput = document.getElementById("senderNumber");
+  const paymentCards = document.querySelectorAll(
+    ".payment-card",
+  );
 
-  const transactionIdInput = document.getElementById("transactionId");
+  const paymentMethodMessage = document.getElementById(
+    "paymentMethodMessage",
+  );
 
-  const paymentCards = document.querySelectorAll(".payment-card");
+  const submitBtn = document.getElementById(
+    "submitDeposit",
+  );
 
-  const copyNumberBtn = document.getElementById("copyNumberBtn");
-
-  const merchantNumber = document.getElementById("merchantNumber");
-
-  const paymentMethodGrid = document.getElementById("paymentMethodGrid");
-
-  const paymentMethodMessage = document.getElementById("paymentMethodMessage");
-
-  const paymentMethodTitle = document.getElementById("paymentMethodTitle");
-
-  const merchantAccountType = document.getElementById("merchantAccountType");
-
-  const officialNumberCard = document.getElementById("officialNumberCard");
-
-  const submitBtn = document.getElementById("submitDeposit");
-
-  const loader = document.getElementById("loaderOverlay");
+  const loader = document.getElementById(
+    "loaderOverlay",
+  );
 
   const toast = document.getElementById("toast");
 
-  const toastMessage = document.getElementById("toastMessage");
-
-  const successModal = document.getElementById("successModal");
-
-  const successOkBtn = document.getElementById("successOkBtn");
-
-  const senderNumberLabel = document.getElementById("senderNumberLabel");
-
-  const transactionIdLabel = document.getElementById("transactionIdLabel");
-
-  const binancePaymentSummary = document.getElementById(
-    "binancePaymentSummary",
+  const toastMessage = document.getElementById(
+    "toastMessage",
   );
 
-  const binanceRate = document.getElementById("binanceRate");
-
-  const binancePayableAmount = document.getElementById("binancePayableAmount");
-
-  const paymentQrWrapper = document.getElementById("paymentQrWrapper");
-
-  const paymentQrImage = document.getElementById("paymentQrImage");
-
-  const copyNumberText = document.getElementById("copyNumberText");
-
   /* ==========================
-       Configuration
-    ========================== */
+     Login
+  ========================== */
 
-  const API_BASE_URL = APP_CONFIG.API_URL;
-
-  let activePaymentMethods = [];
-
-  let selectedMethod = null;
-
-  let isPaymentMethodsReady = false;
-
-  let toastTimer;
-
-  /* ==========================
-       Login Data
-    ========================== */
-
-  const token = localStorage.getItem("access_token");
-
-  const storedUser = localStorage.getItem("current_user");
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token") ||
+    "";
 
   let currentUser = null;
 
   try {
-    currentUser = storedUser ? JSON.parse(storedUser) : null;
-  } catch (error) {
+    currentUser = JSON.parse(
+      localStorage.getItem("current_user") || "null",
+    );
+  } catch {
     currentUser = null;
   }
 
-  if (!token || !currentUser) {
+  if (!token) {
     window.location.replace("/login");
     return;
   }
 
   if (balance) {
-    balance.textContent = Number(currentUser.walletBalance || 0).toFixed(2);
+    balance.textContent = Number(
+      currentUser?.walletBalance || 0,
+    ).toFixed(2);
   }
 
   /* ==========================
-       Helper Functions
-    ========================== */
+     State
+  ========================== */
+
+  let selectedMethod = null;
+  let isSubmitting = false;
+  let toastTimer = null;
+
+  const allowedMethods = [
+    "BKASH",
+    "NAGAD",
+    "ROCKET",
+  ];
+
+  /* ==========================
+     Toast
+  ========================== */
+
+  function showToast(message) {
+    if (!toast || !toastMessage) {
+      window.alert(message);
+      return;
+    }
+
+    toastMessage.textContent = message;
+
+    toast.classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer = window.setTimeout(() => {
+      toast.classList.remove("show");
+    }, 3000);
+  }
+
+  /* ==========================
+     Loader
+  ========================== */
 
   function showLoader() {
+    isSubmitting = true;
+
     if (loader) {
       loader.style.display = "flex";
     }
@@ -115,635 +113,254 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function hideLoader() {
+    isSubmitting = false;
+
     if (loader) {
       loader.style.display = "none";
     }
 
-    if (submitBtn) {
-      submitBtn.disabled = !isPaymentMethodsReady || !selectedMethod;
-    }
-  }
-
-  function showToast(message) {
-    if (!toast || !toastMessage) {
-      alert(message);
-      return;
-    }
-
-    window.clearTimeout(toastTimer);
-
-    toastMessage.textContent = message;
-    toast.style.display = "block";
-
-    toastTimer = window.setTimeout(() => {
-      toast.style.display = "none";
-    }, 2600);
-  }
-
-  function closeSuccessModal() {
-    if (successModal) {
-      successModal.style.display = "none";
-    }
-  }
-
-  function resetForm() {
-    amountInput.value = "";
-    senderNumberInput.value = "";
-    transactionIdInput.value = "";
+    updateSubmitButton();
   }
 
   /* ==========================
-   Dynamic Payment Methods
-========================== */
+     Form State
+  ========================== */
 
-  function formatAccountType(accountType) {
-    const normalizedType = String(accountType || "personal").toLowerCase();
-
-    const labels = {
-      personal: "Personal Account",
-      agent: "Agent Account",
-      merchant: "Merchant Account",
-      pay_id: "Binance Pay ID",
-    };
-
-    return labels[normalizedType] || "Official Account";
+  function getAmount() {
+    return Number(amountInput?.value || 0);
   }
 
-  function getActivePaymentMethod(method) {
+  function isValidAmount() {
+    const amount = getAmount();
+
     return (
-      activePaymentMethods.find(
-        (paymentMethod) => paymentMethod.method === method,
-      ) || null
+      Number.isFinite(amount) &&
+      amount >= 100 &&
+      amount <= 1000000
     );
   }
 
-  function isBinanceMethod(method) {
-    return String(method || "").toLowerCase() === "binance";
-  }
-
-  function updateBinancePayableAmount() {
-    const paymentMethod = getActivePaymentMethod(selectedMethod);
-
-    const isBinance = isBinanceMethod(paymentMethod?.method);
-
-    if (binancePaymentSummary) {
-      binancePaymentSummary.hidden = !isBinance;
-    }
-
-    if (!isBinance) {
-      if (binanceRate) {
-        binanceRate.textContent = "0.00";
-      }
-
-      if (binancePayableAmount) {
-        binancePayableAmount.textContent = "0.00";
-      }
-
+  function updateSubmitButton() {
+    if (!submitBtn) {
       return;
     }
 
-    const rate = Number(paymentMethod.bdtPerUsdt || 0);
-
-    const amount = Number(amountInput?.value || 0);
-
-    if (binanceRate) {
-      binanceRate.textContent = rate > 0 ? rate.toFixed(2) : "0.00";
-    }
-
-    const payableAmount =
-      rate > 0 && Number.isFinite(amount) && amount > 0 ? amount / rate : 0;
-
-    if (binancePayableAmount) {
-      binancePayableAmount.textContent = payableAmount.toFixed(2);
-    }
+    submitBtn.disabled =
+      isSubmitting ||
+      !selectedMethod ||
+      !isValidAmount();
   }
 
-  function updatePaymentInputFields(paymentMethod) {
-    const isBinance = isBinanceMethod(paymentMethod?.method);
+  /* ==========================
+     Payment Method
+  ========================== */
 
-    if (senderNumberLabel) {
-      senderNumberLabel.textContent = isBinance
-        ? "Your Binance Pay ID"
-        : "Sender Number";
-    }
+  function selectPaymentMethod(method) {
+    const normalizedMethod = String(
+      method || "",
+    )
+      .trim()
+      .toUpperCase();
 
-    if (senderNumberInput) {
-      senderNumberInput.value = "";
-
-      senderNumberInput.placeholder = isBinance
-        ? "Enter your Binance Pay ID"
-        : "01XXXXXXXXX";
-
-      senderNumberInput.maxLength = isBinance ? 120 : 11;
-
-      senderNumberInput.inputMode = isBinance ? "text" : "numeric";
-    }
-
-    if (transactionIdLabel) {
-      transactionIdLabel.textContent = isBinance
-        ? "Binance Transaction ID"
-        : "Transaction ID";
-    }
-
-    if (transactionIdInput) {
-      transactionIdInput.value = "";
-
-      transactionIdInput.placeholder = isBinance
-        ? "Enter Binance Transaction ID"
-        : "Enter Transaction ID";
-    }
-
-    updateBinancePayableAmount();
-  }
-
-  function renderPaymentQr(paymentMethod) {
-    const qrImageUrl = String(
-      paymentMethod?.qrImageUrl || paymentMethod?.qrUrl || "",
-    ).trim();
-
-    if (!paymentQrWrapper || !paymentQrImage) {
+    if (
+      !allowedMethods.includes(normalizedMethod)
+    ) {
       return;
     }
 
-    if (!isBinanceMethod(paymentMethod?.method) || !qrImageUrl) {
-      paymentQrWrapper.hidden = true;
-
-      paymentQrImage.removeAttribute("src");
-
-      return;
-    }
-
-    paymentQrImage.src = qrImageUrl;
-
-    paymentQrWrapper.hidden = false;
-  }
-
-  function showPaymentUnavailable(message) {
-    selectedMethod = null;
-    isPaymentMethodsReady = false;
+    selectedMethod = normalizedMethod;
 
     paymentCards.forEach((card) => {
-      card.classList.remove("active");
+      const cardMethod = String(
+        card.dataset.method || "",
+      )
+        .trim()
+        .toUpperCase();
 
-      card.setAttribute("aria-pressed", "false");
+      const isSelected =
+        cardMethod === selectedMethod;
 
-      card.disabled = true;
-      card.hidden = true;
+      card.classList.toggle(
+        "active",
+        isSelected,
+      );
+
+      card.setAttribute(
+        "aria-pressed",
+        isSelected ? "true" : "false",
+      );
     });
 
     if (paymentMethodMessage) {
-      paymentMethodMessage.textContent = message;
+      const methodNames = {
+        BKASH: "bKash",
+        NAGAD: "Nagad",
+        ROCKET: "Rocket",
+      };
 
-      paymentMethodMessage.classList.remove("is-success");
-
-      paymentMethodMessage.classList.add("is-error");
+      paymentMethodMessage.textContent =
+        `${methodNames[selectedMethod]} selected`;
     }
 
-    if (paymentMethodTitle) {
-      paymentMethodTitle.textContent = "Payment Method Unavailable";
-    }
-
-    if (merchantAccountType) {
-      merchantAccountType.textContent = "Unavailable";
-    }
-
-    if (merchantNumber) {
-      merchantNumber.textContent = "—";
-    }
-
-    if (binancePaymentSummary) {
-      binancePaymentSummary.hidden = true;
-    }
-
-    if (paymentQrWrapper) {
-      paymentQrWrapper.hidden = true;
-    }
-
-    officialNumberCard?.classList.remove("is-loading");
-
-    officialNumberCard?.classList.add("is-unavailable");
-
-    if (copyNumberBtn) {
-      copyNumberBtn.disabled = true;
-    }
-
-    if (submitBtn) {
-      submitBtn.disabled = true;
-    }
+    updateSubmitButton();
   }
 
-  function selectPaymentMethod(method) {
-    const paymentMethod = getActivePaymentMethod(method);
+  paymentCards.forEach((card) => {
+    card.disabled = false;
 
-    if (!paymentMethod) {
-      return;
-    }
-
-    selectedMethod = paymentMethod.method;
-
-    paymentCards.forEach((card) => {
-      const isSelected = card.dataset.method === selectedMethod;
-
-      card.classList.toggle("active", isSelected);
-
-      card.setAttribute("aria-pressed", String(isSelected));
-    });
-
-    const isBinance = isBinanceMethod(paymentMethod.method);
-
-    if (paymentMethodTitle) {
-      paymentMethodTitle.textContent = isBinance
-        ? `Official ${paymentMethod.displayName} Pay ID`
-        : `Official ${paymentMethod.displayName} Number`;
-    }
-
-    if (merchantAccountType) {
-      merchantAccountType.textContent = formatAccountType(
-        paymentMethod.accountType,
+    card.addEventListener("click", () => {
+      selectPaymentMethod(
+        card.dataset.method,
       );
-    }
+    });
+  });
 
-    if (merchantNumber) {
-      merchantNumber.textContent = paymentMethod.accountNumber;
-    }
+  /* ==========================
+     Amount
+  ========================== */
 
-    if (copyNumberText) {
-      copyNumberText.textContent = isBinance ? "Copy Pay ID" : "Copy Number";
-    }
+  amountInput?.addEventListener(
+    "input",
+    updateSubmitButton,
+  );
 
-    updatePaymentInputFields(paymentMethod);
+  /* ==========================
+     Back
+  ========================== */
 
-    renderPaymentQr(paymentMethod);
+  backBtn?.addEventListener("click", () => {
+    window.location.href = "/lobby";
+  });
 
-    officialNumberCard?.classList.remove("is-loading", "is-unavailable");
+  /* ==========================
+     Gateway Deposit
+  ========================== */
 
-    if (copyNumberBtn) {
-      copyNumberBtn.disabled = false;
-    }
+  submitBtn?.addEventListener(
+    "click",
+    async () => {
+      if (isSubmitting) {
+        return;
+      }
 
-    if (submitBtn) {
-      submitBtn.disabled = false;
-    }
-  }
+      if (!selectedMethod) {
+        showToast(
+          "Please select bKash, Nagad or Rocket.",
+        );
 
-  function renderPaymentMethods(paymentMethods) {
-    activePaymentMethods = paymentMethods
-      .map((paymentMethod) => {
-        const method = String(paymentMethod.method || "").toLowerCase();
+        return;
+      }
 
-        const accountNumber = String(
-          paymentMethod.accountNumber || paymentMethod.accountIdentifier || "",
-        ).trim();
+      const amount = getAmount();
 
-        return {
-          id: Number(
-            paymentMethod.id ||
-              paymentMethod.accountId ||
-              paymentMethod.paymentAccountId ||
-              0,
-          ),
+      if (
+        !Number.isFinite(amount) ||
+        amount < 100 ||
+        amount > 1000000
+      ) {
+        showToast(
+          "Deposit amount must be between ৳100 and ৳10,00,000.",
+        );
 
-          method,
+        amountInput?.focus();
 
-          displayName: String(
-            paymentMethod.displayName || paymentMethod.method || "",
-          ),
+        return;
+      }
 
-          accountNumber,
+      showLoader();
 
-          accountType: String(
-            paymentMethod.accountType ||
-              (method === "binance" ? "pay_id" : "personal"),
-          ).toLowerCase(),
+      try {
+        const response = await fetch(
+          "/api/deposits/gateway/create",
+          {
+            method: "POST",
 
-          paymentAsset: String(
-            paymentMethod.paymentAsset ||
-              (method === "binance" ? "USDT" : "BDT"),
-          ).toUpperCase(),
+            headers: {
+              "Content-Type":
+                "application/json",
 
-          bdtPerUsdt: Number(
-            paymentMethod.bdtPerUsdt || paymentMethod.exchangeRate || 0,
-          ),
+              Authorization:
+                `Bearer ${token}`,
+            },
 
-          qrImageUrl: String(
-            paymentMethod.qrImageUrl || paymentMethod.qrUrl || "",
-          ).trim(),
-        };
-      })
-      .filter((paymentMethod) => {
+            body: JSON.stringify({
+              amount,
+              payType: selectedMethod,
+            }),
+          },
+        );
+
+        const result =
+          await response
+            .json()
+            .catch(() => ({
+              success: false,
+              message:
+                "Invalid server response.",
+            }));
+
+        if (response.status === 401) {
+          localStorage.removeItem(
+            "access_token",
+          );
+
+          localStorage.removeItem("token");
+
+          localStorage.removeItem(
+            "current_user",
+          );
+
+          window.location.replace(
+            "/login",
+          );
+
+          return;
+        }
+
         if (
-          !["bkash", "nagad", "rocket", "binance"].includes(
-            paymentMethod.method,
-          )
+          !response.ok ||
+          !result.success
         ) {
-          return false;
-        }
-
-        if (!Number.isInteger(paymentMethod.id) || paymentMethod.id < 1) {
-          return false;
-        }
-
-        if (isBinanceMethod(paymentMethod.method)) {
-          return (
-            paymentMethod.accountNumber.length >= 3 &&
-            paymentMethod.accountNumber.length <= 120 &&
-            paymentMethod.bdtPerUsdt > 0
+          throw new Error(
+            result.message ||
+              "Payment gateway could not be opened.",
           );
         }
 
-        return /^01\d{9}$/.test(paymentMethod.accountNumber);
-      });
+        const paymentUrl =
+          result?.data?.paymentUrl;
 
-    paymentCards.forEach((card) => {
-      const paymentMethod = getActivePaymentMethod(card.dataset.method);
+        if (!paymentUrl) {
+          throw new Error(
+            "Payment URL was not received.",
+          );
+        }
 
-      card.hidden = !paymentMethod;
-      card.disabled = !paymentMethod;
-
-      card.classList.remove("active");
-
-      card.setAttribute("aria-pressed", "false");
-    });
-
-    if (activePaymentMethods.length === 0) {
-      showPaymentUnavailable("Deposit payment method এখন পাওয়া যাচ্ছে না।");
-
-      return;
-    }
-
-    isPaymentMethodsReady = true;
-
-    if (paymentMethodMessage) {
-      paymentMethodMessage.textContent =
-        "Admin-approved receiving account নির্বাচন করুন।";
-
-      paymentMethodMessage.classList.remove("is-error");
-
-      paymentMethodMessage.classList.add("is-success");
-    }
-
-    selectPaymentMethod(activePaymentMethods[0].method);
-  }
-
-  async function loadPaymentMethods() {
-    isPaymentMethodsReady = false;
-    selectedMethod = null;
-
-    officialNumberCard?.classList.add("is-loading");
-
-    if (submitBtn) {
-      submitBtn.disabled = true;
-    }
-
-    if (copyNumberBtn) {
-      copyNumberBtn.disabled = true;
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/deposits/payment-methods`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json().catch(() => ({
-        success: false,
-        message: "Invalid server response.",
-      }));
-
-      if (response.status === 401) {
-        localStorage.removeItem("access_token");
-
-        localStorage.removeItem("current_user");
-
-        window.location.replace("/login");
-
-        return;
-      }
-
-      if (!response.ok || !result.success) {
-        throw new Error(
-          result.message || "Payment methods could not be loaded.",
+        window.location.href =
+          paymentUrl;
+      } catch (error) {
+        console.error(
+          "Gateway deposit error:",
+          error,
         );
+
+        showToast(
+          error.message ||
+            "Could not connect to payment gateway.",
+        );
+
+        hideLoader();
       }
+    },
+  );
 
-      const paymentMethods =
-        result.data?.paymentMethods || result.data?.paymentSettings || [];
+  /* ==========================
+     Initial State
+  ========================== */
 
-      renderPaymentMethods(paymentMethods);
-    } catch (error) {
-      console.error("Load payment methods error:", error);
-
-      showPaymentUnavailable(
-        "Payment methods load করা যায়নি। আবার চেষ্টা করুন।",
-      );
-
-      showToast(error.message || "Payment methods load করা যায়নি।");
-    } finally {
-      officialNumberCard?.classList.remove("is-loading");
-    }
+  if (loader) {
+    loader.style.display = "none";
   }
 
-  /* ==========================
-       Back Button
-    ========================== */
-
-  backBtn?.addEventListener("click", () => {
-    window.history.back();
-  });
-
-  /* ==========================
-       Payment Method
-    ========================== */
-
-  paymentCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      if (card.disabled || card.hidden) {
-        return;
-      }
-
-      selectPaymentMethod(card.dataset.method);
-    });
-  });
-
-  amountInput?.addEventListener("input", updateBinancePayableAmount);
-
-  /* ==========================
-       Copy Merchant Number
-    ========================== */
-
-  copyNumberBtn?.addEventListener("click", async () => {
-    const accountIdentifier = merchantNumber?.textContent.trim();
-
-    if (!selectedMethod || !accountIdentifier || accountIdentifier === "—") {
-      showToast("Receiving account পাওয়া যায়নি।");
-
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(accountIdentifier);
-
-      showToast(
-        isBinanceMethod(selectedMethod)
-          ? "Binance Pay ID copied."
-          : "Payment number copied.",
-      );
-    } catch (error) {
-      console.error("Copy failed:", error);
-
-      showToast("Receiving account copy করা যায়নি।");
-    }
-  });
-
-  /* ==========================
-       Submit Deposit
-    ========================== */
-
-  submitBtn?.addEventListener("click", async () => {
-    const activePaymentMethod = getActivePaymentMethod(selectedMethod);
-
-    if (!isPaymentMethodsReady || !activePaymentMethod) {
-      showToast("একটি active payment method নির্বাচন করুন।");
-
-      return;
-    }
-
-    const amount = Number(amountInput.value);
-
-    const senderNumber = senderNumberInput.value.trim();
-
-    const transactionNumber = transactionIdInput.value.trim().toUpperCase();
-
-    const isBinance = isBinanceMethod(activePaymentMethod.method);
-
-    if (!Number.isFinite(amount) || amount < 100 || amount > 1000000) {
-      showToast("Deposit amount ৳100 থেকে ৳10,00,000-এর মধ্যে দিন।");
-
-      amountInput.focus();
-
-      return;
-    }
-
-    if (isBinance && (senderNumber.length < 3 || senderNumber.length > 120)) {
-      showToast("সঠিক Sender Binance Pay ID দিন।");
-
-      senderNumberInput.focus();
-
-      return;
-    }
-
-    if (!isBinance && !/^01[3-9]\d{8}$/.test(senderNumber)) {
-      showToast("সঠিক ১১ ডিজিটের Sender Number দিন।");
-
-      senderNumberInput.focus();
-
-      return;
-    }
-
-    if (transactionNumber.length < 6 || transactionNumber.length > 100) {
-      showToast("সঠিক Transaction ID দিন।");
-
-      transactionIdInput.focus();
-
-      return;
-    }
-
-    if (
-      !Number.isInteger(activePaymentMethod.id) ||
-      activePaymentMethod.id < 1
-    ) {
-      showToast("Receiving account reload করুন।");
-
-      return;
-    }
-
-    showLoader();
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/deposits`, {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-
-          Authorization: `Bearer ${token}`,
-        },
-
-        body: JSON.stringify({
-          method: activePaymentMethod.method,
-
-          paymentAccountId: activePaymentMethod.id,
-
-          senderNumber,
-
-          transactionNumber,
-
-          amount,
-        }),
-      });
-
-      const result = await response.json().catch(() => ({
-        success: false,
-
-        message: "Invalid server response.",
-      }));
-
-      if (response.status === 401) {
-        localStorage.removeItem("access_token");
-
-        localStorage.removeItem("current_user");
-
-        window.location.replace("/login");
-
-        return;
-      }
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Deposit request failed.");
-      }
-
-      resetForm();
-
-      updateBinancePayableAmount();
-
-      if (successModal) {
-        successModal.style.display = "flex";
-      }
-    } catch (error) {
-      console.error("Deposit error:", error);
-
-      showToast(error.message || "Server-এর সঙ্গে সংযোগ করা যায়নি।");
-    } finally {
-      hideLoader();
-    }
-  });
-
-  /* ==========================
-   Initial Payment Load
-========================== */
-
-  loadPaymentMethods();
-
-  /* ==========================
-       Success Modal
-    ========================== */
-
-  successOkBtn?.addEventListener("click", () => {
-    closeSuccessModal();
-
-    showToast("Deposit request pending approval.");
-  });
-
-  window.addEventListener("click", (event) => {
-    if (event.target === successModal) {
-      closeSuccessModal();
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeSuccessModal();
-    }
-  });
+  updateSubmitButton();
 });

@@ -52,6 +52,10 @@
 
                 <h3>Deposit Money</h3>
 
+                <p class="payment-method-message">
+                    Select your preferred payment method
+                </p>
+
                 <label>Select Payment Method</label>
 
                 <div
@@ -61,9 +65,8 @@
                     <button
                         type="button"
                         class="payment-card"
-                        data-method="bkash"
-                        aria-pressed="false"
-                        disabled>
+                        data-method="BKASH"
+                        aria-pressed="false">
                         <img
                             src="../assets/payment/bkash.png"
                             alt="bKash">
@@ -74,9 +77,8 @@
                     <button
                         type="button"
                         class="payment-card"
-                        data-method="nagad"
-                        aria-pressed="false"
-                        disabled>
+                        data-method="NAGAD"
+                        aria-pressed="false">
                         <img
                             src="../assets/payment/nagad.png"
                             alt="Nagad">
@@ -87,154 +89,57 @@
                     <button
                         type="button"
                         class="payment-card"
-                        data-method="rocket"
-                        aria-pressed="false"
-                        disabled>
+                        data-method="ROCKET"
+                        aria-pressed="false">
                         <img
                             src="../assets/payment/rocket.png"
                             alt="Rocket">
 
                         <span>Rocket</span>
                     </button>
-
-                    <button
-                        type="button"
-                        class="payment-card"
-                        data-method="binance"
-                        aria-pressed="false"
-                        disabled>
-                        <img
-                            src="../assets/payment/binance.png"
-                            alt="Binance Pay">
-
-                        <span>Binance Pay</span>
-                    </button>
                 </div>
 
                 <p
                     class="payment-method-message"
                     id="paymentMethodMessage">
-                    Loading available payment methods...
+                    Choose bKash, Nagad or Rocket
                 </p>
 
-                <label>Deposit Amount</label>
+                <label for="amount">
+                    Deposit Amount
+                </label>
 
-                <input
-                    type="number"
-                    id="amount"
-                    placeholder="Enter Amount">
+                <div class="deposit-amount-wrapper">
+                    <span class="deposit-currency">৳</span>
 
-                <p class="hint">
-
-                    Minimum Deposit: ৳500
-
-                </p>
-
-                <div
-                    class="binance-payment-summary"
-                    id="binancePaymentSummary"
-                    hidden>
-                    <div>
-                        <span>Exchange Rate</span>
-
-                        <strong>
-                            ৳<span id="binanceRate">0.00</span>
-                            = 1 USDT
-                        </strong>
-                    </div>
-
-                    <div>
-                        <span>Send Exactly</span>
-
-                        <strong>
-                            <span id="binancePayableAmount">0.00</span>
-                            USDT
-                        </strong>
-                    </div>
+                    <input
+                        type="number"
+                        id="amount"
+                        placeholder="Enter deposit amount"
+                        min="100"
+                        step="1"
+                        inputmode="decimal"
+                        autocomplete="off">
                 </div>
 
-                <label id="senderNumberLabel">
-                    Sender Number
-                </label>
-
-                <input
-                    type="text"
-                    id="senderNumber"
-                    placeholder="01XXXXXXXXX"
-                    maxlength="120"
-                    autocomplete="off">
-
-                <label id="transactionIdLabel">
-                    Transaction ID
-                </label>
-
-                <input
-                    type="text"
-                    id="transactionId"
-                    placeholder="Enter Transaction ID">
+                <p class="hint">
+                    Minimum Deposit: ৳100
+                </p>
 
                 <div class="deposit-info">
-
                     <h4>
-
-                        <i class="fa-solid fa-circle-info"></i>
-
-                        Deposit Instructions
-
+                        <i class="fa-solid fa-shield-halved"></i>
+                        Secure Gateway Payment
                     </h4>
 
                     <ul>
-
-                        <li>Send money to the official payment number.</li>
-
-                        <li>Minimum deposit amount is
-                            <strong>৳100</strong>.</li>
-
-                        <li>Enter the exact Transaction ID.</li>
-
-                        <li>Your balance will be updated after
-                            verification.</li>
-
+                        <li>Select your payment method.</li>
+                        <li>Enter the amount you want to deposit.</li>
+                        <li>You will be redirected to the secure payment
+                            gateway.</li>
+                        <li>Your balance will update automatically after
+                            successful payment.</li>
                     </ul>
-
-                </div>
-
-                <div
-                    class="official-number"
-                    id="officialNumberCard">
-                    <p id="paymentMethodTitle">
-                        Loading Payment Method
-                    </p>
-
-                    <span
-                        class="merchant-account-type"
-                        id="merchantAccountType">
-                        Please wait
-                    </span>
-
-                    <h2 id="merchantNumber">
-                        —
-                    </h2>
-
-                    <div
-                        class="payment-qr-wrapper"
-                        id="paymentQrWrapper"
-                        hidden>
-                        <img
-                            id="paymentQrImage"
-                            alt="Official Binance Pay QR Code">
-                    </div>
-
-                    <button
-                        type="button"
-                        id="copyNumberBtn"
-                        disabled>
-                        <i class="fa-regular fa-copy"></i>
-
-                        <span id="copyNumberText">
-                            Copy Number
-                        </span>
-                    </button>
                 </div>
 
                 <button
@@ -242,11 +147,8 @@
                     id="submitDeposit"
                     class="submit-btn"
                     disabled>
-
-                    <i class="fa-solid fa-paper-plane"></i>
-
-                    Submit Deposit
-
+                    <i class="fa-solid fa-lock"></i>
+                    Continue to Payment
                 </button>
 
                 <!-- ==========================
@@ -267,9 +169,11 @@
 
                         <p>
 
-                           কখনও কোনো ব্যক্তিগত নম্বরে টাকা পাঠাবেন না।
-                            শুধুমাত্র উপরে প্রদর্শিত অফিসিয়াল Agent নম্বরেই টাকা cashout করুন।
-                            PMS ADDA কখনও আপনার কাছে পিন (PIN) বা ওটিপি (OTP) চাইবে না।
+                            কখনও কোনো ব্যক্তিগত নম্বরে টাকা পাঠাবেন না।
+                            শুধুমাত্র উপরে প্রদর্শিত অফিসিয়াল Agent নম্বরেই টাকা
+                            cashout করুন।
+                            PMS ADDA কখনও আপনার কাছে পিন (PIN) বা ওটিপি (OTP)
+                            চাইবে না।
 
                         </p>
 
