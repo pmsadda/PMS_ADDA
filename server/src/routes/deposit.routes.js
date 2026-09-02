@@ -1,16 +1,16 @@
 const express = require("express");
 
 const {
-    submitDepositRequest,
-    getMyDepositHistory,
-    getPaymentMethods,
-    getPaymentAccountQr,
-} = require(
-    "../controllers/deposit.controller"
-);
+  submitDepositRequest,
+  getMyDepositHistory,
+  getPaymentMethods,
+  getPaymentAccountQr,
+  createGatewayPayment,
+  gatewayCallbackDebug,
+} = require("../controllers/deposit.controller");
 
 const {
-    requireAuth
+  requireAuth,
 } = require("../middleware/auth.middleware");
 
 const router = express.Router();
@@ -32,24 +32,42 @@ router.get(
   getPaymentAccountQr,
 );
 
+
+/* ==========================
+   Gateway Payment
+========================== */
+
+router.post(
+  "/gateway/create",
+  requireAuth,
+  createGatewayPayment,
+);
+
+router.post(
+  "/gateway/callback",
+  gatewayCallbackDebug,
+);
+
+
 /* ==========================
    Submit Deposit Request
 ========================== */
 
 router.post(
-    "/",
-    requireAuth,
-    submitDepositRequest
+  "/",
+  requireAuth,
+  submitDepositRequest,
 );
+
 
 /* ==========================
    My Deposit History
 ========================== */
 
 router.get(
-    "/my-history",
-    requireAuth,
-    getMyDepositHistory
+  "/my-history",
+  requireAuth,
+  getMyDepositHistory,
 );
 
 module.exports = router;

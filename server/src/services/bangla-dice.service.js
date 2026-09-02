@@ -1,11 +1,8 @@
 "use strict";
 
-const crypto =
-  require("crypto");
+const crypto = require("crypto");
 
-const {
-  pool,
-} = require("../config/database");
+const { pool } = require("../config/database");
 
 const ROUND_STATUS = Object.freeze({
   BETTING: "betting",
@@ -22,58 +19,35 @@ function createGameError(
   statusCode = 400,
   code = "BANGLA_DICE_ERROR",
 ) {
-  const error =
-    new Error(message);
+  const error = new Error(message);
 
-  error.statusCode =
-    statusCode;
+  error.statusCode = statusCode;
 
-  error.code =
-    code;
+  error.code = code;
 
   return error;
 }
 
-function assertCondition(
-  condition,
-  message,
-  statusCode,
-  code,
-) {
+function assertCondition(condition, message, statusCode, code) {
   if (!condition) {
-    throw createGameError(
-      message,
-      statusCode,
-      code,
-    );
+    throw createGameError(message, statusCode, code);
   }
 }
 
 function parseMoney(value) {
-  const amount =
-    Number(value);
+  const amount = Number(value);
 
   if (!Number.isFinite(amount)) {
     return 0;
   }
 
-  return Number(
-    amount.toFixed(2),
-  );
+  return Number(amount.toFixed(2));
 }
 
-function parsePositiveInteger(
-  value,
-) {
-  const number =
-    Number(value);
+function parsePositiveInteger(value) {
+  const number = Number(value);
 
-  return (
-    Number.isInteger(number) &&
-    number > 0
-      ? number
-      : null
-  );
+  return Number.isInteger(number) && number > 0 ? number : null;
 }
 
 function parseJson(value) {
@@ -81,10 +55,7 @@ function parseJson(value) {
     return null;
   }
 
-  if (
-    typeof value ===
-    "object"
-  ) {
+  if (typeof value === "object") {
     return value;
   }
 
@@ -95,16 +66,11 @@ function parseJson(value) {
   }
 }
 
-function createReferenceCode(
-  prefix,
-) {
+function createReferenceCode(prefix) {
   return [
     prefix,
     Date.now(),
-    crypto
-      .randomBytes(6)
-      .toString("hex")
-      .toUpperCase(),
+    crypto.randomBytes(6).toString("hex").toUpperCase(),
   ].join("_");
 }
 
@@ -116,62 +82,23 @@ function mapSettingsRow(row) {
   return {
     id: Number(row.id),
 
-    gameEnabled:
-      Boolean(
-        Number(
-          row.game_enabled,
-        ),
-      ),
+    gameEnabled: Boolean(Number(row.game_enabled)),
 
-    resultMode:
-      String(
-        row.result_mode ||
-        "equal",
-      ),
+    resultMode: String(row.result_mode || "equal"),
 
-    minimumBet:
-      parseMoney(
-        row.minimum_bet,
-      ),
+    minimumBet: parseMoney(row.minimum_bet),
 
-    maximumBet:
-      parseMoney(
-        row.maximum_bet,
-      ),
+    maximumBet: parseMoney(row.maximum_bet),
 
-    bettingDurationSeconds:
-      Number(
-        row
-          .betting_duration_seconds ||
-        20,
-      ),
+    bettingDurationSeconds: Number(row.betting_duration_seconds || 20),
 
-    rollDurationSeconds:
-      Number(
-        row
-          .roll_duration_seconds ||
-        5,
-      ),
+    rollDurationSeconds: Number(row.roll_duration_seconds || 5),
 
-    resultDisplaySeconds:
-      Number(
-        row
-          .result_display_seconds ||
-        5,
-      ),
+    resultDisplaySeconds: Number(row.result_display_seconds || 5),
 
-    nextRoundDelaySeconds:
-      Number(
-        row
-          .next_round_delay_seconds ||
-        3,
-      ),
+    nextRoundDelaySeconds: Number(row.next_round_delay_seconds || 3),
 
-    serviceChargePercent:
-      parseMoney(
-        row
-          .service_charge_percent,
-      ),
+    serviceChargePercent: parseMoney(row.service_charge_percent),
   };
 }
 
@@ -183,227 +110,107 @@ function mapSymbolRow(row) {
   return {
     id: Number(row.id),
 
-    symbolCode:
-      String(
-        row.symbol_code,
-      ),
+    symbolCode: String(row.symbol_code),
 
-    symbolNameBn:
-      String(
-        row.symbol_name_bn,
-      ),
+    symbolNameBn: String(row.symbol_name_bn),
 
-    symbolNameEn:
-      String(
-        row.symbol_name_en,
-      ),
+    symbolNameEn: String(row.symbol_name_en),
 
-    faceNumber:
-      Number(
-        row.face_number,
-      ),
+    faceNumber: Number(row.face_number),
 
-    imagePath:
-      row.image_path ||
-      null,
+    imagePath: row.image_path || null,
 
-    multiplier:
-      Number(
-        row.multiplier,
-      ),
+    multiplier: Number(row.multiplier),
 
-    probabilityWeight:
-      Number(
-        row.probability_weight,
-      ),
+    probabilityWeight: Number(row.probability_weight),
 
-    isActive:
-      Boolean(
-        Number(
-          row.is_active,
-        ),
-      ),
+    isActive: Boolean(Number(row.is_active)),
 
-    isBettable:
-      Boolean(
-        Number(
-          row.is_bettable,
-        ),
-      ),
+    isBettable: Boolean(Number(row.is_bettable)),
   };
 }
 
-function canRevealRoundResult(
-  status,
-) {
+function canRevealRoundResult(status) {
   return [
     ROUND_STATUS.ROLLING,
     ROUND_STATUS.SETTLING,
     ROUND_STATUS.COMPLETED,
     ROUND_STATUS.REFUNDED,
-  ].includes(
-    String(status),
-  );
+  ].includes(String(status));
 }
 
-function mapRoundRow(
-  row,
-  {
-    revealResult = false,
-  } = {},
-) {
+function mapRoundRow(row, { revealResult = false } = {}) {
   if (!row) {
     return null;
   }
 
-  const status =
-    String(
-      row.round_status,
-    );
+  const status = String(row.round_status);
 
-  const shouldReveal =
-    revealResult ||
-    canRevealRoundResult(
-      status,
-    );
+  const shouldReveal = revealResult || canRevealRoundResult(status);
 
   return {
     id: Number(row.id),
 
-    roundCode:
-      String(
-        row.round_code,
-      ),
+    roundCode: String(row.round_code),
 
-    roundStatus:
-      status,
+    roundStatus: status,
 
-    resultMode:
-      String(
-        row.result_mode,
-      ),
+    resultMode: String(row.result_mode),
 
-    minimumBet:
-      parseMoney(
-        row.minimum_bet,
-      ),
+    minimumBet: parseMoney(row.minimum_bet),
 
-    maximumBet:
-      parseMoney(
-        row.maximum_bet,
-      ),
+    maximumBet: parseMoney(row.maximum_bet),
 
-    serviceChargePercent:
-      parseMoney(
-        row
-          .service_charge_percent,
-      ),
+    serviceChargePercent: parseMoney(row.service_charge_percent),
 
-    probabilitySnapshot:
-      parseJson(
-        row
-          .probability_snapshot,
-      ),
+    probabilitySnapshot: parseJson(row.probability_snapshot),
 
-    serverSeedHash:
-      String(
-        row.server_seed_hash,
-      ),
+    serverSeedHash: String(row.server_seed_hash),
 
-    serverSeedReveal:
-      shouldReveal
-        ? row
-            .server_seed_reveal
-        : null,
+    serverSeedReveal: shouldReveal ? row.server_seed_reveal : null,
 
     winningSymbolId:
-      shouldReveal &&
-      row.winning_symbol_id
-        ? Number(
-            row
-              .winning_symbol_id,
-          )
+      shouldReveal && row.winning_symbol_id
+        ? Number(row.winning_symbol_id)
         : null,
 
-    winningSymbolCode:
-      shouldReveal
-        ? row
-            .winning_symbol_code
-        : null,
+    winningSymbolCode: shouldReveal ? row.winning_symbol_code : null,
 
-    winningSymbolName:
-      shouldReveal
-        ? row
-            .winning_symbol_name
-        : null,
+    winningSymbolName: shouldReveal ? row.winning_symbol_name : null,
 
     winningFaceNumber:
-      shouldReveal &&
-      row.winning_face_number
-        ? Number(
-            row
-              .winning_face_number,
-          )
+      shouldReveal && row.winning_face_number
+        ? Number(row.winning_face_number)
         : null,
 
     winningMultiplier:
-      shouldReveal &&
-      row.winning_multiplier !==
-        null
-        ? Number(
-            row
-              .winning_multiplier,
-          )
+      shouldReveal && row.winning_multiplier !== null
+        ? Number(row.winning_multiplier)
         : null,
 
-    totalBetAmount:
-      parseMoney(
-        row.total_bet_amount,
-      ),
+    totalBetAmount: parseMoney(row.total_bet_amount),
 
-    totalPlayers:
-      Number(
-        row.total_players ||
-        0,
-      ),
+    totalPlayers: Number(row.total_players || 0),
 
-    totalBets:
-      Number(
-        row.total_bets ||
-        0,
-      ),
+    totalBets: Number(row.total_bets || 0),
 
-    bettingStartedAt:
-      row
-        .betting_started_at,
+    bettingStartedAt: row.betting_started_at,
 
-    bettingEndsAt:
-      row
-        .betting_ends_at,
+    bettingEndsAt: row.betting_ends_at,
 
-    rollingStartedAt:
-      row
-        .rolling_started_at,
+    rollingStartedAt: row.rolling_started_at,
 
-    rollingEndsAt:
-      row
-        .rolling_ends_at,
+    rollingEndsAt: row.rolling_ends_at,
 
-    completedAt:
-      row.completed_at,
+    completedAt: row.completed_at,
 
-    serverTime:
-      new Date()
-        .toISOString(),
+    serverTime: new Date().toISOString(),
   };
 }
 
-async function getGameSettings(
-  connection = pool,
-) {
-  const [rows] =
-    await connection.query(
-      `
+async function getGameSettings(connection = pool) {
+  const [rows] = await connection.query(
+    `
         SELECT *
 
         FROM bangla_dice_settings
@@ -412,7 +219,7 @@ async function getGameSettings(
 
         LIMIT 1
       `,
-    );
+  );
 
   assertCondition(
     rows[0],
@@ -421,17 +228,12 @@ async function getGameSettings(
     "BANGLA_DICE_SETTINGS_MISSING",
   );
 
-  return mapSettingsRow(
-    rows[0],
-  );
+  return mapSettingsRow(rows[0]);
 }
 
-async function getActiveSymbols(
-  connection = pool,
-) {
-  const [rows] =
-    await connection.query(
-      `
+async function getActiveSymbols(connection = pool) {
+  const [rows] = await connection.query(
+    `
         SELECT *
 
         FROM bangla_dice_symbols
@@ -440,12 +242,9 @@ async function getActiveSymbols(
 
         ORDER BY face_number ASC
       `,
-    );
+  );
 
-  const symbols =
-    rows.map(
-      mapSymbolRow,
-    );
+  const symbols = rows.map(mapSymbolRow);
 
   assertCondition(
     symbols.length === 6,
@@ -457,14 +256,8 @@ async function getActiveSymbols(
   return symbols;
 }
 
-async function getSymbolById(
-  symbolId,
-  connection = pool,
-) {
-  const validSymbolId =
-    parsePositiveInteger(
-      symbolId,
-    );
+async function getSymbolById(symbolId, connection = pool) {
+  const validSymbolId = parsePositiveInteger(symbolId);
 
   assertCondition(
     validSymbolId,
@@ -473,9 +266,8 @@ async function getSymbolById(
     "INVALID_DICE_SYMBOL_ID",
   );
 
-  const [rows] =
-    await connection.query(
-      `
+  const [rows] = await connection.query(
+    `
         SELECT *
 
         FROM bangla_dice_symbols
@@ -486,38 +278,23 @@ async function getSymbolById(
 
         LIMIT 1
       `,
-      [validSymbolId],
-    );
+    [validSymbolId],
+  );
 
-  return rows[0]
-    ? mapSymbolRow(
-        rows[0],
-      )
-    : null;
+  return rows[0] ? mapSymbolRow(rows[0]) : null;
 }
 
-async function getRoundById(
-  roundId,
-  connection = pool,
-  options = {},
-) {
-  const validRoundId =
-    parsePositiveInteger(
-      roundId,
-    );
+async function getRoundById(roundId, connection = pool, options = {}) {
+  const validRoundId = parsePositiveInteger(roundId);
 
   if (!validRoundId) {
     return null;
   }
 
-  const lockSql =
-    options.lock
-      ? "FOR UPDATE"
-      : "";
+  const lockSql = options.lock ? "FOR UPDATE" : "";
 
-  const [rows] =
-    await connection.query(
-      `
+  const [rows] = await connection.query(
+    `
         SELECT *
 
         FROM bangla_dice_rounds
@@ -528,18 +305,15 @@ async function getRoundById(
 
         ${lockSql}
       `,
-      [validRoundId],
-    );
+    [validRoundId],
+  );
 
   return rows[0] || null;
 }
 
-async function getActiveRound(
-  connection = pool,
-) {
-  const [rows] =
-    await connection.query(
-      `
+async function getActiveRound(connection = pool) {
+  const [rows] = await connection.query(
+    `
         SELECT *
 
         FROM bangla_dice_rounds
@@ -554,88 +328,41 @@ async function getActiveRound(
 
         LIMIT 1
       `,
-    );
+  );
 
   return rows[0] || null;
 }
 
-function createProbabilitySnapshot(
-  symbols,
-  mode,
-) {
-  return symbols.map(
-    (symbol) => ({
-      id: symbol.id,
-      symbolCode:
-        symbol.symbolCode,
-      symbolNameBn:
-        symbol.symbolNameBn,
-      faceNumber:
-        symbol.faceNumber,
-      multiplier:
-        Number(
-          symbol.multiplier,
-        ),
-      weight:
-        mode === "weighted"
-          ? Math.max(
-              0,
-              Number(
-                symbol
-                  .probabilityWeight,
-              ),
-            )
-          : 1,
-    }),
-  );
+function createProbabilitySnapshot(symbols, mode) {
+  return symbols.map((symbol) => ({
+    id: symbol.id,
+    symbolCode: symbol.symbolCode,
+    symbolNameBn: symbol.symbolNameBn,
+    faceNumber: symbol.faceNumber,
+    multiplier: Number(symbol.multiplier),
+    weight:
+      mode === "weighted" ? Math.max(0, Number(symbol.probabilityWeight)) : 1,
+  }));
 }
 
-function createDeterministicNumber(
-  seed,
-  roundCode,
-) {
-  const hash =
-    crypto
-      .createHash("sha256")
-      .update(
-        `${seed}:${roundCode}`,
-      )
-      .digest("hex");
+function createDeterministicNumber(seed, roundCode) {
+  const hash = crypto
+    .createHash("sha256")
+    .update(`${seed}:${roundCode}`)
+    .digest("hex");
 
-  const firstBytes =
-    hash.slice(0, 13);
+  const firstBytes = hash.slice(0, 13);
 
-  const integer =
-    Number.parseInt(
-      firstBytes,
-      16,
-    );
+  const integer = Number.parseInt(firstBytes, 16);
 
-  return (
-    integer /
-    0x1fffffffffffff
-  );
+  return integer / 0x10000000000000;
 }
 
-function selectWinningSymbol(
-  snapshot,
-  randomNumber,
-) {
-  const totalWeight =
-    snapshot.reduce(
-      (
-        total,
-        symbol,
-      ) =>
-        total +
-        Math.max(
-          0,
-          Number(
-            symbol.weight,
-          ),
-        ),
-      0,
-    );
+function selectWinningSymbol(snapshot, randomNumber) {
+  const totalWeight = snapshot.reduce(
+    (total, symbol) => total + Math.max(0, Number(symbol.weight)),
+    0,
+  );
 
   assertCondition(
     totalWeight > 0,
@@ -644,46 +371,29 @@ function selectWinningSymbol(
     "DICE_WEIGHT_INVALID",
   );
 
-  const target =
-    randomNumber *
-    totalWeight;
+  const target = randomNumber * totalWeight;
 
   let runningWeight = 0;
 
-  for (
-    const symbol of snapshot
-  ) {
-    runningWeight +=
-      Math.max(
-        0,
-        Number(
-          symbol.weight,
-        ),
-      );
+  for (const symbol of snapshot) {
+    runningWeight += Math.max(0, Number(symbol.weight));
 
-    if (
-      target <
-      runningWeight
-    ) {
+    if (target < runningWeight) {
       return symbol;
     }
   }
 
-  return snapshot[
-    snapshot.length - 1
-  ];
+  return snapshot[snapshot.length - 1];
 }
 
 async function createRound() {
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const [settingsRows] =
-      await connection.query(
-        `
+    const [settingsRows] = await connection.query(
+      `
           SELECT *
 
           FROM bangla_dice_settings
@@ -694,12 +404,9 @@ async function createRound() {
 
           FOR UPDATE
         `,
-      );
+    );
 
-    const settings =
-      mapSettingsRow(
-        settingsRows[0],
-      );
+    const settings = mapSettingsRow(settingsRows[0]);
 
     assertCondition(
       settings,
@@ -715,9 +422,8 @@ async function createRound() {
       "BANGLA_DICE_DISABLED",
     );
 
-    const [activeRows] =
-      await connection.query(
-        `
+    const [activeRows] = await connection.query(
+      `
           SELECT id
 
           FROM bangla_dice_rounds
@@ -732,7 +438,7 @@ async function createRound() {
 
           FOR UPDATE
         `,
-      );
+    );
 
     assertCondition(
       activeRows.length === 0,
@@ -741,59 +447,31 @@ async function createRound() {
       "DICE_ACTIVE_ROUND_EXISTS",
     );
 
-    const symbols =
-      await getActiveSymbols(
-        connection,
-      );
+    const symbols = await getActiveSymbols(connection);
 
-    const roundCode =
-      createReferenceCode(
-        "BD_ROUND",
-      );
+    const roundCode = createReferenceCode("BD_ROUND");
 
-    const serverSeed =
-      crypto
-        .randomBytes(32)
-        .toString("hex");
+    const serverSeed = crypto.randomBytes(32).toString("hex");
 
-    const serverSeedHash =
-      crypto
-        .createHash("sha256")
-        .update(serverSeed)
-        .digest("hex");
+    const serverSeedHash = crypto
+      .createHash("sha256")
+      .update(serverSeed)
+      .digest("hex");
 
-    const snapshot =
-      createProbabilitySnapshot(
-        symbols,
-        settings.resultMode,
-      );
+    const snapshot = createProbabilitySnapshot(symbols, settings.resultMode);
 
-    const randomNumber =
-      createDeterministicNumber(
-        serverSeed,
-        roundCode,
-      );
+    const randomNumber = createDeterministicNumber(serverSeed, roundCode);
 
-    const winner =
-      selectWinningSymbol(
-        snapshot,
-        randomNumber,
-      );
+    const winner = selectWinningSymbol(snapshot, randomNumber);
 
-    const bettingStartedAt =
-      new Date();
+    const bettingStartedAt = new Date();
 
-    const bettingEndsAt =
-      new Date(
-        bettingStartedAt.getTime() +
-        settings
-          .bettingDurationSeconds *
-          1000,
-      );
+    const bettingEndsAt = new Date(
+      bettingStartedAt.getTime() + settings.bettingDurationSeconds * 1000,
+    );
 
-    const [insertResult] =
-      await connection.query(
-        `
+    const [insertResult] = await connection.query(
+      `
           INSERT INTO bangla_dice_rounds (
             round_code,
             round_status,
@@ -831,39 +509,30 @@ async function createRound() {
             ?
           )
         `,
-        [
-          roundCode,
-          settings.resultMode,
-          settings.minimumBet,
-          settings.maximumBet,
-          settings
-            .serviceChargePercent,
-          JSON.stringify(
-            snapshot,
-          ),
-          serverSeedHash,
-          serverSeed,
-          winner.id,
-          winner.symbolCode,
-          winner.symbolNameBn,
-          winner.faceNumber,
-          winner.multiplier,
-          bettingStartedAt,
-          bettingEndsAt,
-        ],
-      );
+      [
+        roundCode,
+        settings.resultMode,
+        settings.minimumBet,
+        settings.maximumBet,
+        settings.serviceChargePercent,
+        JSON.stringify(snapshot),
+        serverSeedHash,
+        serverSeed,
+        winner.id,
+        winner.symbolCode,
+        winner.symbolNameBn,
+        winner.faceNumber,
+        winner.multiplier,
+        bettingStartedAt,
+        bettingEndsAt,
+      ],
+    );
 
-    const createdRow =
-      await getRoundById(
-        insertResult.insertId,
-        connection,
-      );
+    const createdRow = await getRoundById(insertResult.insertId, connection);
 
     await connection.commit();
 
-    return mapRoundRow(
-      createdRow,
-    );
+    return mapRoundRow(createdRow);
   } catch (error) {
     await connection.rollback();
 
@@ -873,23 +542,15 @@ async function createRound() {
   }
 }
 
-async function startRoll(
-  roundId,
-) {
-  const connection =
-    await pool.getConnection();
+async function startRoll(roundId) {
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const row =
-      await getRoundById(
-        roundId,
-        connection,
-        {
-          lock: true,
-        },
-      );
+    const row = await getRoundById(roundId, connection, {
+      lock: true,
+    });
 
     assertCondition(
       row,
@@ -898,43 +559,28 @@ async function startRoll(
       "DICE_ROUND_NOT_FOUND",
     );
 
-    if (
-      row.round_status ===
-      ROUND_STATUS.ROLLING
-    ) {
+    if (row.round_status === ROUND_STATUS.ROLLING) {
       await connection.commit();
 
-      return mapRoundRow(
-        row,
-        {
-          revealResult: true,
-        },
-      );
+      return mapRoundRow(row, {
+        revealResult: true,
+      });
     }
 
     assertCondition(
-      row.round_status ===
-        ROUND_STATUS.BETTING,
+      row.round_status === ROUND_STATUS.BETTING,
       "This Dice round cannot start rolling.",
       409,
       "DICE_ROUND_NOT_BETTING",
     );
 
-    const settings =
-      await getGameSettings(
-        connection,
-      );
+    const settings = await getGameSettings(connection);
 
-    const rollingStartedAt =
-      new Date();
+    const rollingStartedAt = new Date();
 
-    const rollingEndsAt =
-      new Date(
-        rollingStartedAt.getTime() +
-        settings
-          .rollDurationSeconds *
-          1000,
-      );
+    const rollingEndsAt = new Date(
+      rollingStartedAt.getTime() + settings.rollDurationSeconds * 1000,
+    );
 
     await connection.query(
       `
@@ -950,27 +596,16 @@ async function startRoll(
           AND round_status =
             'betting'
       `,
-      [
-        rollingStartedAt,
-        rollingEndsAt,
-        Number(row.id),
-      ],
+      [rollingStartedAt, rollingEndsAt, Number(row.id)],
     );
 
-    const updatedRow =
-      await getRoundById(
-        row.id,
-        connection,
-      );
+    const updatedRow = await getRoundById(row.id, connection);
 
     await connection.commit();
 
-    return mapRoundRow(
-      updatedRow,
-      {
-        revealResult: true,
-      },
-    );
+    return mapRoundRow(updatedRow, {
+      revealResult: true,
+    });
   } catch (error) {
     await connection.rollback();
 
@@ -981,11 +616,7 @@ async function startRoll(
 }
 
 async function getPublicGameState() {
-  const [
-    settings,
-    symbols,
-    activeRow,
-  ] = await Promise.all([
+  const [settings, symbols, activeRow] = await Promise.all([
     getGameSettings(),
     getActiveSymbols(),
     getActiveRound(),
@@ -994,16 +625,9 @@ async function getPublicGameState() {
   return {
     settings,
     symbols,
-    activeRound:
-      activeRow
-        ? mapRoundRow(
-            activeRow,
-          )
-        : null,
+    activeRound: activeRow ? mapRoundRow(activeRow) : null,
 
-    serverTime:
-      new Date()
-        .toISOString(),
+    serverTime: new Date().toISOString(),
   };
 }
 

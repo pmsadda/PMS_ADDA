@@ -1,15 +1,16 @@
+const crypto = require("crypto");
+
 const {
   createDepositRequest,
+  createGatewayDepositRequest,
+  saveGatewayTradeNumber,
   getUserDepositRequests,
 } = require("../services/deposit.service");
 
 const {
-    getActivePaymentMethods,
-    getPaymentAccountQr:
-  getPaymentAccountQrFile,
-} = require(
-    "../services/deposit-payment.service"
-);
+  getActivePaymentMethods,
+  getPaymentAccountQr: getPaymentAccountQrFile,
+} = require("../services/deposit-payment.service");
 
 /* ==========================
    Active Payment Methods
@@ -37,11 +38,7 @@ async function getPaymentMethods(req, res, next) {
    Create Deposit Request
 ========================== */
 
-async function submitDepositRequest(
-  req,
-  res,
-  next,
-) {
+async function submitDepositRequest(req, res, next) {
   try {
     const {
       method,
@@ -60,76 +57,47 @@ async function submitDepositRequest(
       return res.status(400).json({
         success: false,
 
-        message:
-          "সব Deposit তথ্য সঠিকভাবে দিন।",
+        message: "সব Deposit তথ্য সঠিকভাবে দিন।",
       });
     }
 
-    const cleanedMethod =
-      String(method)
-        .trim()
-        .toLowerCase();
+    const cleanedMethod = String(method).trim().toLowerCase();
 
-    const cleanedSenderNumber =
-      String(senderNumber)
-        .replace(/\s+/g, "")
-        .trim();
+    const cleanedSenderNumber = String(senderNumber).replace(/\s+/g, "").trim();
 
     /*
      * Transaction/Order ID-এর original
      * value অক্ষত রাখা হচ্ছে।
      */
-    const cleanedTransactionNumber =
-      String(transactionNumber)
-        .trim();
+    const cleanedTransactionNumber = String(transactionNumber).trim();
 
-    const cleanedAmount =
-      Number(amount);
+    const cleanedAmount = Number(amount);
 
     const cleanedAccountId =
-      paymentAccountId ===
-        undefined ||
+      paymentAccountId === undefined ||
       paymentAccountId === null ||
       paymentAccountId === ""
         ? null
-        : Number(
-            paymentAccountId,
-          );
+        : Number(paymentAccountId);
 
-    const allowedMethods = [
-      "bkash",
-      "nagad",
-      "rocket",
-      "binance",
-    ];
+    const allowedMethods = ["bkash", "nagad", "rocket", "binance"];
 
-    if (
-      !allowedMethods.includes(
-        cleanedMethod,
-      )
-    ) {
+    if (!allowedMethods.includes(cleanedMethod)) {
       return res.status(400).json({
         success: false,
 
-        message:
-          "সঠিক Payment Method নির্বাচন করুন।",
+        message: "সঠিক Payment Method নির্বাচন করুন।",
       });
     }
 
     if (
       cleanedAccountId !== null &&
-      (
-        !Number.isInteger(
-          cleanedAccountId,
-        ) ||
-        cleanedAccountId < 1
-      )
+      (!Number.isInteger(cleanedAccountId) || cleanedAccountId < 1)
     ) {
       return res.status(400).json({
         success: false,
 
-        message:
-          "Invalid receiving account selection.",
+        message: "Invalid receiving account selection.",
       });
     }
 
@@ -138,15 +106,12 @@ async function submitDepositRequest(
      */
     if (
       cleanedMethod !== "binance" &&
-      !/^01[3-9]\d{8}$/.test(
-        cleanedSenderNumber,
-      )
+      !/^01[3-9]\d{8}$/.test(cleanedSenderNumber)
     ) {
       return res.status(400).json({
         success: false,
 
-        message:
-          "সঠিক ১১ ডিজিটের Sender Number দিন।",
+        message: "সঠিক ১১ ডিজিটের Sender Number দিন।",
       });
     }
 
@@ -155,23 +120,18 @@ async function submitDepositRequest(
      */
     if (
       cleanedMethod === "binance" &&
-      !/^[A-Za-z0-9_-]{4,120}$/.test(
-        cleanedSenderNumber,
-      )
+      !/^[A-Za-z0-9_-]{4,120}$/.test(cleanedSenderNumber)
     ) {
       return res.status(400).json({
         success: false,
 
-        message:
-          "সঠিক Binance Sender Pay ID দিন।",
+        message: "সঠিক Binance Sender Pay ID দিন।",
       });
     }
 
     if (
-      cleanedTransactionNumber
-        .length < 6 ||
-      cleanedTransactionNumber
-        .length > 100
+      cleanedTransactionNumber.length < 6 ||
+      cleanedTransactionNumber.length > 100
     ) {
       return res.status(400).json({
         success: false,
@@ -184,46 +144,35 @@ async function submitDepositRequest(
     }
 
     if (
-      !Number.isFinite(
-        cleanedAmount,
-      ) ||
+      !Number.isFinite(cleanedAmount) ||
       cleanedAmount < 100 ||
       cleanedAmount > 1000000
     ) {
       return res.status(400).json({
         success: false,
 
-        message:
-          "Deposit amount must be between ৳100 and ৳10,00,000.",
+        message: "Deposit amount must be between ৳100 and ৳10,00,000.",
       });
     }
 
-    const deposit =
-      await createDepositRequest({
-        userId:
-          req.user.id,
+    const deposit = await createDepositRequest({
+      userId: req.user.id,
 
-        method:
-          cleanedMethod,
+      method: cleanedMethod,
 
-        paymentAccountId:
-          cleanedAccountId,
+      paymentAccountId: cleanedAccountId,
 
-        senderNumber:
-          cleanedSenderNumber,
+      senderNumber: cleanedSenderNumber,
 
-        transactionNumber:
-          cleanedTransactionNumber,
+      transactionNumber: cleanedTransactionNumber,
 
-        amount:
-          cleanedAmount,
-      });
+      amount: cleanedAmount,
+    });
 
     return res.status(201).json({
       success: true,
 
-      message:
-        "Deposit request submitted successfully.",
+      message: "Deposit request submitted successfully.",
 
       data: {
         deposit,
@@ -259,51 +208,170 @@ async function getMyDepositHistory(req, res, next) {
    Get Payment Account QR
 ========================== */
 
-async function getPaymentAccountQr(
-  req,
-  res,
-  next,
-) {
+async function getPaymentAccountQr(req, res, next) {
   try {
-    const qrImage =
-      await getPaymentAccountQrFile(
-        req.params.accountId,
-      );
+    const qrImage = await getPaymentAccountQrFile(req.params.accountId);
 
-    res.setHeader(
-      "Content-Type",
-      qrImage.mimeType,
-    );
+    res.setHeader("Content-Type", qrImage.mimeType);
 
-    res.setHeader(
-      "Content-Length",
-      String(qrImage.imageSize),
-    );
+    res.setHeader("Content-Length", String(qrImage.imageSize));
 
-    res.setHeader(
-      "Cache-Control",
-      "private, max-age=300",
-    );
+    res.setHeader("Cache-Control", "private, max-age=300");
 
     res.setHeader(
       "Content-Disposition",
-      `inline; filename="${
-        String(
-          qrImage.fileName ||
-          "binance-pay-qr",
-        ).replace(
-          /[^a-zA-Z0-9._-]/g,
-          "_",
-        )
-      }"`,
+      `inline; filename="${String(qrImage.fileName || "binance-pay-qr").replace(
+        /[^a-zA-Z0-9._-]/g,
+        "_",
+      )}"`,
     );
 
-    return res.status(200).send(
-      qrImage.imageData,
-    );
+    return res.status(200).send(qrImage.imageData);
   } catch (error) {
     next(error);
   }
+}
+
+async function createGatewayPayment(req, res, next) {
+  try {
+    const amount = Number(req.body?.amount);
+
+    if (!Number.isFinite(amount) || amount < 100 || amount > 1000000) {
+      return res.status(400).json({
+        success: false,
+        message: "Deposit amount must be between ৳100 and ৳10,00,000.",
+      });
+    }
+
+    const appId = String(process.env.PAYMENT_APP_ID || "").trim();
+    const secretKey = String(process.env.PAYMENT_SECRET_KEY || "").trim();
+    const paymentApiUrl = String(process.env.PAYMENT_API_URL || "").trim();
+    const callbackUrl = String(process.env.PAYMENT_CALLBACK_URL || "").trim();
+
+    if (!appId || !secretKey || !paymentApiUrl || !callbackUrl) {
+      const error = new Error("Payment gateway configuration is incomplete.");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    const orderNo = `PMS${Date.now()}${req.user.id}`;
+
+    await createGatewayDepositRequest({
+      userId: req.user.id,
+      gatewayOrderId: orderNo,
+      amount,
+    });
+
+    const now = new Date();
+
+    const pad = (value) => String(value).padStart(2, "0");
+
+    const orderDate =
+      `${now.getFullYear()}-` +
+      `${pad(now.getMonth() + 1)}-` +
+      `${pad(now.getDate())} ` +
+      `${pad(now.getHours())}:` +
+      `${pad(now.getMinutes())}:` +
+      `${pad(now.getSeconds())}`;
+
+    const params = {
+      app_id: appId,
+      goods_name: "PMS ADDA Deposit",
+      mch_order_no: orderNo,
+      notify_url: callbackUrl,
+      order_date: orderDate,
+      page_url: "https://pms-adda.site/lobby",
+      pay_type: "101",
+      trade_amount: amount.toFixed(2),
+      version: "1.0",
+    };
+
+    const signString =
+      Object.keys(params)
+        .sort()
+        .map((key) => `${key}=${params[key]}`)
+        .join("&") + `&key=${secretKey}`;
+
+    const sign = crypto
+      .createHash("md5")
+      .update(signString, "utf8")
+      .digest("hex")
+      .toUpperCase();
+
+    const form = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      form.append(key, value);
+    });
+
+    form.append("sign_type", "MD5");
+    form.append("sign", sign);
+
+    const gatewayResponse = await fetch(paymentApiUrl, {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+
+      body: form.toString(),
+    });
+
+    const gatewayText = await gatewayResponse.text();
+
+    let gatewayData;
+
+    try {
+      gatewayData = JSON.parse(gatewayText);
+    } catch {
+      throw new Error("Invalid payment gateway response.");
+    }
+
+    if (
+      gatewayData.respCode !== "SUCCESS" ||
+      !(gatewayData.payUrl || gatewayData.pay_url || gatewayData.payInfo)
+    ) {
+      const error = new Error(
+        gatewayData.tradeMsg || "Payment gateway request failed.",
+      );
+
+      error.statusCode = 502;
+      throw error;
+    }
+
+    if (gatewayData.tradeNo) {
+  await saveGatewayTradeNumber({
+    userId: req.user.id,
+    gatewayOrderId: orderNo,
+    gatewayTradeNo: gatewayData.tradeNo,
+  });
+}
+
+    return res.status(200).json({
+      success: true,
+
+      message: "Payment created successfully.",
+
+      data: {
+        orderNumber: orderNo,
+
+        tradeNumber: gatewayData.tradeNo || null,
+
+        paymentUrl:
+          gatewayData.payUrl || gatewayData.pay_url || gatewayData.payInfo,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function gatewayCallbackDebug(req, res) {
+  console.log("===== GATEWAY CALLBACK RECEIVED =====");
+  console.log(req.body);
+  console.log("====================================");
+
+  return res.status(200).send("success");
 }
 
 module.exports = {
@@ -311,4 +379,6 @@ module.exports = {
   submitDepositRequest,
   getMyDepositHistory,
   getPaymentAccountQr,
+  createGatewayPayment,
+  gatewayCallbackDebug,
 };

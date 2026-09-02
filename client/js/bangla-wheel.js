@@ -9,20 +9,20 @@
     animals: [],
     settings: null,
     activeRound: null,
-   selectedAnimal: null,
-selectedAmount: 5,
+    selectedAnimal: null,
+    selectedAmount: 5,
 
-userBet: null,
-userBets: [],
+    userBet: null,
+    userBets: [],
 
-userBetSummary: {
-  totalBets: 0,
-  totalBetAmount: 0,
-  animalBetAmounts: {}
-},
+    userBetSummary: {
+      totalBets: 0,
+      totalBetAmount: 0,
+      animalBetAmounts: {},
+    },
 
-placingBet: false,
-walletBalance: 0,
+    placingBet: false,
+    walletBalance: 0,
     wheelRotation: 0,
     countdownTimer: null,
     spinAnimation: null,
@@ -62,6 +62,7 @@ walletBalance: 0,
     resultOverlay: $("resultOverlay"),
     resultAnimalImage: $("winnerAnimalImage"),
     resultAnimalName: $("winnerAnimalName"),
+    resultMultiplier: $("winnerMultiplier"),
     resultMessage: $("userResultMessage"),
     closeResultBtn: $("resultCloseBtn"),
 
@@ -145,16 +146,10 @@ walletBalance: 0,
     }, 3000);
   }
 
-   function setConnected(connected) {
-    DOM.connectionStatus?.classList.toggle(
-      "is-connected",
-      connected
-    );
+  function setConnected(connected) {
+    DOM.connectionStatus?.classList.toggle("is-connected", connected);
 
-    DOM.connectionStatus?.classList.toggle(
-      "is-disconnected",
-      !connected
-    );
+    DOM.connectionStatus?.classList.toggle("is-disconnected", !connected);
 
     if (DOM.connectionText) {
       DOM.connectionText.textContent = connected
@@ -209,83 +204,66 @@ walletBalance: 0,
       DOM.possiblePayout.textContent = `৳ ${money(calculateNetPayout())}`;
     }
 
-        const placeBetText = $("placeBetText");
+    const placeBetText = $("placeBetText");
 
     if (placeBetText) {
       placeBetText.textContent = state.selectedAnimal
         ? `Bet ৳${money(state.selectedAmount)} on ${animalName(
-            state.selectedAnimal
+            state.selectedAnimal,
           )}`
         : "Select an animal";
     }
   }
 
-function buildWheelBackground() {
-  if (!DOM.animalWheel) return;
+  function buildWheelBackground() {
+    if (!DOM.animalWheel) return;
 
-  DOM.animalWheel.style.setProperty(
-    "background",
-    'url("../assets/bangla-wheel/wheel-12-clean.png") center center / 100% 100% no-repeat',
-    "important"
-  );
-}
-
-function renderWheel() {
-  if (!DOM.wheelSegments) return;
-
-  const animals = state.animals
-    .filter(
-      (animal) =>
-        String(
-          animal.animalStatus ??
-          animal.animal_status ??
-          "active"
-        ).toLowerCase() !== "disabled"
-    )
-    .slice()
-    .sort(
-      (a, b) =>
-        animalSegmentIndex(a) -
-        animalSegmentIndex(b)
+    DOM.animalWheel.style.setProperty(
+      "background",
+      'url("../assets/bangla-wheel/wheel-12-clean.png") center center / 100% 100% no-repeat',
+      "important",
     );
+  }
 
-  buildWheelBackground();
+  function renderWheel() {
+    if (!DOM.wheelSegments) return;
 
-  DOM.wheelSegments.innerHTML = animals
-    .map((animal) => {
-      const index =
-        animalSegmentIndex(animal);
+    const animals = state.animals
+      .filter(
+        (animal) =>
+          String(
+            animal.animalStatus ?? animal.animal_status ?? "active",
+          ).toLowerCase() !== "disabled",
+      )
+      .slice()
+      .sort((a, b) => animalSegmentIndex(a) - animalSegmentIndex(b));
 
-      const angle =
-        index * SEGMENT_ANGLE;
+    buildWheelBackground();
 
-      const bettable =
-        isBettable(animal);
+    DOM.wheelSegments.innerHTML = animals
+      .map((animal) => {
+        const index = animalSegmentIndex(animal);
 
-      return `
+        const angle = index * SEGMENT_ANGLE;
+
+        const bettable = isBettable(animal);
+
+        return `
         <div
-          class="wheel-segment${
-            bettable ? "" : " is-nil"
-          }"
-          data-code="${escapeHtml(
-            animalCode(animal)
-          )}"
+          class="wheel-segment${bettable ? "" : " is-nil"}"
+          data-code="${escapeHtml(animalCode(animal))}"
           style="--segment-angle:${angle}deg"
         >
           <div class="wheel-segment-content">
             <span class="dynamic-multiplier">
-              ${
-                bettable
-                  ? `${animalMultiplier(animal)}x`
-                  : "NIL"
-              }
+              ${bettable ? `${animalMultiplier(animal)}x` : "NIL"}
             </span>
           </div>
         </div>
       `;
-    })
-    .join("");
-}
+      })
+      .join("");
+  }
 
   function renderAnimalOptions() {
     if (!DOM.animalOptions) return;
@@ -337,72 +315,43 @@ function renderWheel() {
       });
   }
 
- function setBettingEnabled(
-  enabled
-) {
-  const maximumBet =
-    Number(
-      state.settings
-        ?.maximumBet ||
-      state.settings
-        ?.maximum_bet ||
-      1000
+  function setBettingEnabled(enabled) {
+    const maximumBet = Number(
+      state.settings?.maximumBet || state.settings?.maximum_bet || 1000,
     );
 
-  const currentRoundTotal =
-    Number(
-      state.userBetSummary
-        ?.totalBetAmount ||
-      0
-    );
+    const currentRoundTotal = Number(state.userBetSummary?.totalBetAmount || 0);
 
-  const remainingLimit =
-    Math.max(
-      0,
-      maximumBet -
-        currentRoundTotal
-    );
+    const remainingLimit = Math.max(0, maximumBet - currentRoundTotal);
 
-  const canBet =
-    enabled &&
-    !state.isSpinning &&
-    !state.placingBet &&
-    remainingLimit > 0;
+    const canBet =
+      enabled && !state.isSpinning && !state.placingBet && remainingLimit > 0;
 
-  if (DOM.placeBetBtn) {
-    DOM.placeBetBtn.disabled =
-      !canBet ||
-      !state.selectedAnimal ||
-      Number(
-        state.selectedAmount
-      ) >
-        remainingLimit;
+    if (DOM.placeBetBtn) {
+      DOM.placeBetBtn.disabled =
+        !canBet ||
+        !state.selectedAnimal ||
+        Number(state.selectedAmount) > remainingLimit;
+    }
+
+    if (DOM.decreaseBet) {
+      DOM.decreaseBet.disabled = !canBet;
+    }
+
+    if (DOM.increaseBet) {
+      DOM.increaseBet.disabled = !canBet;
+    }
+
+    if (DOM.betAmount) {
+      DOM.betAmount.disabled = !canBet;
+    }
+
+    DOM.animalOptions
+      ?.querySelectorAll(".animal-option:not(.is-nil)")
+      .forEach((button) => {
+        button.disabled = !canBet;
+      });
   }
-
-  if (DOM.decreaseBet) {
-    DOM.decreaseBet.disabled =
-      !canBet;
-  }
-
-  if (DOM.increaseBet) {
-    DOM.increaseBet.disabled =
-      !canBet;
-  }
-
-  if (DOM.betAmount) {
-    DOM.betAmount.disabled =
-      !canBet;
-  }
-
-  DOM.animalOptions
-    ?.querySelectorAll(
-      ".animal-option:not(.is-nil)"
-    )
-    .forEach((button) => {
-      button.disabled =
-        !canBet;
-    });
-}
 
   function getRoundStatus(round) {
     return String(round?.status || round?.roundStatus || "").toLowerCase();
@@ -458,59 +407,37 @@ function renderWheel() {
     state.countdownTimer = setInterval(tick, 250);
   }
 
-  function applyRound(
-  round
-) {
-  if (!round) return;
+  function applyRound(round) {
+    if (!round) return;
 
-  const previousRoundId =
-    Number(
-      state.activeRound?.id ||
-      0
-    );
+    const previousRoundId = Number(state.activeRound?.id || 0);
 
-  const nextRoundId =
-    Number(
-      round.id ||
-      0
-    );
+    const nextRoundId = Number(round.id || 0);
 
-  if (
-    previousRoundId &&
-    nextRoundId &&
-    previousRoundId !==
-      nextRoundId
-  ) {
-    state.userBet = null;
-    state.userBets = [];
+    if (previousRoundId && nextRoundId && previousRoundId !== nextRoundId) {
+      state.userBet = null;
+      state.userBets = [];
 
-    state.userBetSummary = {
-      totalBets: 0,
-      totalBetAmount: 0,
-      animalBetAmounts: {}
-    };
+      state.userBetSummary = {
+        totalBets: 0,
+        totalBetAmount: 0,
+        animalBetAmounts: {},
+      };
 
-    state.selectedAnimal =
-      null;
+      state.selectedAnimal = null;
 
-    DOM.myBetCard
-      ?.classList.remove(
-        "show"
-      );
+      DOM.myBetCard?.classList.remove("show");
+    }
+
+    state.activeRound = round;
+
+    if (DOM.roundId) {
+      DOM.roundId.textContent =
+        round.roundCode || round.round_code || `#${round.id || "—"}`;
+    }
+
+    startCountdown();
   }
-
-  state.activeRound =
-    round;
-
-  if (DOM.roundId) {
-    DOM.roundId.textContent =
-      round.roundCode ||
-      round.round_code ||
-      `#${round.id || "—"}`;
-  }
-
-  startCountdown();
-}
 
   function findWinningAnimal(data) {
     if (data?.winningAnimal) return data.winningAnimal;
@@ -560,32 +487,20 @@ function renderWheel() {
     state.isSpinning = true;
     setBettingEnabled(false);
 
-    DOM.resultOverlay?.classList.add(
-  "is-hidden"
-);
+    DOM.resultOverlay?.classList.add("is-hidden");
 
     const currentNormalized = ((state.wheelRotation % 360) + 360) % 360;
 
-   const desiredNormalized =
-  (
-    (
-      (
-        -winningIndex * SEGMENT_ANGLE +
-        SEGMENT_ANGLE
-      ) % 360
-    ) + 360
-  ) % 360;
+    const desiredNormalized =
+      (((-winningIndex * SEGMENT_ANGLE) % 360) + 360) % 360;
 
     const alignmentDelta = (desiredNormalized - currentNormalized + 360) % 360;
 
-        const mobileDevice = window.matchMedia("(max-width: 520px)").matches;
+    const mobileDevice = window.matchMedia("(max-width: 520px)").matches;
 
     const normalTurns = mobileDevice ? 6 : 9;
 
-    const fullTurns = Math.max(
-      2,
-      Math.ceil(normalTurns * (duration / 20000))
-    );
+    const fullTurns = Math.max(2, Math.ceil(normalTurns * (duration / 20000)));
     const targetRotation =
       state.wheelRotation + fullTurns * 360 + alignmentDelta;
 
@@ -627,12 +542,26 @@ function renderWheel() {
   function showResult(data) {
     state.isSpinning = false;
 
-    const animal = findWinningAnimal(data);
+    const winningIndex = getWinningIndex(data);
+
+    const animal =
+      state.animals.find((item) => animalSegmentIndex(item) === winningIndex) ||
+      findWinningAnimal(data);
+
     if (!animal) return;
+
+    const round = data?.round || data || {};
+
+    const winningMultiplier = Number(
+      round?.winningMultiplier ??
+        round?.winning_multiplier ??
+        data?.winningAnimal?.multiplier ??
+        animalMultiplier(animal),
+    );
 
     document.querySelectorAll(".wheel-segment").forEach((segment) => {
       segment.classList.toggle(
-                  "is-winner",
+        "is-winner",
         segment.dataset.code === animalCode(animal),
       );
     });
@@ -644,72 +573,54 @@ function renderWheel() {
     if (DOM.resultAnimalName) {
       DOM.resultAnimalName.textContent = animalName(animal);
     }
-
-    if (DOM.resultMessage) {
-      DOM.resultMessage.textContent = isBettable(animal)
-        ? `${animalMultiplier(animal)}x winner`
-        : "NIL — No payout";
+    if (DOM.resultMultiplier) {
+      DOM.resultMultiplier.textContent = isBettable(animal)
+        ? `${winningMultiplier}x`
+        : "NIL";
     }
 
-    DOM.resultOverlay?.classList.remove(
-  "is-hidden"
-);
+   if (DOM.resultMessage) {
+  DOM.resultMessage.textContent = isBettable(animal)
+    ? `${winningMultiplier}x winner`
+    : "NIL — No payout";
+}
+
+    DOM.resultOverlay?.classList.remove("is-hidden");
   }
 
- function getBetAmount(bet) {
-  return Number(
-    bet?.betAmount ??
-    bet?.bet_amount ??
-    0
-  );
-}
+  function getBetAmount(bet) {
+    return Number(bet?.betAmount ?? bet?.bet_amount ?? 0);
+  }
 
-function getBetStatus(bet) {
-  return String(
-    bet?.betStatus ??
-    bet?.bet_status ??
-    "accepted"
-  ).toLowerCase();
-}
+  function getBetStatus(bet) {
+    return String(
+      bet?.betStatus ?? bet?.bet_status ?? "accepted",
+    ).toLowerCase();
+  }
 
-function renderUserBets(
-  bets = [],
-  serverSummary = null
-) {
-  const validBets =
-    Array.isArray(bets)
-      ? bets.filter(Boolean)
-      : [];
+  function renderUserBets(bets = [], serverSummary = null) {
+    const validBets = Array.isArray(bets) ? bets.filter(Boolean) : [];
 
-  state.userBets = validBets;
+    state.userBets = validBets;
 
-  state.userBet =
-    validBets[validBets.length - 1] ||
-    null;
+    state.userBet = validBets[validBets.length - 1] || null;
 
-  const calculatedSummary =
-    validBets.reduce(
+    const calculatedSummary = validBets.reduce(
       (summary, bet) => {
-        const amount =
-          getBetAmount(bet);
+        const amount = getBetAmount(bet);
 
-        const code =
-          String(
-            bet.selectedAnimalCode ??
+        const code = String(
+          bet.selectedAnimalCode ??
             bet.animalCode ??
             bet.selected_animal_code ??
-            ""
-          ).toLowerCase();
+            "",
+        ).toLowerCase();
 
-        summary.totalBetAmount +=
-          amount;
+        summary.totalBetAmount += amount;
 
         if (code) {
           summary.animalBetAmounts[code] =
-            Number(
-              summary.animalBetAmounts[code] ||
-              0
-            ) + amount;
+            Number(summary.animalBetAmounts[code] || 0) + amount;
         }
 
         return summary;
@@ -717,363 +628,234 @@ function renderUserBets(
       {
         totalBets: validBets.length,
         totalBetAmount: 0,
-        animalBetAmounts: {}
-      }
+        animalBetAmounts: {},
+      },
     );
 
-  state.userBetSummary = {
-    ...calculatedSummary,
-    ...(serverSummary || {})
-  };
+    state.userBetSummary = {
+      ...calculatedSummary,
+      ...(serverSummary || {}),
+    };
 
-  if (validBets.length === 0) {
-    DOM.myBetCard?.classList.add(
-      "is-hidden"
+    if (validBets.length === 0) {
+      DOM.myBetCard?.classList.add("is-hidden");
+
+      setBettingEnabled(getRoundStatus(state.activeRound) === "betting");
+
+      return;
+    }
+
+    DOM.myBetCard?.classList.remove("is-hidden");
+
+    const animalCodes = Object.keys(
+      state.userBetSummary.animalBetAmounts || {},
     );
 
-    setBettingEnabled(
-      getRoundStatus(
-        state.activeRound
-      ) === "betting"
-    );
+    const animalNames = animalCodes.map((code) => {
+      const animal = state.animals.find((item) => animalCode(item) === code);
 
-    return;
-  }
-
-  DOM.myBetCard?.classList.remove(
-    "is-hidden"
-  );
-
-  const animalCodes =
-    Object.keys(
-      state.userBetSummary
-        .animalBetAmounts ||
-      {}
-    );
-
-  const animalNames =
-    animalCodes.map((code) => {
-      const animal =
-        state.animals.find(
-          (item) =>
-            animalCode(item) === code
-        );
-
-      return (
-        animal?.animalName ||
-        animal?.animal_name ||
-        code
-      );
+      return animal?.animalName || animal?.animal_name || code;
     });
 
-  if (DOM.myBetAnimal) {
-    DOM.myBetAnimal.textContent =
-      animalNames.length > 0
-        ? animalNames.join(", ")
-        : `${validBets.length} Bets`;
-  }
+    if (DOM.myBetAnimal) {
+      DOM.myBetAnimal.textContent =
+        animalNames.length > 0
+          ? animalNames.join(", ")
+          : `${validBets.length} Bets`;
+    }
 
-  if (DOM.myBetAmount) {
-    DOM.myBetAmount.textContent =
-      money(
-        state.userBetSummary
-          .totalBetAmount
-      );
-  }
+    if (DOM.myBetAmount) {
+      DOM.myBetAmount.textContent = money(state.userBetSummary.totalBetAmount);
+    }
 
-  const multiplierElement =
-    $("myBetMultiplier");
+    const multiplierElement = $("myBetMultiplier");
 
-  if (multiplierElement) {
-    const multipliers =
-      [
+    if (multiplierElement) {
+      const multipliers = [
         ...new Set(
           validBets.map((bet) =>
             Number(
               bet.multiplier ??
-              bet.lockedMultiplier ??
-              bet.locked_multiplier ??
-              0
-            )
-          )
-        )
+                bet.lockedMultiplier ??
+                bet.locked_multiplier ??
+                0,
+            ),
+          ),
+        ),
       ];
 
-    multiplierElement.textContent =
-      multipliers.length === 1
-        ? `${multipliers[0]}x`
-        : "Mixed";
+      multiplierElement.textContent =
+        multipliers.length === 1 ? `${multipliers[0]}x` : "Mixed";
+    }
+
+    const statusElement = $("myBetStatus");
+
+    if (statusElement) {
+      const statuses = [...new Set(validBets.map(getBetStatus))];
+
+      statusElement.textContent =
+        statuses.length === 1
+          ? `${validBets.length} BET${
+              validBets.length === 1 ? "" : "S"
+            } · ${statuses[0].toUpperCase()}`
+          : `${validBets.length} BETS · SETTLED`;
+    }
+
+    setBettingEnabled(getRoundStatus(state.activeRound) === "betting");
   }
 
-  const statusElement =
-    $("myBetStatus");
+  /*
+   * পুরোনো single-bet response-এর compatibility।
+   */
+  function renderMyBet(bet) {
+    if (!bet) {
+      renderUserBets([]);
+      return;
+    }
 
-  if (statusElement) {
-    const statuses =
-      [
-        ...new Set(
-          validBets.map(
-            getBetStatus
-          )
-        )
-      ];
-
-    statusElement.textContent =
-      statuses.length === 1
-        ? `${
-            validBets.length
-          } BET${
-            validBets.length === 1
-              ? ""
-              : "S"
-          } · ${statuses[0].toUpperCase()}`
-        : `${validBets.length} BETS · SETTLED`;
+    renderUserBets([bet]);
   }
 
-  setBettingEnabled(
-    getRoundStatus(
-      state.activeRound
-    ) === "betting"
-  );
-}
+  function placeBet() {
+    if (!state.selectedAnimal || state.isSpinning || state.placingBet) {
+      return;
+    }
 
-/*
- * পুরোনো single-bet response-এর compatibility।
- */
-function renderMyBet(bet) {
-  if (!bet) {
-    renderUserBets([]);
-    return;
-  }
+    if (!state.socket?.connected) {
+      showToast("Game server connected নয়", "error");
 
-  renderUserBets([bet]);
-}
+      return;
+    }
 
- function placeBet() {
-  if (
-    !state.selectedAnimal ||
-    state.isSpinning ||
-    state.placingBet
-  ) {
-    return;
-  }
-
-  if (
-    !state.socket?.connected
-  ) {
-    showToast(
-      "Game server connected নয়",
-      "error"
+    const maximumBet = Number(
+      state.settings?.maximumBet || state.settings?.maximum_bet || 1000,
     );
 
-    return;
-  }
+    const currentTotal = Number(state.userBetSummary?.totalBetAmount || 0);
 
-  const maximumBet =
-    Number(
-      state.settings
-        ?.maximumBet ||
-      state.settings
-        ?.maximum_bet ||
-      1000
-    );
+    const amount = Number(state.selectedAmount || 0);
 
-  const currentTotal =
-    Number(
-      state.userBetSummary
-        ?.totalBetAmount ||
-      0
-    );
+    if (currentTotal + amount > maximumBet) {
+      showToast(`Round bet limit ৳${money(maximumBet)}`, "error");
 
-  const amount =
-    Number(
-      state.selectedAmount ||
-      0
-    );
+      setBettingEnabled(true);
 
-  if (
-    currentTotal + amount >
-    maximumBet
-  ) {
-    showToast(
-      `Round bet limit ৳${money(
-        maximumBet
-      )}`,
-      "error"
-    );
+      return;
+    }
+
+    state.placingBet = true;
 
     setBettingEnabled(true);
 
-    return;
-  }
+    state.socket.emit(
+      "bangla-wheel:place-bet",
+      {
+        roundId: Number(state.activeRound?.id),
 
-  state.placingBet = true;
+        animalId: Number(state.selectedAnimal?.id),
 
-  setBettingEnabled(true);
+        betAmount: amount,
+      },
+      (response) => {
+        state.placingBet = false;
 
-  state.socket.emit(
-    "bangla-wheel:place-bet",
-    {
-      roundId:
-        Number(
-          state.activeRound?.id
-        ),
+        if (!response?.success) {
+          showToast(response?.message || "Bet করা যায়নি", "error");
 
-      animalId:
-        Number(
-          state.selectedAnimal?.id
-        ),
+          setBettingEnabled(true);
 
-      betAmount:
-        amount
-    },
-    (response) => {
-      state.placingBet = false;
+          return;
+        }
 
-      if (
-        !response?.success
-      ) {
-        showToast(
-          response?.message ||
-            "Bet করা যায়নি",
-          "error"
+        const placedBet = response.data?.bet || response.data;
+
+        if (placedBet) {
+          state.userBet = placedBet;
+
+          state.userBets = [...state.userBets, placedBet];
+
+          state.userBetSummary = {
+            ...state.userBetSummary,
+
+            totalBets: state.userBets.length,
+
+            totalBetAmount: currentTotal + amount,
+          };
+
+          renderUserBets(state.userBets);
+        }
+
+        updateWallet(
+          response.data?.wallet?.balanceAfter ??
+            response.data?.walletBalance ??
+            response.data?.balance,
         );
 
+        showToast("Bet successfully placed", "success");
+
         setBettingEnabled(true);
+      },
+    );
+  }
 
-        return;
-      }
-
-      const placedBet =
-        response.data?.bet ||
-        response.data;
-
-      if (placedBet) {
-        state.userBet =
-          placedBet;
-
-        state.userBets = [
-          ...state.userBets,
-          placedBet
-        ];
-
-        state.userBetSummary = {
-          ...state.userBetSummary,
-
-          totalBets:
-            state.userBets.length,
-
-          totalBetAmount:
-            currentTotal +
-            amount
-        };
-
-      renderUserBets(
-  state.userBets
-);
-      }
-
-      updateWallet(
-        response.data?.wallet
-          ?.balanceAfter ??
-        response.data
-          ?.walletBalance ??
-        response.data
-          ?.balance
-      );
-
-      showToast(
-        "Bet successfully placed",
-        "success"
-      );
-
-      setBettingEnabled(true);
-    }
-  );
-}
-
-   function bindControls() {
+  function bindControls() {
     DOM.decreaseBet?.addEventListener("click", () => {
-      const minimum = Number(
-        state.settings?.minimumBet || 5
-      );
+      const minimum = Number(state.settings?.minimumBet || 5);
 
       state.selectedAmount = Math.max(
         minimum,
-        Number(state.selectedAmount) - 5
+        Number(state.selectedAmount) - 5,
       );
 
       updateBetPreview();
     });
 
     DOM.increaseBet?.addEventListener("click", () => {
-      const maximum = Number(
-        state.settings?.maximumBet || 1000
-      );
+      const maximum = Number(state.settings?.maximumBet || 1000);
 
       state.selectedAmount = Math.min(
         maximum,
-        Number(state.selectedAmount) + 5
+        Number(state.selectedAmount) + 5,
       );
 
       updateBetPreview();
     });
 
-    document
-      .querySelectorAll("[data-amount]")
-      .forEach((button) => {
-        button.addEventListener("click", () => {
-          const maximum = Number(
-            state.settings?.maximumBet || 1000
-          );
+    document.querySelectorAll("[data-amount]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const maximum = Number(state.settings?.maximumBet || 1000);
 
-          state.selectedAmount = Math.min(
-            maximum,
-            Number(button.dataset.amount)
-          );
+        state.selectedAmount = Math.min(maximum, Number(button.dataset.amount));
 
-          updateBetPreview();
-        });
+        updateBetPreview();
       });
+    });
 
     DOM.betAmount?.addEventListener("input", () => {
-      const minimum = Number(
-        state.settings?.minimumBet || 5
-      );
+      const minimum = Number(state.settings?.minimumBet || 5);
 
-      const maximum = Number(
-        state.settings?.maximumBet || 1000
-      );
+      const maximum = Number(state.settings?.maximumBet || 1000);
 
-      const enteredAmount = Number(
-        DOM.betAmount.value
-      );
+      const enteredAmount = Number(DOM.betAmount.value);
 
       if (!Number.isFinite(enteredAmount)) return;
 
       state.selectedAmount = Math.min(
         maximum,
-        Math.max(minimum, enteredAmount)
+        Math.max(minimum, enteredAmount),
       );
 
       updateBetPreview();
     });
 
-    DOM.placeBetBtn?.addEventListener(
-      "click",
-      placeBet
-    );
+    DOM.placeBetBtn?.addEventListener("click", placeBet);
 
     DOM.closeResultBtn?.addEventListener("click", () => {
-      DOM.resultOverlay?.classList.add(
-  "is-hidden"
-);
+      DOM.resultOverlay?.classList.add("is-hidden");
     });
 
     $("continueBtn")?.addEventListener("click", () => {
-      DOM.resultOverlay?.classList.add(
-  "is-hidden"
-);
+      DOM.resultOverlay?.classList.add("is-hidden");
     });
 
     $("backBtn")?.addEventListener("click", () => {
@@ -1083,10 +865,7 @@ function renderMyBet(bet) {
     DOM.soundToggle?.addEventListener("click", () => {
       state.soundEnabled = !state.soundEnabled;
 
-      DOM.soundToggle.classList.toggle(
-        "is-muted",
-        !state.soundEnabled
-      );
+      DOM.soundToggle.classList.toggle("is-muted", !state.soundEnabled);
 
       const icon = DOM.soundToggle.querySelector("i");
 
@@ -1121,20 +900,11 @@ function renderMyBet(bet) {
     }
 
     if (data?.activeRound) applyRound(data.activeRound);
-    if (
-  Array.isArray(
-    data?.userBets
-  )
-) {
-  renderUserBets(
-    data.userBets,
-    data.userBetSummary
-  );
-} else if (data?.userBet) {
-  renderMyBet(
-    data.userBet
-  );
-}
+    if (Array.isArray(data?.userBets)) {
+      renderUserBets(data.userBets, data.userBetSummary);
+    } else if (data?.userBet) {
+      renderMyBet(data.userBet);
+    }
 
     updateWallet(data?.walletBalance ?? data?.balance);
     updateBetPreview();
@@ -1171,29 +941,27 @@ function renderMyBet(bet) {
         .querySelectorAll(".wheel-segment")
         .forEach((segment) => segment.classList.remove("is-winner"));
 
-      DOM.resultOverlay?.classList.add(
-  "is-hidden"
-);
-            state.selectedAnimal = null;
+      DOM.resultOverlay?.classList.add("is-hidden");
+      state.selectedAnimal = null;
 
       renderAnimalOptions();
       updateBetPreview();
       state.userBet = null;
-state.userBets = [];
+      state.userBets = [];
 
-state.userBetSummary = {
-  totalBets: 0,
-  totalBetAmount: 0,
-  animalBetAmounts: {}
-};
+      state.userBetSummary = {
+        totalBets: 0,
+        totalBetAmount: 0,
+        animalBetAmounts: {},
+      };
 
-renderUserBets([]);
+      renderUserBets([]);
       state.isSpinning = false;
 
       applyRound(data.round || data);
     });
 
-        state.socket.on("bangla-wheel:betting-closed", () => {
+    state.socket.on("bangla-wheel:betting-closed", () => {
       setBettingEnabled(false);
 
       const placeBetText = $("placeBetText");
@@ -1204,8 +972,7 @@ renderUserBets([]);
       }
 
       if (bettingMessage) {
-        bettingMessage.textContent =
-          "Wheel spin শুরু হচ্ছে। নতুন bet বন্ধ।";
+        bettingMessage.textContent = "Wheel spin শুরু হচ্ছে। নতুন bet বন্ধ।";
       }
     });
 
@@ -1218,97 +985,58 @@ renderUserBets([]);
       }
 
       if (data?.round) applyRound(data.round);
-            const spinInformation = $("spinInformation");
+      const spinInformation = $("spinInformation");
       const spinInformationText = $("spinInformationText");
 
       spinInformation?.classList.add("is-spinning");
 
       if (spinInformationText) {
-        spinInformationText.textContent =
-          "Wheel is spinning — please wait";
+        spinInformationText.textContent = "Wheel is spinning — please wait";
       }
       spinWheel(data);
     });
 
-       state.socket.on("bangla-wheel:result", (payload) => {
+    state.socket.on("bangla-wheel:result", (payload) => {
       const spinInformation = $("spinInformation");
       const spinInformationText = $("spinInformationText");
 
       spinInformation?.classList.remove("is-spinning");
 
       if (spinInformationText) {
-        spinInformationText.textContent =
-          "Round completed";
+        spinInformationText.textContent = "Round completed";
       }
 
       showResult(payload?.data || payload);
     });
 
-  state.socket.on(
-  "bangla-wheel:user-result",
-  (payload) => {
-    const data =
-      payload?.data ||
-      payload ||
-      {};
+    state.socket.on("bangla-wheel:user-result", (payload) => {
+      const data = payload?.data || payload || {};
 
-    updateWallet(
-      data.walletBalance ??
-      data.balance
-    );
+      updateWallet(data.walletBalance ?? data.balance);
 
-    if (
-      Array.isArray(
-        data.userBets
-      )
-    ) {
-      renderUserBets(
-        data.userBets,
-        data.userBetSummary
-      );
-    } else if (data.userBet) {
-      renderMyBet(
-        data.userBet
-      );
-    }
+      if (Array.isArray(data.userBets)) {
+        renderUserBets(data.userBets, data.userBetSummary);
+      } else if (data.userBet) {
+        renderMyBet(data.userBet);
+      }
 
-    const result =
-      data.resultSummary ||
-      {};
+      const result = data.resultSummary || {};
 
-    const winningBets =
-      Number(
-        result.winningBets ||
-        0
-      );
+      const winningBets = Number(result.winningBets || 0);
 
-    const losingBets =
-      Number(
-        result.losingBets ||
-        0
-      );
+      const losingBets = Number(result.losingBets || 0);
 
-    const netPayout =
-      Number(
-        result.netPayout ||
-        0
-      );
+      const netPayout = Number(result.netPayout || 0);
 
-    if (winningBets > 0) {
-      showToast(
-        `${winningBets} bet won — payout ৳${money(
-          netPayout
-        )}`,
-        "success"
-      );
-    } else if (losingBets > 0) {
-      showToast(
-        `${losingBets} bet lost this round`,
-        "error"
-      );
-    }
-  }
-);
+      if (winningBets > 0) {
+        showToast(
+          `${winningBets} bet won — payout ৳${money(netPayout)}`,
+          "success",
+        );
+      } else if (losingBets > 0) {
+        showToast(`${losingBets} bet lost this round`, "error");
+      }
+    });
 
     state.socket.on("bangla-wheel:error", (payload) => {
       showToast(payload?.message || payload?.error || "Game error", "error");

@@ -487,7 +487,176 @@ exchangeRate:
   }));
 }
 
+/* ==========================
+   Create Gateway Deposit
+========================== */
+
+async function createGatewayDepositRequest({
+  userId,
+  gatewayOrderId,
+  amount,
+}) {
+  const validUserId = Number(userId);
+  const validAmount = Number(amount);
+
+  if (
+    !Number.isInteger(validUserId) ||
+    validUserId <= 0
+  ) {
+    throw new Error("Invalid user ID.");
+  }
+
+  if (
+    !Number.isFinite(validAmount) ||
+    validAmount <= 0
+  ) {
+    throw new Error("Invalid deposit amount.");
+  }
+
+  const depositId = generateDepositId();
+
+  await pool.execute(
+    `
+      INSERT INTO deposit_requests (
+        deposit_id,
+        gateway_order_id,
+        user_id,
+        method,
+        sender_number,
+        transaction_number,
+        amount,
+        gateway_status,
+        status
+      )
+      VALUES (?, ?, ?, 'gateway', NULL, NULL, ?, 'pending', 'pending')
+    `,
+    [
+      depositId,
+      gatewayOrderId,
+      validUserId,
+      validAmount,
+    ],
+  );
+
+  return {
+    depositId,
+    gatewayOrderId,
+    amount: validAmount,
+  };
+}
+
+/* ==========================
+   Save Gateway Trade Number
+========================== */
+
+async function saveGatewayTradeNumber({
+  userId,
+  gatewayOrderId,
+  gatewayTradeNo,
+}) {
+  await pool.execute(
+    `
+      UPDATE deposit_requests
+      SET
+        gateway_trade_no = ?,
+        gateway_status = 'pending'
+      WHERE gateway_order_id = ?
+        AND user_id = ?
+        AND status = 'pending'
+      LIMIT 1
+    `,
+    [
+      gatewayTradeNo,
+      gatewayOrderId,
+      Number(userId),
+    ],
+  );
+}
+
+/* ==========================
+   Find Gateway Deposit
+========================== */
+
+async function findGatewayDeposit({
+  gatewayOrderId = null,
+  gatewayTradeNo = null,
+}) {
+  const orderId = String(gatewayOrderId || "").trim();
+  const tradeNo = String(gatewayTradeNo || "").trim();
+
+  if (!orderId && !tradeNo) {
+    return null;
+  }
+
+  const conditions = [];
+  const values = [];
+
+  if (orderId) {
+    conditions.push("gateway_order_id = ?");
+    values.push(orderId);
+  }
+
+  if (tradeNo) {
+    conditions.push("gateway_trade_no = ?");
+    values.push(tradeNo);
+  }
+
+  const [rows] = await pool.execute(
+    `
+      SELECT
+        id,
+        deposit_id,
+        user_id,
+        amount,
+        status,
+        gateway_order_id,
+        gateway_trade_no,
+        gateway_status
+      FROM deposit_requests
+      WHERE method = 'gateway'
+        AND (${conditions.join(" OR ")})
+      LIMIT 1
+    `,
+    values,
+  );
+
+  return rows[0] || null;
+}
+
+
+/* ==========================
+   Update Gateway Status
+========================== */
+
+async function updateGatewayDepositStatus({
+  depositId,
+  gatewayStatus,
+  gatewayTradeNo = null,
+}) {
+  await pool.execute(
+    `
+      UPDATE deposit_requests
+      SET
+        gateway_status = ?,
+        gateway_trade_no = COALESCE(?, gateway_trade_no)
+      WHERE deposit_id = ?
+      LIMIT 1
+    `,
+    [
+      String(gatewayStatus || "").trim(),
+      gatewayTradeNo
+        ? String(gatewayTradeNo).trim()
+        : null,
+      depositId,
+    ],
+  );
+}
+
 module.exports = {
   createDepositRequest,
+  createGatewayDepositRequest,
+  saveGatewayTradeNumber,
+  findGatewayDeposit,
+  updateGatewayDepositStatus,
   getUserDepositRequests,
 };

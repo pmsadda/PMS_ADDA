@@ -1585,7 +1585,65 @@ document.addEventListener("DOMContentLoaded", () => {
    QUICK MENU NAVIGATION
 ========================================================= */
 
-  DOM.depositButton?.addEventListener("click", () => navigateTo("/deposit"));
+  DOM.depositButton?.addEventListener("click", async () => {
+    if (!token) {
+      navigateTo("/login");
+      return;
+    }
+
+    const amountInput = window.prompt(
+      "Deposit amount লিখুন (Minimum ৳100):",
+      "500",
+    );
+
+    if (amountInput === null) {
+      return;
+    }
+
+    const amount = Number(amountInput);
+
+    if (!Number.isFinite(amount) || amount < 100) {
+      window.alert("Minimum deposit amount ৳100.");
+      return;
+    }
+
+    try {
+      DOM.depositButton.disabled = true;
+
+      const response = await fetch("/api/deposits/gateway/create", {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+          amount,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Payment gateway open করা যায়নি.");
+      }
+
+      const paymentUrl = data?.data?.paymentUrl;
+
+      if (!paymentUrl) {
+        throw new Error("Payment URL পাওয়া যায়নি.");
+      }
+
+      window.location.href = paymentUrl;
+    } catch (error) {
+      console.error("Gateway payment error:", error);
+
+      window.alert(error.message || "Payment gateway open করা যায়নি.");
+    } finally {
+      DOM.depositButton.disabled = false;
+    }
+  });
 
   DOM.withdrawButton?.addEventListener("click", () => navigateTo("/withdraw"));
 
@@ -1639,8 +1697,8 @@ document.addEventListener("DOMContentLoaded", () => {
   DOM.profileButton?.addEventListener("click", () => navigateTo("/profile"));
 
   DOM.settingsButton?.addEventListener("click", () => {
-  showToast("Settings-এর কাজ চলছে। শীঘ্রই চালু হবে।", "info");
-});
+    showToast("Settings-এর কাজ চলছে। শীঘ্রই চালু হবে।", "info");
+  });
 
   /* =========================================================
      PAGE VISIBILITY REFRESH
@@ -1691,6 +1749,10 @@ document.addEventListener("DOMContentLoaded", () => {
       STATE.user = null;
 
       document.body.classList.add("guest-user");
+
+      if (DOM.logoutButton) {
+        DOM.logoutButton.style.display = "none";
+      }
 
       await loadGuestLobbyData({
         showLoader: true,
@@ -1863,8 +1925,4 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     true,
   );
-
- 
-
-  
 });
