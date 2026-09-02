@@ -236,6 +236,19 @@ async function createGatewayPayment(req, res, next) {
   try {
     const amount = Number(req.body?.amount);
 
+    const payType = String(req.body?.payType || "")
+      .trim()
+      .toUpperCase();
+
+    const allowedPayTypes = ["BKASH", "NAGAD", "ROCKET"];
+
+    if (!allowedPayTypes.includes(payType)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method.",
+      });
+    }
+
     if (!Number.isFinite(amount) || amount < 100 || amount > 1000000) {
       return res.status(400).json({
         success: false,
@@ -281,7 +294,7 @@ async function createGatewayPayment(req, res, next) {
       notify_url: callbackUrl,
       order_date: orderDate,
       page_url: "https://pms-adda.site/lobby",
-      pay_type: "101",
+      pay_type: payType,
       trade_amount: amount.toFixed(2),
       version: "1.0",
     };
@@ -340,12 +353,12 @@ async function createGatewayPayment(req, res, next) {
     }
 
     if (gatewayData.tradeNo) {
-  await saveGatewayTradeNumber({
-    userId: req.user.id,
-    gatewayOrderId: orderNo,
-    gatewayTradeNo: gatewayData.tradeNo,
-  });
-}
+      await saveGatewayTradeNumber({
+        userId: req.user.id,
+        gatewayOrderId: orderNo,
+        gatewayTradeNo: gatewayData.tradeNo,
+      });
+    }
 
     return res.status(200).json({
       success: true,
