@@ -349,6 +349,8 @@ async function createGatewayPayment(req, res, next) {
       throw new Error("Invalid payment gateway response.");
     }
 
+    console.log("PAYMENT GATEWAY RESPONSE:", gatewayData);
+
     if (
       gatewayData.respCode !== "SUCCESS" ||
       !(gatewayData.payUrl || gatewayData.pay_url || gatewayData.payInfo)
