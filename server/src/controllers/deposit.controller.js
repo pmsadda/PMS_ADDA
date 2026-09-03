@@ -300,7 +300,7 @@ async function createGatewayPayment(req, res, next) {
     const params = {
       app_id: appId,
       mch_order_no: orderNo,
-      trade_amount: amount.toFixed(2),
+      trade_amount: String(amount),
       pay_type: gatewayPayType,
       goods_name: payType,
       notify_url: callbackUrl,
