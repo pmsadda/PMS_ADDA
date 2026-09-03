@@ -46,6 +46,10 @@ const {
 } = require("./src/socket/bangla-dice.socket");
 
 const {
+  initializeAviatorSocket,
+} = require("./src/socket/aviator.socket");
+
+const {
   initializeKaitSocket,
 } = require("./src/socket/kait.socket");
 
@@ -131,6 +135,8 @@ initializeAndarBaharSocket(io);
 initializeBanglaWheelSocket(io);
 
 initializeBanglaDiceSocket(io);
+
+initializeAviatorSocket(io);
 
 const kaitSocket =
   initializeKaitSocket(io);
