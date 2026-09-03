@@ -329,6 +329,24 @@ async function createGatewayPayment(req, res, next) {
     form.append("sign_type", "MD5");
     form.append("sign", sign);
 
+    console.log("PAYMENT REQUEST DEBUG:", {
+  appId:
+    appId.length > 6
+      ? `${appId.slice(0, 4)}...${appId.slice(-4)}`
+      : "***",
+
+  paymentApiUrl,
+
+  mch_order_no: params.mch_order_no,
+  trade_amount: params.trade_amount,
+  pay_type: params.pay_type,
+  goods_name: params.goods_name,
+  notify_url: params.notify_url,
+  page_url: params.page_url,
+  mch_return_msg: params.mch_return_msg,
+  order_date: params.order_date,
+});
+
     const gatewayResponse = await fetch(paymentApiUrl, {
       method: "POST",
 
