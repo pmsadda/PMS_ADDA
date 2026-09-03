@@ -4,8 +4,12 @@ const {
   createDepositRequest,
   createGatewayDepositRequest,
   saveGatewayTradeNumber,
+  findGatewayDeposit,
+  updateGatewayDepositStatus,
   getUserDepositRequests,
 } = require("../services/deposit.service");
+
+const { approveDepositRequest } = require("../services/admin-deposit.service");
 
 const {
   getActivePaymentMethods,
@@ -240,12 +244,17 @@ async function createGatewayPayment(req, res, next) {
       .trim()
       .toUpperCase();
 
-    const allowedPayTypes = ["BKASH", "NAGAD", "ROCKET"];
+    const payTypeCodes = {
+      BKASH: "2202",
+      NAGAD: "2201",
+    };
 
-    if (!allowedPayTypes.includes(payType)) {
+    const gatewayPayType = payTypeCodes[payType];
+
+    if (!gatewayPayType) {
       return res.status(400).json({
         success: false,
-        message: "Invalid payment method.",
+        message: "This payment method is not available.",
       });
     }
 
@@ -267,7 +276,8 @@ async function createGatewayPayment(req, res, next) {
       throw error;
     }
 
-    const orderNo = `PMS${Date.now()}${req.user.id}`;
+    const orderNo =
+      `PMS${Date.now()}` + crypto.randomBytes(8).toString("hex").toUpperCase();
 
     await createGatewayDepositRequest({
       userId: req.user.id,
@@ -289,14 +299,14 @@ async function createGatewayPayment(req, res, next) {
 
     const params = {
       app_id: appId,
-      goods_name: "PMS ADDA Deposit",
       mch_order_no: orderNo,
-      notify_url: callbackUrl,
-      order_date: orderDate,
-      page_url: "https://pms-adda.site/lobby",
-      pay_type: payType,
       trade_amount: amount.toFixed(2),
-      version: "1.0",
+      pay_type: gatewayPayType,
+      goods_name: payType,
+      notify_url: callbackUrl,
+      page_url: "https://pms-adda.site/lobby",
+      mch_return_msg: orderNo,
+      order_date: orderDate,
     };
 
     const signString =
@@ -308,8 +318,7 @@ async function createGatewayPayment(req, res, next) {
     const sign = crypto
       .createHash("md5")
       .update(signString, "utf8")
-      .digest("hex")
-      .toUpperCase();
+      .digest("hex");
 
     const form = new URLSearchParams();
 
@@ -352,11 +361,17 @@ async function createGatewayPayment(req, res, next) {
       throw error;
     }
 
-    if (gatewayData.tradeNo) {
+    const gatewayTradeNo =
+      gatewayData.tradeNo ||
+      gatewayData.mchOrderNo ||
+      gatewayData.orderNo ||
+      null;
+
+    if (gatewayTradeNo) {
       await saveGatewayTradeNumber({
         userId: req.user.id,
         gatewayOrderId: orderNo,
-        gatewayTradeNo: gatewayData.tradeNo,
+        gatewayTradeNo,
       });
     }
 
@@ -368,7 +383,7 @@ async function createGatewayPayment(req, res, next) {
       data: {
         orderNumber: orderNo,
 
-        tradeNumber: gatewayData.tradeNo || null,
+        tradeNumber: gatewayTradeNo,
 
         paymentUrl:
           gatewayData.payUrl || gatewayData.pay_url || gatewayData.payInfo,
@@ -379,19 +394,49 @@ async function createGatewayPayment(req, res, next) {
   }
 }
 
-async function gatewayCallbackDebug(req, res) {
-  console.log("===== GATEWAY CALLBACK RECEIVED =====");
-  console.log(req.body);
-  console.log("====================================");
+async function gatewayCallback(req, res) {
+  try {
+    const body =
+      req.body && typeof req.body === "object"
+        ? req.body
+        : {};
 
-  return res.status(200).send("success");
+    console.log("===== PAYMENT CALLBACK =====");
+    console.log("tradeResult:", body.tradeResult);
+    console.log("mchOrderNo:", body.mchOrderNo);
+    console.log("amount:", body.amount);
+    console.log("tradeNo:", body.tradeNo);
+    console.log("sign:", body.sign ? "YES" : "NO");
+    console.log("signType:", body.signType || body.sign_type);
+    console.log("body keys:", Object.keys(body));
+    console.log("============================");
+
+    /*
+     * প্রথম live test-এ wallet auto credit করছি না।
+     * Callback format confirm করার পর enable করব।
+     */
+
+    return res
+      .status(200)
+      .type("text/plain")
+      .send("success");
+  } catch (error) {
+    console.error(
+      "GATEWAY CALLBACK ERROR:",
+      error,
+    );
+
+    return res
+      .status(200)
+      .type("text/plain")
+      .send("fail");
+  }
 }
-
 module.exports = {
   getPaymentMethods,
   submitDepositRequest,
   getMyDepositHistory,
   getPaymentAccountQr,
   createGatewayPayment,
-  gatewayCallbackDebug,
+  gatewayCallback,
 };

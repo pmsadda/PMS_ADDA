@@ -6,7 +6,7 @@ const {
   getPaymentMethods,
   getPaymentAccountQr,
   createGatewayPayment,
-  gatewayCallbackDebug,
+  gatewayCallback,
 } = require("../controllers/deposit.controller");
 
 const {
@@ -45,7 +45,7 @@ router.post(
 
 router.post(
   "/gateway/callback",
-  gatewayCallbackDebug,
+  gatewayCallback,
 );
 
 
