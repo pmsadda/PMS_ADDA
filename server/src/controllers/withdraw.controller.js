@@ -89,6 +89,6 @@ async function jayaPayPayoutCallback(
 
 module.exports = {
   createWithdraw,
-  getMyWithdraws,
+  myWithdrawHistory,
   jayaPayPayoutCallback,
 };

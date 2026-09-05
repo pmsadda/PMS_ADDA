@@ -2,9 +2,8 @@ const express = require("express");
 
 const {
   createWithdraw,
+  myWithdrawHistory,
   jayaPayPayoutCallback,
-  myWithdrawHistory
-  
 } = require("../controllers/withdraw.controller");
 
 const {
