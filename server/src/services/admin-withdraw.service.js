@@ -5,10 +5,209 @@
 
 const { pool } = require("../config/database");
 
-const {
-  generateJayaPaySign,
-  verifyJayaPaySign,
-} = require("./jayapay.service");
+const crypto = require("crypto");
+
+function cleanJayaPayKey(value) {
+  return String(value || "")
+    .replace(/\\n/g, "")
+    .replace(
+      /-----BEGIN [^-]+-----/g,
+      "",
+    )
+    .replace(
+      /-----END [^-]+-----/g,
+      "",
+    )
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function createJayaPayPem(
+  value,
+  keyType,
+) {
+  const cleanKey =
+    cleanJayaPayKey(value);
+
+  if (!cleanKey) {
+    throw new Error(
+      `JayaPay ${keyType} is missing.`,
+    );
+  }
+
+  const lines =
+    cleanKey.match(/.{1,64}/g) || [];
+
+  return (
+    `-----BEGIN ${keyType}-----\n` +
+    `${lines.join("\n")}\n` +
+    `-----END ${keyType}-----`
+  );
+}
+
+function buildJayaPaySigningString(
+  parameters,
+) {
+  return Object.keys(parameters || {})
+    .filter((key) => key !== "sign")
+    .filter(
+      (key) =>
+        parameters[key] !== null &&
+        parameters[key] !== undefined &&
+        String(parameters[key]) !== "",
+    )
+    .sort()
+    .map((key) =>
+      String(parameters[key]),
+    )
+    .join("");
+}
+
+function generateJayaPaySign(
+  parameters,
+  privateKey,
+) {
+  const privateKeyObject =
+    crypto.createPrivateKey({
+      key: createJayaPayPem(
+        privateKey,
+        "PRIVATE KEY",
+      ),
+      format: "pem",
+      type: "pkcs8",
+    });
+
+  const keyBytes = Math.ceil(
+    privateKeyObject
+      .asymmetricKeyDetails
+      .modulusLength / 8,
+  );
+
+  const maximumBlockSize =
+    keyBytes - 11;
+
+  const data = Buffer.from(
+    buildJayaPaySigningString(
+      parameters,
+    ),
+    "utf8",
+  );
+
+  const encryptedBlocks = [];
+
+  for (
+    let offset = 0;
+    offset < data.length;
+    offset += maximumBlockSize
+  ) {
+    encryptedBlocks.push(
+      crypto.privateEncrypt(
+        {
+          key: privateKeyObject,
+          padding:
+            crypto.constants
+              .RSA_PKCS1_PADDING,
+        },
+        data.subarray(
+          offset,
+          offset + maximumBlockSize,
+        ),
+      ),
+    );
+  }
+
+  return Buffer.concat(
+    encryptedBlocks,
+  ).toString("base64");
+}
+
+function verifyJayaPaySign(
+  parameters,
+  publicKey,
+) {
+  try {
+    const signature = String(
+      parameters?.sign || "",
+    ).trim();
+
+    if (!signature) {
+      return false;
+    }
+
+    const publicKeyObject =
+      crypto.createPublicKey({
+        key: createJayaPayPem(
+          publicKey,
+          "PUBLIC KEY",
+        ),
+        format: "pem",
+        type: "spki",
+      });
+
+    const keyBytes = Math.ceil(
+      publicKeyObject
+        .asymmetricKeyDetails
+        .modulusLength / 8,
+    );
+
+    const encryptedData =
+      Buffer.from(
+        signature,
+        "base64",
+      );
+
+    if (
+      encryptedData.length === 0 ||
+      encryptedData.length %
+        keyBytes !==
+        0
+    ) {
+      return false;
+    }
+
+    const decryptedBlocks = [];
+
+    for (
+      let offset = 0;
+      offset < encryptedData.length;
+      offset += keyBytes
+    ) {
+      decryptedBlocks.push(
+        crypto.publicDecrypt(
+          {
+            key: publicKeyObject,
+            padding:
+              crypto.constants
+                .RSA_PKCS1_PADDING,
+          },
+          encryptedData.subarray(
+            offset,
+            offset + keyBytes,
+          ),
+        ),
+      );
+    }
+
+    const decryptedText =
+      Buffer.concat(
+        decryptedBlocks,
+      ).toString("utf8");
+
+    return (
+      decryptedText ===
+      buildJayaPaySigningString(
+        parameters,
+      )
+    );
+  } catch (error) {
+    console.error(
+      "JayaPay payout signature verification error:",
+      error.message,
+    );
+
+    return false;
+  }
+}
 
 function getJayaPayPayoutConfig() {
   const config = {
