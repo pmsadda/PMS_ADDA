@@ -832,3 +832,358 @@ button {
     font-size: 11px;
   }
 }
+
+/* ==========================================
+   Aviator Full Screen — No Page Scroll
+========================================== */
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.game-header {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.aviator-container {
+  width: min(1180px, calc(100% - 20px));
+  height: 100%;
+  min-height: 0;
+  margin: 8px auto;
+  padding-bottom: 8px;
+
+  display: grid;
+  grid-template-rows:
+    auto
+    auto
+    minmax(180px, 1fr)
+    auto;
+
+  gap: 8px;
+  overflow: hidden;
+}
+
+.crash-history-section,
+.round-information,
+.betting-panels {
+  margin: 0;
+}
+
+.crash-history-section {
+  min-height: 28px;
+}
+
+.round-information {
+  padding: 8px 12px;
+}
+
+.aviator-stage {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+}
+
+.betting-panels {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.bet-panel {
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.bet-panel-header {
+  margin-bottom: 8px;
+}
+
+.amount-input-wrapper input {
+  height: 38px;
+}
+
+.quick-bet-options {
+  margin-top: 6px;
+  gap: 5px;
+}
+
+.quick-bet-options button {
+  padding: 5px 3px;
+}
+
+.auto-cashout-row {
+  margin-top: 7px;
+  padding: 7px;
+}
+
+.auto-cashout-input input {
+  padding: 5px;
+}
+
+.bet-action-button {
+  min-height: 44px;
+  margin-top: 7px;
+}
+
+.bet-action-button strong {
+  font-size: 15px;
+}
+
+.bet-result-information {
+  margin-top: 5px;
+}
+
+/*
+ * Full-screen game-এ fairness data নিচে রেখে
+ * page scroll তৈরি করা হবে না।
+ */
+.fairness-card {
+  display: none;
+}
+
+/* ==========================================
+   Mobile Full Screen
+========================================== */
+
+@media (max-width: 760px) {
+  .game-header {
+    padding: 6px 8px;
+    gap: 7px;
+  }
+
+  .icon-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .game-title span {
+    font-size: 8px;
+  }
+
+  .game-title h1 {
+    margin-top: 0;
+    font-size: 15px;
+  }
+
+  .header-actions {
+    gap: 5px;
+  }
+
+  .wallet-card {
+    min-width: 82px;
+    padding: 4px 6px;
+  }
+
+  .wallet-card span {
+    font-size: 8px;
+  }
+
+  .wallet-card strong {
+    font-size: 12px;
+  }
+
+  .aviator-container {
+    width: calc(100% - 10px);
+    margin: 5px auto;
+    padding-bottom: 5px;
+
+    grid-template-rows:
+      22px
+      38px
+      minmax(145px, 1fr)
+      auto;
+
+    gap: 5px;
+  }
+
+  .crash-history-section {
+    min-height: 22px;
+  }
+
+  .history-item {
+    padding: 3px 7px;
+    font-size: 9px;
+  }
+
+  .round-information {
+    padding: 4px 7px;
+    border-radius: 9px;
+  }
+
+  .round-information span {
+    font-size: 7px;
+  }
+
+  .round-information strong {
+    font-size: 9px;
+  }
+
+  .aviator-stage {
+    min-height: 145px;
+    border-radius: 12px;
+  }
+
+  .multiplier-display strong {
+    font-size: clamp(38px, 13vw, 58px);
+  }
+
+  .multiplier-display span {
+    margin-top: 4px;
+    font-size: 9px;
+  }
+
+  .betting-countdown {
+    top: 7px;
+  }
+
+  .betting-countdown span {
+    font-size: 8px;
+  }
+
+  .betting-countdown strong {
+    font-size: 17px;
+  }
+
+  .plane-wrapper {
+    width: 38px;
+    height: 38px;
+  }
+
+  .plane-icon {
+    font-size: 29px;
+  }
+
+  @keyframes planeFlight {
+    from {
+      transform:
+        translate(0, 0)
+        rotate(-18deg);
+    }
+
+    to {
+      transform:
+        translate(58vw, -90px)
+        rotate(-8deg);
+    }
+  }
+
+  .betting-panels {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .bet-panel {
+    min-width: 0;
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  .bet-panel-header {
+    margin-bottom: 5px;
+  }
+
+  .bet-panel-header strong {
+    font-size: 11px;
+  }
+
+  .bet-status {
+    font-size: 7px;
+  }
+
+  .amount-control {
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
+    gap: 3px;
+  }
+
+  .amount-control button {
+    border-radius: 7px;
+    font-size: 11px;
+  }
+
+  .amount-input-wrapper {
+    min-width: 0;
+    padding: 0 3px;
+    border-radius: 7px;
+  }
+
+  .amount-input-wrapper input {
+    min-width: 0;
+    height: 31px;
+    font-size: 11px;
+  }
+
+  .quick-bet-options {
+    display: none;
+  }
+
+  .auto-cashout-row {
+    margin-top: 5px;
+    padding: 5px;
+    gap: 3px;
+  }
+
+  .auto-cashout-row label {
+    gap: 3px;
+    font-size: 8px;
+  }
+
+  .auto-cashout-input {
+    gap: 2px;
+    font-size: 8px;
+  }
+
+  .auto-cashout-input input {
+    width: 43px;
+    padding: 3px 2px;
+    font-size: 9px;
+  }
+
+  .bet-action-button {
+    min-height: 38px;
+    margin-top: 5px;
+    border-radius: 8px;
+  }
+
+  .bet-action-button span {
+    font-size: 8px;
+  }
+
+  .bet-action-button strong {
+    font-size: 11px;
+  }
+
+  .bet-result-information {
+    min-height: 10px;
+    margin-top: 3px;
+    font-size: 7px;
+  }
+}
+
+/* খুব কম height-এর mobile */
+@media (max-height: 700px) and (max-width: 760px) {
+  .crash-history-section {
+    display: none;
+  }
+
+  .aviator-container {
+    grid-template-rows:
+      36px
+      minmax(120px, 1fr)
+      auto;
+  }
+
+  .aviator-stage {
+    min-height: 120px;
+  }
+}

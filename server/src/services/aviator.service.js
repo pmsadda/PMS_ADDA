@@ -1011,19 +1011,27 @@ async function startFlight(roundId) {
       );
     }
 
-    await connection.execute(
-      `
-        UPDATE aviator_rounds
-        SET
-        SET
-  status = 'flying',
-  flight_started_at =
-    CURRENT_TIMESTAMP(3)
-        WHERE id = ?
-          AND status = 'betting'
-      `,
-      [Number(roundId)],
-    );
+   const [flightUpdateResult] =
+  await connection.execute(
+    `
+    UPDATE aviator_rounds
+    SET
+      status = 'flying',
+      flight_started_at =
+        CURRENT_TIMESTAMP(3)
+    WHERE id = ?
+      AND status = 'betting'
+    `,
+    [Number(roundId)],
+  );
+
+if (flightUpdateResult.affectedRows !== 1) {
+  throw createGameError(
+    "Aviator flight could not be started.",
+    409,
+    "AVIATOR_FLIGHT_START_FAILED",
+  );
+}
 
     await connection.commit();
 

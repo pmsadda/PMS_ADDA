@@ -628,6 +628,35 @@ async function beginFlight(namespace, roundId) {
   clearBettingTimer();
 
   try {
+    if (!hasActiveUsers(namespace)) {
+  console.log(
+    `AVIATOR ROUND CANCELLED: no active players, round=${Number(roundId)}`,
+  );
+
+  const refundResult =
+    await cancelRoundAndRefund({
+      roundId: Number(roundId),
+      adminId: null,
+    });
+
+  namespace
+    .to(PUBLIC_ROOM)
+    .emit(
+      "aviator:round-cancelled",
+      {
+        success: true,
+        serverTime:
+          new Date().toISOString(),
+        message:
+          "Round cancelled because no players are connected.",
+        data: refundResult,
+      },
+    );
+
+  await emitPublicState(namespace);
+
+  return;
+}
     /*
      * Database transaction
      * status betting → flying করবে।
