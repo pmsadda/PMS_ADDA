@@ -1,6 +1,375 @@
 const crypto = require("crypto");
 
 const {
+  pool,
+} = require("../config/database");
+
+/* ==========================
+   JayaPay RSA Helpers
+========================== */
+
+function cleanBase64Key(value) {
+  return String(value || "")
+    .replace(/\\n/g, "")
+    .replace(
+      /-----BEGIN [^-]+-----/g,
+      "",
+    )
+    .replace(
+      /-----END [^-]+-----/g,
+      "",
+    )
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function makePemKey(
+  value,
+  keyType,
+) {
+  const cleanKey =
+    cleanBase64Key(value);
+
+  if (!cleanKey) {
+    throw new Error(
+      `JayaPay ${keyType} is missing.`,
+    );
+  }
+
+  const lines =
+    cleanKey.match(/.{1,64}/g) || [];
+
+  return (
+    `-----BEGIN ${keyType}-----\n` +
+    `${lines.join("\n")}\n` +
+    `-----END ${keyType}-----`
+  );
+}
+
+function buildJayaPaySignString(
+  parameters,
+) {
+  return Object.keys(parameters || {})
+    .filter((key) => key !== "sign")
+    .filter(
+      (key) =>
+        parameters[key] !== null &&
+        parameters[key] !== undefined &&
+        String(parameters[key]) !== "",
+    )
+    .sort()
+    .map((key) =>
+      String(parameters[key]),
+    )
+    .join("");
+}
+
+function createJayaPaySignature(
+  parameters,
+  privateKey,
+) {
+  const pemPrivateKey = makePemKey(
+    privateKey,
+    "PRIVATE KEY",
+  );
+
+  const privateKeyObject =
+    crypto.createPrivateKey({
+      key: pemPrivateKey,
+      format: "pem",
+      type: "pkcs8",
+    });
+
+  const keyBits =
+    privateKeyObject
+      .asymmetricKeyDetails
+      .modulusLength;
+
+  const keyBytes =
+    Math.ceil(keyBits / 8);
+
+  const maximumBlockSize =
+    keyBytes - 11;
+
+  const input = Buffer.from(
+    buildJayaPaySignString(
+      parameters,
+    ),
+    "utf8",
+  );
+
+  const encryptedBlocks = [];
+
+  for (
+    let offset = 0;
+    offset < input.length;
+    offset += maximumBlockSize
+  ) {
+    const block = input.subarray(
+      offset,
+      offset +
+        maximumBlockSize,
+    );
+
+    const encryptedBlock =
+      crypto.privateEncrypt(
+        {
+          key: privateKeyObject,
+
+          padding:
+            crypto.constants
+              .RSA_PKCS1_PADDING,
+        },
+        block,
+      );
+
+    encryptedBlocks.push(
+      encryptedBlock,
+    );
+  }
+
+  return Buffer.concat(
+    encryptedBlocks,
+  ).toString("base64");
+}
+
+function verifyJayaPaySignature(
+  parameters,
+  platformPublicKey,
+) {
+  try {
+    const signature = String(
+      parameters?.sign || "",
+    ).trim();
+
+    if (!signature) {
+      return false;
+    }
+
+    const pemPublicKey = makePemKey(
+      platformPublicKey,
+      "PUBLIC KEY",
+    );
+
+    const publicKeyObject =
+      crypto.createPublicKey({
+        key: pemPublicKey,
+        format: "pem",
+        type: "spki",
+      });
+
+    const keyBits =
+      publicKeyObject
+        .asymmetricKeyDetails
+        .modulusLength;
+
+    const keyBytes =
+      Math.ceil(keyBits / 8);
+
+    const encryptedData =
+      Buffer.from(
+        signature,
+        "base64",
+      );
+
+    if (
+      encryptedData.length === 0 ||
+      encryptedData.length %
+        keyBytes !==
+        0
+    ) {
+      return false;
+    }
+
+    const decryptedBlocks = [];
+
+    for (
+      let offset = 0;
+      offset <
+      encryptedData.length;
+      offset += keyBytes
+    ) {
+      const block =
+        encryptedData.subarray(
+          offset,
+          offset + keyBytes,
+        );
+
+      const decryptedBlock =
+        crypto.publicDecrypt(
+          {
+            key: publicKeyObject,
+
+            padding:
+              crypto.constants
+                .RSA_PKCS1_PADDING,
+          },
+          block,
+        );
+
+      decryptedBlocks.push(
+        decryptedBlock,
+      );
+    }
+
+    const receivedString =
+      Buffer.concat(
+        decryptedBlocks,
+      ).toString("utf8");
+
+    const expectedString =
+      buildJayaPaySignString(
+        parameters,
+      );
+
+    const receivedBuffer =
+      Buffer.from(
+        receivedString,
+        "utf8",
+      );
+
+    const expectedBuffer =
+      Buffer.from(
+        expectedString,
+        "utf8",
+      );
+
+    if (
+      receivedBuffer.length !==
+      expectedBuffer.length
+    ) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(
+      receivedBuffer,
+      expectedBuffer,
+    );
+  } catch (error) {
+    console.error(
+      "JayaPay signature verification failed:",
+      error.message,
+    );
+
+    return false;
+  }
+}
+
+function getJayaPayConfig() {
+  const config = {
+    merchantNumber: String(
+      process.env
+        .JAYAPAY_MERCHANT_NO ||
+        "",
+    ).trim(),
+
+    privateKey: String(
+      process.env
+        .JAYAPAY_PRIVATE_KEY ||
+        "",
+    ).trim(),
+
+    platformPublicKey: String(
+      process.env
+        .JAYAPAY_PLATFORM_PUBLIC_KEY ||
+        "",
+    ).trim(),
+
+    apiUrl: String(
+      process.env
+        .JAYAPAY_API_URL ||
+        "",
+    ).trim(),
+
+    notifyUrl: String(
+      process.env
+        .JAYAPAY_NOTIFY_URL ||
+        "",
+    ).trim(),
+
+    redirectUrl: String(
+      process.env
+        .JAYAPAY_REDIRECT_URL ||
+        "",
+    ).trim(),
+  };
+
+  if (
+    !config.merchantNumber ||
+    !config.privateKey ||
+    !config.platformPublicKey ||
+    !config.apiUrl ||
+    !config.notifyUrl ||
+    !config.redirectUrl
+  ) {
+    const error = new Error(
+      "JayaPay configuration is incomplete.",
+    );
+
+    error.statusCode = 500;
+
+    throw error;
+  }
+
+  return config;
+}
+
+async function getJayaPayCustomer(
+  userId,
+) {
+  const [rows] =
+    await pool.execute(
+      `
+        SELECT
+          id,
+          full_name,
+          email,
+          phone
+        FROM users
+        WHERE id = ?
+          AND account_status =
+              'active'
+        LIMIT 1
+      `,
+      [Number(userId)],
+    );
+
+  const user = rows[0] || null;
+
+  if (!user) {
+    const error = new Error(
+      "Payment user was not found.",
+    );
+
+    error.statusCode = 404;
+
+    throw error;
+  }
+
+  return {
+    fullName: String(
+      user.full_name ||
+        "PMS ADDA User",
+    )
+      .trim()
+      .slice(0, 64),
+
+    email: String(
+      user.email || "",
+    )
+      .trim()
+      .toLowerCase()
+      .slice(0, 64),
+
+    phone: String(
+      user.phone || "",
+    )
+      .replace(/\s+/g, "")
+      .trim(),
+  };
+}
+
+const {
   createDepositRequest,
   createGatewayDepositRequest,
   saveGatewayTradeNumber,
@@ -236,225 +605,546 @@ async function getPaymentAccountQr(req, res, next) {
   }
 }
 
-async function createGatewayPayment(req, res, next) {
-  try {
-    const amount = Number(req.body?.amount);
+async function createGatewayPayment(
+  req,
+  res,
+  next,
+) {
+  let createdDeposit = null;
 
-    const payType = String(req.body?.payType || "")
+  try {
+    const amount = Number(
+      req.body?.amount,
+    );
+
+    const payType = String(
+      req.body?.payType || "",
+    )
       .trim()
       .toUpperCase();
 
-    const payTypeCodes = {
-      BKASH: "2202",
-      NAGAD: "2201",
-    };
+    /*
+     * JayaPay Bangladesh-এ শুধু
+     * bKash এবং Nagad নেওয়া হবে।
+     */
+    if (
+      ![
+        "BKASH",
+        "NAGAD",
+      ].includes(payType)
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
 
-    const gatewayPayType = payTypeCodes[payType];
+          message:
+            "This payment method is not available.",
+        });
+    }
 
-    if (!gatewayPayType) {
-      return res.status(400).json({
-        success: false,
-        message: "This payment method is not available.",
+    /*
+     * JayaPay Bangladesh Pay-in
+     * decimal amount গ্রহণ করে না।
+     */
+    if (
+      !Number.isInteger(amount) ||
+      amount < 100 ||
+      amount > 1000000
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+
+          message:
+            "Deposit amount must be a whole number between ৳100 and ৳10,00,000.",
+        });
+    }
+
+    const config =
+      getJayaPayConfig();
+
+    const customer =
+      await getJayaPayCustomer(
+        req.user.id,
+      );
+
+    /*
+     * সর্বোচ্চ 64 characters-এর
+     * unique merchant order number।
+     */
+    const orderNumber =
+      `PMS${Date.now()}` +
+      crypto
+        .randomBytes(6)
+        .toString("hex")
+        .toUpperCase();
+
+    /*
+     * Gateway call করার আগেই pending
+     * deposit database-এ রাখা হবে।
+     */
+    createdDeposit =
+      await createGatewayDepositRequest({
+        userId: req.user.id,
+
+        gatewayOrderId:
+          orderNumber,
+
+        amount,
       });
-    }
 
-    if (!Number.isFinite(amount) || amount < 100 || amount > 1000000) {
-      return res.status(400).json({
-        success: false,
-        message: "Deposit amount must be between ৳100 and ৳10,00,000.",
-      });
-    }
+    const paymentParameters = {
+      mchNo:
+        config.merchantNumber,
 
-    const appId = String(process.env.PAYMENT_APP_ID || "").trim();
-    const secretKey = String(process.env.PAYMENT_SECRET_KEY || "").trim();
-    const paymentApiUrl = String(process.env.PAYMENT_API_URL || "").trim();
-    const callbackUrl = String(process.env.PAYMENT_CALLBACK_URL || "").trim();
+      orderNum:
+        orderNumber,
 
-    if (!appId || !secretKey || !paymentApiUrl || !callbackUrl) {
-      const error = new Error("Payment gateway configuration is incomplete.");
-      error.statusCode = 500;
-      throw error;
-    }
-
-    const orderNo =
-      `PMS${Date.now()}` + crypto.randomBytes(8).toString("hex").toUpperCase();
-
-    await createGatewayDepositRequest({
-      userId: req.user.id,
-      gatewayOrderId: orderNo,
       amount,
-    });
 
-    const now = new Date();
+      productDetail:
+        "PMS ADDA wallet deposit",
 
-const bdNow = new Date(
-  now.getTime() + 6 * 60 * 60 * 1000,
-);
+      method:
+        payType,
 
-const pad = (value) =>
-  String(value).padStart(2, "0");
+      timestamp:
+        String(Date.now()),
 
-const orderDate =
-  `${bdNow.getUTCFullYear()}-` +
-  `${pad(bdNow.getUTCMonth() + 1)}-` +
-  `${pad(bdNow.getUTCDate())} ` +
-  `${pad(bdNow.getUTCHours())}:` +
-  `${pad(bdNow.getUTCMinutes())}:` +
-  `${pad(bdNow.getUTCSeconds())}`;
+      customerName:
+        customer.fullName,
 
-    const params = {
-      app_id: appId,
-      mch_order_no: orderNo,
-      trade_amount: String(amount),
-      pay_type: gatewayPayType,
-      goods_name: payType,
-      notify_url: callbackUrl,
-      page_url: "https://pms-adda.site/lobby",
-      mch_return_msg: orderNo,
-      order_date: orderDate,
+      customerEmail:
+        customer.email,
+
+      downNotifyUrl:
+        config.notifyUrl,
+
+      redirectUrl:
+        config.redirectUrl,
+
+      expiryPeriod: 30,
     };
 
-    const signString =
-      Object.keys(params)
-        .sort()
-        .map((key) => `${key}=${params[key]}`)
-        .join("&") + `&key=${secretKey}`;
+    /*
+     * সঠিক Bangladesh wallet number
+     * থাকলেই optional phone পাঠানো হবে।
+     */
+    if (
+      /^01[3-9]\d{8}$/.test(
+        customer.phone,
+      )
+    ) {
+      paymentParameters
+        .customerPhone =
+        customer.phone;
+    }
 
-    const sign = crypto
-      .createHash("md5")
-      .update(signString, "utf8")
-      .digest("hex");
+    /*
+     * sign ছাড়া parameters সাজিয়ে
+     * Merchant Private Key দিয়ে
+     * RSA signature তৈরি হবে।
+     */
+    paymentParameters.sign =
+      createJayaPaySignature(
+        paymentParameters,
+        config.privateKey,
+      );
 
-    const form = new URLSearchParams();
+    const gatewayResponse =
+      await fetch(
+        config.apiUrl,
+        {
+          method: "POST",
 
-    Object.entries(params).forEach(([key, value]) => {
-      form.append(key, value);
-    });
+          headers: {
+            "Content-Type":
+              "application/json",
 
-    form.append("sign_type", "MD5");
-    form.append("sign", sign);
+            Accept:
+              "application/json",
+          },
 
-    console.log("PAYMENT REQUEST DEBUG:", {
-  appId:
-    appId.length > 6
-      ? `${appId.slice(0, 4)}...${appId.slice(-4)}`
-      : "***",
+          body: JSON.stringify(
+            paymentParameters,
+          ),
 
-  paymentApiUrl,
+          signal:
+            AbortSignal.timeout(
+              15000,
+            ),
+        },
+      );
 
-  mch_order_no: params.mch_order_no,
-  trade_amount: params.trade_amount,
-  pay_type: params.pay_type,
-  goods_name: params.goods_name,
-  notify_url: params.notify_url,
-  page_url: params.page_url,
-  mch_return_msg: params.mch_return_msg,
-  order_date: params.order_date,
-});
-
-    const gatewayResponse = await fetch(paymentApiUrl, {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-
-      body: form.toString(),
-    });
-
-    const gatewayText = await gatewayResponse.text();
+    const gatewayText =
+      await gatewayResponse.text();
 
     let gatewayData;
 
     try {
-      gatewayData = JSON.parse(gatewayText);
+      gatewayData =
+        JSON.parse(
+          gatewayText,
+        );
     } catch {
-      throw new Error("Invalid payment gateway response.");
-    }
-
-    console.log("PAYMENT GATEWAY RESPONSE:", gatewayData);
-
-    if (
-      gatewayData.respCode !== "SUCCESS" ||
-      !(gatewayData.payUrl || gatewayData.pay_url || gatewayData.payInfo)
-    ) {
       const error = new Error(
-        gatewayData.tradeMsg || "Payment gateway request failed.",
+        "Invalid response received from JayaPay.",
       );
 
       error.statusCode = 502;
+
       throw error;
     }
 
-    const gatewayTradeNo =
-      gatewayData.tradeNo ||
-      gatewayData.mchOrderNo ||
-      gatewayData.orderNo ||
-      null;
+    const paymentUrl =
+      String(
+        gatewayData
+          ?.data
+          ?.cashierUrl ||
+          "",
+      ).trim();
 
-    if (gatewayTradeNo) {
+    const platformOrderNumber =
+      String(
+        gatewayData
+          ?.data
+          ?.platOrderNum ||
+          "",
+      ).trim();
+
+    /*
+     * JayaPay order-create success:
+     * success = true
+     * code = 9999
+     * cashierUrl থাকতে হবে।
+     */
+    if (
+      !gatewayResponse.ok ||
+      gatewayData.success !==
+        true ||
+      String(
+        gatewayData.code,
+      ) !== "9999" ||
+      !paymentUrl
+    ) {
+      const error = new Error(
+        gatewayData.msg ||
+          "JayaPay payment request failed.",
+      );
+
+      error.statusCode = 502;
+
+      throw error;
+    }
+
+    /*
+     * JayaPay platform order number
+     * database-এ রাখা হবে।
+     */
+    if (platformOrderNumber) {
       await saveGatewayTradeNumber({
         userId: req.user.id,
-        gatewayOrderId: orderNo,
-        gatewayTradeNo,
+
+        gatewayOrderId:
+          orderNumber,
+
+        gatewayTradeNo:
+          platformOrderNumber,
       });
     }
 
-    return res.status(200).json({
-      success: true,
+    return res
+      .status(200)
+      .json({
+        success: true,
 
-      message: "Payment created successfully.",
+        message:
+          "Payment created successfully.",
 
-      data: {
-        orderNumber: orderNo,
+        data: {
+          orderNumber,
 
-        tradeNumber: gatewayTradeNo,
+          tradeNumber:
+            platformOrderNumber ||
+            null,
 
-        paymentUrl:
-          gatewayData.payUrl || gatewayData.pay_url || gatewayData.payInfo,
-      },
-    });
+          paymentUrl,
+        },
+      });
   } catch (error) {
+    /*
+     * Order-create ব্যর্থ হলে pending
+     * request-এর gateway status update।
+     */
+    if (
+      createdDeposit?.depositId
+    ) {
+      try {
+        await updateGatewayDepositStatus({
+          depositId:
+            createdDeposit.depositId,
+
+          gatewayStatus:
+            "create_failed",
+        });
+      } catch (
+        statusUpdateError
+      ) {
+        console.error(
+          "JayaPay failed status update error:",
+          statusUpdateError,
+        );
+      }
+    }
+
+    console.error(
+      "JayaPay create payment error:",
+      {
+        message:
+          error.message,
+
+        code:
+          error.code || null,
+      },
+    );
+
     next(error);
   }
 }
 
-async function gatewayCallback(req, res) {
+async function gatewayCallback(
+  req,
+  res,
+) {
   try {
-    const body =
-      req.body && typeof req.body === "object"
+    const callbackData =
+      req.body &&
+      typeof req.body ===
+        "object"
         ? req.body
         : {};
 
-    console.log("===== PAYMENT CALLBACK =====");
-    console.log("tradeResult:", body.tradeResult);
-    console.log("mchOrderNo:", body.mchOrderNo);
-    console.log("amount:", body.amount);
-    console.log("tradeNo:", body.tradeNo);
-    console.log("sign:", body.sign ? "YES" : "NO");
-    console.log("signType:", body.signType || body.sign_type);
-    console.log("body keys:", Object.keys(body));
-    console.log("============================");
+    const config =
+      getJayaPayConfig();
 
     /*
-     * প্রথম live test-এ wallet auto credit করছি না।
-     * Callback format confirm করার পর enable করব।
+     * Platform Public Key দিয়ে
+     * callback-এর RSA signature
+     * যাচাই করা হবে।
      */
+    const signatureIsValid =
+      verifyJayaPaySignature(
+        callbackData,
+        config.platformPublicKey,
+      );
 
+    if (!signatureIsValid) {
+      console.error(
+        "JayaPay callback rejected: invalid signature.",
+      );
+
+      return res
+        .status(401)
+        .type("text/plain")
+        .send("FAIL");
+    }
+
+    const orderNumber =
+      String(
+        callbackData.orderNum ||
+          "",
+      ).trim();
+
+    const platformOrderNumber =
+      String(
+        callbackData
+          .platOrderNum ||
+          "",
+      ).trim();
+
+    const paymentStatus =
+      String(
+        callbackData.status ||
+          "",
+      )
+        .trim()
+        .toUpperCase();
+
+    const paidAmount =
+      Number(
+        callbackData.amount,
+      );
+
+    /*
+     * প্রয়োজনীয় callback তথ্য
+     * না থাকলে গ্রহণ করা হবে না।
+     */
+    if (
+      !orderNumber ||
+      !platformOrderNumber ||
+      !paymentStatus ||
+      !Number.isInteger(
+        paidAmount,
+      ) ||
+      paidAmount <= 0
+    ) {
+      console.error(
+        "JayaPay callback rejected: invalid callback data.",
+      );
+
+      return res
+        .status(400)
+        .type("text/plain")
+        .send("FAIL");
+
+    }
+
+    /*
+     * Merchant order number দিয়ে
+     * নিজের database-এর deposit খোঁজা।
+     */
+    let deposit =
+      await findGatewayDeposit({
+        gatewayOrderId:
+          orderNumber,
+      });
+
+    if (!deposit) {
+      console.error(
+        "JayaPay callback rejected: deposit not found.",
+      );
+
+      return res
+        .status(404)
+        .type("text/plain")
+        .send("FAIL");
+    }
+
+    /*
+     * Callback amount এবং database
+     * amount অবশ্যই একই হতে হবে।
+     */
+    if (
+      Number(deposit.amount) !==
+      paidAmount
+    ) {
+      console.error(
+        "JayaPay callback rejected: amount mismatch.",
+        {
+          orderNumber,
+        },
+      );
+
+      return res
+        .status(400)
+        .type("text/plain")
+        .send("FAIL");
+    }
+
+    /*
+     * Platform order number আগে save
+     * এবং gateway status update।
+     */
+    await updateGatewayDepositStatus({
+      depositId:
+        deposit.deposit_id,
+
+      gatewayStatus:
+        paymentStatus
+          .toLowerCase(),
+
+      gatewayTradeNo:
+        platformOrderNumber,
+    });
+
+    /*
+     * শুধু SUCCESS status-এ
+     * user wallet credit হবে।
+     */
+    if (
+      paymentStatus ===
+      "SUCCESS"
+    ) {
+      /*
+       * Deposit আগে approved থাকলে
+       * পুনরায় wallet credit হবে না।
+       */
+      if (
+        deposit.status !==
+        "approved"
+      ) {
+        try {
+          await approveDepositRequest({
+            depositId:
+              deposit.deposit_id,
+
+            /*
+             * Gateway automatic approval।
+             * কোনো admin approve করেনি।
+             */
+            adminId: null,
+          });
+        } catch (approvalError) {
+          /*
+           * একই callback একাধিকবার এলে
+           * concurrent request-এর একটি
+           * 409 পেতে পারে। Database আবার
+           * দেখে নিশ্চিত হওয়া হবে।
+           */
+          if (
+            approvalError
+              .statusCode !==
+            409
+          ) {
+            throw approvalError;
+          }
+
+          deposit =
+            await findGatewayDeposit({
+              gatewayOrderId:
+                orderNumber,
+            });
+
+          if (
+            deposit?.status !==
+            "approved"
+          ) {
+            throw approvalError;
+          }
+        }
+      }
+    }
+
+    /*
+     * JayaPay-কে exact uppercase
+     * SUCCESS response দিতে হবে।
+     */
     return res
       .status(200)
       .type("text/plain")
-      .send("success");
+      .send("SUCCESS");
   } catch (error) {
     console.error(
-      "GATEWAY CALLBACK ERROR:",
-      error,
+      "JayaPay callback processing error:",
+      {
+        message:
+          error.message,
+
+        code:
+          error.code || null,
+      },
     );
 
+    /*
+     * FAIL পেলে JayaPay callback
+     * আবার পাঠাতে পারবে।
+     */
     return res
-      .status(200)
+      .status(500)
       .type("text/plain")
-      .send("fail");
+      .send("FAIL");
   }
 }
 module.exports = {

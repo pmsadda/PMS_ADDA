@@ -69,11 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let isSubmitting = false;
   let toastTimer = null;
 
-  const allowedMethods = [
-    "BKASH",
-    "NAGAD",
-    "ROCKET",
-  ];
+const allowedMethods = [
+  "BKASH",
+  "NAGAD",
+];
 
   /* ==========================
      Toast
@@ -192,11 +191,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (paymentMethodMessage) {
-      const methodNames = {
-        BKASH: "bKash",
-        NAGAD: "Nagad",
-        ROCKET: "Rocket",
-      };
+     const methodNames = {
+  BKASH: "bKash",
+  NAGAD: "Nagad",
+};
 
       paymentMethodMessage.textContent =
         `${methodNames[selectedMethod]} selected`;
@@ -245,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!selectedMethod) {
         showToast(
-          "Please select bKash, Nagad or Rocket.",
+          "Please select bKash or Nagad.",
         );
 
         return;
