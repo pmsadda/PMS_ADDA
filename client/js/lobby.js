@@ -119,6 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
     andarBaharButton: document.getElementById("andarBaharBtn"),
     banglaWheelButton: document.getElementById("banglaWheelBtn"),
     banglaDiceButton: document.getElementById("banglaDiceBtn"),
+    aviatorButton: document.getElementById("aviatorBtn"),
     kaitButton: document.getElementById("kaitBtn"),
     lotteryButton: document.getElementById("lotteryBtn"),
 
@@ -1623,6 +1624,10 @@ DOM.depositButton?.addEventListener("click", () => {
     navigateTo("/bangla-dice"),
   );
 
+  DOM.aviatorButton?.addEventListener("click", () =>
+  navigateTo("/aviator"),
+);
+
   DOM.kaitButton?.addEventListener("click", () => navigateTo("/kait"));
 
   DOM.lotteryButton?.addEventListener("click", () => navigateTo("/lottery"));
@@ -1842,6 +1847,7 @@ DOM.depositButton?.addEventListener("click", () => {
     "andarBaharBtn",
     "banglaWheelBtn",
     "banglaDiceBtn",
+    "aviatorBtn",
     "kaitBtn",
     "lotteryBtn",
   ]);

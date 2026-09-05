@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Aviator | PMS ADDA</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../css/aviator.css"
+  >
+</head>
+
+<body>
+
+  <!-- =========================
+       Loading
+  ========================== -->
+
+  <div
+    class="loading-overlay"
+    id="loadingOverlay"
+  >
+    <div class="loading-plane">
+      <i class="fa-solid fa-plane"></i>
+    </div>
+
+    <strong>
+      Loading Aviator...
+    </strong>
+  </div>
+
+  <!-- =========================
+       Header
+  ========================== -->
+
+  <header class="game-header">
+
+    <button
+      type="button"
+      class="icon-button"
+      id="backBtn"
+      aria-label="Back to lobby"
+    >
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+
+    <div class="game-title">
+      <span>PMS ADDA</span>
+      <h1>Aviator</h1>
+    </div>
+
+    <div class="header-actions">
+
+      <button
+        type="button"
+        class="icon-button"
+        id="soundBtn"
+        aria-label="Sound"
+      >
+        <i class="fa-solid fa-volume-high"></i>
+      </button>
+
+      <div class="wallet-card">
+        <span>Balance</span>
+
+        <strong>
+          ৳<span id="walletBalance">0.00</span>
+        </strong>
+      </div>
+
+    </div>
+
+  </header>
+
+  <!-- =========================
+       Main
+  ========================== -->
+
+  <main class="aviator-container">
+
+    <!-- =========================
+         Crash History
+    ========================== -->
+
+    <section class="crash-history-section">
+
+      <div
+        class="crash-history"
+        id="crashHistory"
+      >
+        <span class="history-placeholder">
+          No history yet
+        </span>
+      </div>
+
+    </section>
+
+    <!-- =========================
+         Round Information
+    ========================== -->
+
+    <section class="round-information">
+
+      <div>
+        <span>Round</span>
+        <strong id="roundCode">--</strong>
+      </div>
+
+      <div class="connection-status">
+
+        <span
+          class="connection-dot"
+          id="connectionDot"
+        ></span>
+
+        <strong id="connectionText">
+          Connecting
+        </strong>
+
+      </div>
+
+      <div>
+        <span>Status</span>
+
+        <strong id="roundStatus">
+          Waiting
+        </strong>
+      </div>
+
+    </section>
+
+    <!-- =========================
+         Aviator Stage
+    ========================== -->
+
+    <section
+      class="aviator-stage"
+      id="aviatorStage"
+    >
+
+      <div class="sky-grid"></div>
+      <div class="stage-glow"></div>
+
+      <div
+        class="betting-countdown is-hidden"
+        id="bettingCountdown"
+      >
+        <span>Next round starts in</span>
+
+        <strong id="countdownValue">
+          0.0
+        </strong>
+      </div>
+
+      <div
+        class="multiplier-display"
+        id="multiplierDisplay"
+      >
+        <strong id="multiplierValue">
+          1.00x
+        </strong>
+
+        <span id="multiplierStatus">
+          Waiting for next round
+        </span>
+      </div>
+
+      <div
+        class="flight-path"
+        id="flightPath"
+      >
+        <div class="flight-line"></div>
+
+        <div
+          class="plane-wrapper"
+          id="planeWrapper"
+        >
+          <i class="fa-solid fa-plane plane-icon"></i>
+        </div>
+      </div>
+
+      <div
+        class="crashed-message is-hidden"
+        id="crashedMessage"
+      >
+        <span>FLEW AWAY!</span>
+
+        <strong id="crashedMultiplier">
+          0.00x
+        </strong>
+      </div>
+
+    </section>
+
+    <!-- =========================
+         Betting Panels
+    ========================== -->
+
+    <section class="betting-panels">
+
+      <!-- Bet Slot 1 -->
+
+      <article
+        class="bet-panel"
+        data-bet-slot="1"
+      >
+
+        <div class="bet-panel-header">
+          <strong>Bet 1</strong>
+
+          <span
+            class="bet-status"
+            id="betStatus1"
+          >
+            Ready
+          </span>
+        </div>
+
+        <div class="amount-control">
+
+          <button
+            type="button"
+            class="amount-minus"
+            data-slot="1"
+            aria-label="Decrease bet"
+          >
+            <i class="fa-solid fa-minus"></i>
+          </button>
+
+          <div class="amount-input-wrapper">
+            <span>৳</span>
+
+            <input
+              type="number"
+              id="betAmount1"
+              value="10"
+              min="10"
+              step="10"
+              inputmode="decimal"
+            >
+          </div>
+
+          <button
+            type="button"
+            class="amount-plus"
+            data-slot="1"
+            aria-label="Increase bet"
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
+
+        </div>
+
+        <div class="quick-bet-options">
+
+          <button
+            type="button"
+            data-slot="1"
+            data-amount="10"
+          >
+            ৳10
+          </button>
+
+          <button
+            type="button"
+            data-slot="1"
+            data-amount="50"
+          >
+            ৳50
+          </button>
+
+          <button
+            type="button"
+            data-slot="1"
+            data-amount="100"
+          >
+            ৳100
+          </button>
+
+          <button
+            type="button"
+            data-slot="1"
+            data-amount="500"
+          >
+            ৳500
+          </button>
+
+        </div>
+
+        <div class="auto-cashout-row">
+
+          <label>
+            <input
+              type="checkbox"
+              id="autoCashoutEnabled1"
+            >
+
+            <span>Auto Cashout</span>
+          </label>
+
+          <div class="auto-cashout-input">
+            <input
+              type="number"
+              id="autoCashout1"
+              value="2.00"
+              min="1.01"
+              step="0.01"
+              inputmode="decimal"
+              disabled
+            >
+
+            <span>x</span>
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          class="bet-action-button"
+          id="betButton1"
+          data-slot="1"
+          disabled
+        >
+          <span>BET</span>
+
+          <strong>
+            ৳<span id="betButtonAmount1">10.00</span>
+          </strong>
+        </button>
+
+        <div
+          class="bet-result-information"
+          id="betResult1"
+        >
+          <span>No active bet</span>
+        </div>
+
+      </article>
+
+      <!-- Bet Slot 2 -->
+
+      <article
+        class="bet-panel"
+        data-bet-slot="2"
+      >
+
+        <div class="bet-panel-header">
+          <strong>Bet 2</strong>
+
+          <span
+            class="bet-status"
+            id="betStatus2"
+          >
+            Ready
+          </span>
+        </div>
+
+        <div class="amount-control">
+
+          <button
+            type="button"
+            class="amount-minus"
+            data-slot="2"
+            aria-label="Decrease bet"
+          >
+            <i class="fa-solid fa-minus"></i>
+          </button>
+
+          <div class="amount-input-wrapper">
+            <span>৳</span>
+
+            <input
+              type="number"
+              id="betAmount2"
+              value="10"
+              min="10"
+              step="10"
+              inputmode="decimal"
+            >
+          </div>
+
+          <button
+            type="button"
+            class="amount-plus"
+            data-slot="2"
+            aria-label="Increase bet"
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
+
+        </div>
+
+        <div class="quick-bet-options">
+
+          <button
+            type="button"
+            data-slot="2"
+            data-amount="10"
+          >
+            ৳10
+          </button>
+
+          <button
+            type="button"
+            data-slot="2"
+            data-amount="50"
+          >
+            ৳50
+          </button>
+
+          <button
+            type="button"
+            data-slot="2"
+            data-amount="100"
+          >
+            ৳100
+          </button>
+
+          <button
+            type="button"
+            data-slot="2"
+            data-amount="500"
+          >
+            ৳500
+          </button>
+
+        </div>
+
+        <div class="auto-cashout-row">
+
+          <label>
+            <input
+              type="checkbox"
+              id="autoCashoutEnabled2"
+            >
+
+            <span>Auto Cashout</span>
+          </label>
+
+          <div class="auto-cashout-input">
+            <input
+              type="number"
+              id="autoCashout2"
+              value="2.00"
+              min="1.01"
+              step="0.01"
+              inputmode="decimal"
+              disabled
+            >
+
+            <span>x</span>
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          class="bet-action-button"
+          id="betButton2"
+          data-slot="2"
+          disabled
+        >
+          <span>BET</span>
+
+          <strong>
+            ৳<span id="betButtonAmount2">10.00</span>
+          </strong>
+        </button>
+
+        <div
+          class="bet-result-information"
+          id="betResult2"
+        >
+          <span>No active bet</span>
+        </div>
+
+      </article>
+
+    </section>
+
+    <!-- =========================
+         Fairness
+    ========================== -->
+
+    <section class="fairness-card">
+
+      <div class="section-heading">
+
+        <div>
+          <span>Provably Fair</span>
+          <h2>Round Verification</h2>
+        </div>
+
+        <i class="fa-solid fa-shield-halved"></i>
+
+      </div>
+
+      <div class="fairness-row">
+        <span>Server Seed Hash</span>
+
+        <code id="serverSeedHash">
+          --
+        </code>
+      </div>
+
+      <div class="fairness-row">
+        <span>Revealed Seed</span>
+
+        <code id="serverSeed">
+          Hidden until crash
+        </code>
+      </div>
+
+      <div class="fairness-row">
+        <span>Crash Point</span>
+
+        <strong id="fairCrashPoint">
+          Hidden
+        </strong>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- =========================
+       Toast
+  ========================== -->
+
+  <div
+    class="game-toast"
+    id="gameToast"
+    role="status"
+  ></div>
+
+  <!-- =========================
+       Scripts
+  ========================== -->
+
+  <script src="../js/app-config.js"></script>
+  <script src="../js/auth-guard.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../js/aviator.js"></script>
+
+</body>
+
+</html>

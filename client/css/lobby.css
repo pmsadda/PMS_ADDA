@@ -4925,3 +4925,207 @@ button:focus{
     }
 
 }
+
+/* =========================
+   Aviator Lobby Card
+========================= */
+
+.aviator-game-card {
+  overflow: hidden;
+  border: 1px solid rgba(255, 45, 85, 0.18);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 45, 85, 0.08),
+      transparent 42%
+    ),
+    var(--card-bg, #11131a);
+}
+
+.aviator-card-visual {
+  position: relative;
+  min-height: 185px;
+  overflow: hidden;
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      circle at 30% 75%,
+      rgba(255, 45, 85, 0.22),
+      transparent 35%
+    ),
+    linear-gradient(
+      180deg,
+      #141722 0%,
+      #08090d 100%
+    );
+}
+
+.aviator-card-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px
+    );
+  background-size: 26px 26px;
+}
+
+.aviator-live-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(10, 10, 14, 0.78);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+}
+
+.aviator-live-badge i {
+  color: #ff2d55;
+  font-size: 7px;
+  animation: aviatorLobbyLivePulse 1s ease-in-out infinite;
+}
+
+@keyframes aviatorLobbyLivePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.aviator-lobby-sky {
+  position: absolute;
+  inset: 0;
+}
+
+.aviator-lobby-path {
+  position: absolute;
+  left: 18px;
+  bottom: 20px;
+  width: 72%;
+  height: 60%;
+  border-top: 3px solid #ff2d55;
+  border-radius: 75% 0 0 0;
+  transform: skewY(-10deg);
+  transform-origin: left bottom;
+  filter:
+    drop-shadow(
+      0 0 8px rgba(255, 45, 85, 0.65)
+    );
+}
+
+.aviator-lobby-plane {
+  position: absolute;
+  left: 22%;
+  bottom: 24%;
+  z-index: 3;
+  color: #ff2d55;
+  font-size: 44px;
+  filter:
+    drop-shadow(
+      0 0 12px rgba(255, 45, 85, 0.55)
+    );
+  transform: rotate(-15deg);
+  animation:
+    aviatorLobbyPlane 3s ease-in-out infinite alternate;
+}
+
+@keyframes aviatorLobbyPlane {
+  from {
+    transform:
+      translate(0, 0)
+      rotate(-15deg);
+  }
+
+  to {
+    transform:
+      translate(80px, -45px)
+      rotate(-8deg);
+  }
+}
+
+.aviator-lobby-multiplier {
+  position: absolute;
+  left: 20px;
+  top: 24px;
+  z-index: 3;
+  color: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  text-shadow:
+    0 0 20px rgba(255, 45, 85, 0.35);
+}
+
+.aviator-lobby-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.aviator-lobby-features span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255, 45, 85, 0.08);
+  color: #d1d5db;
+  font-size: 11px;
+}
+
+.aviator-lobby-features i {
+  color: #ff2d55;
+}
+
+.aviator-lobby-play-btn {
+  margin-top: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      #ff2d55,
+      #c31538
+    );
+  box-shadow:
+    0 10px 24px rgba(255, 45, 85, 0.2);
+}
+
+.aviator-lobby-play-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 28px rgba(255, 45, 85, 0.28);
+}
+
+@media (max-width: 600px) {
+  .aviator-card-visual {
+    min-height: 160px;
+  }
+
+  .aviator-lobby-multiplier {
+    font-size: 28px;
+  }
+
+  .aviator-lobby-plane {
+    font-size: 36px;
+  }
+}

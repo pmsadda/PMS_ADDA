@@ -1,0 +1,203 @@
+/* =========================
+   Aviator Admin
+========================= */
+
+.aviator-danger-card {
+  border:
+    1px solid
+    rgba(239, 68, 68, 0.28);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(239, 68, 68, 0.06),
+      transparent 45%
+    ),
+    var(--card-bg, #ffffff);
+}
+
+.card-kicker.danger {
+  color: #ef4444;
+}
+
+.danger-icon {
+  color: #ef4444;
+  font-size: 24px;
+}
+
+.aviator-danger-description {
+  margin:
+    0 0 20px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.aviator-cancel-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.aviator-cancel-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aviator-cancel-grid label > span {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.aviator-cancel-grid input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  color: #111827;
+}
+
+.aviator-cancel-grid input:focus {
+  border-color: #ef4444;
+  box-shadow:
+    0 0 0 3px
+    rgba(239, 68, 68, 0.1);
+}
+
+.aviator-cancel-button {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      135deg,
+      #ef4444,
+      #b91c1c
+    );
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.aviator-cancel-button:hover {
+  transform:
+    translateY(-1px);
+  box-shadow:
+    0 10px 22px
+    rgba(239, 68, 68, 0.22);
+}
+
+.aviator-cancel-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.aviator-cancel-button i {
+  margin-right: 7px;
+}
+
+.aviator-cancel-message {
+  min-height: 18px;
+  margin:
+    12px 0 0;
+  font-size: 12px;
+}
+
+.aviator-cancel-message.success {
+  color: #16a34a;
+}
+
+.aviator-cancel-message.error {
+  color: #dc2626;
+}
+
+/* =========================
+   Fairness Notice
+========================= */
+
+.aviator-fairness-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border:
+    1px solid
+    rgba(59, 130, 246, 0.18);
+  border-radius: 12px;
+  background:
+    rgba(59, 130, 246, 0.05);
+}
+
+.aviator-fairness-notice > i {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #2563eb;
+  font-size: 22px;
+}
+
+.aviator-fairness-notice strong {
+  display: block;
+  color: #111827;
+  font-size: 14px;
+}
+
+.aviator-fairness-notice p {
+  margin:
+    6px 0 0;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* =========================
+   Aviator Form
+========================= */
+
+#settingsForm
+.toggle-field
++ .toggle-field {
+  margin-top: 10px;
+}
+
+#houseEdgeInput,
+#maximumMultiplierInput {
+  font-weight: 700;
+}
+
+#summaryGameStatus {
+  text-transform: capitalize;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 700px) {
+  .aviator-cancel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .aviator-cancel-button {
+    width: 100%;
+  }
+
+  .aviator-fairness-notice {
+    padding: 13px;
+  }
+}
