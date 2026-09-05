@@ -212,39 +212,109 @@ function verifyJayaPaySignature(
       );
     }
 
-    const receivedString =
-      Buffer.concat(
-        decryptedBlocks,
-      ).toString("utf8");
+   const receivedString =
+  Buffer.concat(
+    decryptedBlocks,
+  ).toString("utf8");
 
-    const expectedString =
+/*
+ * JSON.parse numeric value-এর trailing
+ * zero সরিয়ে দেয়। JayaPay callback
+ * amount/fee বিভিন্ন decimal format-এ
+ * sign করতে পারে।
+ */
+const signatureCandidates =
+  new Set();
+
+const amountValue =
+  Number(parameters.amount);
+
+const feeValue =
+  Number(parameters.fee);
+
+const amountFormats =
+  Number.isFinite(amountValue)
+    ? [
+        String(amountValue),
+        amountValue.toFixed(1),
+        amountValue.toFixed(2),
+      ]
+    : [parameters.amount];
+
+const feeFormats =
+  Number.isFinite(feeValue)
+    ? [
+        String(feeValue),
+        feeValue.toFixed(1),
+        feeValue.toFixed(2),
+      ]
+    : [parameters.fee];
+
+for (
+  const amountFormat of
+  amountFormats
+) {
+  for (
+    const feeFormat of
+    feeFormats
+  ) {
+    const candidateParameters = {
+      ...parameters,
+
+      amount:
+        amountFormat,
+
+      fee:
+        feeFormat,
+    };
+
+    signatureCandidates.add(
       buildJayaPaySignString(
-        parameters,
-      );
+        candidateParameters,
+      ),
+    );
+  }
+}
 
-    const receivedBuffer =
-      Buffer.from(
-        receivedString,
-        "utf8",
-      );
+for (
+  const expectedString of
+  signatureCandidates
+) {
+  const receivedBuffer =
+    Buffer.from(
+      receivedString,
+      "utf8",
+    );
 
-    const expectedBuffer =
-      Buffer.from(
-        expectedString,
-        "utf8",
-      );
+  const expectedBuffer =
+    Buffer.from(
+      expectedString,
+      "utf8",
+    );
 
-    if (
-      receivedBuffer.length !==
-      expectedBuffer.length
-    ) {
-      return false;
-    }
-
-    return crypto.timingSafeEqual(
+  if (
+    receivedBuffer.length ===
+      expectedBuffer.length &&
+    crypto.timingSafeEqual(
       receivedBuffer,
       expectedBuffer,
-    );
+    )
+  ) {
+    return true;
+  }
+}
+
+console.error(
+  "JayaPay callback signature content mismatch.",
+  {
+    callbackFields:
+      Object.keys(
+        parameters,
+      ).sort(),
+  },
+);
+
+return false;
   } catch (error) {
     console.error(
       "JayaPay signature verification failed:",
