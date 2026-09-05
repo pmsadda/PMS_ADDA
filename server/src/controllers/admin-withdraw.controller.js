@@ -39,41 +39,39 @@ async function getWithdraws(req, res, next) {
 
 async function approve(req, res, next) {
   try {
-
-    const withdrawId =
-      Number(req.params.id);
+    const withdrawId = Number(req.params.id);
 
     const adminNote =
       req.body.adminNote || null;
 
-    if (!withdrawId) {
-
+    if (
+      !Number.isInteger(withdrawId) ||
+      withdrawId < 1
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid withdraw ID."
+        message: "Invalid withdraw ID.",
       });
-
     }
 
-    const result =
-      await approveWithdraw(
-        withdrawId,
-        adminNote
-      );
+    const result = await approveWithdraw(
+      withdrawId,
+      adminNote,
+      req.user.id,
+    );
 
     return res.json({
       success: true,
+
       message:
-        "Withdraw approved successfully.",
+        "Withdrawal sent to JayaPay. Waiting for final confirmation.",
+
       data: {
-        withdraw: result
-      }
+        withdraw: result,
+      },
     });
-
   } catch (error) {
-
     next(error);
-
   }
 }
 

@@ -3,6 +3,10 @@ const {
   getMyWithdrawHistory
 } = require("../services/withdraw.service");
 
+const {
+  processJayaPayPayoutCallback,
+} = require("../services/admin-withdraw.service");
+
 
 /* ==========================
    Create Withdraw
@@ -54,8 +58,37 @@ async function myWithdrawHistory(req, res, next) {
   }
 }
 
+async function jayaPayPayoutCallback(
+  req,
+  res,
+) {
+  try {
+    await processJayaPayPayoutCallback(
+      req.body,
+    );
+
+    return res
+      .status(200)
+      .type("text/plain")
+      .send("SUCCESS");
+  } catch (error) {
+    console.error(
+      "JayaPay payout callback rejected:",
+      error.message,
+    );
+
+    return res
+      .status(
+        Number(error.statusCode) || 400,
+      )
+      .type("text/plain")
+      .send("FAIL");
+  }
+}
+
 
 module.exports = {
   createWithdraw,
-  myWithdrawHistory
+  getMyWithdraws,
+  jayaPayPayoutCallback,
 };

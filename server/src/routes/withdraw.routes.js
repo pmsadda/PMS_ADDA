@@ -2,7 +2,9 @@ const express = require("express");
 
 const {
   createWithdraw,
+  jayaPayPayoutCallback,
   myWithdrawHistory
+  
 } = require("../controllers/withdraw.controller");
 
 const {
@@ -10,6 +12,14 @@ const {
 } = require("../middleware/auth.middleware");
 
 const router = express.Router();
+
+router.post(
+  "/gateway/callback",
+  express.json({
+    type: "application/json",
+  }),
+  jayaPayPayoutCallback,
+);
 
 
 /* Create withdraw request */
