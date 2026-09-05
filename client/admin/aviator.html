@@ -1,701 +1,729 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
+    <head>
+        <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="theme-color"
-        content="#111827">
+        <meta
+            name="theme-color"
+            content="#111827">
 
-    <title>Aviator Control | PMS ADDA</title>
+        <title>Aviator Control | PMS ADDA</title>
 
-    <script src="../js/app-config.js"></script>
-    <script src="../js/auth-guard.js"></script>
+        <script src="../js/app-config.js"></script>
+        <script src="../js/auth-guard.js"></script>
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/common.css">
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/admin-kait.css">
+        <link
+            rel="stylesheet"
+            href="../css/admin-kait.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/admin-aviator.css">
-</head>
+        <link
+            rel="stylesheet"
+            href="../css/admin-aviator.css">
+    </head>
 
-<body>
+    <body>
 
-    <!-- Sidebar Overlay -->
+        <!-- Sidebar Overlay -->
 
-    <div
-        class="sidebar-overlay"
-        id="sidebarOverlay">
-    </div>
-
-    <!-- Sidebar -->
-
-    <aside
-        class="sidebar"
-        id="sidebar">
-
-        <div class="sidebar-header">
-
-            <div class="brand-logo">
-                <i class="fa-solid fa-plane"></i>
-            </div>
-
-            <div>
-                <h2>PMS ADDA</h2>
-                <p>Admin Panel</p>
-            </div>
-
-            <button
-                type="button"
-                class="sidebar-close-btn"
-                id="sidebarCloseBtn">
-
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
+        <div
+            class="sidebar-overlay"
+            id="sidebarOverlay">
         </div>
 
-        <nav class="sidebar-menu">
+        <!-- Sidebar -->
 
-            <a
-                href="dashboard.html"
-                class="menu-item">
+        <aside
+            class="sidebar"
+            id="sidebar">
 
-                <i class="fa-solid fa-chart-line"></i>
-                <span>Dashboard</span>
-            </a>
+            <div class="sidebar-header">
 
-            <a
-                href="users.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-users"></i>
-                <span>Users</span>
-            </a>
-
-            <a
-                href="deposits.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-money-bill-transfer"></i>
-                <span>Deposits</span>
-            </a>
-
-            <a
-                href="withdrawals.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-wallet"></i>
-                <span>Withdrawals</span>
-            </a>
-
-            <a
-                href="transactions.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-receipt"></i>
-                <span>Transactions</span>
-            </a>
-
-            <a
-                href="games.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-gamepad"></i>
-                <span>Game Management</span>
-            </a>
-
-            <a
-                href="andar-bahar.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-layer-group"></i>
-                <span>Andar Bahar</span>
-            </a>
-
-            <a
-                href="bangla-wheel.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-circle-notch"></i>
-                <span>Bangla Wheel</span>
-            </a>
-
-            <a
-                href="bangla-dice.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-dice"></i>
-                <span>Bangla Dice</span>
-            </a>
-
-            <a
-                href="kait.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-layer-group"></i>
-                <span>Kait Control</span>
-            </a>
-
-            <a
-                href="aviator.html"
-                class="menu-item active">
-
-                <i class="fa-solid fa-plane"></i>
-                <span>Aviator Control</span>
-            </a>
-
-            <a
-                href="lottery.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-ticket"></i>
-                <span>Lottery Control</span>
-            </a>
-
-            <a
-                href="bots.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-robot"></i>
-                <span>Bots</span>
-            </a>
-
-            <a
-                href="support.html"
-                class="menu-item">
-
-                <i class="fa-solid fa-headset"></i>
-                <span>Support</span>
-            </a>
-
-        </nav>
-
-        <div class="sidebar-footer">
-
-            <button
-                type="button"
-                class="logout-btn"
-                id="logoutBtn">
-
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Logout</span>
-            </button>
-
-        </div>
-
-    </aside>
-
-    <!-- Main -->
-
-    <main class="main-content">
-
-        <header class="topbar">
-
-            <div class="topbar-left">
-
-                <button
-                    type="button"
-                    class="menu-toggle-btn"
-                    id="sidebarOpenBtn">
-
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+                <div class="brand-logo">
+                    <i class="fa-solid fa-plane"></i>
+                </div>
 
                 <div>
-                    <h1>Aviator Control</h1>
-
-                    <p>
-                        Manage Aviator limits, timing,
-                        maintenance and emergency refunds
-                    </p>
+                    <h2>PMS ADDA</h2>
+                    <p>Admin Panel</p>
                 </div>
-
-            </div>
-
-            <div class="topbar-right">
 
                 <button
                     type="button"
-                    class="secondary-btn"
-                    id="refreshSettingsBtn">
+                    class="sidebar-close-btn"
+                    id="sidebarCloseBtn">
 
-                    <i class="fa-solid fa-rotate"></i>
-                    Refresh
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
-
-                <div class="admin-profile">
-
-                    <div class="admin-avatar">
-                        <i class="fa-solid fa-user-shield"></i>
-                    </div>
-
-                    <div class="admin-info">
-
-                        <strong id="adminName">
-                            Admin
-                        </strong>
-
-                        <span>
-                            Administrator
-                        </span>
-
-                    </div>
-
-                </div>
 
             </div>
 
-        </header>
+            <nav class="sidebar-menu">
 
-        <div class="content-wrapper">
+                <a
+                    href="dashboard.html"
+                    class="menu-item">
 
-            <!-- Summary -->
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
 
-            <section class="ab-admin-summary">
+                <a
+                    href="users.html"
+                    class="menu-item">
 
-                <article class="ab-summary-card">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Users</span>
+                </a>
 
-                    <div class="summary-icon">
-                        <i class="fa-solid fa-plane"></i>
-                    </div>
+                <a
+                    href="deposits.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                    <span>Deposits</span>
+                </a>
+
+                <a
+                    href="withdrawals.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Withdrawals</span>
+                </a>
+
+                <a
+                    href="transactions.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>Transactions</span>
+                </a>
+
+                <a
+                    href="games.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>Game Management</span>
+                </a>
+
+                <a
+                    href="andar-bahar.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Andar Bahar</span>
+                </a>
+
+                <a
+                    href="bangla-wheel.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-circle-notch"></i>
+                    <span>Bangla Wheel</span>
+                </a>
+
+                <a
+                    href="bangla-dice.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-dice"></i>
+                    <span>Bangla Dice</span>
+                </a>
+
+                <a
+                    href="kait.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Kait Control</span>
+                </a>
+
+                <a
+                    href="aviator.html"
+                    class="menu-item active">
+
+                    <i class="fa-solid fa-plane"></i>
+                    <span>Aviator Control</span>
+                </a>
+
+                <a
+                    href="lottery.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-ticket"></i>
+                    <span>Lottery Control</span>
+                </a>
+
+                <a
+                    href="bots.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-robot"></i>
+                    <span>Bots</span>
+                </a>
+
+                <a
+                    href="support.html"
+                    class="menu-item">
+
+                    <i class="fa-solid fa-headset"></i>
+                    <span>Support</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <button
+                    type="button"
+                    class="logout-btn"
+                    id="logoutBtn">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+
+            </div>
+
+        </aside>
+
+        <!-- Main -->
+
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <div class="topbar-left">
+
+                    <button
+                        type="button"
+                        class="menu-toggle-btn"
+                        id="sidebarOpenBtn">
+
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
 
                     <div>
-                        <span>Game Status</span>
+                        <h1>Aviator Control</h1>
 
-                        <strong id="summaryGameStatus">
-                            Loading
-                        </strong>
+                        <p>
+                            Manage Aviator limits, timing,
+                            maintenance and emergency refunds
+                        </p>
                     </div>
 
-                </article>
+                </div>
 
-                <article class="ab-summary-card">
+                <div class="topbar-right">
 
-                    <div class="summary-icon green">
-                        <i class="fa-solid fa-coins"></i>
-                    </div>
+                    <button
+                        type="button"
+                        class="secondary-btn"
+                        id="refreshSettingsBtn">
 
-                    <div>
-                        <span>Minimum Bet</span>
+                        <i class="fa-solid fa-rotate"></i>
+                        Refresh
+                    </button>
 
-                        <strong>
-                            ৳<span id="summaryMinimumBet">
-                                0.00
+                    <div class="admin-profile">
+
+                        <div class="admin-avatar">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+
+                        <div class="admin-info">
+
+                            <strong id="adminName">
+                                Admin
+                            </strong>
+
+                            <span>
+                                Administrator
                             </span>
-                        </strong>
-                    </div>
 
-                </article>
-
-                <article class="ab-summary-card">
-
-                    <div class="summary-icon blue">
-                        <i class="fa-solid fa-arrow-up-right-dots"></i>
-                    </div>
-
-                    <div>
-                        <span>Maximum Bet</span>
-
-                        <strong>
-                            ৳<span id="summaryMaximumBet">
-                                0.00
-                            </span>
-                        </strong>
-                    </div>
-
-                </article>
-
-                <article class="ab-summary-card">
-
-                    <div class="summary-icon orange">
-                        <i class="fa-solid fa-percent"></i>
-                    </div>
-
-                    <div>
-                        <span>House Edge</span>
-
-                        <strong>
-                            <span id="summaryHouseEdge">
-                                0.00
-                            </span>%
-                        </strong>
-                    </div>
-
-                </article>
-
-            </section>
-
-            <!-- Settings -->
-
-            <section class="admin-card">
-
-                <div class="admin-card-header">
-
-                    <div>
-
-                        <span class="card-kicker">
-                            Configuration
-                        </span>
-
-                        <h2>
-                            Aviator Game Settings
-                        </h2>
-
-                    </div>
-
-                    <div
-                        class="game-status-badge"
-                        id="gameStatusBadge">
-
-                        Loading
+                        </div>
 
                     </div>
 
                 </div>
 
-                <form
-                    class="settings-form"
-                    id="settingsForm">
+            </header>
 
-                    <!-- Enabled -->
+            <div class="content-wrapper">
 
-                    <label class="toggle-field">
+                <!-- Summary -->
 
-                        <span>
+                <section class="ab-admin-summary">
+
+                    <article class="ab-summary-card">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-plane"></i>
+                        </div>
+
+                        <div>
+                            <span>Game Status</span>
+
+                            <strong id="summaryGameStatus">
+                                Loading
+                            </strong>
+                        </div>
+
+                    </article>
+
+                    <article class="ab-summary-card">
+
+                        <div class="summary-icon green">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+
+                        <div>
+                            <span>Minimum Bet</span>
 
                             <strong>
-                                Game Enabled
+                                ৳<span id="summaryMinimumBet">
+                                    0.00
+                                </span>
                             </strong>
+                        </div>
 
-                            <small>
-                                Allow new Aviator rounds and player bets
-                            </small>
+                    </article>
 
-                        </span>
+                    <article class="ab-summary-card">
 
-                        <input
-                            type="checkbox"
-                            id="gameEnabledInput">
+                        <div class="summary-icon blue">
+                            <i class="fa-solid fa-arrow-up-right-dots"></i>
+                        </div>
 
-                        <i></i>
-
-                    </label>
-
-                    <!-- Maintenance -->
-
-                    <label class="toggle-field">
-
-                        <span>
+                        <div>
+                            <span>Maximum Bet</span>
 
                             <strong>
-                                Maintenance Mode
+                                ৳<span id="summaryMaximumBet">
+                                    0.00
+                                </span>
                             </strong>
+                        </div>
 
-                            <small>
-                                Stop new rounds while existing flying round settles safely
-                            </small>
+                    </article>
 
-                        </span>
+                    <article class="ab-summary-card">
 
-                        <input
-                            type="checkbox"
-                            id="maintenanceModeInput">
+                        <div class="summary-icon orange">
+                            <i class="fa-solid fa-percent"></i>
+                        </div>
 
-                        <i></i>
+                        <div>
+                            <span>House Edge</span>
 
-                    </label>
+                            <strong>
+                                <span id="summaryHouseEdge">
+                                    0.00
+                                </span>%
+                            </strong>
+                        </div>
 
-                    <div class="settings-grid">
+                    </article>
 
-                        <label>
+                </section>
 
-                            <span>
-                                Minimum Bet (৳)
+                <!-- Settings -->
+
+                <section class="admin-card">
+
+                    <div class="admin-card-header">
+
+                        <div>
+
+                            <span class="card-kicker">
+                                Configuration
                             </span>
 
-                            <input
-                                type="number"
-                                id="minimumBetInput"
-                                min="1"
-                                max="1000000"
-                                step="1"
-                                required>
+                            <h2>
+                                Aviator Game Settings
+                            </h2>
 
-                        </label>
+                        </div>
 
-                        <label>
+                        <div
+                            class="game-status-badge"
+                            id="gameStatusBadge">
 
-                            <span>
-                                Maximum Bet (৳)
-                            </span>
+                            Loading
 
-                            <input
-                                type="number"
-                                id="maximumBetInput"
-                                min="1"
-                                max="1000000"
-                                step="1"
-                                required>
-
-                        </label>
-
-                        <label>
-
-                            <span>
-                                Maximum Payout (৳)
-                            </span>
-
-                            <input
-                                type="number"
-                                id="maximumPayoutInput"
-                                min="1"
-                                max="100000000"
-                                step="1"
-                                required>
-
-                        </label>
-
-                        <label>
-
-                            <span>
-                                Betting Time (seconds)
-                            </span>
-
-                            <input
-                                type="number"
-                                id="bettingDurationInput"
-                                min="3"
-                                max="60"
-                                step="1"
-                                required>
-
-                        </label>
-
-                        <label>
-
-                            <span>
-                                Next Round Delay (seconds)
-                            </span>
-
-                            <input
-                                type="number"
-                                id="roundGapInput"
-                                min="1"
-                                max="30"
-                                step="1"
-                                required>
-
-                        </label>
-
-                        <label>
-
-                            <span>
-                                Maximum Multiplier
-                            </span>
-
-                            <input
-                                type="number"
-                                id="maximumMultiplierInput"
-                                min="1.01"
-                                max="10000"
-                                step="0.01"
-                                required>
-
-                        </label>
-
-                        <label>
-
-                            <span>
-                                House Edge (%)
-                            </span>
-
-                            <input
-                                type="number"
-                                id="houseEdgeInput"
-                                min="0"
-                                max="20"
-                                step="0.01"
-                                required>
-
-                        </label>
+                        </div>
 
                     </div>
 
-                    <div class="settings-actions">
+                    <form
+                        class="settings-form"
+                        id="settingsForm">
 
-                        <p id="settingsMessage">
-                            Economic settings apply from the next new round.
-                        </p>
+                        <!-- Enabled -->
+
+                        <label class="toggle-field">
+
+                            <span>
+
+                                <strong>
+                                    Game Enabled
+                                </strong>
+
+                                <small>
+                                    Allow new Aviator rounds and player bets
+                                </small>
+
+                            </span>
+
+                            <input
+                                type="checkbox"
+                                id="gameEnabledInput">
+
+                            <i></i>
+
+                        </label>
+
+                        <!-- Maintenance -->
+
+                        <label class="toggle-field">
+
+                            <span>
+
+                                <strong>
+                                    Maintenance Mode
+                                </strong>
+
+                                <small>
+                                    Stop new rounds while existing flying round
+                                    settles safely
+                                </small>
+
+                            </span>
+
+                            <input
+                                type="checkbox"
+                                id="maintenanceModeInput">
+
+                            <i></i>
+
+                        </label>
+
+                        <div class="settings-grid">
+
+                            <label>
+
+                                <span>
+                                    Minimum Bet (৳)
+                                </span>
+
+                                <input
+                                    type="number"
+                                    id="minimumBetInput"
+                                    min="1"
+                                    max="1000000"
+                                    step="1"
+                                    required>
+
+                            </label>
+
+                            <label>
+
+                                <span>
+                                    Maximum Bet (৳)
+                                </span>
+
+                                <input
+                                    type="number"
+                                    id="maximumBetInput"
+                                    min="1"
+                                    max="1000000"
+                                    step="1"
+                                    required>
+
+                            </label>
+
+                            <label>
+
+                                <span>
+                                    Maximum Payout (৳)
+                                </span>
+
+                                <input
+                                    type="number"
+                                    id="maximumPayoutInput"
+                                    min="1"
+                                    max="100000000"
+                                    step="1"
+                                    required>
+
+                            </label>
+
+                            <label>
+
+                                <span>
+                                    Betting Time (seconds)
+                                </span>
+
+                                <input
+                                    type="number"
+                                    id="bettingDurationInput"
+                                    min="3"
+                                    max="60"
+                                    step="1"
+                                    required>
+
+                            </label>
+
+                            <label>
+
+                                <span>
+                                    Next Round Delay (seconds)
+                                </span>
+
+                                <input
+                                    type="number"
+                                    id="roundGapInput"
+                                    min="1"
+                                    max="30"
+                                    step="1"
+                                    required>
+
+                            </label>
+
+                            <label>
+
+                                <span>
+                                    Maximum Multiplier
+                                </span>
+
+                                <input
+                                    type="number"
+                                    id="maximumMultiplierInput"
+                                    min="1.01"
+                                    max="10000"
+                                    step="0.01"
+                                    required>
+
+                            </label>
+
+                            <label>
+
+                                <span>
+                                    House Edge (%)
+                                </span>
+
+                                <input
+                                    type="number"
+                                    id="houseEdgeInput"
+                                    min="0"
+                                    max="20"
+                                    step="0.01"
+                                    required>
+
+                            </label>
+
+                            <label>
+                                <span>
+                                    Game Mode
+                                </span>
+
+                                <select
+                                    id="volatilityProfileInput"
+                                    required>
+                                    <option value="low">
+                                        Low — Longer Flights
+                                    </option>
+
+                                    <option value="medium">
+                                        Medium — Balanced
+                                    </option>
+
+                                    <option value="high">
+                                        High — Faster Crashes
+                                    </option>
+                                </select>
+                            </label>
+
+                        </div>
+
+                        <div class="settings-actions">
+
+                            <p id="settingsMessage">
+                                Economic settings apply from the next new round.
+                            </p>
+
+                            <button
+                                type="submit"
+                                class="primary-btn"
+                                id="saveSettingsBtn">
+
+                                <i class="fa-solid fa-floppy-disk"></i>
+
+                                Save Settings
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+                <!-- Emergency Control -->
+
+                <section class="admin-card aviator-danger-card">
+
+                    <div class="admin-card-header">
+
+                        <div>
+
+                            <span class="card-kicker danger">
+                                Emergency Control
+                            </span>
+
+                            <h2>
+                                Cancel Round & Refund
+                            </h2>
+
+                        </div>
+
+                        <i
+                            class="fa-solid fa-triangle-exclamation danger-icon"></i>
+
+                    </div>
+
+                    <p class="aviator-danger-description">
+                        Use this only when a round must be cancelled.
+                        Only bets that are still in placed status will be
+                        refunded.
+                        Already cashed-out bets are not refunded.
+                    </p>
+
+                    <div class="aviator-cancel-grid">
+
+                        <label>
+
+                            <span>
+                                Round ID
+                            </span>
+
+                            <input
+                                type="number"
+                                id="cancelRoundIdInput"
+                                min="1"
+                                step="1"
+                                placeholder="Enter active round ID">
+
+                        </label>
 
                         <button
-                            type="submit"
-                            class="primary-btn"
-                            id="saveSettingsBtn">
+                            type="button"
+                            class="aviator-cancel-button"
+                            id="cancelRoundBtn">
 
-                            <i class="fa-solid fa-floppy-disk"></i>
+                            <i class="fa-solid fa-rotate-left"></i>
 
-                            Save Settings
+                            Cancel & Refund
                         </button>
 
                     </div>
 
-                </form>
+                    <p
+                        class="aviator-cancel-message"
+                        id="cancelRoundMessage">
+                    </p>
 
-            </section>
+                </section>
 
-            <!-- Emergency Control -->
+                <!-- Fairness Note -->
 
-            <section class="admin-card aviator-danger-card">
+                <section class="admin-card">
 
-                <div class="admin-card-header">
+                    <div class="admin-card-header">
 
-                    <div>
+                        <div>
 
-                        <span class="card-kicker danger">
-                            Emergency Control
-                        </span>
+                            <span class="card-kicker">
+                                Fair Play
+                            </span>
 
-                        <h2>
-                            Cancel Round & Refund
-                        </h2>
+                            <h2>
+                                Result Protection
+                            </h2>
 
-                    </div>
+                        </div>
 
-                    <i class="fa-solid fa-triangle-exclamation danger-icon"></i>
-
-                </div>
-
-                <p class="aviator-danger-description">
-                    Use this only when a round must be cancelled.
-                    Only bets that are still in placed status will be refunded.
-                    Already cashed-out bets are not refunded.
-                </p>
-
-                <div class="aviator-cancel-grid">
-
-                    <label>
-
-                        <span>
-                            Round ID
-                        </span>
-
-                        <input
-                            type="number"
-                            id="cancelRoundIdInput"
-                            min="1"
-                            step="1"
-                            placeholder="Enter active round ID">
-
-                    </label>
-
-                    <button
-                        type="button"
-                        class="aviator-cancel-button"
-                        id="cancelRoundBtn">
-
-                        <i class="fa-solid fa-rotate-left"></i>
-
-                        Cancel & Refund
-                    </button>
-
-                </div>
-
-                <p
-                    class="aviator-cancel-message"
-                    id="cancelRoundMessage">
-                </p>
-
-            </section>
-
-            <!-- Fairness Note -->
-
-            <section class="admin-card">
-
-                <div class="admin-card-header">
-
-                    <div>
-
-                        <span class="card-kicker">
-                            Fair Play
-                        </span>
-
-                        <h2>
-                            Result Protection
-                        </h2>
+                        <i class="fa-solid fa-shield-halved"></i>
 
                     </div>
 
-                    <i class="fa-solid fa-shield-halved"></i>
+                    <div class="aviator-fairness-notice">
 
-                </div>
+                        <i class="fa-solid fa-lock"></i>
 
-                <div class="aviator-fairness-notice">
+                        <div>
 
-                    <i class="fa-solid fa-lock"></i>
+                            <strong>
+                                Active crash points cannot be changed from
+                                Admin.
+                            </strong>
 
-                    <div>
+                            <p>
+                                House edge and multiplier limits are snapshotted
+                                when a new round is created. Settings changes do
+                                not
+                                secretly alter a round after players have placed
+                                bets.
+                            </p>
 
-                        <strong>
-                            Active crash points cannot be changed from Admin.
-                        </strong>
-
-                        <p>
-                            House edge and multiplier limits are snapshotted
-                            when a new round is created. Settings changes do not
-                            secretly alter a round after players have placed bets.
-                        </p>
+                        </div>
 
                     </div>
 
-                </div>
+                </section>
 
-            </section>
+            </div>
+
+        </main>
+
+        <!-- Loading -->
+
+        <div
+            class="admin-loading"
+            id="adminLoading">
+
+            <div class="admin-spinner"></div>
+
+            <p>
+                Loading Aviator control...
+            </p>
 
         </div>
 
-    </main>
+        <!-- Toast -->
 
-    <!-- Loading -->
+        <div
+            class="admin-toast"
+            id="adminToast"
+            role="status"
+            aria-live="polite">
+        </div>
 
-    <div
-        class="admin-loading"
-        id="adminLoading">
+        <script src="../js/admin-aviator.js"></script>
 
-        <div class="admin-spinner"></div>
-
-        <p>
-            Loading Aviator control...
-        </p>
-
-    </div>
-
-    <!-- Toast -->
-
-    <div
-        class="admin-toast"
-        id="adminToast"
-        role="status"
-        aria-live="polite">
-    </div>
-
-    <script src="../js/admin-aviator.js"></script>
-
-</body>
+    </body>
 
 </html>

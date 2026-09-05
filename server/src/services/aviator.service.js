@@ -247,41 +247,61 @@ function generateAviatorCrash({
     .update(`${serverSeed}:${cleanRoundCode}`)
     .digest("hex");
 
-  const randomValue = hashToRandom(resultHash.slice(0, 13));
+ const rangeSelector =
+  hashToRandom(
+    resultHash.slice(0, 13),
+  );
 
-  /*
-   * Crash distribution:
-   *
-   * P(crash > x)
-   * approximately =
-   * (1 - houseEdge) / x
-   *
-   * 3% edge => theoretical RTP ~97%
-   * for cashout values below maxMultiplier.
-   */
-  const denominator = Math.max(Number.EPSILON, 1 - randomValue);
+const multiplierSelector =
+  hashToRandom(
+    resultHash.slice(13, 26),
+  );
 
-  const rawMultiplier = (1 - houseEdge) / denominator;
+const selectedRange =
+  pickCrashRange(
+    profile,
+    rangeSelector,
+  );
 
-  /*
-   * CEIL করা গুরুত্বপূর্ণ।
-   *
-   * Cashout সফল হয় যখন:
-   * cashoutMultiplier < crashMultiplier
-   *
-   * তাই 2-decimal result-এর সাথে
-   * target house edge কাছাকাছি থাকে।
-   */
-  let crashMultiplier = Math.ceil(rawMultiplier * 100) / 100;
+const rangeSize =
+  selectedRange.max -
+  selectedRange.min;
 
-  /*
-   * Lowest displayed crash = 1.01x
-   */
-  crashMultiplier = Math.max(1.01, crashMultiplier);
+let crashMultiplier =
+  selectedRange.min +
+  rangeSize * multiplierSelector;
 
-  crashMultiplier = Math.min(crashMultiplier, maximum);
+/*
+ * House edge multiplier-এর ওপর
+ * server-side apply হবে।
+ */
+crashMultiplier *=
+  1 - houseEdge;
 
-  crashMultiplier = Number(crashMultiplier.toFixed(2));
+/*
+ * দুই decimal multiplier।
+ */
+crashMultiplier =
+  Math.ceil(
+    crashMultiplier * 100,
+  ) / 100;
+
+crashMultiplier =
+  Math.max(
+    1.01,
+    crashMultiplier,
+  );
+
+crashMultiplier =
+  Math.min(
+    crashMultiplier,
+    maximum,
+  );
+
+crashMultiplier =
+  Number(
+    crashMultiplier.toFixed(2),
+  );
 
   return {
     crashMultiplier,
@@ -387,6 +407,7 @@ async function updateGameSettings({
   roundGapSeconds,
   maxMultiplier,
   houseEdgePercent,
+  volatilityProfile,
 }) {
   const validAdminId = Number(adminId);
 
@@ -414,7 +435,8 @@ async function updateGameSettings({
             betting_seconds,
             round_gap_seconds,
             max_multiplier,
-            house_edge_percent
+            house_edge_percent,
+volatility_profile
           FROM aviator_settings
           WHERE id = 1
           LIMIT 1
@@ -516,6 +538,23 @@ async function updateGameSettings({
       "houseEdgePercent",
     );
 
+    const nextVolatilityProfile =
+      volatilityProfile === undefined ||
+      volatilityProfile === null ||
+      String(volatilityProfile).trim() === ""
+        ? String(current.volatility_profile || "medium")
+            .trim()
+            .toLowerCase()
+        : String(volatilityProfile).trim().toLowerCase();
+
+    if (!["low", "medium", "high"].includes(nextVolatilityProfile)) {
+      throw createGameError(
+        "Game mode must be low, medium or high.",
+        400,
+        "AVIATOR_INVALID_VOLATILITY_PROFILE",
+      );
+    }
+
     if (nextMinBet < 1 || nextMinBet > 1000000) {
       throw createGameError(
         "Minimum bet must be between 1 and 1000000.",
@@ -593,7 +632,8 @@ async function updateGameSettings({
           round_gap_seconds = ?,
           max_multiplier = ?,
           house_edge_percent = ?,
-          updated_by = ?
+volatility_profile = ?,
+updated_by = ?
         WHERE id = 1
       `,
       [
@@ -606,6 +646,7 @@ async function updateGameSettings({
         nextRoundGapSeconds,
         Number(nextMaxMultiplier.toFixed(2)),
         Number(nextHouseEdgePercent.toFixed(2)),
+        nextVolatilityProfile,
         validAdminId,
       ],
     );
@@ -1011,9 +1052,8 @@ async function startFlight(roundId) {
       );
     }
 
-   const [flightUpdateResult] =
-  await connection.execute(
-    `
+    const [flightUpdateResult] = await connection.execute(
+      `
     UPDATE aviator_rounds
     SET
       status = 'flying',
@@ -1022,16 +1062,16 @@ async function startFlight(roundId) {
     WHERE id = ?
       AND status = 'betting'
     `,
-    [Number(roundId)],
-  );
+      [Number(roundId)],
+    );
 
-if (flightUpdateResult.affectedRows !== 1) {
-  throw createGameError(
-    "Aviator flight could not be started.",
-    409,
-    "AVIATOR_FLIGHT_START_FAILED",
-  );
-}
+    if (flightUpdateResult.affectedRows !== 1) {
+      throw createGameError(
+        "Aviator flight could not be started.",
+        409,
+        "AVIATOR_FLIGHT_START_FAILED",
+      );
+    }
 
     await connection.commit();
 
@@ -1057,14 +1097,28 @@ async function crashRound(roundId) {
 
     const [rows] = await connection.execute(
       `
-          SELECT
-            id,
-            status
-          FROM aviator_rounds
-          WHERE id = ?
-          LIMIT 1
-          FOR UPDATE
-        `,
+  SELECT
+    id,
+    status,
+    crash_multiplier,
+
+    ROUND(
+      UNIX_TIMESTAMP(
+        flight_started_at
+      ) * 1000
+    ) AS flight_started_at_ms,
+
+    ROUND(
+      UNIX_TIMESTAMP(
+        CURRENT_TIMESTAMP(3)
+      ) * 1000
+    ) AS db_now_ms
+
+  FROM aviator_rounds
+  WHERE id = ?
+  LIMIT 1
+  FOR UPDATE
+  `,
       [Number(roundId)],
     );
 
@@ -1209,8 +1263,7 @@ async function getPublicGameState() {
       `,
     );
 
-    roundForPublicState =
-      latestRows[0] || null;
+    roundForPublicState = latestRows[0] || null;
   }
 
   return {
@@ -1225,13 +1278,10 @@ async function getPublicGameState() {
       bettingSeconds: settings.bettingSeconds,
       roundGapSeconds: settings.roundGapSeconds,
       maxMultiplier: settings.maxMultiplier,
-      volatilityProfile:
-        settings.volatilityProfile,
+      volatilityProfile: settings.volatilityProfile,
     },
 
-    round: roundForPublicState
-      ? mapRoundRow(roundForPublicState)
-      : null,
+    round: roundForPublicState ? mapRoundRow(roundForPublicState) : null,
   };
 }
 

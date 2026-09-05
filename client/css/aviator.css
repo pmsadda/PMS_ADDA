@@ -1187,3 +1187,13 @@ body {
     min-height: 120px;
   }
 }
+
+/* Plane moves only upward with live multiplier */
+.aviator-stage.flying .plane-wrapper {
+  opacity: 1;
+  animation: none !important;
+  transition:
+    left 100ms linear,
+    bottom 100ms linear;
+  transform: rotate(-12deg);
+}

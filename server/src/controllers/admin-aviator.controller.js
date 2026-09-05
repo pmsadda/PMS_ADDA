@@ -113,6 +113,9 @@ async function updateSettings(
 
         houseEdgePercent:
           req.body?.houseEdgePercent,
+
+          volatilityProfile:
+  req.body?.volatilityProfile,
       });
 
     const io =

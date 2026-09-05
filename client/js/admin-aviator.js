@@ -50,6 +50,11 @@
 
     houseEdgeInput: document.getElementById("houseEdgeInput"),
 
+    volatilityProfileInput:
+  document.getElementById(
+    "volatilityProfileInput",
+  ),
+
     saveSettingsButton: document.getElementById("saveSettingsBtn"),
 
     settingsMessage: document.getElementById("settingsMessage"),
@@ -355,6 +360,25 @@
       DOM.houseEdgeInput.value = String(houseEdgePercent);
     }
 
+    const volatilityProfile = [
+  "low",
+  "medium",
+  "high",
+].includes(
+  String(
+    settings.volatilityProfile || "",
+  ).toLowerCase(),
+)
+  ? String(
+      settings.volatilityProfile,
+    ).toLowerCase()
+  : "medium";
+
+if (DOM.volatilityProfileInput) {
+  DOM.volatilityProfileInput.value =
+    volatilityProfile;
+}
+
     if (DOM.summaryMinimumBet) {
       DOM.summaryMinimumBet.textContent = formatMoney(minBet);
     }
@@ -436,6 +460,25 @@
 
     const houseEdgePercent = toNumber(DOM.houseEdgeInput?.value, NaN);
 
+    const volatilityProfile = String(
+  DOM.volatilityProfileInput?.value ||
+    "medium",
+)
+  .trim()
+  .toLowerCase();
+
+if (
+  ![
+    "low",
+    "medium",
+    "high",
+  ].includes(volatilityProfile)
+) {
+  throw new Error(
+    "Select a valid game mode.",
+  );
+}
+
     if (!Number.isFinite(minBet) || minBet <= 0) {
       throw new Error("Minimum bet must be greater than 0.");
     }
@@ -490,6 +533,8 @@
       maxMultiplier,
 
       houseEdgePercent,
+      
+      volatilityProfile,
     };
   }
 

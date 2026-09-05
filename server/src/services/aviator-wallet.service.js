@@ -1582,17 +1582,17 @@ async function getPlayerAviatorState({ userId }) {
   }
 
   const [userRows] = await pool.query(
-    `
-    SELECT
-  id,
-  round_code,
-  status
-FROM aviator_rounds
-ORDER BY id DESC
-LIMIT 1
-    `,
-    [validUserId],
-  );
+  `
+  SELECT
+    id,
+    wallet_balance,
+    account_status
+  FROM users
+  WHERE id = ?
+  LIMIT 1
+  `,
+  [validUserId],
+);
 
   const user = userRows[0];
 
@@ -1604,7 +1604,11 @@ LIMIT 1
     );
   }
 
-  if (String(user.account_status) !== "active") {
+  if (
+  String(
+    user.account_status || "",
+  ).toLowerCase() !== "active"
+) {
     throw createGameError(
       "User account is not active.",
       403,
