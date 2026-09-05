@@ -63,7 +63,12 @@ d.receiver_account_identifier,
 d.receiver_account_type,
 
 d.sender_number,
-          d.transaction_number,
+d.transaction_number,
+
+d.gateway_order_id,
+d.gateway_trade_no,
+d.gateway_status,
+
 d.amount,
 
 d.payment_asset,
@@ -124,9 +129,22 @@ d.bonus_amount,
 
     senderNumber: row.sender_number,
 
-    transactionNumber: row.transaction_number,
+   transactionNumber:
+  row.transaction_number,
 
-    amount: Number(row.amount),
+gatewayOrderId:
+  row.gateway_order_id ||
+  null,
+
+gatewayTradeNumber:
+  row.gateway_trade_no ||
+  null,
+
+gatewayStatus:
+  row.gateway_status ||
+  null,
+
+amount: Number(row.amount),
 
     paymentAsset: row.payment_asset || "BDT",
 
