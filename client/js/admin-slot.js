@@ -569,9 +569,12 @@ function renderDailyStats(items) {
 }
 
 async function loadDashboard() {
-  const data = await apiRequest(
+  const responseData = await apiRequest(
     "/api/admin/slot/dashboard?limit=100",
   );
+
+  const data =
+    responseData.dashboard || responseData;
 
   const history =
     data.history ||

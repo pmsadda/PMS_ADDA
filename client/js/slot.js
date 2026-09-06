@@ -410,7 +410,11 @@ async function spin() {
       }),
     });
 
-    const result = await animateSpinUntil(requestPromise);
+   const responseData =
+  await animateSpinUntil(requestPromise);
+
+const result =
+  responseData.spin || responseData;
 
     renderGrid(result.grid);
     markWinningCells(result.winningLines);
