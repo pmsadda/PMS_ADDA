@@ -294,7 +294,9 @@ function markWinningCells(winningLines) {
 ========================= */
 
 async function loadGameState() {
-  const data = await apiRequest("/api/slot/state");
+  const responseData = await apiRequest("/api/slot/state");
+
+  const data = responseData.state || responseData;
 
   const settings = data.settings || data;
   const player = data.player || data.playerState || data;
