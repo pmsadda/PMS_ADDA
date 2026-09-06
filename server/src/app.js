@@ -54,14 +54,17 @@ const andarBaharRoutes = require("./routes/andar-bahar.routes");
 
 const banglaWheelRoutes = require("./routes/bangla-wheel.routes");
 
+const slotRoutes = require("./routes/slot.routes");
+
+const adminSlotRoutes = require("./routes/admin-slot.routes");
+
 const adminAndarBaharRoutes = require("./routes/admin-andar-bahar.routes");
 
 const adminBanglaWheelRoutes = require("./routes/admin-bangla-wheel.routes");
 
 const adminBanglaDiceRoutes = require("./routes/admin-bangla-dice.routes");
 
-const adminAviatorRoutes =
-  require("./routes/admin-aviator.routes");
+const adminAviatorRoutes = require("./routes/admin-aviator.routes");
 
 const banglaDiceRoutes = require("./routes/bangla-dice.routes");
 
@@ -235,7 +238,6 @@ app.use(
   }),
 );
 
-
 app.use(
   "/uploads",
   express.static(path.resolve(__dirname, "../uploads"), {
@@ -284,15 +286,9 @@ app.get("/client/pages/login.html", (req, res) => {
 app.get("/client/pages/:page.html", (req, res) => {
   const queryIndex = req.originalUrl.indexOf("?");
 
-  const query =
-    queryIndex >= 0
-      ? req.originalUrl.slice(queryIndex)
-      : "";
+  const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : "";
 
-  return res.redirect(
-    301,
-    `/${req.params.page}${query}`,
-  );
+  return res.redirect(301, `/${req.params.page}${query}`);
 });
 
 /* =========================================================
@@ -302,29 +298,17 @@ app.get("/client/pages/:page.html", (req, res) => {
 app.get("/pages/:page.html", (req, res) => {
   const queryIndex = req.originalUrl.indexOf("?");
 
-  const query =
-    queryIndex >= 0
-      ? req.originalUrl.slice(queryIndex)
-      : "";
+  const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : "";
 
-  return res.redirect(
-    301,
-    `/${req.params.page}${query}`,
-  );
+  return res.redirect(301, `/${req.params.page}${query}`);
 });
 
 app.get("/:page.html", (req, res) => {
   const queryIndex = req.originalUrl.indexOf("?");
 
-  const query =
-    queryIndex >= 0
-      ? req.originalUrl.slice(queryIndex)
-      : "";
+  const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : "";
 
-  return res.redirect(
-    301,
-    `/${req.params.page}${query}`,
-  );
+  return res.redirect(301, `/${req.params.page}${query}`);
 });
 
 app.use(
@@ -379,6 +363,10 @@ app.use("/api/deposits", depositRoutes);
 app.use("/api/admin/deposits", adminDepositRoutes);
 
 app.use("/api/withdraws", withdrawRoutes);
+
+app.use("/api/slot", slotRoutes);
+
+app.use("/api/admin/slot", adminSlotRoutes);
 
 app.use("/api/wallet", walletRoutes);
 
@@ -442,10 +430,7 @@ app.use("/api/admin/lottery", adminLotteryRoutes);
 
 app.use("/api/support", supportRoutes);
 
-app.use(
-  "/api/admin/aviator",
-  adminAviatorRoutes,
-);
+app.use("/api/admin/aviator", adminAviatorRoutes);
 
 /* ==========================
 

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1"
+  >
+
+  <title>Slot | PMS ADDA</title>
+
+  <link rel="stylesheet" href="../css/slot.css">
+</head>
+
+<body>
+  <div class="slot-loading" id="slotLoading">
+    <div class="loading-icon">🎰</div>
+    <strong>Slot Loading...</strong>
+  </div>
+
+  <header class="slot-header">
+    <button
+      type="button"
+      class="icon-button"
+      id="backBtn"
+      aria-label="Back"
+    >
+      ←
+    </button>
+
+    <div class="slot-title">
+      <span>PMS ADDA</span>
+      <h1>Royal Slot</h1>
+    </div>
+
+    <div class="wallet-box">
+      <span>Balance</span>
+      <strong>৳<span id="walletBalance">0.00</span></strong>
+    </div>
+  </header>
+
+  <main class="slot-container">
+    <section class="slot-status-bar">
+      <div>
+        <span>Mode</span>
+        <strong id="volatilityMode">--</strong>
+      </div>
+
+      <div>
+        <span>Free Spins</span>
+        <strong id="freeSpinBalance">0</strong>
+      </div>
+
+      <div>
+        <span>Maximum Win</span>
+        <strong id="maximumMultiplier">--</strong>
+      </div>
+    </section>
+
+    <section class="slot-machine">
+      <div class="machine-top">
+        <span>★</span>
+        <h2>ROYAL FORTUNE</h2>
+        <span>★</span>
+      </div>
+
+      <div class="slot-message" id="slotMessage">
+        Bet নির্বাচন করে SPIN করুন
+      </div>
+
+      <div class="slot-reels" id="slotReels">
+        <div class="reel-cell" data-cell="0">🍒</div>
+        <div class="reel-cell" data-cell="1">🍋</div>
+        <div class="reel-cell" data-cell="2">🍊</div>
+        <div class="reel-cell" data-cell="3">🍇</div>
+        <div class="reel-cell" data-cell="4">🔔</div>
+
+        <div class="reel-cell" data-cell="5">🍋</div>
+        <div class="reel-cell" data-cell="6">7️⃣</div>
+        <div class="reel-cell" data-cell="7">⭐</div>
+        <div class="reel-cell" data-cell="8">🍒</div>
+        <div class="reel-cell" data-cell="9">🍊</div>
+
+        <div class="reel-cell" data-cell="10">🍇</div>
+        <div class="reel-cell" data-cell="11">🔔</div>
+        <div class="reel-cell" data-cell="12">🍒</div>
+        <div class="reel-cell" data-cell="13">🍋</div>
+        <div class="reel-cell" data-cell="14">7️⃣</div>
+      </div>
+
+      <div class="win-panel">
+        <div>
+          <span>Last Win</span>
+          <strong>৳<span id="lastWin">0.00</span></strong>
+        </div>
+
+        <div>
+          <span>Multiplier</span>
+          <strong id="lastMultiplier">0.00x</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="slot-controls">
+      <div class="bet-control">
+        <button
+          type="button"
+          class="bet-change-button"
+          id="decreaseBetBtn"
+        >
+          −
+        </button>
+
+        <div class="bet-value">
+          <span>Total Bet</span>
+
+          <strong>
+            ৳<span id="betAmountDisplay">10.00</span>
+          </strong>
+        </div>
+
+        <button
+          type="button"
+          class="bet-change-button"
+          id="increaseBetBtn"
+        >
+          +
+        </button>
+      </div>
+
+      <div class="quick-bets" id="quickBets">
+        <button type="button" data-bet="10">৳10</button>
+        <button type="button" data-bet="20">৳20</button>
+        <button type="button" data-bet="50">৳50</button>
+        <button type="button" data-bet="100">৳100</button>
+        <button type="button" data-bet="500">৳500</button>
+      </div>
+
+      <button
+        type="button"
+        class="spin-button"
+        id="spinBtn"
+      >
+        <span class="spin-icon">↻</span>
+        <strong id="spinButtonText">SPIN</strong>
+      </button>
+    </section>
+
+    <section class="slot-information">
+      <button
+        type="button"
+        class="information-tab active"
+        data-tab="history"
+      >
+        Spin History
+      </button>
+
+      <button
+        type="button"
+        class="information-tab"
+        data-tab="paytable"
+      >
+        Paytable
+      </button>
+
+      <div class="tab-content active" id="historyTab">
+        <div class="history-list" id="spinHistory">
+          <p class="empty-message">কোনো Spin history নেই</p>
+        </div>
+      </div>
+
+      <div class="tab-content" id="paytableTab">
+        <div class="paytable-grid">
+          <div><span>🍒</span><strong>2x – 10x</strong></div>
+          <div><span>🍋</span><strong>3x – 15x</strong></div>
+          <div><span>🍊</span><strong>4x – 25x</strong></div>
+          <div><span>🍇</span><strong>5x – 40x</strong></div>
+          <div><span>🔔</span><strong>8x – 75x</strong></div>
+          <div><span>7️⃣</span><strong>12x – 150x</strong></div>
+          <div><span>⭐</span><strong>Wild</strong></div>
+          <div><span>💎</span><strong>Scatter</strong></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="slot-notice hidden" id="slotNotice">
+    <strong id="noticeTitle">Notice</strong>
+    <span id="noticeMessage"></span>
+  </div>
+
+  <script src="../js/slot.js"></script>
+</body>
+</html>

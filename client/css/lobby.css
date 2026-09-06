@@ -5214,3 +5214,171 @@ button:focus{
     font-size: 11px !important;
   }
 }
+
+/* =========================
+   Royal Slot Lobby Card
+========================= */
+
+.slot-game-card {
+  overflow: hidden;
+  border-color: rgba(255, 198, 36, 0.55);
+  background:
+    radial-gradient(circle at top, rgba(103, 25, 126, 0.45), transparent 45%),
+    linear-gradient(160deg, #211129, #100c16);
+}
+
+.slot-card-visual {
+  position: relative;
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, rgba(255, 212, 71, 0.18), transparent 52%),
+    linear-gradient(145deg, #70183d, #271037 60%, #0e0b13);
+}
+
+.slot-card-visual::before,
+.slot-card-visual::after {
+  content: "★";
+  position: absolute;
+  color: rgba(255, 211, 62, 0.25);
+  font-size: 65px;
+}
+
+.slot-card-visual::before {
+  top: -10px;
+  left: 8px;
+  transform: rotate(-20deg);
+}
+
+.slot-card-visual::after {
+  right: 7px;
+  bottom: -18px;
+  transform: rotate(20deg);
+}
+
+.slot-live-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #ed174c;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.slot-live-badge i {
+  font-size: 6px;
+}
+
+.slot-card-machine {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  padding: 9px;
+  border: 3px solid #f7bc22;
+  border-radius: 15px;
+  background: #160d1d;
+  box-shadow:
+    0 0 22px rgba(255, 198, 36, 0.35),
+    inset 0 0 10px #000000;
+}
+
+.slot-card-machine span {
+  width: 53px;
+  height: 63px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background:
+    radial-gradient(circle, #fffad5, #eeb83e 62%, #995304);
+  font-size: 35px;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.7);
+}
+
+.slot-card-visual > strong {
+  position: relative;
+  z-index: 2;
+  color: #ffce38;
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 6px #000000;
+}
+
+.slot-lobby-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.slot-lobby-features span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 198, 36, 0.22);
+  border-radius: 20px;
+  background: rgba(255, 198, 36, 0.08);
+  color: #ffd75c;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.slot-lobby-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: auto;
+  text-decoration: none;
+  background: linear-gradient(180deg, #ffcd35, #e79a05);
+  color: #261500;
+}
+
+.slot-lobby-play-btn:hover {
+  filter: brightness(1.08);
+}
+
+@media (max-width: 600px) {
+  .slot-card-visual {
+    min-height: 130px;
+  }
+
+  .slot-card-machine {
+    padding: 6px;
+  }
+
+  .slot-card-machine span {
+    width: 38px;
+    height: 48px;
+    font-size: 26px;
+  }
+
+  .slot-card-visual > strong {
+    font-size: 14px;
+  }
+
+  .slot-lobby-features {
+    gap: 4px;
+  }
+
+  .slot-lobby-features span {
+    min-height: 22px;
+    padding: 3px 6px;
+    font-size: 8px;
+  }
+}
