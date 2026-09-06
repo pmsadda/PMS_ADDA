@@ -7,7 +7,7 @@
 const loadingElement = document.getElementById("slotLoading");
 const backButton = document.getElementById("backBtn");
 const walletBalanceElement = document.getElementById("walletBalance");
-const volatilityElement = document.getElementById("volatilityMode");
+
 const freeSpinElement = document.getElementById("freeSpinBalance");
 const maximumMultiplierElement =
   document.getElementById("maximumMultiplier");
@@ -252,7 +252,6 @@ function renderGrid(grid) {
     cell.textContent = symbolIcons[symbol] || symbol || "❔";
   });
 }
-
 function markWinningCells(winningLines) {
   clearWinningCells();
 
@@ -261,32 +260,108 @@ function markWinningCells(winningLines) {
   }
 
   winningLines.forEach((line) => {
+    /*
+     * Backend rows example:
+     * [0, 0, 0, 0, 0] = ওপরের horizontal line
+     * [1, 1, 1, 1, 1] = মাঝের horizontal line
+     * [0, 1, 2, 1, 0] = V-shaped line
+     */
+
+    if (Array.isArray(line.rows)) {
+      const matchingCount = Math.min(
+        5,
+        Math.max(0, Number(line.matchingCount) || 0),
+      );
+
+      for (
+        let column = 0;
+        column < matchingCount;
+        column += 1
+      ) {
+        const row = Number(line.rows[column]);
+        const index = row * 5 + column;
+
+        if (reelCells[index]) {
+          reelCells[index].classList.add("winning");
+        }
+      }
+
+      return;
+    }
+
     const positions =
       line.positions ||
       line.cells ||
       line.indexes ||
       [];
 
-    if (Array.isArray(positions)) {
-      positions.forEach((position) => {
-        let index = Number(position);
-
-        if (
-          position &&
-          typeof position === "object"
-        ) {
-          const row = Number(position.row);
-          const column = Number(position.column);
-
-          index = row * 5 + column;
-        }
-
-        if (reelCells[index]) {
-          reelCells[index].classList.add("winning");
-        }
-      });
+    if (!Array.isArray(positions)) {
+      return;
     }
+
+    positions.forEach((position) => {
+      let index = Number(position);
+
+      if (
+        position &&
+        typeof position === "object"
+      ) {
+        const row = Number(position.row);
+        const column = Number(position.column);
+
+        index = row * 5 + column;
+      }
+
+      if (reelCells[index]) {
+        reelCells[index].classList.add("winning");
+      }
+    });
   });
+}
+
+function createWinningMessage(result) {
+  const winningLines = Array.isArray(result.winningLines)
+    ? result.winningLines
+    : [];
+
+  if (winningLines.length === 0) {
+    return `আপনি ৳${money(result.payoutAmount)} জিতেছেন!`;
+  }
+
+  const details = winningLines
+    .slice(0, 3)
+    .map((line) => {
+      const symbolName = String(
+        line.symbol || "Symbol",
+      ).toUpperCase();
+
+      const symbolIcon =
+        symbolIcons[symbolName] || symbolName;
+
+      const lineNumber =
+        Number(line.lineNumber) + 1;
+
+      const matchingCount =
+        Number(line.matchingCount) || 0;
+
+      const multiplier =
+        Number(line.lineMultiplier) || 0;
+
+      return `Line ${lineNumber}: ${symbolIcon} ×${matchingCount} = ${multiplier}x`;
+    })
+    .join(" | ");
+
+  const extraLineCount =
+    winningLines.length - 3;
+
+  const extraText =
+    extraLineCount > 0
+      ? ` | আরও ${extraLineCount}টি line`
+      : "";
+
+  return `${details}${extraText} • Win ৳${money(
+    result.payoutAmount,
+  )}`;
 }
 
 /* =========================
@@ -325,9 +400,6 @@ async function loadGameState() {
 
   walletBalanceElement.textContent =
     money(state.walletBalance);
-
-  volatilityElement.textContent =
-    settings.volatilityProfile || "Medium";
 
   maximumMultiplierElement.textContent =
     `${Number(settings.maxWinMultiplier || 0)}x`;
@@ -436,16 +508,12 @@ const result =
     lastMultiplierElement.textContent =
       `${Number(result.winMultiplier || 0).toFixed(2)}x`;
 
-    volatilityElement.textContent =
-      result.volatilityProfile ||
-      volatilityElement.textContent;
+   if (Number(result.payoutAmount) > 0) {
+  messageElement.textContent =
+    createWinningMessage(result);
 
-    if (Number(result.payoutAmount) > 0) {
-      messageElement.textContent =
-        `আপনি ৳${money(result.payoutAmount)} জিতেছেন!`;
-
-      messageElement.classList.add("win");
-    } else {
+  messageElement.classList.add("win");
+}else {
       messageElement.textContent =
         "এই Spin-এ Win হয়নি—আবার চেষ্টা করুন";
     }
