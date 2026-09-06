@@ -4200,10 +4200,7 @@ async function creditTeenPattiWinner(
 
       WHERE id = ?
       `,
-      [
-        validPrizeAmount,
-        winner.userId,
-      ],
+      [validPrizeAmount, winner.userId],
     );
 
     assertCondition(
@@ -4456,14 +4453,34 @@ async function settleTeenPattiHandWithinTransaction(
     DEFAULT_SERVICE_CHARGE_PERCENT,
   );
 
-  const serviceChargeAmount = calculatePercentage(
-    grossPot,
-    serviceChargePercent,
+  /*
+   * আগে gross pot সমানভাবে ভাগ হবে।
+   * এরপর শুধু real winner-এর share থেকে
+   * service charge কাটা হবে।
+   * Bot winner-এর share-এ service charge 0।
+   */
+  const grossPrizeShares = distributePrizeMoney(grossPot, winners.length);
+
+  const prizeShares = grossPrizeShares.map((grossShare, index) => {
+    const winner = winners[index];
+
+    if (winner.playerType === PLAYER_TYPE.BOT) {
+      return grossShare;
+    }
+
+    const winnerServiceCharge = calculatePercentage(
+      grossShare,
+      serviceChargePercent,
+    );
+
+    return parseMoney(grossShare - winnerServiceCharge);
+  });
+
+  const distributableAmount = parseMoney(
+    prizeShares.reduce((total, amount) => total + amount, 0),
   );
 
-  const distributableAmount = parseMoney(grossPot - serviceChargeAmount);
-
-  const prizeShares = distributePrizeMoney(distributableAmount, winners.length);
+  const serviceChargeAmount = parseMoney(grossPot - distributableAmount);
 
   const winnerResults = [];
 
@@ -4536,7 +4553,7 @@ async function settleTeenPattiHandWithinTransaction(
 
       handRankName: evaluation.rankName,
 
-      grossShare: prizeAmount,
+      grossShare: grossPrizeShares[index],
 
       prizeAmount,
 
@@ -5892,40 +5909,22 @@ function decideTeenPattiBotAction(bot, hand, activePlayerCount) {
   };
 }
 
-function shouldBotRequestShow(
-  bot,
-  hand,
-  activePlayerCount,
-  decision,
-) {
+function shouldBotRequestShow(bot, hand, activePlayerCount, decision) {
   if (
     Number(activePlayerCount) !== 2 ||
     bot.isSeen !== true ||
-    decision.actionType ===
-      ACTION_TYPE.PACK
+    decision.actionType === ACTION_TYPE.PACK
   ) {
     return false;
   }
 
-  const evaluation =
-    decision.evaluation ||
-    evaluateHand(bot.cards);
+  const evaluation = decision.evaluation || evaluateHand(bot.cards);
 
-  const bootAmount =
-    Math.max(
-      0.01,
-      parseMoney(
-        hand.boot_amount,
-      ),
-    );
+  const bootAmount = Math.max(0.01, parseMoney(hand.boot_amount));
 
-  const potAmount =
-    parseMoney(
-      hand.pot_amount,
-    );
+  const potAmount = parseMoney(hand.pot_amount);
 
-  const potBootRatio =
-    potAmount / bootAmount;
+  const potBootRatio = potAmount / bootAmount;
 
   /*
    * Round অযথা দীর্ঘ হবে না।
@@ -5944,50 +5943,24 @@ function shouldBotRequestShow(
     6: 95,
   };
 
-  let showChance =
-    showChanceByCategory[
-      Number(
-        evaluation.category,
-      )
-    ] || 18;
+  let showChance = showChanceByCategory[Number(evaluation.category)] || 18;
 
   /*
    * Pot বাড়ার সঙ্গে Show chance বাড়বে।
    */
-  showChance += Math.min(
-    25,
-    Math.floor(
-      potBootRatio * 2,
-    ),
-  );
+  showChance += Math.min(25, Math.floor(potBootRatio * 2));
 
-  if (
-    bot.playingStyle ===
-    "aggressive"
-  ) {
+  if (bot.playingStyle === "aggressive") {
     showChance += 5;
   }
 
-  if (
-    bot.playingStyle ===
-    "defensive"
-  ) {
+  if (bot.playingStyle === "defensive") {
     showChance -= 5;
   }
 
-  showChance =
-    Math.min(
-      98,
-      Math.max(
-        10,
-        showChance,
-      ),
-    );
+  showChance = Math.min(98, Math.max(10, showChance));
 
-  return (
-    createSecurePercentage() <
-    showChance
-  );
+  return createSecurePercentage() < showChance;
 }
 
 /* =========================================================
@@ -6150,107 +6123,64 @@ async function performTeenPattiBotAction(
     }
 
     /*
- * =====================================
- * BOT AUTOMATIC SHOW
- * =====================================
- *
- * Bot অন্য player-এর card দেখে
- * decision নেয় না। শুধু নিজের hand,
- * pot size এবং secure randomness ব্যবহার করে।
- */
-if (
-  shouldBotRequestShow(
-    bot,
-    hand,
-    activePlayers.length,
-    decision,
-  )
-) {
-  const currentTableBet =
-    parseMoney(
-      hand.current_bet,
-    );
+     * =====================================
+     * BOT AUTOMATIC SHOW
+     * =====================================
+     *
+     * Bot অন্য player-এর card দেখে
+     * decision নেয় না। শুধু নিজের hand,
+     * pot size এবং secure randomness ব্যবহার করে।
+     */
+    if (shouldBotRequestShow(bot, hand, activePlayers.length, decision)) {
+      const currentTableBet = parseMoney(hand.current_bet);
 
-  const requestedShowAmount =
-    parseMoney(
-      currentTableBet * 2,
-    );
+      const requestedShowAmount = parseMoney(currentTableBet * 2);
 
-  const potRule =
-    getPotLimitedContribution(
-      hand,
-      requestedShowAmount,
-    );
+      const potRule = getPotLimitedContribution(hand, requestedShowAmount);
 
-  assertCondition(
-    potRule.contributionAmount > 0,
-    "Teen Patti pot limit has already been reached.",
-    409,
-    "POT_LIMIT_REACHED",
-  );
+      assertCondition(
+        potRule.contributionAmount > 0,
+        "Teen Patti pot limit has already been reached.",
+        409,
+        "POT_LIMIT_REACHED",
+      );
 
-  const showAmount =
-    potRule.contributionAmount;
+      const showAmount = potRule.contributionAmount;
 
-  const balanceBefore =
-    parseMoney(
-      bot.endingBalance,
-    );
+      const balanceBefore = parseMoney(bot.endingBalance);
 
-  /*
-   * Show amount দিতে না পারলে bot
-   * নিচের normal Pack flow ব্যবহার করবে।
-   */
-  if (
-    balanceBefore >=
-    showAmount
-  ) {
-    const balanceAfter =
-      await debitTeenPattiActionAmount(
-        connection,
-        {
-          playerType:
-            PLAYER_TYPE.BOT,
+      /*
+       * Show amount দিতে না পারলে bot
+       * নিচের normal Pack flow ব্যবহার করবে।
+       */
+      if (balanceBefore >= showAmount) {
+        const balanceAfter = await debitTeenPattiActionAmount(connection, {
+          playerType: PLAYER_TYPE.BOT,
 
           userId: null,
           botId: bot.botId,
 
-          amount:
-            showAmount,
+          amount: showAmount,
 
           balanceBefore,
 
-          tableId:
-            validTableId,
+          tableId: validTableId,
 
-          handId:
-            Number(hand.id),
+          handId: Number(hand.id),
 
-          roundNumber:
-            Number(
-              hand.round_number,
-            ),
+          roundNumber: Number(hand.round_number),
 
-          actionType:
-            ACTION_TYPE.SHOW,
-        },
-      );
+          actionType: ACTION_TYPE.SHOW,
+        });
 
-    const potAfter =
-      parseMoney(
-        parseMoney(
-          hand.pot_amount,
-        ) + showAmount,
-      );
+        const potAfter = parseMoney(parseMoney(hand.pot_amount) + showAmount);
 
-    const totalContributionAfter =
-      parseMoney(
-        bot.totalContribution +
-        showAmount,
-      );
+        const totalContributionAfter = parseMoney(
+          bot.totalContribution + showAmount,
+        );
 
-    await connection.query(
-      `
+        await connection.query(
+          `
         UPDATE teen_patti_hand_players
 
         SET
@@ -6264,18 +6194,18 @@ if (
           AND hand_id = ?
           AND player_status = 'active'
       `,
-      [
-        balanceAfter,
-        showAmount,
-        totalContributionAfter,
+          [
+            balanceAfter,
+            showAmount,
+            totalContributionAfter,
 
-        bot.handPlayerId,
-        hand.id,
-      ],
-    );
+            bot.handPlayerId,
+            hand.id,
+          ],
+        );
 
-    await connection.query(
-      `
+        await connection.query(
+          `
         UPDATE table_bots
 
         SET
@@ -6286,21 +6216,16 @@ if (
           AND table_id = ?
           AND is_active = 1
       `,
-      [
-        showAmount,
-        bot.tableBotId,
-        validTableId,
-      ],
-    );
+          [showAmount, bot.tableBotId, validTableId],
+        );
 
-    const nextSequence =
-      await getNextActionSequence(
-        connection,
-        Number(hand.id),
-      );
+        const nextSequence = await getNextActionSequence(
+          connection,
+          Number(hand.id),
+        );
 
-    await connection.query(
-      `
+        await connection.query(
+          `
         INSERT INTO teen_patti_hand_actions (
           hand_id,
           hand_player_id,
@@ -6328,24 +6253,24 @@ if (
           1
         )
       `,
-      [
-        hand.id,
-        bot.handPlayerId,
-        nextSequence,
+          [
+            hand.id,
+            bot.handPlayerId,
+            nextSequence,
 
-        requestedShowAmount,
-        showAmount,
+            requestedShowAmount,
+            showAmount,
 
-        balanceBefore,
-        balanceAfter,
+            balanceBefore,
+            balanceAfter,
 
-        currentTableBet,
-        potAfter,
-      ],
-    );
+            currentTableBet,
+            potAfter,
+          ],
+        );
 
-    await connection.query(
-      `
+        await connection.query(
+          `
         UPDATE teen_patti_hands
 
         SET
@@ -6361,14 +6286,11 @@ if (
         WHERE id = ?
           AND hand_status = 'playing'
       `,
-      [
-        potAfter,
-        hand.id,
-      ],
-    );
+          [potAfter, hand.id],
+        );
 
-    await connection.query(
-      `
+        await connection.query(
+          `
         UPDATE game_tables
 
         SET
@@ -6377,63 +6299,49 @@ if (
         WHERE id = ?
           AND game_status = 'playing'
       `,
-      [
-        potAfter,
-        validTableId,
-      ],
-    );
+          [potAfter, validTableId],
+        );
 
-    const settlement =
-      await settleTeenPattiHandWithinTransaction(
-        connection,
-        validTableId,
-        {
-          reason:
-            "showdown",
-        },
-      );
+        const settlement = await settleTeenPattiHandWithinTransaction(
+          connection,
+          validTableId,
+          {
+            reason: "showdown",
+          },
+        );
 
-    return {
-      ignored: false,
+        return {
+          ignored: false,
 
-      tableId:
-        validTableId,
+          tableId: validTableId,
 
-      handId:
-        Number(hand.id),
+          handId: Number(hand.id),
 
-      handPlayerId:
-        bot.handPlayerId,
+          handPlayerId: bot.handPlayerId,
 
-      playerType:
-        PLAYER_TYPE.BOT,
+          playerType: PLAYER_TYPE.BOT,
 
-      actionType:
-        ACTION_TYPE.SHOW,
+          actionType: ACTION_TYPE.SHOW,
 
-      decisionReason:
-        "fair_automatic_show",
+          decisionReason: "fair_automatic_show",
 
-      contributionAmount:
-        showAmount,
+          contributionAmount: showAmount,
 
-      balanceBefore,
-      balanceAfter,
+          balanceBefore,
+          balanceAfter,
 
-      potAfter,
+          potAfter,
 
-      potLimit:
-        potRule.potLimit,
+          potLimit: potRule.potLimit,
 
-      handCompleted: true,
+          handCompleted: true,
 
-      nextTurnHandPlayerId:
-        null,
+          nextTurnHandPlayerId: null,
 
-      settlement,
-    };
-  }
-}
+          settlement,
+        };
+      }
+    }
 
     /*
      * =====================================

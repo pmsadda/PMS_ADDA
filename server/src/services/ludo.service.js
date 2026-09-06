@@ -800,30 +800,18 @@ async function applyFinalPlayerMode(
 function resolveFinalPlayerMode(realPlayerCount) {
   const totalRealPlayers = Number(realPlayerCount);
 
-  if (
-    totalRealPlayers === 1 ||
-    totalRealPlayers === 2
-  ) {
+  if (totalRealPlayers === 1 || totalRealPlayers === 2) {
     return 2;
   }
 
-  if (
-    totalRealPlayers === 3 ||
-    totalRealPlayers === 4
-  ) {
+  if (totalRealPlayers === 3 || totalRealPlayers === 4) {
     return 4;
   }
 
-  throw createServiceError(
-    "Invalid number of real Ludo players.",
-    409,
-  );
+  throw createServiceError("Invalid number of real Ludo players.", 409);
 }
 
-async function normalizeTwoPlayerRealSeats(
-  matchId,
-  connection,
-) {
+async function normalizeTwoPlayerRealSeats(matchId, connection) {
   const [realPlayers] = await connection.query(
     `
       SELECT
@@ -840,10 +828,7 @@ async function normalizeTwoPlayerRealSeats(
     [matchId],
   );
 
-  if (
-    realPlayers.length < 1 ||
-    realPlayers.length > 2
-  ) {
+  if (realPlayers.length < 1 || realPlayers.length > 2) {
     throw createServiceError(
       "Two-player Ludo seat assignment is inconsistent.",
       409,
@@ -892,28 +877,20 @@ async function normalizeTwoPlayerRealSeats(
   }
 
   const unassignedPlayers = realPlayers.filter(
-    (player) =>
-      !assignedPlayerIds.has(Number(player.id)),
+    (player) => !assignedPlayerIds.has(Number(player.id)),
   );
 
   const availableSeats = desiredSeats.filter(
     (seatNo) => !assignedSeats.has(seatNo),
   );
 
-  for (
-    let index = 0;
-    index < unassignedPlayers.length;
-    index += 1
-  ) {
+  for (let index = 0; index < unassignedPlayers.length; index += 1) {
     const player = unassignedPlayers[index];
 
     const targetSeat = availableSeats[index];
 
     if (!targetSeat) {
-      throw createServiceError(
-        "Unable to assign a two-player Ludo seat.",
-        409,
-      );
+      throw createServiceError("Unable to assign a two-player Ludo seat.", 409);
     }
 
     assignments.push({
@@ -934,15 +911,10 @@ async function normalizeTwoPlayerRealSeats(
   }
 
   for (const assignment of assignments) {
-    const playerColor = getPlayerColor(
-      assignment.targetSeat,
-    );
+    const playerColor = getPlayerColor(assignment.targetSeat);
 
     if (!playerColor) {
-      throw createServiceError(
-        "Unable to assign Ludo player color.",
-        500,
-      );
+      throw createServiceError("Unable to assign Ludo player color.", 500);
     }
 
     await connection.query(
@@ -956,12 +928,7 @@ async function normalizeTwoPlayerRealSeats(
           AND is_bot = 0
           AND player_status != 'left'
       `,
-      [
-        assignment.targetSeat,
-        playerColor,
-        assignment.playerId,
-        matchId,
-      ],
+      [assignment.targetSeat, playerColor, assignment.playerId, matchId],
     );
   }
 }
@@ -977,25 +944,19 @@ async function normalizeTwoPlayerRealSeats(
 ========================================== */
 
 async function finalizeMatchmaking(matchId) {
-  const validMatchId =
-    parsePositiveInteger(matchId);
+  const validMatchId = parsePositiveInteger(matchId);
 
   if (!validMatchId) {
-    throw createServiceError(
-      "Invalid Ludo match ID.",
-      400,
-    );
+    throw createServiceError("Invalid Ludo match ID.", 400);
   }
 
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const [matchRows] =
-      await connection.query(
-        `
+    const [matchRows] = await connection.query(
+      `
           SELECT
             id,
             entry_amount,
@@ -1011,16 +972,13 @@ async function finalizeMatchmaking(matchId) {
           LIMIT 1
           FOR UPDATE
         `,
-        [validMatchId],
-      );
+      [validMatchId],
+    );
 
     const match = matchRows[0] || null;
 
     if (!match) {
-      throw createServiceError(
-        "Ludo match not found.",
-        404,
-      );
+      throw createServiceError("Ludo match not found.", 404);
     }
 
     /*
@@ -1029,27 +987,17 @@ async function finalizeMatchmaking(matchId) {
      * player, bot অথবা wallet পরিবর্তন হবে না।
      */
     if (
-      match.match_status !==
-        MATCH_STATUS.WAITING ||
+      match.match_status !== MATCH_STATUS.WAITING ||
       Boolean(match.entry_collected)
     ) {
       await connection.commit();
 
-      return buildMatchState(
-        validMatchId,
-      );
+      return buildMatchState(validMatchId);
     }
 
-    const requestedPlayerMode =
-      validatePlayerMode(
-        match.requested_player_mode,
-      );
+    const requestedPlayerMode = validatePlayerMode(match.requested_player_mode);
 
-    const realPlayerCount =
-      await countRealPlayers(
-        validMatchId,
-        connection,
-      );
+    const realPlayerCount = await countRealPlayers(validMatchId, connection);
 
     /*
      * কোনো Real Player না থাকলে
@@ -1072,38 +1020,22 @@ async function finalizeMatchmaking(matchId) {
 
       await connection.commit();
 
-      return buildMatchState(
-        validMatchId,
-      );
+      return buildMatchState(validMatchId);
     }
 
-    if (
-      realPlayerCount >
-      requestedPlayerMode
-    ) {
+    if (realPlayerCount > requestedPlayerMode) {
       throw createServiceError(
         "Ludo real player count exceeds selected capacity.",
         409,
       );
     }
 
-    const finalPlayerMode =
-      resolveFinalPlayerMode(
-        realPlayerCount,
-      );
+    const finalPlayerMode = resolveFinalPlayerMode(realPlayerCount);
 
-    const requiredBotCount =
-      finalPlayerMode -
-      realPlayerCount;
+    const requiredBotCount = finalPlayerMode - realPlayerCount;
 
-    if (
-      requiredBotCount < 0 ||
-      requiredBotCount > 1
-    ) {
-      throw createServiceError(
-        "Ludo bot count is inconsistent.",
-        409,
-      );
+    if (requiredBotCount < 0 || requiredBotCount > 1) {
+      throw createServiceError("Ludo bot count is inconsistent.", 409);
     }
 
     /*
@@ -1112,9 +1044,8 @@ async function finalizeMatchmaking(matchId) {
      *
      * Waiting অবস্থায় entry debit হওয়ার কথা নয়।
      */
-    const [existingBots] =
-      await connection.query(
-        `
+    const [existingBots] = await connection.query(
+      `
           SELECT
             id,
             entry_debited
@@ -1125,14 +1056,12 @@ async function finalizeMatchmaking(matchId) {
           ORDER BY id ASC
           FOR UPDATE
         `,
-        [validMatchId],
-      );
+      [validMatchId],
+    );
 
-    const debitedWaitingBot =
-      existingBots.find(
-        (bot) =>
-          Boolean(bot.entry_debited),
-      );
+    const debitedWaitingBot = existingBots.find((bot) =>
+      Boolean(bot.entry_debited),
+    );
 
     if (debitedWaitingBot) {
       throw createServiceError(
@@ -1162,28 +1091,21 @@ async function finalizeMatchmaking(matchId) {
      * Seat 4 এবং Seat 2 ব্যবহার হবে।
      */
     if (finalPlayerMode === 2) {
-      await normalizeTwoPlayerRealSeats(
-        validMatchId,
-        connection,
-      );
+      await normalizeTwoPlayerRealSeats(validMatchId, connection);
     }
 
     /*
      * প্রয়োজন হলে ঠিক একটি Bot যোগ হবে।
      */
     if (requiredBotCount === 1) {
-      const botSeatNo =
-        await findAvailableSeat(
-          validMatchId,
-          finalPlayerMode,
-          connection,
-        );
+      const botSeatNo = await findAvailableSeat(
+        validMatchId,
+        finalPlayerMode,
+        connection,
+      );
 
       if (!botSeatNo) {
-        throw createServiceError(
-          "No seat is available for the Ludo bot.",
-          409,
-        );
+        throw createServiceError("No seat is available for the Ludo bot.", 409);
       }
 
       await insertBotMatchPlayer(
@@ -1194,42 +1116,28 @@ async function finalizeMatchmaking(matchId) {
       );
     }
 
-    const finalPlayerCount =
-      await updateCurrentPlayers(
-        validMatchId,
-        connection,
-      );
+    const finalPlayerCount = await updateCurrentPlayers(
+      validMatchId,
+      connection,
+    );
 
-    if (
-      finalPlayerCount !==
-      finalPlayerMode
-    ) {
-      throw createServiceError(
-        "Final Ludo player count is inconsistent.",
-        409,
-      );
+    if (finalPlayerCount !== finalPlayerMode) {
+      throw createServiceError("Final Ludo player count is inconsistent.", 409);
     }
 
     await applyFinalPlayerMode(
       validMatchId,
       Number(match.entry_amount),
       finalPlayerMode,
-      Number(
-        match.service_charge_percent,
-      ),
+      Number(match.service_charge_percent),
       connection,
     );
 
-    await startMatchIfReady(
-      validMatchId,
-      connection,
-    );
+    await startMatchIfReady(validMatchId, connection);
 
     await connection.commit();
 
-    return buildMatchState(
-      validMatchId,
-    );
+    return buildMatchState(validMatchId);
   } catch (error) {
     await connection.rollback();
 
@@ -3593,7 +3501,9 @@ async function settleMatchPrizes(matchId, connection, options = {}) {
         SELECT
           id,
           match_code,
-          player_mode,
+                   player_mode,
+          service_charge_amount,
+          distributable_amount,
           first_prize,
           second_prize,
           match_status,
@@ -3662,10 +3572,62 @@ async function settleMatchPrizes(matchId, connection, options = {}) {
     throw createServiceError("Ludo runner-up was not found.", 409);
   }
 
+    let serviceChargeAmount =
+    Number(match.service_charge_amount || 0);
+
+  let distributableAmount =
+    Number(match.distributable_amount || 0);
+
+  let firstPrize =
+    Number(match.first_prize || 0);
+
+  const secondPrize =
+    Number(match.second_prize || 0);
+
+  /*
+   * Bot প্রথম winner হলে service charge 0।
+   * আগে কাটা charge bot-এর first prize-এ
+   * সম্পূর্ণ ফেরত দেওয়া হবে।
+   */
+    if (
+    Number(winner.is_bot) === 1 &&
+    serviceChargeAmount > 0
+  ) {
+    firstPrize = Number(
+      (firstPrize + serviceChargeAmount).toFixed(2),
+    );
+
+    distributableAmount = Number(
+      (
+        distributableAmount +
+        serviceChargeAmount
+      ).toFixed(2),
+    );
+
+    serviceChargeAmount = 0;
+
+    await connection.query(
+      `
+        UPDATE ludo_matches
+        SET
+          service_charge_amount = 0,
+          distributable_amount = ?,
+          first_prize = ?
+        WHERE id = ?
+          AND settlement_completed = 0
+      `,
+      [
+        distributableAmount,
+        firstPrize,
+        matchId,
+      ],
+    );
+  }
+
   await creditMatchPlayerPrize(
     match,
     winner,
-    Number(match.first_prize),
+    firstPrize,
     true,
     connection,
   );
@@ -3674,15 +3636,11 @@ async function settleMatchPrizes(matchId, connection, options = {}) {
    * 4-player match-এ runner-up prize-ও
    * একই transaction-এর মধ্যে credit হবে।
    */
-  if (
-    playerMode === 4 &&
-    runnerUp &&
-    Number(match.second_prize) > 0
-  ) {
+  if (playerMode === 4 && runnerUp && Number(match.second_prize) > 0) {
     await creditMatchPlayerPrize(
       match,
       runnerUp,
-      Number(match.second_prize),
+      secondPrize,
       false,
       connection,
     );
@@ -3753,11 +3711,11 @@ async function settleMatchPrizes(matchId, connection, options = {}) {
 
     secondUserId,
 
-    firstPrize: Number(match.first_prize),
+        firstPrize,
 
-    secondPrize:
+        secondPrize:
       playerMode === 4 && runnerUp
-        ? Number(match.second_prize)
+        ? secondPrize
         : 0,
   };
 }
@@ -4250,10 +4208,9 @@ async function forfeitPlayer(matchId, userId) {
               (item) => Number(item.finish_position) === 2,
             ) || null;
 
-          const activeRealPlayers =
-            activePlayers.filter(
-              (item) => !Boolean(item.is_bot),
-            );
+          const activeRealPlayers = activePlayers.filter(
+            (item) => !Boolean(item.is_bot),
+          );
 
           const shouldCompleteBotOnlyMatch =
             Number(match.player_mode) === 4 &&
@@ -4270,11 +4227,10 @@ async function forfeitPlayer(matchId, userId) {
            * progress-ranked bot দিয়ে পূরণ হবে।
            */
           if (shouldCompleteBotOnlyMatch) {
-            const rankedBots =
-              await getRankedActiveBotPlayers(
-                validMatchId,
-                connection,
-              );
+            const rankedBots = await getRankedActiveBotPlayers(
+              validMatchId,
+              connection,
+            );
 
             const openFinishPositions = [];
 
@@ -4288,17 +4244,14 @@ async function forfeitPlayer(matchId, userId) {
 
             for (
               let index = 0;
-              index < openFinishPositions.length &&
-              index < rankedBots.length;
+              index < openFinishPositions.length && index < rankedBots.length;
               index += 1
             ) {
               const bot = rankedBots[index];
-              const finishPosition =
-                openFinishPositions[index];
+              const finishPosition = openFinishPositions[index];
 
-              const [finishResult] =
-                await connection.query(
-                  `
+              const [finishResult] = await connection.query(
+                `
                     UPDATE ludo_match_players
                     SET
                       player_status =
@@ -4313,16 +4266,10 @@ async function forfeitPlayer(matchId, userId) {
                       AND finish_position
                           IS NULL
                   `,
-                  [
-                    finishPosition,
-                    Number(bot.id),
-                    validMatchId,
-                  ],
-                );
+                [finishPosition, Number(bot.id), validMatchId],
+              );
 
-              if (
-                Number(finishResult.affectedRows) !== 1
-              ) {
+              if (Number(finishResult.affectedRows) !== 1) {
                 throw createServiceError(
                   "Unable to rank the remaining Ludo bot.",
                   409,
@@ -4338,13 +4285,9 @@ async function forfeitPlayer(matchId, userId) {
               winnerPlayerId = Number(firstFinisher.id);
             }
 
-            await settleMatchPrizes(
-              validMatchId,
-              connection,
-              {
-                allowMissingRunnerUp: true,
-              },
-            );
+            await settleMatchPrizes(validMatchId, connection, {
+              allowMissingRunnerUp: true,
+            });
 
             if (gameState) {
               await connection.query(
@@ -4377,22 +4320,18 @@ async function forfeitPlayer(matchId, userId) {
                     AND game_status =
                         'playing'
                 `,
-                [
-                  validUserId,
-                  forfeitedPlayerId,
-                  Number(gameState.id),
-                ],
+                [validUserId, forfeitedPlayerId, Number(gameState.id)],
               );
             }
 
             completed = true;
-          /*
-           * একজন active player বাকি থাকলে
-           * match শেষ হবে।
-           *
-           * আগে winner থাকলে remaining
-           * player হবে runner-up।
-           */
+            /*
+             * একজন active player বাকি থাকলে
+             * match শেষ হবে।
+             *
+             * আগে winner থাকলে remaining
+             * player হবে runner-up।
+             */
           } else if (activePlayers.length <= 1) {
             const remainingPlayer = activePlayers[0] || null;
 

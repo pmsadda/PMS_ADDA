@@ -3242,9 +3242,23 @@ async function settlePokerHand(tableId) {
     for (const pot of pots) {
       const grossAmount = roundPokerMoney(pot.grossAmount);
 
-      const serviceCharge = pot.isRefund
-        ? 0
-        : roundPokerMoney(grossAmount * (servicePercent / 100));
+            const potWinners = getPokerPotWinners(
+        pot,
+        evaluations,
+      );
+
+      const hasBotWinner = potWinners.some(
+        (winner) =>
+          Number(winner.is_bot) === 1,
+      );
+
+            const serviceCharge =
+        pot.isRefund || hasBotWinner
+          ? 0
+          : roundPokerMoney(
+              grossAmount *
+                (servicePercent / 100),
+            );
 
       const distributableAmount = roundPokerMoney(grossAmount - serviceCharge);
 
@@ -3312,8 +3326,6 @@ async function settlePokerHand(tableId) {
           ],
         );
       }
-
-      const potWinners = getPokerPotWinners(pot, evaluations);
 
       const prizeShares = splitPokerMoney(
         distributableAmount,
