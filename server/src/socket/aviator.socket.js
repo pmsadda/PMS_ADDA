@@ -551,6 +551,11 @@ function beginMultiplierLoop(namespace, rawRound) {
 
   let autoCashoutBusy = false;
 
+  let lastAutoCashoutCheckAt = 0;
+
+const autoCashoutCheckIntervalMs =
+  300;
+
   if (!Number.isFinite(crashPoint) || crashPoint < 1.01) {
     console.error("AVIATOR INVALID CRASH POINT");
 
@@ -592,17 +597,27 @@ function beginMultiplierLoop(namespace, rawRound) {
       return;
     }
 
-    if (!autoCashoutBusy) {
-      autoCashoutBusy = true;
+    const now = Date.now();
 
-      void processAutoCashouts(roundId)
-        .catch((error) => {
-          console.error("AVIATOR AUTO CASHOUT ERROR:", error);
-        })
-        .finally(() => {
-          autoCashoutBusy = false;
-        });
-    }
+if (
+  !autoCashoutBusy &&
+  now - lastAutoCashoutCheckAt >=
+    autoCashoutCheckIntervalMs
+) {
+  lastAutoCashoutCheckAt = now;
+  autoCashoutBusy = true;
+
+  void processAutoCashouts(roundId)
+    .catch((error) => {
+      console.error(
+        "AVIATOR AUTO CASHOUT ERROR:",
+        error,
+      );
+    })
+    .finally(() => {
+      autoCashoutBusy = false;
+    });
+}
 
     namespace.to(PUBLIC_ROOM).emit("aviator:multiplier", {
       success: true,

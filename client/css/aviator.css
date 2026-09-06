@@ -1197,3 +1197,24 @@ body {
     bottom 100ms linear;
   transform: rotate(-12deg);
 }
+
+/* Larger Aviator plane */
+.plane-wrapper {
+  width: 82px;
+  height: 82px;
+}
+
+.plane-icon {
+  font-size: 66px;
+}
+
+@media (max-width: 760px) {
+  .plane-wrapper {
+    width: 58px;
+    height: 58px;
+  }
+
+  .plane-icon {
+    font-size: 47px;
+  }
+}
