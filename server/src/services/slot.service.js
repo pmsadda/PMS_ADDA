@@ -1399,65 +1399,53 @@ async function spinSlot({
    Get Player Slot State
 ========================== */
 
-async function getSlotPlayerState({
-  userId,
-}) {
-  const validUserId =
-    Number(userId);
+async function getSlotPlayerState({ userId }) {
+  const numericUserId = Number(userId);
 
-  if (
-    !Number.isInteger(
-      validUserId,
-    ) ||
-    validUserId < 1
-  ) {
+  if (!Number.isInteger(numericUserId) || numericUserId <= 0) {
     throw createSlotError(
-      "Valid authenticated user is required.",
-      401,
+      "Invalid user.",
+      400,
       "SLOT_INVALID_USER",
     );
   }
 
-  const [
-    settings,
-    userResult,
-    stateResult,
-  ] = await Promise.all([
-    getSlotSettings(),
+  const [settings, userResult, playerResult] =
+    await Promise.all([
+      getSlotSettings(),
 
-    pool.execute(
-      `
-      SELECT
-        id,
-        wallet_balance,
-        account_status
-      FROM users
-      WHERE id = ?
-      LIMIT 1
-      `,
-      [validUserId],
-    ),
+      pool.execute(
+        `
+          SELECT
+            id,
+            wallet_balance
+          FROM users
+          WHERE id = ?
+          LIMIT 1
+        `,
+        [numericUserId],
+      ),
 
-    pool.execute(
-      `
-      SELECT
-        free_spins_balance,
-        free_spin_bet_amount,
-        total_spins,
-        total_bet,
-        total_payout
-      FROM slot_player_state
-      WHERE user_id = ?
-      LIMIT 1
-      `,
-      [validUserId],
-    ),
-  ]);
+      pool.execute(
+        `
+          SELECT
+            free_spins_balance,
+            free_spin_bet_amount,
+            total_spins,
+            total_bet,
+            total_payout
+          FROM slot_player_state
+          WHERE user_id = ?
+          LIMIT 1
+        `,
+        [numericUserId],
+      ),
+    ]);
 
-  const user =
-    userResult[0][0] || null;
+  const userRows = userResult[0];
+  const playerRows = playerResult[0];
 
-  if (!user) {
+  if (!userRows.length) {
     throw createSlotError(
       "User was not found.",
       404,
@@ -1465,96 +1453,34 @@ async function getSlotPlayerState({
     );
   }
 
-  if (
-    String(
-      user.account_status || "",
-    ).toLowerCase() !==
-    "active"
-  ) {
-    throw createSlotError(
-      "User account is not active.",
-      403,
-      "SLOT_USER_INACTIVE",
-    );
-  }
-
-  const state =
-    stateResult[0][0] || {};
+  const player = playerRows[0] || {};
 
   return {
-    walletBalance:
-      parseMoney(
-        user.wallet_balance,
-      ),
+    walletBalance: parseMoney(
+      userRows[0].wallet_balance,
+    ),
 
-    freeSpinsBalance:
-      Math.max(
-        0,
-        Number(
-          state.free_spins_balance,
-        ) || 0,
-      ),
+    freeSpinsBalance: Math.max(
+      0,
+      Number(player.free_spins_balance) || 0,
+    ),
 
-    freeSpinBetAmount:
-      parseMoney(
-        state.free_spin_bet_amount,
-      ),
+    freeSpinBetAmount: parseMoney(
+      player.free_spin_bet_amount,
+    ),
 
-    totalSpins:
-      Number(
-        state.total_spins,
-      ) || 0,
+    totalSpins: Math.max(
+      0,
+      Number(player.total_spins) || 0,
+    ),
 
-    totalBet:
-      parseMoney(
-        state.total_bet,
-      ),
+    totalBet: parseMoney(player.total_bet),
 
-    totalPayout:
-      parseMoney(
-        state.total_payout,
-      ),
+    totalPayout: parseMoney(
+      player.total_payout,
+    ),
 
-    settings: {
-      isEnabled:
-        settings.isEnabled,
-
-      maintenanceMode:
-        settings.maintenanceMode,
-
-      minBet:
-        settings.minBet,
-
-      maxBet:
-        settings.maxBet,
-
-      maxPayoutPerSpin:
-        settings.maxPayoutPerSpin,
-
-      maxWinMultiplier:
-        settings.maxWinMultiplier,
-
-      rtpPercent:
-        settings.rtpPercent,
-
-      volatilityProfile:
-        settings.volatilityProfile,
-
-      wildEnabled:
-        settings.wildEnabled,
-
-      scatterEnabled:
-        settings.scatterEnabled,
-
-      freeSpinsEnabled:
-        settings.freeSpinsEnabled,
-
-      freeSpinsAward:
-        settings.freeSpinsAward,
-
-      freeSpinsMultiplier:
-        settings.freeSpinsMultiplier,
-    },
+    settings,
   };
 }
 
