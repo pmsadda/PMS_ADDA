@@ -548,8 +548,7 @@ if (currentGatewayStatus) {
       mchNo: config.merchantNumber,
       orderNum: gatewayOrderNumber,
       amount,
-      bankCode: method,
-      bankName: method,
+           bankCode: method,
       bankCard: accountNumber,
       accountName: String(
         withdraw.username || "PMS ADDA User",
@@ -637,28 +636,63 @@ if (currentGatewayStatus) {
       // Transaction may already be committed.
     }
 
-    if (gatewayOrderNumber) {
+        if (gatewayOrderNumber) {
       const responseMessage =
         error.gatewayResponse?.msg ||
         error.message ||
         "JayaPay payout request failed.";
 
-      await pool.execute(
-        `
-        UPDATE withdraw_requests
-        SET
-          gateway_status = 'SUBMISSION_UNCERTAIN',
-          gateway_message = ?
-        WHERE id = ?
-          AND status = 'pending'
-          AND gateway_order_num = ?
-        `,
-        [
-          String(responseMessage).slice(0, 255),
-          withdrawId,
-          gatewayOrderNumber,
-        ],
-      );
+      const gatewayClearlyRejected =
+        error.gatewayResponse &&
+        error.gatewayResponse.success === false;
+
+      if (gatewayClearlyRejected) {
+        /*
+         * Gateway নিশ্চিতভাবে request reject করেছে।
+         * কোনো payout তৈরি হয়নি, তাই পুনরায় Approve করা নিরাপদ।
+         */
+        await pool.execute(
+          `
+          UPDATE withdraw_requests
+          SET
+            gateway_order_num = NULL,
+            gateway_platform_order_num = NULL,
+            gateway_status = NULL,
+            gateway_message = ?,
+            payout_requested_at = NULL,
+            admin_payment_reference = NULL
+          WHERE id = ?
+            AND status = 'pending'
+            AND gateway_order_num = ?
+          `,
+          [
+            String(responseMessage).slice(0, 255),
+            withdrawId,
+            gatewayOrderNumber,
+          ],
+        );
+      } else {
+        /*
+         * Timeout/network error হলে payout তৈরি হয়েছে কি না
+         * নিশ্চিত নয়। Double payout এড়াতে automatic retry বন্ধ।
+         */
+        await pool.execute(
+          `
+          UPDATE withdraw_requests
+          SET
+            gateway_status = 'SUBMISSION_UNCERTAIN',
+            gateway_message = ?
+          WHERE id = ?
+            AND status = 'pending'
+            AND gateway_order_num = ?
+          `,
+          [
+            String(responseMessage).slice(0, 255),
+            withdrawId,
+            gatewayOrderNumber,
+          ],
+        );
+      }
     }
 
     throw error;
