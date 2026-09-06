@@ -58,6 +58,12 @@ const slotRoutes = require("./routes/slot.routes");
 
 const adminSlotRoutes = require("./routes/admin-slot.routes");
 
+const superAceRoutes =
+  require("./routes/super-ace.routes");
+
+const adminSuperAceRoutes =
+  require("./routes/admin-super-ace.routes");
+
 const adminAndarBaharRoutes = require("./routes/admin-andar-bahar.routes");
 
 const adminBanglaWheelRoutes = require("./routes/admin-bangla-wheel.routes");
@@ -431,6 +437,16 @@ app.use("/api/admin/lottery", adminLotteryRoutes);
 app.use("/api/support", supportRoutes);
 
 app.use("/api/admin/aviator", adminAviatorRoutes);
+
+app.use(
+  "/api/super-ace",
+  superAceRoutes,
+);
+
+app.use(
+  "/api/admin/super-ace",
+  adminSuperAceRoutes,
+);
 
 /* ==========================
 

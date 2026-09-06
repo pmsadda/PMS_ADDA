@@ -1,0 +1,745 @@
+:root {
+  --background: #08060f;
+  --panel: #151020;
+  --panel-light: #21172e;
+  --gold: #ffc928;
+  --gold-dark: #d88c00;
+  --pink: #ed174c;
+  --green: #26d784;
+  --text: #ffffff;
+  --muted: #aaa1b5;
+  --border: rgba(255, 201, 40, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top, #311345 0%, #100918 42%, #08060f 100%);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+button {
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.slot-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #08060f;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.slot-loading.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-icon {
+  font-size: 64px;
+  animation: loadingPulse 0.8s infinite alternate;
+}
+
+@keyframes loadingPulse {
+  from {
+    transform: scale(0.9);
+  }
+
+  to {
+    transform: scale(1.12);
+  }
+}
+
+.slot-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  background: rgba(9, 6, 16, 0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--panel-light);
+  font-size: 24px;
+}
+
+.slot-title span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.slot-title h1 {
+  margin-top: 2px;
+  font-size: 20px;
+}
+
+.wallet-box {
+  min-width: 118px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  text-align: right;
+}
+
+.wallet-box span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.wallet-box strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--gold);
+  font-size: 17px;
+}
+
+.slot-container {
+  width: min(100%, 920px);
+  margin: 0 auto;
+  padding: 12px;
+}
+
+.slot-status-bar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.slot-status-bar > div {
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  background: rgba(21, 16, 32, 0.9);
+  text-align: center;
+}
+
+.slot-status-bar span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.slot-status-bar strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--gold);
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.slot-machine {
+  overflow: hidden;
+  border: 2px solid var(--gold-dark);
+  border-radius: 20px;
+  background:
+    linear-gradient(145deg, rgba(85, 26, 111, 0.95), rgba(20, 12, 30, 0.98));
+  box-shadow:
+    0 0 28px rgba(255, 185, 0, 0.18),
+    inset 0 0 25px rgba(255, 255, 255, 0.04);
+}
+
+.machine-top {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px;
+  color: var(--gold);
+  background: linear-gradient(90deg, #58112d, #a9273d, #58112d);
+  border-bottom: 2px solid var(--gold-dark);
+}
+
+.machine-top h2 {
+  font-size: 22px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 5px #000;
+}
+
+.slot-message {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  color: #fff1bb;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.slot-message.win {
+  color: var(--gold);
+  animation: messageGlow 0.65s infinite alternate;
+}
+
+@keyframes messageGlow {
+  to {
+    text-shadow: 0 0 12px var(--gold);
+  }
+}
+
+.slot-reels {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+  margin: 0 12px;
+  padding: 10px;
+  border: 3px solid #6e4711;
+  border-radius: 14px;
+  background: #08070c;
+  box-shadow: inset 0 0 18px #000;
+}
+
+.reel-cell {
+  aspect-ratio: 1 / 0.88;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 218, 100, 0.22);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle, #fff9d7 0%, #f5c658 48%, #9d5b08 100%);
+  color: #181015;
+  font-size: clamp(30px, 7vw, 62px);
+  box-shadow:
+    inset 0 2px 5px rgba(255, 255, 255, 0.7),
+    inset 0 -4px 7px rgba(92, 38, 0, 0.45);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.slot-reels.spinning .reel-cell {
+  animation: reelSpin 0.18s linear infinite;
+  filter: blur(1.5px);
+}
+
+@keyframes reelSpin {
+  0% {
+    transform: translateY(-6px) scale(0.96);
+  }
+
+  50% {
+    transform: translateY(6px) scale(1.03);
+  }
+
+  100% {
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+
+.reel-cell.winning {
+  animation: winningCell 0.55s infinite alternate;
+}
+
+@keyframes winningCell {
+  to {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 18px var(--gold),
+      inset 0 0 12px #fff;
+  }
+}
+
+.win-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.win-panel > div {
+  padding: 10px;
+  text-align: center;
+}
+
+.win-panel > div + div {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.win-panel span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.win-panel strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--green);
+  font-size: 18px;
+}
+
+.slot-controls {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  background: rgba(21, 16, 32, 0.94);
+}
+
+.bet-control {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  gap: 8px;
+}
+
+.bet-change-button {
+  height: 42px;
+  border-radius: 11px;
+  background: #342442;
+  color: var(--gold);
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.bet-value {
+  text-align: center;
+}
+
+.bet-value span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.bet-value strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 20px;
+}
+
+.quick-bets {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.quick-bets button {
+  min-height: 32px;
+  border-radius: 9px;
+  background: #2a2034;
+  color: #e3dce9;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quick-bets button.active {
+  background: var(--gold);
+  color: #241500;
+}
+
+.spin-button {
+  width: 100%;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 10px;
+  border: 2px solid #ff718f;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f3265b, #ae092f);
+  box-shadow:
+    0 5px 0 #70051f,
+    0 0 20px rgba(237, 23, 76, 0.3);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.spin-button:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 2px 0 #70051f,
+    0 0 15px rgba(237, 23, 76, 0.25);
+}
+
+.spin-button.free-spin {
+  border-color: #fff09d;
+  background: linear-gradient(180deg, #ffcf27, #db8700);
+  color: #2c1700;
+}
+
+.spin-icon {
+  font-size: 30px;
+}
+
+.spin-button.spinning .spin-icon {
+  animation: rotateSpin 0.45s linear infinite;
+}
+
+@keyframes rotateSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.slot-information {
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: rgba(21, 16, 32, 0.94);
+}
+
+.information-tab {
+  width: calc(50% - 4px);
+  min-height: 36px;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.information-tab.active {
+  background: #352344;
+  color: var(--gold);
+}
+
+.tab-content {
+  display: none;
+  margin-top: 8px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.history-list {
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.history-item span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.history-item strong {
+  font-size: 12px;
+}
+
+.history-item .history-win {
+  color: var(--green);
+}
+
+.history-item .history-loss {
+  color: #ff7897;
+}
+
+.empty-message {
+  padding: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.paytable-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.paytable-grid > div {
+  padding: 9px 4px;
+  border-radius: 9px;
+  background: #251a30;
+  text-align: center;
+}
+
+.paytable-grid span {
+  display: block;
+  font-size: 27px;
+}
+
+.paytable-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--gold);
+  font-size: 10px;
+}
+
+.slot-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 100;
+  width: min(calc(100% - 24px), 430px);
+  padding: 13px 16px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: #21172e;
+  box-shadow: 0 8px 30px #000;
+  transform: translateX(-50%);
+}
+
+.slot-notice strong,
+.slot-notice span {
+  display: block;
+}
+
+.slot-notice strong {
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.slot-notice span {
+  margin-top: 4px;
+  color: #eee8f2;
+  font-size: 12px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (min-width: 769px) {
+  .slot-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(250px, 0.85fr);
+    gap: 12px;
+  }
+
+  .slot-status-bar {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+  }
+
+  .slot-machine {
+    grid-row: span 2;
+  }
+
+  .slot-controls,
+  .slot-information {
+    margin-top: 0;
+  }
+
+  .slot-information {
+    min-height: 215px;
+  }
+}
+
+@media (max-width: 600px) {
+  .slot-header {
+    min-height: 58px;
+    padding: 6px 10px;
+  }
+
+  .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .slot-title h1 {
+    font-size: 16px;
+  }
+
+  .wallet-box {
+    min-width: 100px;
+    padding: 6px 9px;
+  }
+
+  .wallet-box strong {
+    font-size: 15px;
+  }
+
+  .slot-container {
+    padding: 7px;
+  }
+
+  .slot-status-bar {
+    gap: 5px;
+    margin-bottom: 6px;
+  }
+
+  .slot-status-bar > div {
+    padding: 6px 3px;
+  }
+
+  .machine-top {
+    min-height: 38px;
+  }
+
+  .machine-top h2 {
+    font-size: 17px;
+  }
+
+  .slot-message {
+    min-height: 29px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .slot-reels {
+    gap: 4px;
+    margin: 0 7px;
+    padding: 6px;
+  }
+
+  .reel-cell {
+    border-radius: 7px;
+    font-size: clamp(24px, 10vw, 43px);
+  }
+
+  .win-panel > div {
+    padding: 7px;
+  }
+
+  .slot-controls {
+    margin-top: 6px;
+    padding: 7px;
+  }
+
+  .bet-control {
+    grid-template-columns: 42px 1fr 42px;
+  }
+
+  .bet-change-button {
+    height: 37px;
+  }
+
+  .quick-bets {
+    margin-top: 6px;
+  }
+
+  .quick-bets button {
+    min-height: 29px;
+    font-size: 10px;
+  }
+
+  .spin-button {
+    min-height: 50px;
+    margin-top: 7px;
+    font-size: 19px;
+  }
+
+  .spin-icon {
+    font-size: 25px;
+  }
+
+  .slot-information {
+    margin-top: 6px;
+  }
+
+  .paytable-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .history-list {
+    max-height: 145px;
+  }
+}
+
+@media (max-height: 760px) and (max-width: 600px) {
+  .slot-status-bar {
+    display: none;
+  }
+
+  .machine-top {
+    min-height: 34px;
+  }
+
+  .slot-message {
+    min-height: 25px;
+  }
+
+  .slot-information {
+    margin-bottom: 8px;
+  }
+}
+
+.slot-information {
+  display: none !important;
+}
+
+.ace-meter-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.ace-meter-track {
+  width: 100%;
+  height: 5px;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ace-meter-track i {
+  width: 0%;
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffb000, #fff178);
+  box-shadow: 0 0 8px #ffd83d;
+  transition: width 0.35s ease;
+}
+
+.ace-meter-card.triggered {
+  animation: aceMeterGlow 0.55s ease 3;
+}
+
+@keyframes aceMeterGlow {
+  50% {
+    background: rgba(255, 205, 50, 0.35);
+    box-shadow: 0 0 20px rgba(255, 205, 50, 0.7);
+  }
+}

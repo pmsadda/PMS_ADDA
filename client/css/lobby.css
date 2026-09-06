@@ -5382,3 +5382,195 @@ button:focus{
     font-size: 8px;
   }
 }
+
+/* =========================
+   PMS Super Ace Lobby Card
+========================= */
+
+.super-ace-game-card {
+  overflow: hidden;
+  border-color: rgba(255, 208, 65, 0.55);
+  background:
+    radial-gradient(circle at top, rgba(181, 18, 51, 0.28), transparent 46%),
+    linear-gradient(155deg, #251018, #100b10);
+}
+
+.super-ace-card-visual {
+  position: relative;
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, rgba(255, 209, 53, 0.2), transparent 50%),
+    linear-gradient(145deg, #a61532, #4a0b20 58%, #170710);
+}
+
+.super-ace-card-visual::before {
+  content: "♠";
+  position: absolute;
+  left: -10px;
+  bottom: -34px;
+  color: rgba(255, 221, 109, 0.12);
+  font-size: 130px;
+  transform: rotate(-15deg);
+}
+
+.super-ace-card-visual::after {
+  content: "♥";
+  position: absolute;
+  top: -35px;
+  right: -5px;
+  color: rgba(255, 221, 109, 0.12);
+  font-size: 120px;
+  transform: rotate(15deg);
+}
+
+.super-ace-live-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #ffcf31;
+  color: #351700;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.super-ace-live-badge i {
+  color: #e10c38;
+  font-size: 6px;
+}
+
+.super-ace-cards {
+  position: relative;
+  z-index: 2;
+  width: 170px;
+  height: 94px;
+}
+
+.super-ace-cards span {
+  position: absolute;
+  top: 4px;
+  left: 58px;
+  width: 57px;
+  height: 82px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 6px;
+  border: 3px solid #f3bd28;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #ffffff, #f4e4bd);
+  color: #b30b2c;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  font-weight: 900;
+  box-shadow: 0 7px 15px rgba(0, 0, 0, 0.42);
+}
+
+.super-ace-cards span:nth-child(1) {
+  transform: translateX(-42px) rotate(-18deg);
+}
+
+.super-ace-cards span:nth-child(2) {
+  z-index: 2;
+  color: #151018;
+}
+
+.super-ace-cards span:nth-child(3) {
+  transform: translateX(42px) rotate(18deg);
+}
+
+.super-ace-card-visual > strong {
+  position: relative;
+  z-index: 2;
+  color: #ffd84d;
+  font-size: 17px;
+  letter-spacing: 1.5px;
+  text-shadow: 0 3px 6px #000000;
+}
+
+.super-ace-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.super-ace-features span {
+  display: inline-flex;
+  min-height: 25px;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 207, 49, 0.22);
+  border-radius: 20px;
+  background: rgba(255, 207, 49, 0.08);
+  color: #ffdc68;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.super-ace-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: auto;
+  text-decoration: none;
+  background: linear-gradient(180deg, #ffdb57, #e8a711);
+  color: #2a1600;
+}
+
+.super-ace-play-btn:hover {
+  filter: brightness(1.08);
+}
+
+@media (max-width: 600px) {
+  .super-ace-card-visual {
+    min-height: 130px;
+  }
+
+  .super-ace-cards {
+    width: 130px;
+    height: 72px;
+  }
+
+  .super-ace-cards span {
+    left: 44px;
+    width: 44px;
+    height: 64px;
+    padding: 4px;
+    font-size: 23px;
+  }
+
+  .super-ace-cards span:nth-child(1) {
+    transform: translateX(-31px) rotate(-17deg);
+  }
+
+  .super-ace-cards span:nth-child(3) {
+    transform: translateX(31px) rotate(17deg);
+  }
+
+  .super-ace-card-visual > strong {
+    font-size: 13px;
+  }
+
+  .super-ace-features {
+    gap: 4px;
+  }
+
+  .super-ace-features span {
+    min-height: 22px;
+    padding: 3px 6px;
+    font-size: 8px;
+  }
+}

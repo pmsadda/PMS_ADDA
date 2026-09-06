@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1">
+
+    <title>Super Ace Control | PMS ADDA</title>
+
+    <link rel="stylesheet" href="../css/admin-super-ace.css">
+  </head>
+
+  <body>
+    <div class="admin-loading" id="adminLoading">
+      <div>🎰</div>
+      <strong>Loading Super Ace Control...</strong>
+    </div>
+
+    <header class="admin-header">
+      <button type="button" id="backBtn">← Back</button>
+
+      <div>
+        <span>PMS ADDA CONTROL CENTER</span>
+        <h1>Super Ace Game Control</h1>
+      </div>
+
+      <button type="button" id="refreshBtn">Refresh</button>
+    </header>
+
+    <main class="admin-container">
+      <section class="summary-grid">
+        <article>
+          <span>Today Spins</span>
+          <strong id="todaySpins">0</strong>
+        </article>
+
+        <article>
+          <span>Today Bet</span>
+          <strong>৳<span id="todayBet">0.00</span></strong>
+        </article>
+
+        <article>
+          <span>Today Payout</span>
+          <strong>৳<span id="todayPayout">0.00</span></strong>
+        </article>
+
+        <article>
+          <span>Admin Result</span>
+          <strong id="todayAdminResult">৳0.00</strong>
+        </article>
+      </section>
+
+      <section class="admin-panel">
+        <div class="panel-heading">
+          <div>
+            <span>GAME CONFIGURATION</span>
+            <h2>Super Ace Settings</h2>
+          </div>
+
+          <button
+            type="button"
+            class="save-button"
+            id="saveSettingsBtn">
+            Save Settings
+          </button>
+        </div>
+
+        <form id="slotSettingsForm">
+          <div class="switch-grid">
+            <label class="switch-card">
+              <div>
+                <strong>Game ON/OFF</strong>
+                <span>Player Super Ace game চালাতে পারবে</span>
+              </div>
+
+              <input type="checkbox" id="isEnabled">
+              <i></i>
+            </label>
+
+            <label class="switch-card">
+              <div>
+                <strong>Maintenance Mode</strong>
+                <span>সব নতুন Spin বন্ধ থাকবে</span>
+              </div>
+
+              <input type="checkbox" id="maintenanceMode">
+              <i></i>
+            </label>
+
+            <label class="switch-card">
+              <div>
+                <strong>Wild Symbol</strong>
+                <span>Wild symbol result-এ থাকবে</span>
+              </div>
+
+              <input type="checkbox" id="wildEnabled">
+              <i></i>
+            </label>
+
+            <label class="switch-card">
+              <div>
+                <strong>Scatter Symbol</strong>
+                <span>Scatter bonus চালু থাকবে</span>
+              </div>
+
+              <input type="checkbox" id="scatterEnabled">
+              <i></i>
+            </label>
+
+            <label class="switch-card">
+              <div>
+                <strong>Free Spins</strong>
+                <span>Scatter থেকে free spin পাওয়া যাবে</span>
+              </div>
+
+              <input type="checkbox" id="freeSpinsEnabled">
+              <i></i>
+            </label>
+            <label class="switch-card">
+              <div>
+                <strong>Ace Meter</strong>
+                <span>
+                  ACE symbol জমা হলে bonus multiplier চালু হবে
+                </span>
+              </div>
+
+              <input
+                type="checkbox"
+                id="aceMeterEnabled">
+
+              <i></i>
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              <span>Minimum Bet (৳)</span>
+              <input
+                type="number"
+                id="minBet"
+                min="1"
+                step="0.01"
+                required>
+            </label>
+
+            <label>
+              <span>Maximum Bet (৳)</span>
+              <input
+                type="number"
+                id="maxBet"
+                min="1"
+                step="0.01"
+                required>
+            </label>
+
+            <label>
+              <span>Maximum Payout Per Spin (৳)</span>
+              <input
+                type="number"
+                id="maxPayoutPerSpin"
+                min="0"
+                step="0.01"
+                required>
+            </label>
+
+            <label>
+              <span>Maximum Win Multiplier (x)</span>
+              <input
+                type="number"
+                id="maxWinMultiplier"
+                min="1"
+                step="0.01"
+                required>
+            </label>
+
+            <label>
+              <span>RTP Percentage</span>
+              <input
+                type="number"
+                id="rtpPercent"
+                min="1"
+                max="99.99"
+                step="0.01"
+                required>
+            </label>
+
+            <label>
+              <span>House Edge</span>
+              <input
+                type="text"
+                id="houseEdgePercent"
+                readonly>
+            </label>
+
+            <label>
+              <span>Volatility Mode</span>
+
+              <select id="volatilityProfile" required>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Free Spins Award</span>
+              <input
+                type="number"
+                id="freeSpinsAward"
+                min="0"
+                step="1"
+                required>
+            </label>
+
+            <label>
+              <span>Free Spin Multiplier (x)</span>
+              <input
+                type="number"
+                id="freeSpinsMultiplier"
+                min="1"
+                step="0.01"
+                required>
+            </label>
+
+            <label>
+              <span>Ace Meter Target</span>
+
+              <input
+                type="number"
+                id="aceMeterTrigger"
+                min="1"
+                max="100"
+                step="1"
+                required>
+            </label>
+
+            <label>
+              <span>Ace Bonus Multiplier (x)</span>
+
+              <input
+                type="number"
+                id="aceMeterMultiplier"
+                min="1"
+                max="100"
+                step="0.01"
+                required>
+            </label>
+
+            <label>
+              <span>Daily Payout Limit (৳)</span>
+              <input
+                type="number"
+                id="dailyPayoutLimit"
+                min="0"
+                step="0.01"
+                required>
+            </label>
+
+            <label>
+              <span>Daily Admin Loss Limit (৳)</span>
+              <input
+                type="number"
+                id="dailyAdminLossLimit"
+                min="0"
+                step="0.01"
+                required>
+            </label>
+          </div>
+
+          <div class="mode-note">
+            <strong>Mode:</strong>
+            Low = ছোট Win বেশি,
+            Medium = Balanced,
+            High = Win কম কিন্তু বড় Multiplier-এর সুযোগ বেশি।
+          </div>
+        </form>
+      </section>
+
+      <section class="admin-panel">
+        <div class="panel-heading">
+          <div>
+            <span>ACTIVITY</span>
+            <h2>Recent Spin History</h2>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Spin</th>
+                <th>Player</th>
+                <th>Bet</th>
+                <th>Multiplier</th>
+                <th>Payout</th>
+                <th>Mode</th>
+                <th>Free</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+
+            <tbody id="spinHistoryBody">
+              <tr>
+                <td colspan="8" class="empty-row">
+                  কোনো Spin পাওয়া যায়নি
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-panel">
+        <div class="panel-heading">
+          <div>
+            <span>LAST 30 DAYS</span>
+            <h2>Daily Result</h2>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Spins</th>
+                <th>Total Bet</th>
+                <th>Total Payout</th>
+                <th>Admin Result</th>
+              </tr>
+            </thead>
+
+            <tbody id="dailyStatsBody">
+              <tr>
+                <td colspan="5" class="empty-row">
+                  কোনো Daily result পাওয়া যায়নি
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div class="admin-toast hidden" id="adminToast">
+      <strong id="toastTitle">Notice</strong>
+      <span id="toastMessage"></span>
+    </div>
+
+    <script src="../js/admin-super-ace.js"></script>
+  </body>
+</html>
