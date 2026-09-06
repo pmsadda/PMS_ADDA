@@ -227,12 +227,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (currentBalance < 500) {
+    if (currentBalance < 100) {
       setWithdrawStatus(
         "is-blocked",
         "fa-solid fa-wallet",
         "Insufficient Balance",
-        "Minimum withdraw amount is ৳500.00.",
+        "Minimum withdraw amount is ৳100.00.",
       );
 
       submitWithdraw.disabled = true;
@@ -416,8 +416,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!Number.isFinite(amount) || amount < 500) {
-      showToast("Minimum withdraw ৳500.");
+    if (!Number.isFinite(amount) || amount < 100) {
+      showToast("Minimum withdraw ৳100.");
 
       withdrawAmount.focus();
       return;

@@ -1,6 +1,6 @@
 const { pool } = require("../config/database");
 
-const MINIMUM_WITHDRAW_AMOUNT = 500;
+const MINIMUM_WITHDRAW_AMOUNT = 100;
 
 function generateWalletTransactionId() {
   const timestamp = Date.now();
