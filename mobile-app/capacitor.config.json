@@ -1,0 +1,9 @@
+{
+  "appId": "com.pmsadda.app",
+  "appName": "PMS ADDA",
+  "webDir": "www",
+  "server": {
+    "url": "https://pms-adda.site",
+    "cleartext": false
+  }
+}

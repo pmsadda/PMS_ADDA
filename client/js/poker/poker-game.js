@@ -1836,3 +1836,27 @@ if (document.readyState === "loading") {
 } else {
   initializePokerGame();
 }
+async function lockGameLandscape() {
+  try {
+    const orientationPlugin = window.Capacitor?.Plugins?.ScreenOrientation;
+
+    if (orientationPlugin?.lock) {
+      await orientationPlugin.lock({
+        orientation: "landscape",
+      });
+      return;
+    }
+
+    if (window.screen?.orientation?.lock) {
+      await window.screen.orientation.lock("landscape");
+    }
+  } catch (error) {
+    console.warn("Landscape orientation failed:", error);
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", lockGameLandscape);
+} else {
+  lockGameLandscape();
+}

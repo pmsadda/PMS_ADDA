@@ -582,4 +582,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initialize();
+  async function restorePortraitOrientation() {
+    try {
+      const orientationPlugin = window.Capacitor?.Plugins?.ScreenOrientation;
+
+      if (orientationPlugin?.lock) {
+        await orientationPlugin.lock({
+          orientation: "portrait",
+        });
+        return;
+      }
+
+      if (window.screen?.orientation?.lock) {
+        await window.screen.orientation.lock("portrait");
+      }
+    } catch (error) {
+      console.warn("Portrait orientation failed:", error);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", restorePortraitOrientation);
+  } else {
+    restorePortraitOrientation();
+  }
 });
