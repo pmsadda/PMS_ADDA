@@ -438,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (DOM.appName) {
       DOM.appName.textContent =
         currentSettings.appName ||
-        "PMS ADDA";
+        "TPL22";
     }
 
 
@@ -1130,7 +1130,7 @@ document.addEventListener("DOMContentLoaded", () => {
         link.download =
           currentSettings
             .apkFileName ||
-          "PMS_ADDA.apk";
+          "TPL22.apk";
 
         document.body
           .appendChild(link);

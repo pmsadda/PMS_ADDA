@@ -30,6 +30,12 @@ const multiplierValue = document.getElementById("multiplierValue");
 
 const multiplierStatus = document.getElementById("multiplierStatus");
 
+const flightLine = document.getElementById("flightLine");
+
+const flightArea = document.getElementById("flightArea");
+
+const planeWrapper = document.getElementById("planeWrapper");
+
 const crashedMessage = document.getElementById("crashedMessage");
 
 const crashedMultiplier = document.getElementById("crashedMultiplier");
@@ -99,6 +105,98 @@ function multiplierText(value) {
   }
 
   return `${number.toFixed(2)}x`;
+}
+
+/* ==========================
+   Synchronized Flight Visual
+========================== */
+
+function resetFlightVisual() {
+  if (flightLine) {
+    flightLine.setAttribute("d", "M 20 400");
+  }
+
+  if (flightArea) {
+    flightArea.setAttribute("d", "M 20 400 L 20 400 Z");
+  }
+
+  if (planeWrapper) {
+    planeWrapper.style.left = "2%";
+
+    planeWrapper.style.top = "95.24%";
+
+    planeWrapper.style.transform = "translate(-50%, -50%) rotate(-18deg)";
+  }
+}
+
+function updateFlightVisual(multiplier) {
+  const safeMultiplier = Math.max(1, Number(multiplier) || 1);
+
+  /*
+   * Plane দ্রুত উপরে উঠবে।
+   * এটি শুধু visual animation পরিবর্তন করে;
+   * server crash point পরিবর্তন করে না।
+   */
+  const progress = Math.min(
+    0.985,
+    Math.max(0, 1 - Math.pow(safeMultiplier, -1.18)),
+  );
+
+  const startX = 20;
+
+  const startY = 400;
+
+  const endX = startX + 920 * progress;
+
+  const rise = Math.pow(progress, 1.16);
+
+  const endY = startY - 350 * rise;
+
+  const distanceX = endX - startX;
+
+  const distanceY = startY - endY;
+
+  const control1X = startX + distanceX * 0.38;
+
+  const control1Y = startY - distanceY * 0.06;
+
+  const control2X = startX + distanceX * 0.76;
+
+  const control2Y = endY + distanceY * 0.42;
+
+  const curvePath = [
+    `M ${startX} ${startY}`,
+
+    `C ${control1X.toFixed(2)} ${control1Y.toFixed(2)}`,
+
+    `${control2X.toFixed(2)} ${control2Y.toFixed(2)}`,
+
+    `${endX.toFixed(2)} ${endY.toFixed(2)}`,
+  ].join(" ");
+
+  if (flightLine) {
+    flightLine.setAttribute("d", curvePath);
+  }
+
+  if (flightArea) {
+    flightArea.setAttribute(
+      "d",
+
+      `${curvePath} L ${endX.toFixed(2)} ${startY} L ${startX} ${startY} Z`,
+    );
+  }
+
+  if (planeWrapper) {
+    planeWrapper.style.left = `${(endX / 10).toFixed(3)}%`;
+
+    planeWrapper.style.top = `${(endY / 4.2).toFixed(3)}%`;
+
+    const angle = -18 + progress * 10;
+
+    planeWrapper.style.transform = `translate(-50%, -50%) rotate(${angle.toFixed(
+      2,
+    )}deg)`;
+  }
 }
 
 function showToast(message) {
@@ -544,6 +642,8 @@ function updateRoundUI() {
 
     aviatorStage?.classList.remove("flying");
 
+    resetFlightVisual();
+
     crashedMessage?.classList.add("is-hidden");
 
     bettingCountdown?.classList.add("is-hidden");
@@ -573,6 +673,8 @@ function updateRoundUI() {
 
     aviatorStage?.classList.remove("flying");
 
+    resetFlightVisual();
+
     crashedMessage?.classList.add("is-hidden");
 
     if (multiplierValue) {
@@ -586,19 +688,21 @@ function updateRoundUI() {
     startBettingCountdown();
   }
 
-  if (status === "flying") {
-    clearCountdown();
+ if (status === "flying") {
+  clearCountdown();
 
-    bettingCountdown?.classList.add("is-hidden");
+  bettingCountdown?.classList.add("is-hidden");
 
-    crashedMessage?.classList.add("is-hidden");
+  crashedMessage?.classList.add("is-hidden");
 
-    aviatorStage?.classList.add("flying");
+  aviatorStage?.classList.add("flying");
 
-    if (multiplierStatus) {
-      multiplierStatus.textContent = "Flying...";
-    }
+  updateFlightVisual(currentMultiplier);
+
+  if (multiplierStatus) {
+    multiplierStatus.textContent = "Flying...";
   }
+}
 
   if (status === "crashed") {
     clearCountdown();
@@ -1174,22 +1278,7 @@ function connectSocket() {
 
     aviatorStage?.classList.add("flying");
 
-    if (planeWrapper) {
-      const flightProgress = Math.min(
-        1,
-        Math.max(0, Math.log(Math.max(value, 1)) / Math.log(100)),
-      );
-
-      const horizontalPosition = 8 + flightProgress * 72;
-
-      const verticalPosition = 5 + flightProgress * 72;
-
-      planeWrapper.style.left = `${horizontalPosition}%`;
-
-      planeWrapper.style.bottom = `${verticalPosition}%`;
-
-      planeWrapper.style.transform = "rotate(-12deg)";
-    }
+    updateFlightVisual(value);
 
     bettingCountdown?.classList.add("is-hidden");
 

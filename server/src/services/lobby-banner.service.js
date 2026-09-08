@@ -42,8 +42,11 @@ const BANNER_SELECT_COLUMNS = `
   ) AS has_image,
 
   target_url,
-  status,
-  updated_by,
+status,
+show_as_popup,
+popup_message,
+popup_button_text,
+updated_by,
   created_at,
   updated_at
 `;
@@ -151,6 +154,74 @@ function normalizeStatus(value) {
   }
 
   return status;
+}
+
+function normalizeShowAsPopup(value) {
+  const normalized =
+    String(value ?? "")
+      .trim()
+      .toLowerCase();
+
+  return [
+    "1",
+    "true",
+    "yes",
+    "on",
+  ].includes(normalized);
+}
+
+function normalizePopupMessage(
+  value,
+  showAsPopup,
+) {
+  const message =
+    String(value || "")
+      .replace(/\r\n/g, "\n")
+      .trim();
+
+  if (
+    showAsPopup &&
+    !message
+  ) {
+    throw createServiceError(
+      "Popup message is required when popup is enabled.",
+      400,
+      "POPUP_MESSAGE_REQUIRED",
+    );
+  }
+
+  if (message.length > 1000) {
+    throw createServiceError(
+      "Popup message cannot exceed 1000 characters.",
+      400,
+      "INVALID_POPUP_MESSAGE",
+    );
+  }
+
+  return message || null;
+}
+
+function normalizePopupButtonText(
+  value,
+) {
+  const buttonText =
+    String(
+      value ||
+      "View Offer",
+    )
+      .replace(/\s+/g, " ")
+      .trim();
+
+  if (buttonText.length > 60) {
+    throw createServiceError(
+      "Popup button text cannot exceed 60 characters.",
+      400,
+      "INVALID_POPUP_BUTTON_TEXT",
+    );
+  }
+
+  return buttonText ||
+    "View Offer";
 }
 
 function normalizeTargetUrl(value) {
@@ -385,10 +456,23 @@ function mapBannerRow(row) {
       row.target_url ||
       null,
 
-    status:
-      row.status,
+   status:
+  row.status,
 
-    updatedBy:
+showAsPopup:
+  Boolean(
+    row.show_as_popup,
+  ),
+
+popupMessage:
+  row.popup_message ||
+  "",
+
+popupButtonText:
+  row.popup_button_text ||
+  "View Offer",
+
+updatedBy:
       row.updated_by === null
         ? null
         : Number(
@@ -579,6 +663,9 @@ async function createBanner({
   title,
   targetUrl,
   status,
+  showAsPopup,
+  popupMessage,
+  popupButtonText,
   imageFile,
 }) {
   const validAdminId =
@@ -594,6 +681,22 @@ async function createBanner({
 
   const validStatus =
     normalizeStatus(status);
+
+    const validShowAsPopup =
+  normalizeShowAsPopup(
+    showAsPopup,
+  );
+
+const validPopupMessage =
+  normalizePopupMessage(
+    popupMessage,
+    validShowAsPopup,
+  );
+
+const validPopupButtonText =
+  normalizePopupButtonText(
+    popupButtonText,
+  );
 
   const uploadedImage =
     validateUploadedImage(
@@ -657,47 +760,73 @@ async function createBanner({
     const displayOrder =
       existingRows.length + 1;
 
-    await connection.query(
-      `
-        INSERT INTO
-          lobby_banner_settings (
-            id,
-            display_order,
-            title,
-            image_file_name,
-            image_mime_type,
-            image_size,
-            image_data,
-            target_url,
-            status,
-            updated_by
-          )
-        VALUES (
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?
-        )
-      `,
-      [
-        bannerId,
-        displayOrder,
-        validTitle,
-        uploadedImage.fileName,
-        uploadedImage.mimeType,
-        uploadedImage.imageSize,
-        uploadedImage.imageData,
-        validTargetUrl,
-        validStatus,
-        validAdminId,
-      ],
-    );
+   if (validShowAsPopup) {
+  /*
+   * একই সময়ে শুধু একটি banner
+   * lobby popup হিসেবে চালু থাকবে।
+   */
+  await connection.query(
+    `
+      UPDATE lobby_banner_settings
+
+      SET show_as_popup = 0
+
+      WHERE show_as_popup = 1
+    `,
+  );
+}
+
+await connection.query(
+  `
+    INSERT INTO
+      lobby_banner_settings (
+        id,
+        display_order,
+        title,
+        image_file_name,
+        image_mime_type,
+        image_size,
+        image_data,
+        target_url,
+        status,
+        show_as_popup,
+        popup_message,
+        popup_button_text,
+        updated_by
+      )
+
+    VALUES (
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?
+    )
+  `,
+  [
+    bannerId,
+    displayOrder,
+    validTitle,
+    uploadedImage.fileName,
+    uploadedImage.mimeType,
+    uploadedImage.imageSize,
+    uploadedImage.imageData,
+    validTargetUrl,
+    validStatus,
+    validShowAsPopup ? 1 : 0,
+    validPopupMessage,
+    validPopupButtonText,
+    validAdminId,
+  ],
+);
 
     const [createdRows] =
       await connection.query(
@@ -755,9 +884,11 @@ async function updateBanner({
     normalizeStatus(status);
 
   const uploadedImage =
-    validateUploadedImage(
-      imageFile,
-    );
+  imageFile
+    ? validateUploadedImage(
+        imageFile,
+      )
+    : null;
 
   const connection =
     await pool.getConnection();
@@ -814,19 +945,27 @@ async function updateBanner({
       );
     }
 
-    const updateFields = [
-      "title = ?",
-      "target_url = ?",
-      "status = ?",
-      "updated_by = ?",
-    ];
+const updateFields = [
+  "title = ?",
+  "target_url = ?",
+  "status = ?",
+  "show_as_popup = ?",
+  "popup_message = ?",
+  "popup_button_text = ?",
+  "updated_by = ?",
+];
 
-    const parameters = [
-      validTitle,
-      validTargetUrl,
-      validStatus,
-      validAdminId,
-    ];
+const parameters = [
+  validTitle,
+  validTargetUrl,
+  validStatus,
+  validShowAsPopup
+    ? 1
+    : 0,
+  validPopupMessage,
+  validPopupButtonText,
+  validAdminId,
+];
 
     if (uploadedImage) {
       updateFields.push(
@@ -847,6 +986,20 @@ async function updateBanner({
     parameters.push(
       validBannerId,
     );
+
+    if (validShowAsPopup) {
+  await connection.query(
+    `
+      UPDATE lobby_banner_settings
+
+      SET show_as_popup = 0
+
+      WHERE id <> ?
+        AND show_as_popup = 1
+    `,
+    [validBannerId],
+  );
+}
 
     await connection.query(
       `

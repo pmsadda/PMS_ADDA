@@ -1,5 +1,5 @@
 /* ==========================================
-   PMS ADDA CARROM TABLE CONTROLLER
+   TPL22 CARROM TABLE CONTROLLER
    Frontend Demonstration
 ========================================== */
 

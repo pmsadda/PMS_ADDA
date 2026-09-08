@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const user = STATE.user || {};
 
     const displayName =
-      user.fullName || user.full_name || user.username || "PMS ADDA Player";
+      user.fullName || user.full_name || user.username || "TPL22 Player";
 
     if (DOM.userName) {
       DOM.userName.textContent = displayName;
@@ -777,7 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.setTimeout(scrollToTransactionHistory, 50);
     }
 
-    console.log("✅ PMS ADDA dynamic Wallet loaded");
+    console.log("✅ TPL22 dynamic Wallet loaded");
   }
 
   initializeWallet();

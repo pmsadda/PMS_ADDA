@@ -1,7 +1,7 @@
 "use strict";
 
 /* ==========================================
-   PMS ADDA CENTRAL CONFIGURATION
+   TPL22 CENTRAL CONFIGURATION
 ========================================== */
 
 (function initializeAppConfig() {
@@ -24,7 +24,7 @@
     : currentLocation.origin;
 
   const APP_CONFIG = {
-    APP_NAME: "PMS ADDA",
+    APP_NAME: "TPL22",
 
     SERVER_URL: serverUrl.replace(/\/+$/, ""),
 
@@ -61,7 +61,7 @@
 
   window.APP_CONFIG = APP_CONFIG;
 
-  console.log("PMS ADDA server:", APP_CONFIG.SERVER_URL);
+  console.log("TPL22 server:", APP_CONFIG.SERVER_URL);
 })();
 
 /* ==========================================

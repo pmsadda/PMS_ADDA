@@ -1,7 +1,7 @@
 "use strict";
 
 /* ==========================================
-   PMS ADDA Texas Hold'em Evaluator
+   TPL22 Texas Hold'em Evaluator
 ========================================== */
 
 const CATEGORY_NAMES =

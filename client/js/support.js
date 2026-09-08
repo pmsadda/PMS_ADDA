@@ -534,7 +534,7 @@
 
         const senderName =
           senderType === "admin"
-            ? message.senderName || "PMS ADDA Support"
+            ? message.senderName || "TPL22 Support"
             : "You";
 
         return `
@@ -1306,7 +1306,7 @@
 
     connectSupportSocket();
 
-    console.log("✅ PMS ADDA Support Center loaded");
+    console.log("✅ TPL22 Support Center loaded");
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeSupport, {

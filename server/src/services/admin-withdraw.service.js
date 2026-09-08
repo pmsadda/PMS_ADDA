@@ -1,5 +1,5 @@
 /* ==========================================
-   PMS ADDA
+   TPL22
    Admin Withdraw Service
 ========================================== */
 
@@ -551,7 +551,7 @@ if (currentGatewayStatus) {
            bankCode: method,
       bankCard: accountNumber,
       accountName: String(
-        withdraw.username || "PMS ADDA User",
+        withdraw.username || "TPL22 User",
       ).slice(0, 64),
       description: `Withdrawal ${gatewayOrderNumber}`,
       feeType: 1,

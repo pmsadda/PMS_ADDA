@@ -18,7 +18,7 @@ const router =
   express.Router();
 
 /* ==========================================
-   PMS ADDA Carrom Routes
+   TPL22 Carrom Routes
 ========================================== */
 
 /*

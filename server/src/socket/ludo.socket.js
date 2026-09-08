@@ -1,7 +1,7 @@
 "use strict";
 
 /* ==========================================
-   PMS ADDA LUDO SOCKET
+   TPL22 LUDO SOCKET
    Matchmaking + Real Player + Bot
 ========================================== */
 

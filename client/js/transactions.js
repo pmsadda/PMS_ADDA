@@ -1787,8 +1787,8 @@ function buildPdfElement(
 
   const title =
     isBonus
-      ? "PMS ADDA Bonus History"
-      : "PMS ADDA Referral History";
+      ? "TPL22 Bonus History"
+      : "TPL22 Referral History";
 
   const summary =
     exportData.summary || {};
@@ -2042,7 +2042,7 @@ function buildPdfElement(
       </div>
 
       <div class="pdf-generated">
-        <strong>PMS ADDA</strong><br>
+        <strong>TPL22</strong><br>
         Generated:
         ${escapeHtml(
           formatPdfDate(
@@ -2067,7 +2067,7 @@ function buildPdfElement(
     </table>
 
     <p class="pdf-footer-note">
-      This report was generated from the live PMS ADDA
+      This report was generated from the live TPL22
       administrative database.
     </p>
   `;

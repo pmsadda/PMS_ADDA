@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">PMS ADDA</string>
-    <string name="title_activity_main">PMS ADDA</string>
+    <string name="app_name">TPL22</string>
+    <string name="title_activity_main">TPL22</string>
     <string name="package_name">com.pmsadda.app</string>
     <string name="custom_url_scheme">com.pmsadda.app</string>
 </resources>

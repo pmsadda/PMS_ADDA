@@ -1,5 +1,5 @@
 /* ==========================================
-   PMS ADDA
+   TPL22
    Real Admin Deposit Management
    Part 1/3
 ========================================== */
@@ -2058,5 +2058,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  console.log("PMS ADDA Real Admin Deposits Loaded Successfully");
+  console.log("TPL22 Real Admin Deposits Loaded Successfully");
 });

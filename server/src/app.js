@@ -351,7 +351,7 @@ app.get("/:page", (req, res, next) => {
 app.get("/api/health", (req, res) => {
   return res.status(200).json({
     success: true,
-    message: "PMS ADDA server is online.",
+    message: "TPL22 server is online.",
     timestamp: new Date().toISOString(),
   });
 });

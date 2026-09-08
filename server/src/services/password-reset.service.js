@@ -218,8 +218,8 @@ async function sendPasswordResetEmail({
   const senderName =
     String(
       process.env.BREVO_SENDER_NAME ||
-        "PMS ADDA",
-    ).trim() || "PMS ADDA";
+        "TPL22",
+    ).trim() || "TPL22";
 
   if (
     !apiKey ||
@@ -261,10 +261,10 @@ async function sendPasswordResetEmail({
           ],
 
           subject:
-            "PMS ADDA Password Reset OTP",
+            "TPL22 Password Reset OTP",
 
           textContent:
-            `Your PMS ADDA password reset OTP is ${otp}. ` +
+            `Your TPL22 password reset OTP is ${otp}. ` +
             `This OTP will expire in ${OTP_EXPIRY_MINUTES} minutes. ` +
             "Do not share this OTP with anyone.",
 
@@ -284,7 +284,7 @@ async function sendPasswordResetEmail({
                 color:#ffd447;
                 text-align:center;
               ">
-                PMS ADDA
+                TPL22
               </h1>
 
               <h2 style="

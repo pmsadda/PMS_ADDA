@@ -1,5 +1,5 @@
 /* ==========================================
-   PMS ADDA LOTTERY
+   TPL22 LOTTERY
    PLAYER FRONTEND
 ========================================== */
 
@@ -910,7 +910,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="draw-ticket-copy">
 
             <small>
-              PMS ADDA LOTTERY
+              TPL22 LOTTERY
             </small>
 
             <strong>
@@ -1143,7 +1143,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div>
 
             <span class="ticket-brand">
-              PMS ADDA LOTTERY
+              TPL22 LOTTERY
             </span>
 
             <div class="ticket-number">

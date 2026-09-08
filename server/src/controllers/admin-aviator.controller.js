@@ -8,6 +8,7 @@ const {
 );
 
 const {
+  getAdminAnalytics,
   getGameSettings,
   updateGameSettings,
 } = require(
@@ -40,6 +41,40 @@ function sendError(
           ? "Aviator admin request failed."
           : error.message,
     });
+}
+
+/* ==========================
+   Get Profit / Loss Report
+========================== */
+
+async function getAnalytics(
+  req,
+  res,
+) {
+  try {
+    const result =
+      await getAdminAnalytics({
+        period:
+          req.query?.period,
+      });
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        data: result,
+      });
+  } catch (error) {
+    console.error(
+      "ADMIN AVIATOR ANALYTICS ERROR:",
+      error,
+    );
+
+    return sendError(
+      res,
+      error,
+    );
+  }
 }
 
 /* ==========================
@@ -287,6 +322,7 @@ async function cancelRound(
 }
 
 module.exports = {
+  getAnalytics,
   getSettings,
   updateSettings,
   cancelRound,

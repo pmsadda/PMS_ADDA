@@ -28,6 +28,32 @@
 
     summaryHouseEdge: document.getElementById("summaryHouseEdge"),
 
+    analyticsPeriodFilter: document.getElementById("analyticsPeriodFilter"),
+
+    analyticsTotalBet: document.getElementById("analyticsTotalBet"),
+
+    analyticsTotalPayout: document.getElementById("analyticsTotalPayout"),
+
+    analyticsNetCard: document.getElementById("analyticsNetCard"),
+
+    analyticsNetProfit: document.getElementById("analyticsNetProfit"),
+
+    analyticsProfitMargin: document.getElementById("analyticsProfitMargin"),
+
+    analyticsCompletedRounds: document.getElementById(
+      "analyticsCompletedRounds",
+    ),
+
+    analyticsPlayers: document.getElementById("analyticsPlayers"),
+
+    analyticsActiveRound: document.getElementById("analyticsActiveRound"),
+
+    analyticsLiveBet: document.getElementById("analyticsLiveBet"),
+
+    analyticsLivePlayers: document.getElementById("analyticsLivePlayers"),
+
+    analyticsRoundRows: document.getElementById("analyticsRoundRows"),
+
     gameStatusBadge: document.getElementById("gameStatusBadge"),
 
     settingsForm: document.getElementById("settingsForm"),
@@ -50,10 +76,7 @@
 
     houseEdgeInput: document.getElementById("houseEdgeInput"),
 
-    volatilityProfileInput:
-  document.getElementById(
-    "volatilityProfileInput",
-  ),
+    volatilityProfileInput: document.getElementById("volatilityProfileInput"),
 
     saveSettingsButton: document.getElementById("saveSettingsBtn"),
 
@@ -78,6 +101,8 @@
     loading: false,
     saving: false,
     cancelling: false,
+    analyticsLoading: false,
+    analyticsPeriod: "today",
     toastTimer: null,
   };
 
@@ -134,6 +159,32 @@
 
   function formatPercent(value) {
     return toNumber(value, 0).toFixed(2);
+  }
+
+  function formatDateTime(value) {
+    if (!value) {
+      return "--";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "--";
+    }
+
+    return date.toLocaleString("en-BD", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+  }
+
+  function escapeHTML(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   function setLoading(loading) {
@@ -300,6 +351,196 @@
   }
 
   /* =======================================================
+   PROFIT / LOSS ANALYTICS
+======================================================= */
+
+  function setAnalyticsPeriod(period) {
+    state.analyticsPeriod = ["today", "7d", "30d"].includes(period)
+      ? period
+      : "today";
+
+    DOM.analyticsPeriodFilter
+      ?.querySelectorAll("[data-period]")
+      .forEach((button) => {
+        button.classList.toggle(
+          "active",
+          button.dataset.period === state.analyticsPeriod,
+        );
+      });
+  }
+
+  function renderAnalytics(data) {
+    const summary = data?.summary || {};
+
+    const netProfit = toNumber(summary.netProfit);
+
+    if (DOM.analyticsTotalBet) {
+      DOM.analyticsTotalBet.textContent = formatMoney(summary.totalBet);
+    }
+
+    if (DOM.analyticsTotalPayout) {
+      DOM.analyticsTotalPayout.textContent = formatMoney(summary.totalPayout);
+    }
+
+    if (DOM.analyticsNetProfit) {
+      DOM.analyticsNetProfit.textContent = formatMoney(netProfit);
+    }
+
+    if (DOM.analyticsProfitMargin) {
+      DOM.analyticsProfitMargin.textContent = formatPercent(
+        summary.profitMargin,
+      );
+    }
+
+    if (DOM.analyticsCompletedRounds) {
+      DOM.analyticsCompletedRounds.textContent = String(
+        toNumber(summary.completedRounds),
+      );
+    }
+
+    if (DOM.analyticsPlayers) {
+      DOM.analyticsPlayers.textContent = String(toNumber(summary.totalPlayers));
+    }
+
+    if (DOM.analyticsNetCard) {
+      DOM.analyticsNetCard.classList.toggle("profit", netProfit >= 0);
+
+      DOM.analyticsNetCard.classList.toggle("loss", netProfit < 0);
+    }
+
+    const activeRound = data?.activeRound || null;
+
+    if (DOM.analyticsActiveRound) {
+      DOM.analyticsActiveRound.textContent = activeRound
+        ? `${activeRound.roundCode} (${String(
+            activeRound.status,
+          ).toUpperCase()})`
+        : "None";
+    }
+
+    if (DOM.analyticsLiveBet) {
+      DOM.analyticsLiveBet.textContent = formatMoney(
+        activeRound?.totalBetAmount,
+      );
+    }
+
+    if (DOM.analyticsLivePlayers) {
+      DOM.analyticsLivePlayers.textContent = activeRound
+        ? `${toNumber(activeRound.openBets)} / ${toNumber(
+            activeRound.openPlayers,
+          )}`
+        : "0 / 0";
+    }
+
+    if (!DOM.analyticsRoundRows) {
+      return;
+    }
+
+    const rounds = Array.isArray(data?.rounds) ? data.rounds : [];
+
+    if (!rounds.length) {
+      DOM.analyticsRoundRows.innerHTML = `
+      <tr>
+        <td
+          colspan="6"
+          class="empty-cell"
+        >
+          No completed Aviator rounds in this period.
+        </td>
+      </tr>
+    `;
+
+      return;
+    }
+
+    DOM.analyticsRoundRows.innerHTML = rounds
+      .map((round) => {
+        const roundProfit = toNumber(round.netProfit);
+
+        const profitClass = roundProfit >= 0 ? "profit-text" : "loss-text";
+
+        return `
+          <tr>
+            <td>
+              <strong>
+                ${escapeHTML(round.roundCode)}
+              </strong>
+
+              <small>
+                #${toNumber(round.id)}
+              </small>
+            </td>
+
+            <td>
+              ${toNumber(round.crashMultiplier).toFixed(2)}x
+            </td>
+
+            <td>
+              ৳${formatMoney(round.totalBetAmount)}
+            </td>
+
+            <td>
+              ৳${formatMoney(round.totalPayoutAmount)}
+            </td>
+
+            <td class="${profitClass}">
+              ৳${formatMoney(roundProfit)}
+            </td>
+
+            <td>
+              ${escapeHTML(formatDateTime(round.crashedAt))}
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+
+  async function loadAnalytics({ silent = false } = {}) {
+    if (state.analyticsLoading) {
+      return;
+    }
+
+    state.analyticsLoading = true;
+
+    try {
+      const period = encodeURIComponent(state.analyticsPeriod);
+
+      const data = await apiRequest(
+        `/admin/aviator/analytics?period=${period}`,
+      );
+
+      renderAnalytics(data);
+
+      setAnalyticsPeriod(data?.period || state.analyticsPeriod);
+    } catch (error) {
+      console.error("AVIATOR ADMIN ANALYTICS LOAD ERROR:", error);
+
+      if (!silent) {
+        showToast(
+          error.message || "Aviator report could not be loaded.",
+          "error",
+        );
+      }
+
+      if (DOM.analyticsRoundRows) {
+        DOM.analyticsRoundRows.innerHTML = `
+        <tr>
+          <td
+            colspan="6"
+            class="empty-cell error"
+          >
+            ${escapeHTML(error.message || "Report load failed.")}
+          </td>
+        </tr>
+      `;
+      }
+    } finally {
+      state.analyticsLoading = false;
+    }
+  }
+
+  /* =======================================================
      RENDER SETTINGS
   ======================================================= */
 
@@ -360,24 +601,15 @@
       DOM.houseEdgeInput.value = String(houseEdgePercent);
     }
 
-    const volatilityProfile = [
-  "low",
-  "medium",
-  "high",
-].includes(
-  String(
-    settings.volatilityProfile || "",
-  ).toLowerCase(),
-)
-  ? String(
-      settings.volatilityProfile,
-    ).toLowerCase()
-  : "medium";
+    const volatilityProfile = ["low", "medium", "high"].includes(
+      String(settings.volatilityProfile || "").toLowerCase(),
+    )
+      ? String(settings.volatilityProfile).toLowerCase()
+      : "medium";
 
-if (DOM.volatilityProfileInput) {
-  DOM.volatilityProfileInput.value =
-    volatilityProfile;
-}
+    if (DOM.volatilityProfileInput) {
+      DOM.volatilityProfileInput.value = volatilityProfile;
+    }
 
     if (DOM.summaryMinimumBet) {
       DOM.summaryMinimumBet.textContent = formatMoney(minBet);
@@ -461,23 +693,14 @@ if (DOM.volatilityProfileInput) {
     const houseEdgePercent = toNumber(DOM.houseEdgeInput?.value, NaN);
 
     const volatilityProfile = String(
-  DOM.volatilityProfileInput?.value ||
-    "medium",
-)
-  .trim()
-  .toLowerCase();
+      DOM.volatilityProfileInput?.value || "medium",
+    )
+      .trim()
+      .toLowerCase();
 
-if (
-  ![
-    "low",
-    "medium",
-    "high",
-  ].includes(volatilityProfile)
-) {
-  throw new Error(
-    "Select a valid game mode.",
-  );
-}
+    if (!["low", "medium", "high"].includes(volatilityProfile)) {
+      throw new Error("Select a valid game mode.");
+    }
 
     if (!Number.isFinite(minBet) || minBet <= 0) {
       throw new Error("Minimum bet must be greater than 0.");
@@ -533,7 +756,7 @@ if (
       maxMultiplier,
 
       houseEdgePercent,
-      
+
       volatilityProfile,
     };
   }
@@ -685,6 +908,20 @@ if (
 
     DOM.refreshSettingsButton?.addEventListener("click", () => {
       loadSettings();
+
+      loadAnalytics();
+    });
+
+    DOM.analyticsPeriodFilter?.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-period]");
+
+      if (!button) {
+        return;
+      }
+
+      setAnalyticsPeriod(button.dataset.period);
+
+      loadAnalytics();
     });
 
     DOM.settingsForm?.addEventListener("submit", saveSettings);
@@ -722,7 +959,7 @@ if (
 
     bindEvents();
 
-    await loadSettings();
+    await Promise.all([loadSettings(), loadAnalytics()]);
   }
 
   start();

@@ -1,5 +1,5 @@
 /* ==========================================
-   PMS ADDA
+   TPL22
    Transaction History JS
    Part 1/3
 ========================================== */
@@ -430,7 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
     */
 
     console.log(
-        "PMS ADDA Transaction History Loaded Successfully"
+        "TPL22 Transaction History Loaded Successfully"
     );
 
 });

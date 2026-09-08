@@ -191,7 +191,7 @@ async function downloadApk(
     const safeFileName =
       String(
         apk.fileName ||
-        "PMS_ADDA.apk",
+        "TPL22.apk",
       )
         .replace(
           /["\r\n]/g,

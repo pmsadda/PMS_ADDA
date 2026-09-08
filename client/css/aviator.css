@@ -1218,3 +1218,109 @@ body {
     font-size: 47px;
   }
 }
+
+/* ==========================================
+   SYNCHRONIZED AVIATOR FLIGHT
+========================================== */
+
+.aviator-stage {
+  background:
+    repeating-conic-gradient(
+      from 250deg at 2% 98%,
+      rgba(255, 255, 255, 0.025) 0deg 8deg,
+      transparent 8deg 18deg
+    ),
+    linear-gradient(
+      145deg,
+      #07080d 0%,
+      #11111a 55%,
+      #08090d 100%
+    );
+}
+
+.flight-path {
+  position: absolute;
+  inset: 5% 3% 4%;
+  width: auto;
+  height: auto;
+  z-index: 4;
+}
+
+.flight-curve {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.aviator-stage.flying .flight-curve {
+  opacity: 1;
+}
+
+.flight-curve .flight-line {
+  position: static;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  transform: none;
+  animation: none;
+  opacity: 1;
+  fill: none;
+  stroke: #ff174f;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter:
+    drop-shadow(
+      0 0 8px rgba(255, 23, 79, 0.88)
+    );
+}
+
+.flight-area {
+  fill: url("#flightAreaGradient");
+  stroke: none;
+}
+
+.plane-wrapper {
+  left: 2%;
+  top: 95.24%;
+  bottom: auto;
+  width: 82px;
+  height: 82px;
+  transform:
+    translate(-50%, -50%)
+    rotate(-18deg);
+  will-change:
+    left,
+    top,
+    transform;
+}
+
+.aviator-stage.flying .plane-wrapper {
+  opacity: 1;
+  animation: none !important;
+  transition:
+    left 45ms linear,
+    top 45ms linear,
+    transform 45ms linear;
+}
+
+.plane-icon {
+  font-size: 66px;
+}
+
+@media (max-width: 760px) {
+  .plane-wrapper {
+    width: 58px;
+    height: 58px;
+  }
+
+  .plane-icon {
+    font-size: 47px;
+  }
+}

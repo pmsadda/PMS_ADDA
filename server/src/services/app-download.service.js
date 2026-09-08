@@ -106,7 +106,7 @@ function normalizeFileName(
   const fileName =
     String(
       value ||
-      "PMS_ADDA.apk",
+      "TPL22.apk",
     )
       .replace(
         /[^a-zA-Z0-9._-]/g,
@@ -134,7 +134,7 @@ function mapSettings(
 
     appName:
       row.app_name ||
-      "PMS ADDA",
+      "TPL22",
 
     appVersion:
       row.app_version ||
@@ -206,7 +206,7 @@ async function ensureSettingsRow(
       VALUES
       (
         1,
-        'PMS ADDA',
+        'TPL22',
         1
       )
 
@@ -576,7 +576,7 @@ async function getApkDownload() {
   return {
     appName:
       row.app_name ||
-      "PMS ADDA",
+      "TPL22",
 
     appVersion:
       row.app_version ||
@@ -585,7 +585,7 @@ async function getApkDownload() {
     fileName:
       normalizeFileName(
         row.apk_file_name ||
-        "PMS_ADDA.apk",
+        "TPL22.apk",
       ),
 
     mimeType:

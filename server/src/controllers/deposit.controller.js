@@ -419,7 +419,7 @@ async function getJayaPayCustomer(
   return {
     fullName: String(
       user.full_name ||
-        "PMS ADDA User",
+        "TPL22 User",
     )
       .trim()
       .slice(0, 64),
@@ -775,7 +775,7 @@ async function createGatewayPayment(
       amount,
 
       productDetail:
-        "PMS ADDA wallet deposit",
+        "TPL22 wallet deposit",
 
       method:
         payType,

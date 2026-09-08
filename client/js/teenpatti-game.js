@@ -2,7 +2,7 @@
 
 (() => {
   /* =========================================================
-     PMS ADDA — NEW TEEN PATTI FRONTEND
+     TPL22 — NEW TEEN PATTI FRONTEND
   ========================================================= */
 
   const CARD_BACK_PATH = "../assets/cards/card-back.png";
@@ -2921,7 +2921,7 @@
     bindGameActionEvents();
     createSocketConnection();
 
-    console.log("✅ PMS ADDA new Teen Patti frontend base loaded", {
+    console.log("✅ TPL22 new Teen Patti frontend base loaded", {
       tableId: STATE.tableId,
       socketUrl: window.APP_CONFIG.TEEN_PATTI_SOCKET_URL,
     });

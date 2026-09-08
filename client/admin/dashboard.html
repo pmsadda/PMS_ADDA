@@ -8,7 +8,7 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0">
 
-        <title>PMS ADDA | Admin Dashboard</title>
+        <title>TPL22 | Admin Dashboard</title>
 
         <!-- Icons -->
         <link
@@ -46,10 +46,10 @@
 
                     <img
                         src="../assets/logo/logo.png"
-                        alt="PMS ADDA Logo">
+                        alt="TPL22 Logo">
 
                     <div>
-                        <h2>PMS ADDA</h2>
+                        <h2>TPL22</h2>
                         <p>Admin Panel</p>
                     </div>
 
@@ -1731,6 +1731,70 @@
                                     <small>
                                         শুধু Active banner User Lobby carousel-এ
                                         দেখানো হবে।
+                                    </small>
+
+                                </div>
+
+                                <div class="banner-field">
+
+                                    <label for="lobbyBannerShowPopup">
+                                        Show as Offer Popup
+                                    </label>
+
+                                    <select id="lobbyBannerShowPopup">
+
+                                        <option value="false">
+                                            No — Carousel Only
+                                        </option>
+
+                                        <option value="true">
+                                            Yes — Show Popup
+                                        </option>
+
+                                    </select>
+
+                                    <small>
+                                        একই সময়ে শুধু একটি Active banner
+                                        Lobby offer popup হিসেবে দেখানো হবে।
+                                    </small>
+
+                                </div>
+
+                                <div class="banner-field">
+
+                                    <label for="lobbyBannerPopupMessage">
+                                        Popup Message
+                                    </label>
+
+                                    <textarea
+                                        id="lobbyBannerPopupMessage"
+                                        maxlength="1000"
+                                        rows="5"
+                                        placeholder="Offer-এর বিস্তারিত message লিখুন..."></textarea>
+
+                                    <small>
+                                        Popup চালু করলে message দেওয়া
+                                        বাধ্যতামূলক।
+                                    </small>
+
+                                </div>
+
+                                <div class="banner-field">
+
+                                    <label for="lobbyBannerPopupButtonText">
+                                        Popup Button Text
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="lobbyBannerPopupButtonText"
+                                        maxlength="60"
+                                        value="View Offer"
+                                        placeholder="View Offer">
+
+                                    <small>
+                                        উপরের Click Link-টি এই button-এ ব্যবহার
+                                        হবে।
                                     </small>
 
                                 </div>

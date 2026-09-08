@@ -8,7 +8,7 @@
         <meta name="viewport"
             content="width=device-width, initial-scale=1.0">
 
-        <title>PMS ADDA | Lobby</title>
+        <title>TPL22 | Lobby</title>
         <script src="../js/app-config.js"></script>
         <link rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -83,7 +83,7 @@
             <section
                 class="lobby-notice"
                 id="lobbyNotice"
-                aria-label="PMS ADDA notice"
+                aria-label="TPL22 notice"
                 hidden>
 
                 <div class="lobby-notice-icon">
@@ -126,7 +126,7 @@
                     <img
                         class="lobby-banner-image"
                         id="lobbyBannerImage"
-                        alt="PMS ADDA lobby advertisement">
+                        alt="TPL22 lobby advertisement">
 
                     <div
                         class="lobby-banner-loading"
@@ -1056,7 +1056,7 @@
 
                 <span id="toastMessage">
 
-                    Welcome to PMS ADDA
+                    Welcome to TPL22
 
                 </span>
 
@@ -1313,6 +1313,67 @@
             </div>
 
             <!-- =====================================================
+     ADMIN CONTROLLED OFFER POPUP
+====================================================== -->
+
+            <div
+                id="lobbyOfferPopup"
+                class="lobby-offer-popup"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="lobbyOfferTitle"
+                hidden>
+
+                <div
+                    id="lobbyOfferBackdrop"
+                    class="lobby-offer-backdrop">
+                </div>
+
+                <div class="lobby-offer-card">
+
+                    <button
+                        type="button"
+                        id="lobbyOfferClose"
+                        class="lobby-offer-close"
+                        aria-label="Close offer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                    <img
+                        id="lobbyOfferImage"
+                        class="lobby-offer-image"
+                        src
+                        alt="TPL22 offer">
+
+                    <div class="lobby-offer-content">
+
+                        <h2 id="lobbyOfferTitle"></h2>
+
+                        <p id="lobbyOfferMessage"></p>
+
+                        <a
+                            id="lobbyOfferAction"
+                            class="lobby-offer-action"
+                            href="#"
+                            hidden>
+                            View Offer
+                        </a>
+
+                        <label class="lobby-offer-hide-today">
+                            <input
+                                type="checkbox"
+                                id="lobbyOfferHideToday">
+
+                            <span>আজ আর দেখাবেন না</span>
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =====================================================
      GUEST LOGIN / SIGNUP POPUP
 ====================================================== -->
 
@@ -1334,7 +1395,7 @@
                         <i class="fa-solid fa-user-plus"></i>
                     </div>
 
-                    <h2>PMS ADDA-তে যোগ দিন</h2>
+                    <h2>TPL22-তে যোগ দিন</h2>
 
                     <p>
                         সব গেম খেলতে, ওয়ালেট পরিচালনা করতে এবং সব সুবিধা ব্যবহার

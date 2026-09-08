@@ -1,5 +1,5 @@
 /* ==========================================
-   PMS ADDA
+   TPL22
    Teen Patti Room Selection
    Version 1.0.0
 ========================================== */
@@ -565,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadLatestUserData();
 
-    console.log("PMS ADDA Teen Patti Rooms initialized");
+    console.log("TPL22 Teen Patti Rooms initialized");
   }
 
   initialize();

@@ -11,6 +11,7 @@ const {
 );
 
 const {
+  getAnalytics,
   getSettings,
   updateSettings,
   cancelRound,
@@ -37,6 +38,15 @@ router.use(
 router.get(
   "/settings",
   getSettings,
+);
+
+/*
+ * GET
+ * /api/admin/aviator/analytics
+ */
+router.get(
+  "/analytics",
+  getAnalytics,
 );
 
 /*

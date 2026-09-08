@@ -1444,3 +1444,352 @@ img {
         text-align: center;
     }
 }
+
+/* ==========================================
+   BANGLA DICE MOBILE — NO PAGE SCROLL
+========================================== */
+
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    display: grid;
+    grid-template-rows:
+      54px
+      minmax(0, 1fr);
+  }
+
+  .game-header {
+    position: relative;
+    width: 100%;
+    min-height: 54px;
+    max-height: 54px;
+    padding: 6px 8px;
+  }
+
+  .icon-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .game-title span {
+    font-size: 8px;
+  }
+
+  .game-title h1 {
+    margin-top: 1px;
+    font-size: 15px;
+  }
+
+  .wallet-card {
+    min-width: 88px;
+    padding: 4px 7px;
+  }
+
+  .wallet-card span {
+    font-size: 8px;
+  }
+
+  .wallet-card strong {
+    font-size: 12px;
+  }
+
+  .game-container {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows:
+      34px
+      minmax(145px, 31%)
+      minmax(0, 1fr)
+      78px;
+    grid-template-areas:
+      "round"
+      "dice"
+      "betting"
+      "history";
+    gap: 5px;
+    margin: 0;
+    padding: 5px;
+    overflow: hidden;
+  }
+
+  .round-information {
+    grid-area: round;
+    min-height: 34px;
+    height: 34px;
+    margin: 0;
+    padding: 3px 7px;
+    border-radius: 9px;
+  }
+
+  .round-information span {
+    font-size: 7px;
+  }
+
+  .round-information strong {
+    font-size: 9px;
+  }
+
+  .dice-stage {
+    --dice-size: 90px;
+    --dice-half: 45px;
+
+    grid-area: dice;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 7px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .timer-card {
+    top: 6px;
+    right: 6px;
+    min-width: 65px;
+    padding: 4px 7px;
+  }
+
+  .timer-card span {
+    font-size: 7px;
+  }
+
+  .timer-card strong {
+    font-size: 16px;
+  }
+
+  .dice-scene {
+    margin:
+      18px auto
+      9px;
+  }
+
+  .roll-information {
+    min-height: 30px;
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+
+  .betting-section {
+    grid-area: betting;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 6px;
+    border-radius: 11px;
+    overflow: hidden;
+  }
+
+  .section-heading {
+    margin-bottom: 5px;
+  }
+
+  .section-heading span {
+    font-size: 7px;
+  }
+
+  .section-heading h2 {
+    margin-top: 1px;
+    font-size: 12px;
+  }
+
+  .section-heading > strong {
+    font-size: 8px;
+  }
+
+  .symbol-options {
+    display: grid;
+    grid-template-columns:
+      repeat(6, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .symbol-option {
+    min-width: 0;
+    padding: 3px 2px;
+    border-radius: 7px;
+  }
+
+  .symbol-option img {
+    width: 31px;
+    height: 31px;
+    margin-bottom: 1px;
+  }
+
+  .symbol-option strong {
+    font-size: 7px;
+  }
+
+  .symbol-option span {
+    font-size: 6px;
+  }
+
+  .bet-amount-card {
+    margin-top: 5px;
+    padding: 6px;
+    border-radius: 9px;
+  }
+
+  .bet-amount-heading {
+    margin-bottom: 4px;
+  }
+
+  .bet-amount-heading span,
+  .bet-amount-heading small {
+    font-size: 7px;
+  }
+
+  .amount-control {
+    grid-template-columns:
+      32px
+      minmax(0, 1fr)
+      32px;
+    gap: 4px;
+  }
+
+  .amount-control button,
+  .amount-control > div {
+    min-height: 32px;
+    height: 32px;
+  }
+
+  .amount-control input {
+    font-size: 11px;
+  }
+
+  .quick-bet-options {
+    margin-top: 4px;
+    gap: 3px;
+  }
+
+  .quick-bet-options button {
+    min-height: 25px;
+    padding: 3px;
+    font-size: 8px;
+  }
+
+  .bet-preview {
+    display: flex;
+    min-height: 24px;
+    margin-top: 4px;
+    padding: 4px 6px;
+  }
+
+  .bet-preview span,
+  .bet-preview strong {
+    font-size: 7px;
+  }
+
+  .place-bet-button {
+    min-height: 34px;
+    height: 34px;
+    margin-top: 4px;
+    font-size: 10px;
+  }
+
+  .recent-results-section,
+  .my-bets-card {
+    grid-area: history;
+    width: 100%;
+    height: 78px;
+    min-height: 0;
+    margin: 0;
+    padding: 6px;
+    overflow: hidden;
+  }
+
+  .recent-results {
+    height: 47px;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .result-item {
+    min-width: 48px;
+    padding: 3px;
+  }
+
+  .result-item img {
+    width: 25px;
+    height: 25px;
+  }
+
+  .result-item span {
+    font-size: 6px;
+  }
+
+  .my-bet-list {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .my-bet-item {
+    min-width: 145px;
+    padding: 4px;
+  }
+
+  /*
+   * Current bet দেখা গেলে history-এর জায়গায়
+   * current bet দেখাবে।
+   */
+  .game-container:has(
+    .my-bets-card:not(.is-hidden)
+  ) .recent-results-section {
+    display: none;
+  }
+}
+
+/* খুব ছোট height-এর phone */
+
+@media
+  (max-width: 768px)
+  and (max-height: 650px) {
+
+  .game-container {
+    grid-template-rows:
+      32px
+      130px
+      minmax(0, 1fr);
+    grid-template-areas:
+      "round"
+      "dice"
+      "betting";
+  }
+
+  .recent-results-section,
+  .my-bets-card {
+    display: none !important;
+  }
+
+  .dice-stage {
+    --dice-size: 76px;
+    --dice-half: 38px;
+  }
+
+  .dice-scene {
+    margin:
+      14px auto
+      5px;
+  }
+
+  .symbol-option img {
+    width: 26px;
+    height: 26px;
+  }
+}

@@ -1,7 +1,7 @@
 "use strict";
 
 /* ==========================================
-   PMS ADDA LUDO SERVICE
+   TPL22 LUDO SERVICE
    SECTION 1: CORE + MATCHMAKING
 ========================================== */
 
@@ -1309,7 +1309,7 @@ async function joinMatchmaking(userId, entryAmount, playerMode = 2) {
 /* END OF SECTION 1 */
 
 /* ==========================================
-   PMS ADDA LUDO SERVICE
+   TPL22 LUDO SERVICE
    SECTION 2: ENTRY + START + MATCH STATE
 ========================================== */
 
@@ -2198,7 +2198,7 @@ async function getMatchState(matchId) {
 /* END OF SECTION 2 */
 
 /* ==========================================
-   PMS ADDA LUDO SERVICE
+   TPL22 LUDO SERVICE
    SECTION 3: DICE + MOVEMENT + CAPTURE
 ========================================== */
 
@@ -3317,7 +3317,7 @@ async function movePawn(matchId, userId, pawnNo) {
 /* END OF SECTION 3 */
 
 /* ==========================================
-   PMS ADDA LUDO SERVICE
+   TPL22 LUDO SERVICE
    SECTION 4: SETTLEMENT + BOT + EXPORTS
 ========================================== */
 

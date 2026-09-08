@@ -1286,6 +1286,337 @@ async function getPublicGameState() {
 }
 
 /* ==========================
+   Admin Profit / Loss Report
+========================== */
+
+function getAdminAnalyticsPeriod(rawPeriod) {
+  const period = String(
+    rawPeriod || "today",
+  )
+    .trim()
+    .toLowerCase();
+
+  const periods = {
+    today: {
+      key: "today",
+      label: "Today",
+      sql:
+        "r.crashed_at >= CURRENT_DATE()",
+    },
+
+    "7d": {
+      key: "7d",
+      label: "Last 7 Days",
+      sql:
+        "r.crashed_at >= DATE_SUB(CURRENT_TIMESTAMP(3), INTERVAL 7 DAY)",
+    },
+
+    "30d": {
+      key: "30d",
+      label: "Last 30 Days",
+      sql:
+        "r.crashed_at >= DATE_SUB(CURRENT_TIMESTAMP(3), INTERVAL 30 DAY)",
+    },
+  };
+
+  return periods[period] || periods.today;
+}
+
+async function getAdminAnalytics({
+  period = "today",
+} = {}) {
+  const selectedPeriod =
+    getAdminAnalyticsPeriod(period);
+
+  const completedFilter = `
+    r.status = 'crashed'
+    AND ${selectedPeriod.sql}
+  `;
+
+  const [
+    summaryResult,
+    playerResult,
+    activeResult,
+    roundResult,
+  ] = await Promise.all([
+    pool.execute(
+      `
+        SELECT
+          COUNT(*) AS completed_rounds,
+
+          COALESCE(
+            SUM(r.total_bet_amount),
+            0
+          ) AS total_bet_amount,
+
+          COALESCE(
+            SUM(r.total_payout_amount),
+            0
+          ) AS total_payout_amount
+
+        FROM aviator_rounds r
+
+        WHERE ${completedFilter}
+      `,
+    ),
+
+    pool.execute(
+      `
+        SELECT
+          COUNT(*) AS total_bets,
+
+          COUNT(
+            DISTINCT b.user_id
+          ) AS total_players
+
+        FROM aviator_bets b
+
+        INNER JOIN aviator_rounds r
+          ON r.id = b.round_id
+
+        WHERE ${completedFilter}
+
+          AND b.status IN (
+            'lost',
+            'cashed_out'
+          )
+      `,
+    ),
+
+    pool.execute(
+      `
+        SELECT
+          r.id,
+          r.round_code,
+          r.status,
+          r.total_bet_amount,
+          r.total_payout_amount,
+
+          COALESCE(
+            SUM(
+              CASE
+                WHEN b.status = 'placed'
+                  THEN b.bet_amount
+                ELSE 0
+              END
+            ),
+            0
+          ) AS open_bet_amount,
+
+          COUNT(
+            CASE
+              WHEN b.status = 'placed'
+                THEN 1
+              ELSE NULL
+            END
+          ) AS open_bets,
+
+          COUNT(
+            DISTINCT CASE
+              WHEN b.status = 'placed'
+                THEN b.user_id
+              ELSE NULL
+            END
+          ) AS open_players
+
+        FROM aviator_rounds r
+
+        LEFT JOIN aviator_bets b
+          ON b.round_id = r.id
+
+        WHERE r.status IN (
+          'betting',
+          'flying'
+        )
+
+        GROUP BY
+          r.id,
+          r.round_code,
+          r.status,
+          r.total_bet_amount,
+          r.total_payout_amount
+
+        ORDER BY r.id DESC
+
+        LIMIT 1
+      `,
+    ),
+
+    pool.execute(
+      `
+        SELECT
+          r.id,
+          r.round_code,
+          r.crash_multiplier,
+          r.total_bet_amount,
+          r.total_payout_amount,
+
+          ROUND(
+            r.total_bet_amount -
+            r.total_payout_amount,
+            2
+          ) AS net_profit,
+
+          r.crashed_at
+
+        FROM aviator_rounds r
+
+        WHERE ${completedFilter}
+
+        ORDER BY r.id DESC
+
+        LIMIT 50
+      `,
+    ),
+  ]);
+
+  const summary =
+    summaryResult[0][0] || {};
+
+  const playerSummary =
+    playerResult[0][0] || {};
+
+  const activeRound =
+    activeResult[0][0] || null;
+
+  const totalBet =
+    Number(
+      summary.total_bet_amount || 0,
+    );
+
+  const totalPayout =
+    Number(
+      summary.total_payout_amount || 0,
+    );
+
+  const netProfit =
+    Number(
+      (
+        totalBet - totalPayout
+      ).toFixed(2),
+    );
+
+  const profitMargin =
+    totalBet > 0
+      ? Number(
+          (
+            (netProfit / totalBet) *
+            100
+          ).toFixed(2),
+        )
+      : 0;
+
+  return {
+    period:
+      selectedPeriod.key,
+
+    periodLabel:
+      selectedPeriod.label,
+
+    generatedAt:
+      new Date().toISOString(),
+
+    summary: {
+      totalBet,
+      totalPayout,
+      netProfit,
+      profitMargin,
+
+      completedRounds:
+        Number(
+          summary.completed_rounds || 0,
+        ),
+
+      totalBets:
+        Number(
+          playerSummary.total_bets || 0,
+        ),
+
+      totalPlayers:
+        Number(
+          playerSummary.total_players || 0,
+        ),
+    },
+
+    activeRound:
+      activeRound
+        ? {
+            id:
+              Number(activeRound.id),
+
+            roundCode:
+              String(
+                activeRound.round_code,
+              ),
+
+            status:
+              String(activeRound.status),
+
+            totalBetAmount:
+              Number(
+                activeRound.total_bet_amount ||
+                  0,
+              ),
+
+            totalPayoutAmount:
+              Number(
+                activeRound.total_payout_amount ||
+                  0,
+              ),
+
+            openBetAmount:
+              Number(
+                activeRound.open_bet_amount ||
+                  0,
+              ),
+
+            openBets:
+              Number(
+                activeRound.open_bets || 0,
+              ),
+
+            openPlayers:
+              Number(
+                activeRound.open_players || 0,
+              ),
+          }
+        : null,
+
+    rounds:
+      roundResult[0].map(
+        (row) => ({
+          id:
+            Number(row.id),
+
+          roundCode:
+            String(row.round_code),
+
+          crashMultiplier:
+            Number(
+              row.crash_multiplier || 0,
+            ),
+
+          totalBetAmount:
+            Number(
+              row.total_bet_amount || 0,
+            ),
+
+          totalPayoutAmount:
+            Number(
+              row.total_payout_amount || 0,
+            ),
+
+          netProfit:
+            Number(row.net_profit || 0),
+
+          crashedAt:
+            row.crashed_at,
+        }),
+      ),
+  };
+}
+
+/* ==========================
    Exports
 ========================== */
 
@@ -1314,4 +1645,6 @@ module.exports = {
   crashRound,
 
   getPublicGameState,
+
+  getAdminAnalytics,
 };

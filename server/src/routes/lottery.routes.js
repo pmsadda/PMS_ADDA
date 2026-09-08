@@ -18,7 +18,7 @@ const router =
   express.Router();
 
 /* ==========================================
-   PMS ADDA Lottery Routes
+   TPL22 Lottery Routes
 ========================================== */
 
 /*

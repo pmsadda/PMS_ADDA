@@ -1839,236 +1839,131 @@ const LOBBY_BANNER_STATE = {
 
 function getLobbyBannerElements() {
   return {
-    form:
-      document.getElementById(
-        "lobbyBannerForm",
-      ),
+    form: document.getElementById("lobbyBannerForm"),
 
-    bannerId:
-      document.getElementById(
-        "lobbyBannerId",
-      ),
+    bannerId: document.getElementById("lobbyBannerId"),
 
-    list:
-      document.getElementById(
-        "lobbyBannerList",
-      ),
+    list: document.getElementById("lobbyBannerList"),
 
-    count:
-      document.getElementById(
-        "lobbyBannerCount",
-      ),
+    count: document.getElementById("lobbyBannerCount"),
 
-    add:
-      document.getElementById(
-        "addLobbyBanner",
-      ),
+    add: document.getElementById("addLobbyBanner"),
 
-    refresh:
-      document.getElementById(
-        "refreshLobbyBanner",
-      ),
+    refresh: document.getElementById("refreshLobbyBanner"),
 
-    preview:
-      document.getElementById(
-        "lobbyBannerPreview",
-      ),
+    preview: document.getElementById("lobbyBannerPreview"),
 
-    previewEmpty:
-      document.getElementById(
-        "lobbyBannerPreviewEmpty",
-      ),
+    previewEmpty: document.getElementById("lobbyBannerPreviewEmpty"),
 
-    fileInput:
-      document.getElementById(
-        "lobbyBannerFile",
-      ),
+    fileInput: document.getElementById("lobbyBannerFile"),
 
-    chooseFile:
-      document.getElementById(
-        "chooseLobbyBanner",
-      ),
+    chooseFile: document.getElementById("chooseLobbyBanner"),
 
-    fileName:
-      document.getElementById(
-        "lobbyBannerFileName",
-      ),
+    fileName: document.getElementById("lobbyBannerFileName"),
 
-    title:
-      document.getElementById(
-        "lobbyBannerTitle",
-      ),
+    title: document.getElementById("lobbyBannerTitle"),
 
-    targetUrl:
-      document.getElementById(
-        "lobbyBannerTargetUrl",
-      ),
+    targetUrl: document.getElementById("lobbyBannerTargetUrl"),
 
-    status:
-      document.getElementById(
-        "lobbyBannerStatus",
-      ),
+    status: document.getElementById("lobbyBannerStatus"),
 
-    statusBadge:
-      document.getElementById(
-        "lobbyBannerCurrentStatus",
-      ),
+    showAsPopup: document.getElementById("lobbyBannerShowPopup"),
 
-    orderText:
-      document.getElementById(
-        "lobbyBannerOrderText",
-      ),
+    popupMessage: document.getElementById("lobbyBannerPopupMessage"),
 
-    formMode:
-      document.getElementById(
-        "lobbyBannerFormMode",
-      ),
+    popupButtonText: document.getElementById("lobbyBannerPopupButtonText"),
 
-    formTitle:
-      document.getElementById(
-        "lobbyBannerFormTitle",
-      ),
+    statusBadge: document.getElementById("lobbyBannerCurrentStatus"),
 
-    updatedText:
-      document.getElementById(
-        "lobbyBannerUpdatedText",
-      ),
+    orderText: document.getElementById("lobbyBannerOrderText"),
 
-    save:
-      document.getElementById(
-        "saveLobbyBanner",
-      ),
+    formMode: document.getElementById("lobbyBannerFormMode"),
 
-    cancel:
-      document.getElementById(
-        "cancelLobbyBannerEdit",
-      ),
+    formTitle: document.getElementById("lobbyBannerFormTitle"),
 
-    delete:
-      document.getElementById(
-        "deleteLobbyBanner",
-      ),
+    updatedText: document.getElementById("lobbyBannerUpdatedText"),
+
+    save: document.getElementById("saveLobbyBanner"),
+
+    cancel: document.getElementById("cancelLobbyBannerEdit"),
+
+    delete: document.getElementById("deleteLobbyBanner"),
   };
 }
 
 function getSelectedLobbyBanner() {
   return (
-    LOBBY_BANNER_STATE.banners
-      .find(
-        (banner) =>
-          Number(banner.id) ===
-          Number(
-            LOBBY_BANNER_STATE
-              .selectedBannerId,
-          ),
-      ) || null
+    LOBBY_BANNER_STATE.banners.find(
+      (banner) =>
+        Number(banner.id) === Number(LOBBY_BANNER_STATE.selectedBannerId),
+    ) || null
   );
 }
 
-function resolveLobbyBannerUrl(
-  imageUrl,
-) {
+function resolveLobbyBannerUrl(imageUrl) {
   if (!imageUrl) {
     return null;
   }
 
-  if (
-    /^https?:\/\//i.test(
-      imageUrl,
-    )
-  ) {
+  if (/^https?:\/\//i.test(imageUrl)) {
     return imageUrl;
   }
 
-  const apiOrigin =
-    new URL(
-      API_BASE_URL,
-      window.location.origin,
-    ).origin;
+  const apiOrigin = new URL(API_BASE_URL, window.location.origin).origin;
 
-  return new URL(
-    imageUrl,
-    apiOrigin,
-  ).href;
+  return new URL(imageUrl, apiOrigin).href;
 }
 
 function revokeLobbyBannerPreviewUrl() {
-  if (
-    LOBBY_BANNER_STATE
-      .previewObjectUrl
-  ) {
-    URL.revokeObjectURL(
-      LOBBY_BANNER_STATE
-        .previewObjectUrl,
-    );
+  if (LOBBY_BANNER_STATE.previewObjectUrl) {
+    URL.revokeObjectURL(LOBBY_BANNER_STATE.previewObjectUrl);
 
-    LOBBY_BANNER_STATE
-      .previewObjectUrl = null;
+    LOBBY_BANNER_STATE.previewObjectUrl = null;
   }
 }
 
 function showLobbyBannerEmptyPreview() {
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
   revokeLobbyBannerPreviewUrl();
 
   if (elements.preview) {
     elements.preview.hidden = true;
 
-    elements.preview
-      .removeAttribute("src");
+    elements.preview.removeAttribute("src");
   }
 
   if (elements.previewEmpty) {
-    elements.previewEmpty.hidden =
-      false;
+    elements.previewEmpty.hidden = false;
   }
 }
 
-function showLobbyBannerBlobPreview(
-  blob,
-  expectedBannerId = null,
-) {
+function showLobbyBannerBlobPreview(blob, expectedBannerId = null) {
   if (
     expectedBannerId !== null &&
-    Number(expectedBannerId) !==
-      Number(
-        LOBBY_BANNER_STATE
-          .selectedBannerId,
-      )
+    Number(expectedBannerId) !== Number(LOBBY_BANNER_STATE.selectedBannerId)
   ) {
     return;
   }
 
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
-  if (
-    !elements.preview ||
-    !blob
-  ) {
+  if (!elements.preview || !blob) {
     showLobbyBannerEmptyPreview();
     return;
   }
 
   revokeLobbyBannerPreviewUrl();
 
-  const objectUrl =
-    URL.createObjectURL(blob);
+  const objectUrl = URL.createObjectURL(blob);
 
-  LOBBY_BANNER_STATE
-    .previewObjectUrl =
-      objectUrl;
+  LOBBY_BANNER_STATE.previewObjectUrl = objectUrl;
 
   elements.preview.onload = () => {
     elements.preview.hidden = false;
 
-    if (
-      elements.previewEmpty
-    ) {
-      elements.previewEmpty.hidden =
-        true;
+    if (elements.previewEmpty) {
+      elements.previewEmpty.hidden = true;
     }
   };
 
@@ -2076,100 +1971,63 @@ function showLobbyBannerBlobPreview(
     showLobbyBannerEmptyPreview();
   };
 
-  elements.preview.src =
-    objectUrl;
+  elements.preview.src = objectUrl;
 }
 
-function updateLobbyBannerStatusBadge(
-  status,
-) {
-  const badge =
-    getLobbyBannerElements()
-      .statusBadge;
+function updateLobbyBannerStatusBadge(status) {
+  const badge = getLobbyBannerElements().statusBadge;
 
   if (!badge) {
     return;
   }
 
-  const isActive =
-    status === "active";
+  const isActive = status === "active";
 
-  badge.textContent =
-    isActive
-      ? "Active"
-      : "Disabled";
+  badge.textContent = isActive ? "Active" : "Disabled";
 
-  badge.classList.toggle(
-    "is-active",
-    isActive,
-  );
+  badge.classList.toggle("is-active", isActive);
 
-  badge.classList.toggle(
-    "is-disabled",
-    !isActive,
-  );
+  badge.classList.toggle("is-disabled", !isActive);
 }
 
-function formatLobbyBannerUpdatedAt(
-  value,
-) {
+function formatLobbyBannerUpdatedAt(value) {
   if (!value) {
     return "Not saved yet";
   }
 
-  const date =
-    new Date(value);
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return "Not saved yet";
   }
 
-  return date.toLocaleString(
-    "en-BD",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
+  return date.toLocaleString("en-BD", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function renderLobbyBannerList() {
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
-  const banners =
-    [...LOBBY_BANNER_STATE.banners]
-      .sort(
-        (first, second) =>
-          Number(
-            first.displayOrder ||
-            first.id,
-          ) -
-          Number(
-            second.displayOrder ||
-            second.id,
-          ),
-      );
+  const banners = [...LOBBY_BANNER_STATE.banners].sort(
+    (first, second) =>
+      Number(first.displayOrder || first.id) -
+      Number(second.displayOrder || second.id),
+  );
 
   if (elements.count) {
     elements.count.textContent =
-      `${banners.length} / ` +
-      `${LOBBY_BANNER_STATE.maximumBanners}`;
+      `${banners.length} / ` + `${LOBBY_BANNER_STATE.maximumBanners}`;
   }
 
   if (elements.add) {
     elements.add.disabled =
       LOBBY_BANNER_STATE.loading ||
-      banners.length >=
-        LOBBY_BANNER_STATE
-          .maximumBanners;
+      banners.length >= LOBBY_BANNER_STATE.maximumBanners;
   }
 
   if (!elements.list) {
@@ -2191,85 +2049,51 @@ function renderLobbyBannerList() {
     return;
   }
 
-  elements.list.innerHTML =
-    banners
-      .map((banner) => {
-        const isSelected =
-          LOBBY_BANNER_STATE.mode ===
-            "edit" &&
-          Number(
-            banner.id,
-          ) ===
-            Number(
-              LOBBY_BANNER_STATE
-                .selectedBannerId,
-            );
+  elements.list.innerHTML = banners
+    .map((banner) => {
+      const isSelected =
+        LOBBY_BANNER_STATE.mode === "edit" &&
+        Number(banner.id) === Number(LOBBY_BANNER_STATE.selectedBannerId);
 
-        const isActive =
-          banner.status ===
-          "active";
+      const isActive = banner.status === "active";
 
-        return `
+      return `
           <button
             type="button"
-            class="banner-slot-card${
-              isSelected
-                ? " is-selected"
-                : ""
-            }"
-            data-banner-id="${Number(
-              banner.id,
-            )}">
+            class="banner-slot-card${isSelected ? " is-selected" : ""}"
+            data-banner-id="${Number(banner.id)}">
 
             <span class="banner-slot-card-top">
 
               <span class="banner-slot-number">
-                ${Number(
-                  banner.displayOrder ||
-                  1,
-                )}
+                ${Number(banner.displayOrder || 1)}
               </span>
 
               <span
-                class="banner-slot-status${
-                  isActive
-                    ? " is-active"
-                    : ""
-                }">
+                class="banner-slot-status${isActive ? " is-active" : ""}">
 
-                ${isActive
-                  ? "Active"
-                  : "Disabled"}
+                ${isActive ? "Active" : "Disabled"}
 
               </span>
 
             </span>
 
             <strong>
-              ${escapeHtml(
-                banner.title ||
-                "Lobby Banner",
-              )}
+              ${escapeHtml(banner.title || "Lobby Banner")}
             </strong>
 
             <small>
-              ${escapeHtml(
-                banner.fileName ||
-                "No image",
-              )}
+              ${escapeHtml(banner.fileName || "No image")}
             </small>
 
           </button>
         `;
-      })
-      .join("");
+    })
+    .join("");
 }
 
-function setLobbyBannerControlsDisabled(
-  disabled,
-) {
-  const elements =
-    getLobbyBannerElements();
+function setLobbyBannerControlsDisabled(disabled) {
+  const elements = getLobbyBannerElements();
 
   [
     elements.fileInput,
@@ -2277,47 +2101,41 @@ function setLobbyBannerControlsDisabled(
     elements.title,
     elements.targetUrl,
     elements.status,
+    elements.showAsPopup,
+    elements.popupMessage,
+    elements.popupButtonText,
     elements.refresh,
     elements.cancel,
     elements.delete,
     elements.save,
   ].forEach((element) => {
     if (element) {
-      element.disabled =
-        disabled;
+      element.disabled = disabled;
     }
   });
 
   elements.list
-    ?.querySelectorAll(
-      "button[data-banner-id]",
-    )
+    ?.querySelectorAll("button[data-banner-id]")
     .forEach((button) => {
-      button.disabled =
-        disabled;
+      button.disabled = disabled;
     });
 
   if (elements.add) {
     elements.add.disabled =
       disabled ||
-      LOBBY_BANNER_STATE
-        .banners.length >=
-        LOBBY_BANNER_STATE
-          .maximumBanners;
+      LOBBY_BANNER_STATE.banners.length >= LOBBY_BANNER_STATE.maximumBanners;
   }
 
   if (elements.save) {
-    elements.save.innerHTML =
-      disabled
-        ? `
+    elements.save.innerHTML = disabled
+      ? `
           <i class="fa-solid fa-spinner fa-spin"></i>
           Please Wait...
         `
-        : `
+      : `
           <i class="fa-solid fa-floppy-disk"></i>
           ${
-            LOBBY_BANNER_STATE
-              .mode === "create"
+            LOBBY_BANNER_STATE.mode === "create"
               ? "Create Banner"
               : "Save Banner"
           }
@@ -2325,109 +2143,73 @@ function setLobbyBannerControlsDisabled(
   }
 }
 
-async function loadAdminLobbyBannerImage(
-  banner,
-) {
-  const resolvedUrl =
-    resolveLobbyBannerUrl(
-      banner?.imageUrl,
-    );
+async function loadAdminLobbyBannerImage(banner) {
+  const resolvedUrl = resolveLobbyBannerUrl(banner?.imageUrl);
 
   if (!resolvedUrl) {
     showLobbyBannerEmptyPreview();
     return;
   }
 
-  const token =
-    getAccessToken();
+  const token = getAccessToken();
 
-  const expectedBannerId =
-    Number(banner.id);
+  const expectedBannerId = Number(banner.id);
 
-  const response =
-    await fetch(
-      resolvedUrl,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
+  const response = await fetch(resolvedUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
 
-        cache: "no-store",
-      },
-    );
+    cache: "no-store",
+  });
 
   if (!response.ok) {
-    throw new Error(
-      "Banner preview could not be loaded.",
-    );
+    throw new Error("Banner preview could not be loaded.");
   }
 
-  const imageBlob =
-    await response.blob();
+  const imageBlob = await response.blob();
 
-  showLobbyBannerBlobPreview(
-    imageBlob,
-    expectedBannerId,
-  );
+  showLobbyBannerBlobPreview(imageBlob, expectedBannerId);
 }
 
-async function renderLobbyBannerEditor(
-  banner,
-  mode = "edit",
-) {
-  const elements =
-    getLobbyBannerElements();
+async function renderLobbyBannerEditor(banner, mode = "edit") {
+  const elements = getLobbyBannerElements();
 
-  LOBBY_BANNER_STATE.mode =
-    mode;
+  LOBBY_BANNER_STATE.mode = mode;
 
-  LOBBY_BANNER_STATE
-    .selectedFile = null;
+  LOBBY_BANNER_STATE.selectedFile = null;
 
   if (elements.fileInput) {
-    elements.fileInput.value =
-      "";
+    elements.fileInput.value = "";
   }
 
   if (mode === "create") {
-    LOBBY_BANNER_STATE
-      .selectedBannerId = null;
+    LOBBY_BANNER_STATE.selectedBannerId = null;
 
     if (elements.bannerId) {
-      elements.bannerId.value =
-        "";
+      elements.bannerId.value = "";
     }
 
     if (elements.formMode) {
-      elements.formMode.textContent =
-        "CREATE NEW BANNER";
+      elements.formMode.textContent = "CREATE NEW BANNER";
     }
 
     if (elements.formTitle) {
-      elements.formTitle.textContent =
-        `Banner ${
-          LOBBY_BANNER_STATE
-            .banners.length + 1
-        } of ${
-          LOBBY_BANNER_STATE
-            .maximumBanners
-        }`;
+      elements.formTitle.textContent = `Banner ${
+        LOBBY_BANNER_STATE.banners.length + 1
+      } of ${LOBBY_BANNER_STATE.maximumBanners}`;
     }
 
     if (elements.title) {
-      elements.title.value =
-        "Lobby Banner";
+      elements.title.value = "Lobby Banner";
     }
 
     if (elements.targetUrl) {
-      elements.targetUrl.value =
-        "";
+      elements.targetUrl.value = "";
     }
 
     if (elements.status) {
-      elements.status.value =
-        "disabled";
+      elements.status.value = "disabled";
     }
 
     if (elements.fileName) {
@@ -2436,39 +2218,30 @@ async function renderLobbyBannerEditor(
     }
 
     if (elements.orderText) {
-      elements.orderText.textContent =
-        `Carousel position: ${
-          LOBBY_BANNER_STATE
-            .banners.length + 1
-        }`;
+      elements.orderText.textContent = `Carousel position: ${
+        LOBBY_BANNER_STATE.banners.length + 1
+      }`;
     }
 
     if (elements.updatedText) {
-      elements.updatedText.textContent =
-        "This banner has not been saved yet.";
+      elements.updatedText.textContent = "This banner has not been saved yet.";
     }
 
     if (elements.cancel) {
-      elements.cancel.hidden =
-        false;
+      elements.cancel.hidden = false;
     }
 
     if (elements.delete) {
-      elements.delete.hidden =
-        true;
+      elements.delete.hidden = true;
     }
 
-    updateLobbyBannerStatusBadge(
-      "disabled",
-    );
+    updateLobbyBannerStatusBadge("disabled");
 
     showLobbyBannerEmptyPreview();
 
     renderLobbyBannerList();
 
-    setLobbyBannerControlsDisabled(
-      false,
-    );
+    setLobbyBannerControlsDisabled(false);
 
     return;
   }
@@ -2478,96 +2251,91 @@ async function renderLobbyBannerEditor(
     return;
   }
 
-  LOBBY_BANNER_STATE
-    .selectedBannerId =
-      Number(banner.id);
+  LOBBY_BANNER_STATE.selectedBannerId = Number(banner.id);
 
   if (elements.bannerId) {
-    elements.bannerId.value =
-      String(banner.id);
+    elements.bannerId.value = String(banner.id);
   }
 
   if (elements.formMode) {
-    elements.formMode.textContent =
-      "EDIT BANNER";
+    elements.formMode.textContent = "EDIT BANNER";
   }
 
   if (elements.formTitle) {
-    elements.formTitle.textContent =
-      banner.title ||
-      "Lobby Banner";
+    elements.formTitle.textContent = banner.title || "Lobby Banner";
   }
 
   if (elements.title) {
-    elements.title.value =
-      banner.title ||
-      "Lobby Banner";
+    elements.title.value = banner.title || "Lobby Banner";
   }
 
   if (elements.targetUrl) {
-    elements.targetUrl.value =
-      banner.targetUrl ||
-      "";
+    elements.targetUrl.value = banner.targetUrl || "";
   }
 
   if (elements.status) {
-    elements.status.value =
-      banner.status ||
-      "disabled";
+    elements.status.value = banner.status || "disabled";
+  }
+
+  if (elements.showAsPopup) {
+    elements.showAsPopup.value = banner.showAsPopup ? "true" : "false";
+  }
+
+  if (elements.popupMessage) {
+    elements.popupMessage.value = banner.popupMessage || "";
+  }
+
+  if (elements.popupButtonText) {
+    elements.popupButtonText.value = banner.popupButtonText || "View Offer";
+  }
+
+  if (elements.showAsPopup) {
+    elements.showAsPopup.value = "false";
+  }
+
+  if (elements.popupMessage) {
+    elements.popupMessage.value = "";
+  }
+
+  if (elements.popupButtonText) {
+    elements.popupButtonText.value = "View Offer";
   }
 
   if (elements.fileName) {
-    elements.fileName.textContent =
-      banner.fileName
-        ? `Current image: ${banner.fileName}`
-        : "JPG, PNG or WebP · Maximum 3 MB";
+    elements.fileName.textContent = banner.fileName
+      ? `Current image: ${banner.fileName}`
+      : "JPG, PNG or WebP · Maximum 3 MB";
   }
 
   if (elements.orderText) {
-    elements.orderText.textContent =
-      `Carousel position: ${
-        banner.displayOrder ||
-        "-"
-      }`;
+    elements.orderText.textContent = `Carousel position: ${
+      banner.displayOrder || "-"
+    }`;
   }
 
   if (elements.updatedText) {
-    elements.updatedText.textContent =
-      `Last updated: ${formatLobbyBannerUpdatedAt(
-        banner.updatedAt,
-      )}`;
+    elements.updatedText.textContent = `Last updated: ${formatLobbyBannerUpdatedAt(
+      banner.updatedAt,
+    )}`;
   }
 
   if (elements.cancel) {
-    elements.cancel.hidden =
-      true;
+    elements.cancel.hidden = true;
   }
 
   if (elements.delete) {
-    elements.delete.hidden =
-      false;
+    elements.delete.hidden = false;
   }
 
-  updateLobbyBannerStatusBadge(
-    banner.status ||
-    "disabled",
-  );
+  updateLobbyBannerStatusBadge(banner.status || "disabled");
 
   renderLobbyBannerList();
 
-  if (
-    banner.hasImage &&
-    banner.imageUrl
-  ) {
+  if (banner.hasImage && banner.imageUrl) {
     try {
-      await loadAdminLobbyBannerImage(
-        banner,
-      );
+      await loadAdminLobbyBannerImage(banner);
     } catch (error) {
-      console.error(
-        "LOAD BANNER PREVIEW ERROR:",
-        error,
-      );
+      console.error("LOAD BANNER PREVIEW ERROR:", error);
 
       showLobbyBannerEmptyPreview();
     }
@@ -2575,73 +2343,40 @@ async function renderLobbyBannerEditor(
     showLobbyBannerEmptyPreview();
   }
 
-  setLobbyBannerControlsDisabled(
-    false,
-  );
+  setLobbyBannerControlsDisabled(false);
 }
 
-async function requestAdminLobbyBanner(
-  path = "",
-  options = {},
-) {
-  const token =
-    getAccessToken();
+async function requestAdminLobbyBanner(path = "", options = {}) {
+  const token = getAccessToken();
 
   if (!token) {
-    window.location.href =
-      "../pages/login.html";
+    window.location.href = "../pages/login.html";
 
-    throw new Error(
-      "Admin login is required.",
-    );
+    throw new Error("Admin login is required.");
   }
 
-  const response =
-    await fetch(
-      `${API_BASE_URL}/admin/lobby-banner${path}`,
-      {
-        method:
-          options.method ||
-          "GET",
+  const response = await fetch(`${API_BASE_URL}/admin/lobby-banner${path}`, {
+    method: options.method || "GET",
 
-        headers: {
-          Accept:
-            "application/json",
+    headers: {
+      Accept: "application/json",
 
-          Authorization:
-            `Bearer ${token}`,
-        },
+      Authorization: `Bearer ${token}`,
+    },
 
-        body:
-          options.body ||
-          undefined,
+    body: options.body || undefined,
 
-        cache:
-          "no-store",
-      },
-    );
+    cache: "no-store",
+  });
 
-  const result =
-    await parseResponse(response);
+  const result = await parseResponse(response);
 
-  if (
-    response.status === 401 ||
-    response.status === 403
-  ) {
-    throw new Error(
-      result.message ||
-      "Admin authorization failed.",
-    );
+  if (response.status === 401 || response.status === 403) {
+    throw new Error(result.message || "Admin authorization failed.");
   }
 
-  if (
-    !response.ok ||
-    !result.success
-  ) {
-    throw new Error(
-      result.message ||
-      "Lobby banner request failed.",
-    );
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Lobby banner request failed.");
   }
 
   return result;
@@ -2651,165 +2386,88 @@ async function loadLobbyBanners({
   showSuccess = false,
   preferredBannerId = null,
 } = {}) {
-  if (
-    LOBBY_BANNER_STATE.loading
-  ) {
+  if (LOBBY_BANNER_STATE.loading) {
     return;
   }
 
-  LOBBY_BANNER_STATE.loading =
-    true;
+  LOBBY_BANNER_STATE.loading = true;
 
-  setLobbyBannerControlsDisabled(
-    true,
-  );
+  setLobbyBannerControlsDisabled(true);
 
-  const refreshIcon =
-    getLobbyBannerElements()
-      .refresh
-      ?.querySelector("i");
+  const refreshIcon = getLobbyBannerElements().refresh?.querySelector("i");
 
-  refreshIcon?.classList.add(
-    "fa-spin",
-  );
+  refreshIcon?.classList.add("fa-spin");
 
   try {
-    const result =
-      await requestAdminLobbyBanner();
+    const result = await requestAdminLobbyBanner();
 
-    const banners =
-      Array.isArray(
-        result.data?.banners,
-      )
-        ? result.data.banners
-        : [];
+    const banners = Array.isArray(result.data?.banners)
+      ? result.data.banners
+      : [];
 
-    LOBBY_BANNER_STATE.banners =
-      banners.sort(
-        (first, second) =>
-          Number(
-            first.displayOrder ||
-            first.id,
-          ) -
-          Number(
-            second.displayOrder ||
-            second.id,
-          ),
-      );
+    LOBBY_BANNER_STATE.banners = banners.sort(
+      (first, second) =>
+        Number(first.displayOrder || first.id) -
+        Number(second.displayOrder || second.id),
+    );
 
-    LOBBY_BANNER_STATE
-      .maximumBanners =
-        Number(
-          result.data
-            ?.maximumBanners ||
-          5,
-        );
+    LOBBY_BANNER_STATE.maximumBanners = Number(
+      result.data?.maximumBanners || 5,
+    );
 
-    const preferredBanner =
-      LOBBY_BANNER_STATE.banners
-        .find(
-          (banner) =>
-            Number(banner.id) ===
-            Number(
-              preferredBannerId,
-            ),
-        );
+    const preferredBanner = LOBBY_BANNER_STATE.banners.find(
+      (banner) => Number(banner.id) === Number(preferredBannerId),
+    );
 
     const selectedBanner =
-      preferredBanner ||
-      LOBBY_BANNER_STATE.banners[0] ||
-      null;
+      preferredBanner || LOBBY_BANNER_STATE.banners[0] || null;
 
-    LOBBY_BANNER_STATE.loading =
-      false;
+    LOBBY_BANNER_STATE.loading = false;
 
     renderLobbyBannerList();
 
     if (selectedBanner) {
-      await renderLobbyBannerEditor(
-        selectedBanner,
-        "edit",
-      );
+      await renderLobbyBannerEditor(selectedBanner, "edit");
     } else {
-      await renderLobbyBannerEditor(
-        null,
-        "create",
-      );
+      await renderLobbyBannerEditor(null, "create");
     }
 
     if (showSuccess) {
-      showToast(
-        "Lobby banners refreshed successfully.",
-      );
+      showToast("Lobby banners refreshed successfully.");
     }
   } catch (error) {
-    console.error(
-      "LOAD LOBBY BANNERS ERROR:",
-      error,
-    );
+    console.error("LOAD LOBBY BANNERS ERROR:", error);
 
     showLobbyBannerEmptyPreview();
 
-    showToast(
-      error.message ||
-      "Lobby banners load করা যায়নি।",
-      "error",
-    );
+    showToast(error.message || "Lobby banners load করা যায়নি।", "error");
   } finally {
-    LOBBY_BANNER_STATE.loading =
-      false;
+    LOBBY_BANNER_STATE.loading = false;
 
-    setLobbyBannerControlsDisabled(
-      false,
-    );
+    setLobbyBannerControlsDisabled(false);
 
-    refreshIcon?.classList.remove(
-      "fa-spin",
-    );
+    refreshIcon?.classList.remove("fa-spin");
 
     renderLobbyBannerList();
   }
 }
 
-function validateLobbyBannerFile(
-  file,
-) {
-  const allowedTypes =
-    new Set([
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-    ]);
+function validateLobbyBannerFile(file) {
+  const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-  if (
-    !allowedTypes.has(
-      file.type,
-    )
-  ) {
-    throw new Error(
-      "শুধু JPG, PNG অথবা WebP image দিন।",
-    );
+  if (!allowedTypes.has(file.type)) {
+    throw new Error("শুধু JPG, PNG অথবা WebP image দিন।");
   }
 
-  const maximumSize =
-    3 * 1024 * 1024;
+  const maximumSize = 3 * 1024 * 1024;
 
-  if (
-    file.size >
-    maximumSize
-  ) {
-    throw new Error(
-      "Banner image সর্বোচ্চ 3 MB হতে পারবে।",
-    );
+  if (file.size > maximumSize) {
+    throw new Error("Banner image সর্বোচ্চ 3 MB হতে পারবে।");
   }
 }
 
-function validateLobbyBannerUrl(
-  value,
-) {
-  const targetUrl =
-    String(value || "")
-      .trim();
+function validateLobbyBannerUrl(value) {
+  const targetUrl = String(value || "").trim();
 
   if (!targetUrl) {
     return "";
@@ -2818,85 +2476,54 @@ function validateLobbyBannerUrl(
   let parsedUrl;
 
   try {
-    parsedUrl =
-      new URL(targetUrl);
+    parsedUrl = new URL(targetUrl);
   } catch (error) {
-    throw new Error(
-      "সঠিক Banner Click Link দিন।",
-    );
+    throw new Error("সঠিক Banner Click Link দিন।");
   }
 
-  if (
-    parsedUrl.protocol !==
-      "https:" &&
-    parsedUrl.protocol !==
-      "http:"
-  ) {
-    throw new Error(
-      "Banner link অবশ্যই HTTP অথবা HTTPS হতে হবে।",
-    );
+  if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+    throw new Error("Banner link অবশ্যই HTTP অথবা HTTPS হতে হবে।");
   }
 
   return parsedUrl.toString();
 }
 
-function handleLobbyBannerFileSelection(
-  file,
-) {
+function handleLobbyBannerFileSelection(file) {
   if (!file) {
     return;
   }
 
   try {
-    validateLobbyBannerFile(
-      file,
-    );
+    validateLobbyBannerFile(file);
   } catch (error) {
-    const elements =
-      getLobbyBannerElements();
+    const elements = getLobbyBannerElements();
 
     if (elements.fileInput) {
-      elements.fileInput.value =
-        "";
+      elements.fileInput.value = "";
     }
 
-    showToast(
-      error.message,
-      "error",
-    );
+    showToast(error.message, "error");
 
     return;
   }
 
-  LOBBY_BANNER_STATE
-    .selectedFile = file;
+  LOBBY_BANNER_STATE.selectedFile = file;
 
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
   if (elements.fileName) {
-    elements.fileName.textContent =
-      `Selected: ${file.name}`;
+    elements.fileName.textContent = `Selected: ${file.name}`;
   }
 
-  showLobbyBannerBlobPreview(
-    file,
-  );
+  showLobbyBannerBlobPreview(file);
 }
 
 function startCreateLobbyBanner() {
-  if (
-    LOBBY_BANNER_STATE.loading
-  ) {
+  if (LOBBY_BANNER_STATE.loading) {
     return;
   }
 
-  if (
-    LOBBY_BANNER_STATE
-      .banners.length >=
-    LOBBY_BANNER_STATE
-      .maximumBanners
-  ) {
+  if (LOBBY_BANNER_STATE.banners.length >= LOBBY_BANNER_STATE.maximumBanners) {
     showToast(
       `Maximum ${LOBBY_BANNER_STATE.maximumBanners} banners are allowed.`,
       "error",
@@ -2905,505 +2532,305 @@ function startCreateLobbyBanner() {
     return;
   }
 
-  renderLobbyBannerEditor(
-    null,
-    "create",
-  );
+  renderLobbyBannerEditor(null, "create");
 }
 
 function cancelLobbyBannerEdit() {
-  const firstBanner =
-    LOBBY_BANNER_STATE
-      .banners[0] ||
-    null;
+  const firstBanner = LOBBY_BANNER_STATE.banners[0] || null;
 
   if (firstBanner) {
-    renderLobbyBannerEditor(
-      firstBanner,
-      "edit",
-    );
+    renderLobbyBannerEditor(firstBanner, "edit");
 
     return;
   }
 
-  renderLobbyBannerEditor(
-    null,
-    "create",
-  );
+  renderLobbyBannerEditor(null, "create");
 }
 
-function selectLobbyBanner(
-  bannerId,
-) {
-  if (
-    LOBBY_BANNER_STATE.loading
-  ) {
+function selectLobbyBanner(bannerId) {
+  if (LOBBY_BANNER_STATE.loading) {
     return;
   }
 
-  const banner =
-    LOBBY_BANNER_STATE.banners
-      .find(
-        (item) =>
-          Number(item.id) ===
-          Number(bannerId),
-      );
+  const banner = LOBBY_BANNER_STATE.banners.find(
+    (item) => Number(item.id) === Number(bannerId),
+  );
 
   if (!banner) {
     return;
   }
 
-  renderLobbyBannerEditor(
-    banner,
-    "edit",
-  );
+  renderLobbyBannerEditor(banner, "edit");
 }
 
 async function saveLobbyBannerSettings() {
-  if (
-    LOBBY_BANNER_STATE.loading
-  ) {
+  if (LOBBY_BANNER_STATE.loading) {
     return;
   }
 
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
-  const title =
-    String(
-      elements.title?.value ||
-      "",
-    ).trim();
+  const title = String(elements.title?.value || "").trim();
 
-  const status =
-    elements.status?.value ||
-    "disabled";
+  const status = elements.status?.value || "disabled";
+
+  const showAsPopup = elements.showAsPopup?.value === "true";
+
+  const popupMessage = String(elements.popupMessage?.value || "").trim();
+
+  const popupButtonText = String(
+    elements.popupButtonText?.value || "View Offer",
+  ).trim();
+
+  if (showAsPopup && !popupMessage) {
+    showToast("Popup চালু করলে Popup Message লিখতে হবে।", "error");
+
+    elements.popupMessage?.focus();
+
+    return;
+  }
+
+  if (popupMessage.length > 1000) {
+    showToast("Popup message সর্বোচ্চ 1000 characters হতে পারবে।", "error");
+
+    return;
+  }
+
+  if (!popupButtonText || popupButtonText.length > 60) {
+    showToast("Popup button text 1–60 characters হতে হবে।", "error");
+
+    return;
+  }
 
   let targetUrl;
 
   try {
-    targetUrl =
-      validateLobbyBannerUrl(
-        elements.targetUrl
-          ?.value,
-      );
+    targetUrl = validateLobbyBannerUrl(elements.targetUrl?.value);
   } catch (error) {
-    showToast(
-      error.message,
-      "error",
-    );
+    showToast(error.message, "error");
 
-    elements.targetUrl
-      ?.focus();
+    elements.targetUrl?.focus();
 
     return;
   }
 
-  if (
-    !title ||
-    title.length > 100
-  ) {
-    showToast(
-      "Banner title 1–100 characters হতে হবে।",
-      "error",
-    );
+  if (!title || title.length > 100) {
+    showToast("Banner title 1–100 characters হতে হবে।", "error");
 
     elements.title?.focus();
 
     return;
   }
 
-  const currentBanner =
-    getSelectedLobbyBanner();
+  const currentBanner = getSelectedLobbyBanner();
 
-  const isCreate =
-    LOBBY_BANNER_STATE.mode ===
-    "create";
+  const isCreate = LOBBY_BANNER_STATE.mode === "create";
 
-  const hasImage =
-    Boolean(
-      LOBBY_BANNER_STATE
-        .selectedFile ||
-      currentBanner?.hasImage,
-    );
+  const hasImage = Boolean(
+    LOBBY_BANNER_STATE.selectedFile || currentBanner?.hasImage,
+  );
 
-  if (
-    isCreate &&
-    !LOBBY_BANNER_STATE
-      .selectedFile
-  ) {
-    showToast(
-      "নতুন banner তৈরির জন্য image নির্বাচন করুন।",
-      "error",
-    );
+  if (isCreate && !LOBBY_BANNER_STATE.selectedFile) {
+    showToast("নতুন banner তৈরির জন্য image নির্বাচন করুন।", "error");
 
     return;
   }
 
-  if (
-    status === "active" &&
-    !hasImage
-  ) {
-    showToast(
-      "Active করার আগে একটি banner image upload করুন।",
-      "error",
-    );
+  if (status === "active" && !hasImage) {
+    showToast("Active করার আগে একটি banner image upload করুন।", "error");
 
     return;
   }
 
-  const shouldSave =
-    window.confirm(
-      isCreate
-        ? "Create this Lobby banner?"
-        : "Save changes to this Lobby banner?",
-    );
+  const shouldSave = window.confirm(
+    isCreate
+      ? "Create this Lobby banner?"
+      : "Save changes to this Lobby banner?",
+  );
 
   if (!shouldSave) {
     return;
   }
 
-  const formData =
-    new FormData();
+  const formData = new FormData();
 
-  formData.append(
-    "title",
-    title,
-  );
+  formData.append("title", title);
 
-  formData.append(
-    "targetUrl",
-    targetUrl,
-  );
+  formData.append("targetUrl", targetUrl);
 
-  formData.append(
-    "status",
-    status,
-  );
+  formData.append("status", status);
 
-  if (
-    LOBBY_BANNER_STATE
-      .selectedFile
-  ) {
-    formData.append(
-      "bannerImage",
-      LOBBY_BANNER_STATE
-        .selectedFile,
-    );
+  formData.append("showAsPopup", String(showAsPopup));
+
+  formData.append("popupMessage", popupMessage);
+
+  formData.append("popupButtonText", popupButtonText);
+
+  if (LOBBY_BANNER_STATE.selectedFile) {
+    formData.append("bannerImage", LOBBY_BANNER_STATE.selectedFile);
   }
 
-  LOBBY_BANNER_STATE.loading =
-    true;
+  LOBBY_BANNER_STATE.loading = true;
 
-  setLobbyBannerControlsDisabled(
-    true,
-  );
+  setLobbyBannerControlsDisabled(true);
 
   try {
-    const path =
-      isCreate
-        ? ""
-        : `/${Number(
-            currentBanner.id,
-          )}`;
+    const path = isCreate ? "" : `/${Number(currentBanner.id)}`;
 
-    const result =
-      await requestAdminLobbyBanner(
-        path,
-        {
-          method:
-            isCreate
-              ? "POST"
-              : "PATCH",
+    const result = await requestAdminLobbyBanner(path, {
+      method: isCreate ? "POST" : "PATCH",
 
-          body:
-            formData,
-        },
-      );
+      body: formData,
+    });
 
-    const savedBanner =
-      result.data?.banner;
+    const savedBanner = result.data?.banner;
 
     if (!savedBanner) {
-      throw new Error(
-        "Saved banner data was not returned.",
-      );
+      throw new Error("Saved banner data was not returned.");
     }
 
     if (isCreate) {
-      LOBBY_BANNER_STATE
-        .banners.push(
-          savedBanner,
-        );
+      LOBBY_BANNER_STATE.banners.push(savedBanner);
     } else {
-      LOBBY_BANNER_STATE.banners =
-        LOBBY_BANNER_STATE.banners
-          .map((banner) =>
-            Number(banner.id) ===
-            Number(
-              savedBanner.id,
-            )
-              ? savedBanner
-              : banner,
-          );
+      LOBBY_BANNER_STATE.banners = LOBBY_BANNER_STATE.banners.map((banner) =>
+        Number(banner.id) === Number(savedBanner.id) ? savedBanner : banner,
+      );
     }
 
-    LOBBY_BANNER_STATE.banners
-      .sort(
-        (first, second) =>
-          Number(
-            first.displayOrder ||
-            first.id,
-          ) -
-          Number(
-            second.displayOrder ||
-            second.id,
-          ),
-      );
-
-    LOBBY_BANNER_STATE.loading =
-      false;
-
-    await renderLobbyBannerEditor(
-      savedBanner,
-      "edit",
+    LOBBY_BANNER_STATE.banners.sort(
+      (first, second) =>
+        Number(first.displayOrder || first.id) -
+        Number(second.displayOrder || second.id),
     );
 
-    showToast(
-      result.message ||
-      "Lobby banner saved successfully.",
-    );
+    LOBBY_BANNER_STATE.loading = false;
+
+    await renderLobbyBannerEditor(savedBanner, "edit");
+
+    showToast(result.message || "Lobby banner saved successfully.");
   } catch (error) {
-    console.error(
-      "SAVE LOBBY BANNER ERROR:",
-      error,
-    );
+    console.error("SAVE LOBBY BANNER ERROR:", error);
 
-    showToast(
-      error.message ||
-      "Lobby banner save করা যায়নি।",
-      "error",
-    );
+    showToast(error.message || "Lobby banner save করা যায়নি।", "error");
   } finally {
-    LOBBY_BANNER_STATE.loading =
-      false;
+    LOBBY_BANNER_STATE.loading = false;
 
-    setLobbyBannerControlsDisabled(
-      false,
-    );
+    setLobbyBannerControlsDisabled(false);
 
     renderLobbyBannerList();
   }
 }
 
 async function deleteSelectedLobbyBanner() {
-  if (
-    LOBBY_BANNER_STATE.loading ||
-    LOBBY_BANNER_STATE.mode !==
-      "edit"
-  ) {
+  if (LOBBY_BANNER_STATE.loading || LOBBY_BANNER_STATE.mode !== "edit") {
     return;
   }
 
-  const banner =
-    getSelectedLobbyBanner();
+  const banner = getSelectedLobbyBanner();
 
   if (!banner) {
     return;
   }
 
-  const shouldDelete =
-    window.confirm(
-      `Delete "${banner.title}"? This action cannot be undone.`,
-    );
+  const shouldDelete = window.confirm(
+    `Delete "${banner.title}"? This action cannot be undone.`,
+  );
 
   if (!shouldDelete) {
     return;
   }
 
-  LOBBY_BANNER_STATE.loading =
-    true;
+  LOBBY_BANNER_STATE.loading = true;
 
-  setLobbyBannerControlsDisabled(
-    true,
-  );
+  setLobbyBannerControlsDisabled(true);
 
   try {
-    const result =
-      await requestAdminLobbyBanner(
-        `/${Number(
-          banner.id,
-        )}`,
-        {
-          method: "DELETE",
-        },
-      );
+    const result = await requestAdminLobbyBanner(`/${Number(banner.id)}`, {
+      method: "DELETE",
+    });
 
-    LOBBY_BANNER_STATE.banners =
-      LOBBY_BANNER_STATE.banners
-        .filter(
-          (item) =>
-            Number(item.id) !==
-            Number(banner.id),
-        )
-        .map(
-          (item, index) => ({
-            ...item,
+    LOBBY_BANNER_STATE.banners = LOBBY_BANNER_STATE.banners
+      .filter((item) => Number(item.id) !== Number(banner.id))
+      .map((item, index) => ({
+        ...item,
 
-            displayOrder:
-              index + 1,
-          }),
-        );
+        displayOrder: index + 1,
+      }));
 
-    LOBBY_BANNER_STATE.loading =
-      false;
+    LOBBY_BANNER_STATE.loading = false;
 
     revokeLobbyBannerPreviewUrl();
 
     renderLobbyBannerList();
 
-    const nextBanner =
-      LOBBY_BANNER_STATE
-        .banners[0] ||
-      null;
+    const nextBanner = LOBBY_BANNER_STATE.banners[0] || null;
 
     if (nextBanner) {
-      await renderLobbyBannerEditor(
-        nextBanner,
-        "edit",
-      );
+      await renderLobbyBannerEditor(nextBanner, "edit");
     } else {
-      await renderLobbyBannerEditor(
-        null,
-        "create",
-      );
+      await renderLobbyBannerEditor(null, "create");
     }
 
-    showToast(
-      result.message ||
-      "Lobby banner deleted successfully.",
-    );
+    showToast(result.message || "Lobby banner deleted successfully.");
   } catch (error) {
-    console.error(
-      "DELETE LOBBY BANNER ERROR:",
-      error,
-    );
+    console.error("DELETE LOBBY BANNER ERROR:", error);
 
-    showToast(
-      error.message ||
-      "Lobby banner delete করা যায়নি।",
-      "error",
-    );
+    showToast(error.message || "Lobby banner delete করা যায়নি।", "error");
   } finally {
-    LOBBY_BANNER_STATE.loading =
-      false;
+    LOBBY_BANNER_STATE.loading = false;
 
-    setLobbyBannerControlsDisabled(
-      false,
-    );
+    setLobbyBannerControlsDisabled(false);
 
     renderLobbyBannerList();
   }
 }
 
 function bindLobbyBannerEvents() {
-  const elements =
-    getLobbyBannerElements();
+  const elements = getLobbyBannerElements();
 
-  elements.chooseFile
-    ?.addEventListener(
-      "click",
-      () => {
-        elements.fileInput
-          ?.click();
-      },
-    );
+  elements.chooseFile?.addEventListener("click", () => {
+    elements.fileInput?.click();
+  });
 
-  elements.fileInput
-    ?.addEventListener(
-      "change",
-      () => {
-        const file =
-          elements.fileInput
-            ?.files?.[0];
+  elements.fileInput?.addEventListener("change", () => {
+    const file = elements.fileInput?.files?.[0];
 
-        handleLobbyBannerFileSelection(
-          file,
-        );
-      },
-    );
+    handleLobbyBannerFileSelection(file);
+  });
 
-  elements.status
-    ?.addEventListener(
-      "change",
-      () => {
-        updateLobbyBannerStatusBadge(
-          elements.status.value,
-        );
-      },
-    );
+  elements.status?.addEventListener("change", () => {
+    updateLobbyBannerStatusBadge(elements.status.value);
+  });
 
-  elements.form
-    ?.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
+  elements.form?.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-        saveLobbyBannerSettings();
-      },
-    );
+    saveLobbyBannerSettings();
+  });
 
-  elements.list
-    ?.addEventListener(
-      "click",
-      (event) => {
-        const button =
-          event.target.closest(
-            "button[data-banner-id]",
-          );
+  elements.list?.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-banner-id]");
 
-        if (!button) {
-          return;
-        }
+    if (!button) {
+      return;
+    }
 
-        selectLobbyBanner(
-          button.dataset.bannerId,
-        );
-      },
-    );
+    selectLobbyBanner(button.dataset.bannerId);
+  });
 
-  elements.add
-    ?.addEventListener(
-      "click",
-      startCreateLobbyBanner,
-    );
+  elements.add?.addEventListener("click", startCreateLobbyBanner);
 
-  elements.cancel
-    ?.addEventListener(
-      "click",
-      cancelLobbyBannerEdit,
-    );
+  elements.cancel?.addEventListener("click", cancelLobbyBannerEdit);
 
-  elements.delete
-    ?.addEventListener(
-      "click",
-      deleteSelectedLobbyBanner,
-    );
+  elements.delete?.addEventListener("click", deleteSelectedLobbyBanner);
 
-  elements.refresh
-    ?.addEventListener(
-      "click",
-      () => {
-        loadLobbyBanners({
-          showSuccess: true,
-        });
-      },
-    );
+  elements.refresh?.addEventListener("click", () => {
+    loadLobbyBanners({
+      showSuccess: true,
+    });
+  });
 
-  window.addEventListener(
-    "beforeunload",
-    revokeLobbyBannerPreviewUrl,
-  );
+  window.addEventListener("beforeunload", revokeLobbyBannerPreviewUrl);
 }
 /* =========================
    Page initialization

@@ -12,7 +12,7 @@
             name="theme-color"
             content="#111827">
 
-        <title>Aviator Control | PMS ADDA</title>
+        <title>Aviator Control | TPL22</title>
 
         <script src="../js/app-config.js"></script>
         <script src="../js/auth-guard.js"></script>
@@ -56,7 +56,7 @@
                 </div>
 
                 <div>
-                    <h2>PMS ADDA</h2>
+                    <h2>TPL22</h2>
                     <p>Admin Panel</p>
                 </div>
 
@@ -338,6 +338,163 @@
                         </div>
 
                     </article>
+
+                </section>
+
+                <!-- Profit & Loss Analytics -->
+
+                <section class="admin-card aviator-analytics-card">
+
+                    <div class="admin-card-header aviator-analytics-header">
+
+                        <div>
+                            <span class="card-kicker">
+                                Financial Report
+                            </span>
+
+                            <h2>
+                                Aviator Profit & Loss
+                            </h2>
+                        </div>
+
+                        <div
+                            class="aviator-period-filter"
+                            id="analyticsPeriodFilter">
+                            <button
+                                type="button"
+                                class="active"
+                                data-period="today">
+                                Today
+                            </button>
+
+                            <button
+                                type="button"
+                                data-period="7d">
+                                7 Days
+                            </button>
+
+                            <button
+                                type="button"
+                                data-period="30d">
+                                30 Days
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <div class="aviator-finance-summary">
+
+                        <article>
+                            <span>Total Bet</span>
+
+                            <strong>
+                                ৳<span id="analyticsTotalBet">0.00</span>
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>Total Payout</span>
+
+                            <strong>
+                                ৳<span id="analyticsTotalPayout">0.00</span>
+                            </strong>
+                        </article>
+
+                        <article id="analyticsNetCard">
+                            <span>Net Profit / Loss</span>
+
+                            <strong>
+                                ৳<span id="analyticsNetProfit">0.00</span>
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>Profit Margin</span>
+
+                            <strong>
+                                <span id="analyticsProfitMargin">0.00</span>%
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>Completed Rounds</span>
+
+                            <strong id="analyticsCompletedRounds">
+                                0
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>Real Players</span>
+
+                            <strong id="analyticsPlayers">
+                                0
+                            </strong>
+                        </article>
+
+                    </div>
+
+                    <div class="aviator-live-exposure">
+
+                        <div>
+                            <span>Active Round</span>
+
+                            <strong id="analyticsActiveRound">
+                                None
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Live Bet Amount</span>
+
+                            <strong>
+                                ৳<span id="analyticsLiveBet">0.00</span>
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Live Bets / Players</span>
+
+                            <strong id="analyticsLivePlayers">
+                                0 / 0
+                            </strong>
+                        </div>
+
+                    </div>
+
+                    <div class="aviator-round-table-wrap">
+
+                        <table class="aviator-round-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Round</th>
+                                    <th>Crash</th>
+                                    <th>Total Bet</th>
+                                    <th>Payout</th>
+                                    <th>Profit / Loss</th>
+                                    <th>Finished</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="analyticsRoundRows">
+                                <tr>
+                                    <td
+                                        colspan="6"
+                                        class="empty-cell">
+                                        Loading report...
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <p class="aviator-report-note">
+                        Profit/loss includes completed crashed rounds only.
+                        Cancelled and refunded rounds are excluded.
+                    </p>
 
                 </section>
 

@@ -1,7 +1,7 @@
 "use strict";
 
 /* ==========================================
-   PMS ADDA LUDO
+   TPL22 LUDO
    Authoritative Backend Board Constants
 ========================================== */
 

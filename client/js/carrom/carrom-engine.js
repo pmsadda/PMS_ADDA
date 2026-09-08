@@ -1,5 +1,5 @@
 /* ==========================================
-   PMS ADDA CARROM CANVAS ENGINE
+   TPL22 CARROM CANVAS ENGINE
    Frontend Demonstration Physics
 ========================================== */
 

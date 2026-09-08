@@ -1,7 +1,7 @@
 "use strict";
 
 /* ==========================================
-   PMS ADDA LUDO
+   TPL22 LUDO
    Glossy Board Generator
 ========================================== */
 
@@ -1678,7 +1678,7 @@ const initializeLudoGame = () => {
 
   LUDO_LIVE.initialize();
 
-  console.log("✅ PMS ADDA glossy Ludo table loaded");
+  console.log("✅ TPL22 glossy Ludo table loaded");
 };
 
 if (document.readyState === "loading") {

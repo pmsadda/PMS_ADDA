@@ -1,74 +1,50 @@
 "use strict";
 
-const lobbyBannerService =
-  require(
-    "../services/lobby-banner.service"
-  );
+const lobbyBannerService = require("../services/lobby-banner.service");
 
-function getBannerVersion(
-  banner
-) {
-  const updatedTime =
-    banner?.updatedAt
-      ? new Date(
-          banner.updatedAt
-        ).getTime()
-      : Date.now();
-
-  return Number.isFinite(
-    updatedTime
-  )
-    ? updatedTime
+function getBannerVersion(banner) {
+  const updatedTime = banner?.updatedAt
+    ? new Date(banner.updatedAt).getTime()
     : Date.now();
+
+  return Number.isFinite(updatedTime) ? updatedTime : Date.now();
 }
 
-function serializePublicBanner(
-  banner
-) {
-  const version =
-    getBannerVersion(
-      banner
-    );
+function serializePublicBanner(banner) {
+  const version = getBannerVersion(banner);
 
   return {
-    id:
-      banner.id,
+    id: banner.id,
 
-    displayOrder:
-      banner.displayOrder,
+    displayOrder: banner.displayOrder,
 
-    title:
-      banner.title,
+    title: banner.title,
 
-    targetUrl:
-      banner.targetUrl,
+    targetUrl: banner.targetUrl,
 
-    status:
-      banner.status,
+    status: banner.status,
 
-    imageUrl:
-      `/api/lobby-banner/${banner.id}/image?v=${version}`,
+    showAsPopup: Boolean(banner.showAsPopup),
 
-    updatedAt:
-      banner.updatedAt
+    popupMessage: banner.popupMessage || "",
+
+    popupButtonText: banner.popupButtonText || "View Offer",
+
+    imageUrl: `/api/lobby-banner/${banner.id}/image?v=${version}`,
+
+    updatedAt: banner.updatedAt,
   };
 }
 
-function serializeAdminBanner(
-  banner
-) {
-  const version =
-    getBannerVersion(
-      banner
-    );
+function serializeAdminBanner(banner) {
+  const version = getBannerVersion(banner);
 
   return {
     ...banner,
 
-    imageUrl:
-      banner.hasImage
-        ? `/api/admin/lobby-banner/${banner.id}/image?v=${version}`
-        : null
+    imageUrl: banner.hasImage
+      ? `/api/admin/lobby-banner/${banner.id}/image?v=${version}`
+      : null,
   };
 }
 
@@ -76,33 +52,22 @@ function serializeAdminBanner(
    Public Banner List
 ========================== */
 
-async function getPublicBanners(
-  request,
-  response,
-  next
-) {
+async function getPublicBanners(request, response, next) {
   try {
-    const banners =
-      await lobbyBannerService
-        .getActiveBanners();
+    const banners = await lobbyBannerService.getActiveBanners();
 
-    return response
-      .status(200)
-      .json({
-        success: true,
+    return response.status(200).json({
+      success: true,
 
-        message:
-          banners.length > 0
-            ? "Lobby banners loaded successfully."
-            : "No active lobby banner is available.",
+      message:
+        banners.length > 0
+          ? "Lobby banners loaded successfully."
+          : "No active lobby banner is available.",
 
-        data: {
-          banners:
-            banners.map(
-              serializePublicBanner
-            )
-        }
-      });
+      data: {
+        banners: banners.map(serializePublicBanner),
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -112,35 +77,21 @@ async function getPublicBanners(
    Admin Banner List
 ========================== */
 
-async function getAdminBanners(
-  request,
-  response,
-  next
-) {
+async function getAdminBanners(request, response, next) {
   try {
-    const banners =
-      await lobbyBannerService
-        .getAdminBanners();
+    const banners = await lobbyBannerService.getAdminBanners();
 
-    return response
-      .status(200)
-      .json({
-        success: true,
+    return response.status(200).json({
+      success: true,
 
-        message:
-          "Lobby banners loaded successfully.",
+      message: "Lobby banners loaded successfully.",
 
-        data: {
-          banners:
-            banners.map(
-              serializeAdminBanner
-            ),
+      data: {
+        banners: banners.map(serializeAdminBanner),
 
-          maximumBanners:
-            lobbyBannerService
-              .MAX_BANNERS
-        }
-      });
+        maximumBanners: lobbyBannerService.MAX_BANNERS,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -154,88 +105,50 @@ function sendBannerImage(
   request,
   response,
   image,
-  cacheControl =
-    "public, max-age=300"
+  cacheControl = "public, max-age=300",
 ) {
-  const updatedTime =
-    image.updatedAt
-      ? new Date(
-          image.updatedAt
-        ).getTime()
-      : Date.now();
+  const updatedTime = image.updatedAt
+    ? new Date(image.updatedAt).getTime()
+    : Date.now();
 
-  const safeUpdatedTime =
-    Number.isFinite(
-      updatedTime
-    )
-      ? updatedTime
-      : Date.now();
+  const safeUpdatedTime = Number.isFinite(updatedTime)
+    ? updatedTime
+    : Date.now();
 
-  const etag =
-    `"lobby-banner-${image.id}-${safeUpdatedTime}-${image.imageSize}"`;
+  const etag = `"lobby-banner-${image.id}-${safeUpdatedTime}-${image.imageSize}"`;
 
-  if (
-    request.headers[
-      "if-none-match"
-    ] === etag
-  ) {
-    return response
-      .status(304)
-      .end();
+  if (request.headers["if-none-match"] === etag) {
+    return response.status(304).end();
   }
 
   response.set({
-    "Content-Type":
-      image.mimeType,
+    "Content-Type": image.mimeType,
 
-    "Content-Length":
-      String(
-        image.imageData.length
-      ),
+    "Content-Length": String(image.imageData.length),
 
-    "Cache-Control":
-      cacheControl,
+    "Cache-Control": cacheControl,
 
-    ETag:
-      etag,
+    ETag: etag,
 
-    "X-Content-Type-Options":
-      "nosniff"
+    "X-Content-Type-Options": "nosniff",
   });
 
-  return response
-    .status(200)
-    .end(
-      image.imageData
-    );
+  return response.status(200).end(image.imageData);
 }
 
 /* ==========================
    Public Banner Image
 ========================== */
 
-async function getPublicBannerImage(
-  request,
-  response,
-  next
-) {
+async function getPublicBannerImage(request, response, next) {
   try {
-    const image =
-      await lobbyBannerService
-        .getBannerImage({
-          bannerId:
-            request.params
-              .bannerId,
+    const image = await lobbyBannerService.getBannerImage({
+      bannerId: request.params.bannerId,
 
-          includeDisabled:
-            false
-        });
+      includeDisabled: false,
+    });
 
-    return sendBannerImage(
-      request,
-      response,
-      image
-    );
+    return sendBannerImage(request, response, image);
   } catch (error) {
     next(error);
   }
@@ -245,29 +158,15 @@ async function getPublicBannerImage(
    Admin Banner Image
 ========================== */
 
-async function getAdminBannerImage(
-  request,
-  response,
-  next
-) {
+async function getAdminBannerImage(request, response, next) {
   try {
-    const image =
-      await lobbyBannerService
-        .getBannerImage({
-          bannerId:
-            request.params
-              .bannerId,
+    const image = await lobbyBannerService.getBannerImage({
+      bannerId: request.params.bannerId,
 
-          includeDisabled:
-            true
-        });
+      includeDisabled: true,
+    });
 
-    return sendBannerImage(
-      request,
-      response,
-      image,
-      "private, no-store"
-    );
+    return sendBannerImage(request, response, image, "private, no-store");
   } catch (error) {
     next(error);
   }
@@ -277,48 +176,38 @@ async function getAdminBannerImage(
    Create Banner
 ========================== */
 
-async function createLobbyBanner(
-  request,
-  response,
-  next
-) {
+async function createLobbyBanner(request, response, next) {
   try {
-    const banner =
-      await lobbyBannerService
-        .createBanner({
-          adminId:
-            request.user.id,
+    const banner = await lobbyBannerService.createBanner({
+      adminId: request.user.id,
 
-          title:
-            request.body.title,
+      title: request.body.title,
 
-          targetUrl:
-            request.body
-              .targetUrl,
+      targetUrl: request.body.targetUrl,
+status:
+  request.body.status,
 
-          status:
-            request.body.status,
+showAsPopup:
+  request.body.showAsPopup,
 
-          imageFile:
-            request.file ||
-            null
-        });
+popupMessage:
+  request.body.popupMessage,
 
-    return response
-      .status(201)
-      .json({
-        success: true,
+popupButtonText:
+  request.body.popupButtonText,
 
-        message:
-          "Lobby banner created successfully.",
+imageFile:request.file || null,
+    });
 
-        data: {
-          banner:
-            serializeAdminBanner(
-              banner
-            )
-        }
-      });
+    return response.status(201).json({
+      success: true,
+
+      message: "Lobby banner created successfully.",
+
+      data: {
+        banner: serializeAdminBanner(banner),
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -328,52 +217,41 @@ async function createLobbyBanner(
    Update Banner
 ========================== */
 
-async function updateLobbyBanner(
-  request,
-  response,
-  next
-) {
+async function updateLobbyBanner(request, response, next) {
   try {
-    const banner =
-      await lobbyBannerService
-        .updateBanner({
-          bannerId:
-            request.params
-              .bannerId,
+    const banner = await lobbyBannerService.updateBanner({
+      bannerId: request.params.bannerId,
 
-          adminId:
-            request.user.id,
+      adminId: request.user.id,
 
-          title:
-            request.body.title,
+      title: request.body.title,
 
-          targetUrl:
-            request.body
-              .targetUrl,
+      targetUrl: request.body.targetUrl,
 
-          status:
-            request.body.status,
+      status:
+  request.body.status,
 
-          imageFile:
-            request.file ||
-            null
-        });
+showAsPopup:
+  request.body.showAsPopup,
 
-    return response
-      .status(200)
-      .json({
-        success: true,
+popupMessage:
+  request.body.popupMessage,
 
-        message:
-          "Lobby banner updated successfully.",
+popupButtonText:
+  request.body.popupButtonText,
 
-        data: {
-          banner:
-            serializeAdminBanner(
-              banner
-            )
-        }
-      });
+imageFile: request.file || null,
+    });
+
+    return response.status(200).json({
+      success: true,
+
+      message: "Lobby banner updated successfully.",
+
+      data: {
+        banner: serializeAdminBanner(banner),
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -383,35 +261,23 @@ async function updateLobbyBanner(
    Delete Banner
 ========================== */
 
-async function deleteLobbyBanner(
-  request,
-  response,
-  next
-) {
+async function deleteLobbyBanner(request, response, next) {
   try {
-    const deletedBanner =
-      await lobbyBannerService
-        .deleteBanner({
-          bannerId:
-            request.params
-              .bannerId,
+    const deletedBanner = await lobbyBannerService.deleteBanner({
+      bannerId: request.params.bannerId,
 
-          adminId:
-            request.user.id
-        });
+      adminId: request.user.id,
+    });
 
-    return response
-      .status(200)
-      .json({
-        success: true,
+    return response.status(200).json({
+      success: true,
 
-        message:
-          "Lobby banner deleted successfully.",
+      message: "Lobby banner deleted successfully.",
 
-        data: {
-          deletedBanner
-        }
-      });
+      data: {
+        deletedBanner,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -424,5 +290,5 @@ module.exports = {
   getAdminBannerImage,
   createLobbyBanner,
   updateLobbyBanner,
-  deleteLobbyBanner
+  deleteLobbyBanner,
 };

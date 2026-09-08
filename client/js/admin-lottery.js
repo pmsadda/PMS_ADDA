@@ -1,7 +1,7 @@
 "use strict";
 
 /* ==========================================
-   PMS ADDA ADMIN LOTTERY
+   TPL22 ADMIN LOTTERY
 ========================================== */
 
 const LOTTERY_API_URL =

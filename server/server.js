@@ -154,7 +154,7 @@ async function startServer() {
     await testDatabaseConnection();
 
     httpServer.listen(PORT, HOST, () => {
-      console.log(`🚀 PMS ADDA Server Running at http://${HOST}:${PORT}`);
+      console.log(`🚀 TPL22 Server Running at http://${HOST}:${PORT}`);
       console.log(`🔌 Socket.IO Running on Port ${PORT}`);
     });
   } catch (error) {

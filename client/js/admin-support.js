@@ -1,7 +1,7 @@
 "use strict";
 
 /* =========================================================
-   PMS ADDA — ADMIN SUPPORT FRONTEND
+   TPL22 — ADMIN SUPPORT FRONTEND
 ========================================================= */
 
 (() => {
@@ -2677,7 +2677,7 @@
 
     connectSupportSocket();
 
-    console.log("✅ PMS ADDA Admin Support frontend loaded", {
+    console.log("✅ TPL22 Admin Support frontend loaded", {
       apiUrl: buildApiUrl(SUPPORT_API_BASE),
 
       adminId: state.currentAdmin.id,

@@ -1,6 +1,6 @@
-// PMS ADDA
+// TPL22
 
-console.log("PMS ADDA Started");
+console.log("TPL22 Started");
 
 // 3 Second Splash
 

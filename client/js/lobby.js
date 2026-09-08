@@ -59,6 +59,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     lobbyBannerDots: document.getElementById("lobbyBannerDots"),
 
+    lobbyOfferPopup: document.getElementById("lobbyOfferPopup"),
+    lobbyOfferBackdrop: document.getElementById("lobbyOfferBackdrop"),
+    lobbyOfferClose: document.getElementById("lobbyOfferClose"),
+    lobbyOfferImage: document.getElementById("lobbyOfferImage"),
+    lobbyOfferTitle: document.getElementById("lobbyOfferTitle"),
+    lobbyOfferMessage: document.getElementById("lobbyOfferMessage"),
+    lobbyOfferAction: document.getElementById("lobbyOfferAction"),
+    lobbyOfferHideToday: document.getElementById("lobbyOfferHideToday"),
+
     refreshButton: document.getElementById("refreshBtn"),
 
     downloadAppButton: document.getElementById("downloadAppBtn"),
@@ -494,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getUserDisplayName(user) {
     return (
-      user?.fullName || user?.full_name || user?.username || "PMS ADDA Player"
+      user?.fullName || user?.full_name || user?.username || "TPL22 Player"
     );
   }
 
@@ -1001,7 +1010,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       DOM.lobbyBannerImage.removeAttribute("src");
 
-      DOM.lobbyBannerImage.alt = "PMS ADDA lobby advertisement";
+      DOM.lobbyBannerImage.alt = "TPL22 lobby advertisement";
     }
 
     if (DOM.lobbyBannerLoading) {
@@ -1184,7 +1193,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           DOM.lobbyBannerImage.alt =
-            banner.title || "PMS ADDA lobby advertisement";
+            banner.title || "TPL22 lobby advertisement";
 
           setLobbyBannerTarget(banner);
 
@@ -1262,6 +1271,191 @@ document.addEventListener("DOMContentLoaded", () => {
     selectLobbyBanner(selectedIndex);
   });
 
+  /* =========================================================
+   ADMIN CONTROLLED OFFER POPUP
+========================================================= */
+
+const LOBBY_OFFER_HIDE_DATE_KEY = "pms_adda_offer_hidden_date";
+const LOBBY_OFFER_SESSION_PREFIX = "pms_adda_offer_seen_";
+
+function getLocalDateKey() {
+  const currentDate = new Date();
+
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  const day = String(currentDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getActivePopupBanner() {
+  return (
+    STATE.lobbyBanners.find(
+      (banner) =>
+        banner &&
+        banner.status === "active" &&
+        banner.showAsPopup === true &&
+        banner.imageUrl,
+    ) || null
+  );
+}
+
+function closeLobbyOfferPopup() {
+  if (!DOM.lobbyOfferPopup) {
+    return;
+  }
+
+  const bannerId = DOM.lobbyOfferPopup.dataset.bannerId;
+
+  if (bannerId) {
+    sessionStorage.setItem(
+      `${LOBBY_OFFER_SESSION_PREFIX}${bannerId}`,
+      "1",
+    );
+  }
+
+  if (DOM.lobbyOfferHideToday?.checked) {
+    localStorage.setItem(
+      LOBBY_OFFER_HIDE_DATE_KEY,
+      getLocalDateKey(),
+    );
+  }
+
+  DOM.lobbyOfferPopup.hidden = true;
+  DOM.lobbyOfferPopup.removeAttribute("data-banner-id");
+
+  document.body.classList.remove("lobby-offer-open");
+}
+
+function setLobbyOfferTarget(banner) {
+  if (!DOM.lobbyOfferAction) {
+    return;
+  }
+
+  const targetUrl = String(banner?.targetUrl || "").trim();
+
+  DOM.lobbyOfferAction.hidden = true;
+  DOM.lobbyOfferAction.removeAttribute("href");
+  DOM.lobbyOfferAction.removeAttribute("target");
+  DOM.lobbyOfferAction.removeAttribute("rel");
+
+  if (!targetUrl) {
+    return;
+  }
+
+  let parsedUrl;
+
+  try {
+    parsedUrl = new URL(targetUrl, window.location.origin);
+  } catch (error) {
+    return;
+  }
+
+  if (
+    parsedUrl.protocol !== "https:" &&
+    parsedUrl.protocol !== "http:"
+  ) {
+    return;
+  }
+
+  DOM.lobbyOfferAction.href = parsedUrl.toString();
+  DOM.lobbyOfferAction.target = "_blank";
+  DOM.lobbyOfferAction.rel = "noopener noreferrer";
+  DOM.lobbyOfferAction.textContent =
+    String(banner.popupButtonText || "").trim() || "View Offer";
+
+  DOM.lobbyOfferAction.hidden = false;
+}
+
+function renderLobbyOfferPopup() {
+  if (
+    !DOM.lobbyOfferPopup ||
+    !DOM.lobbyOfferImage ||
+    !DOM.lobbyOfferTitle ||
+    !DOM.lobbyOfferMessage
+  ) {
+    return;
+  }
+
+  if (
+    localStorage.getItem(LOBBY_OFFER_HIDE_DATE_KEY) ===
+    getLocalDateKey()
+  ) {
+    return;
+  }
+
+  const banner = getActivePopupBanner();
+
+  if (!banner) {
+    return;
+  }
+
+  const sessionKey = `${LOBBY_OFFER_SESSION_PREFIX}${banner.id}`;
+
+  if (sessionStorage.getItem(sessionKey) === "1") {
+    return;
+  }
+
+  const imageUrl = resolveLobbyBannerImageUrl(banner.imageUrl);
+
+  if (!imageUrl) {
+    return;
+  }
+
+  DOM.lobbyOfferPopup.dataset.bannerId = String(banner.id);
+
+  DOM.lobbyOfferTitle.textContent =
+    String(banner.title || "").trim() || "Special Offer";
+
+  DOM.lobbyOfferMessage.textContent =
+    String(banner.popupMessage || "").trim();
+
+  DOM.lobbyOfferMessage.hidden =
+    DOM.lobbyOfferMessage.textContent.length === 0;
+
+  DOM.lobbyOfferImage.src = imageUrl;
+  DOM.lobbyOfferImage.alt =
+    String(banner.title || "").trim() || "TPL22 offer";
+
+  DOM.lobbyOfferImage.onerror = () => {
+    DOM.lobbyOfferPopup.hidden = true;
+    document.body.classList.remove("lobby-offer-open");
+  };
+
+  if (DOM.lobbyOfferHideToday) {
+    DOM.lobbyOfferHideToday.checked = false;
+  }
+
+  setLobbyOfferTarget(banner);
+
+  DOM.lobbyOfferPopup.hidden = false;
+  document.body.classList.add("lobby-offer-open");
+}
+
+DOM.lobbyOfferClose?.addEventListener(
+  "click",
+  closeLobbyOfferPopup,
+);
+
+DOM.lobbyOfferBackdrop?.addEventListener(
+  "click",
+  closeLobbyOfferPopup,
+);
+
+DOM.lobbyOfferAction?.addEventListener("click", () => {
+  closeLobbyOfferPopup();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (
+    event.key === "Escape" &&
+    DOM.lobbyOfferPopup &&
+    !DOM.lobbyOfferPopup.hidden
+  ) {
+    closeLobbyOfferPopup();
+  }
+});
+
   async function loadGuestLobbyData(options = {}) {
     if (STATE.loading) {
       return;
@@ -1306,6 +1500,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderLobbyNotice();
       renderLobbyBanner();
+      renderLobbyOfferPopup();
       renderGameAvailability();
 
       STATE.lastLoadedAt = Date.now();
@@ -1412,6 +1607,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderLobbyNotice();
       renderLobbyBanner();
+      renderLobbyOfferPopup();
 
       renderGameAvailability();
       renderReferral();
@@ -1479,14 +1675,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const settings = STATE.referral?.settings || {};
 
     const shareText =
-      `PMS ADDA-তে account খুলুন। ` +
+      `TPL22-তে account খুলুন। ` +
       `প্রথম qualifying deposit-এ ` +
       `৳${formatMoney(settings.referredUserBonus || 0)} referral bonus পাবেন।`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "PMS ADDA Referral",
+          title: "TPL22 Referral",
 
           text: shareText,
 
@@ -1585,14 +1781,14 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================================
    QUICK MENU NAVIGATION
 ========================================================= */
-DOM.depositButton?.addEventListener("click", () => {
-  if (!token) {
-    navigateTo("/login");
-    return;
-  }
+  DOM.depositButton?.addEventListener("click", () => {
+    if (!token) {
+      navigateTo("/login");
+      return;
+    }
 
-  navigateTo("/deposit");
-});
+    navigateTo("/deposit");
+  });
 
   DOM.withdrawButton?.addEventListener("click", () => navigateTo("/withdraw"));
 
@@ -1624,9 +1820,7 @@ DOM.depositButton?.addEventListener("click", () => {
     navigateTo("/bangla-dice"),
   );
 
-  DOM.aviatorButton?.addEventListener("click", () =>
-  navigateTo("/aviator"),
-);
+  DOM.aviatorButton?.addEventListener("click", () => navigateTo("/aviator"));
 
   DOM.kaitButton?.addEventListener("click", () => navigateTo("/kait"));
 
@@ -1733,7 +1927,7 @@ DOM.depositButton?.addEventListener("click", () => {
       showLoader: !cachedUser,
     });
 
-    console.log("✅ PMS ADDA dynamic Lobby loaded");
+    console.log("✅ TPL22 dynamic Lobby loaded");
   }
 
   initializeLobby();
@@ -1759,7 +1953,7 @@ DOM.depositButton?.addEventListener("click", () => {
 
       link.href = window.APP_CONFIG.api("/app-download/download");
 
-      link.download = "PMS_ADDA.apk";
+      link.download = "TPL22.apk";
 
       document.body.appendChild(link);
 

@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getDisplayName(user) {
     return (
-      user?.fullName || user?.full_name || user?.username || "PMS ADDA Player"
+      user?.fullName || user?.full_name || user?.username || "TPL22 Player"
     );
   }
 
@@ -604,7 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     await loadProfile();
 
-    console.log("✅ PMS ADDA dynamic Profile loaded");
+    console.log("✅ TPL22 dynamic Profile loaded");
   }
 
   initializeProfile();

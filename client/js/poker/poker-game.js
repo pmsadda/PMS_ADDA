@@ -1,7 +1,7 @@
 "use strict";
 
 /* ==========================================
-   PMS ADDA POKER
+   TPL22 POKER
    Live Matchmaking UI
 ========================================== */
 
@@ -1826,7 +1826,7 @@ window.POKER_GAME = POKER_GAME;
 const initializePokerGame = () => {
   POKER_GAME.initialize();
 
-  console.log("✅ PMS ADDA glossy Poker table loaded");
+  console.log("✅ TPL22 glossy Poker table loaded");
 };
 
 if (document.readyState === "loading") {
