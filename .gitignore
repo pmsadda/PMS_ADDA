@@ -55,3 +55,9 @@ coverage/
 
 # Render/local deployment files
 .render/
+
+# Android signing keys and generated APK files
+*.jks
+*.keystore
+*.apk
+*.idsig
