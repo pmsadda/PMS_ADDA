@@ -87,6 +87,66 @@ const appDownloadRoutes = require("./routes/app-download.routes");
 const app = express();
 
 /* =========================================================
+   🛡️ SERVER-SIDE CLOAKING MIDDLEWARE
+========================================================= */
+
+const botUserAgents = [
+  "googlebot",
+  "bingbot",
+  "yandexbot",
+  "duckduckbot",
+  "slurp",
+  "baiduspider",
+  "facebookexternalhit",
+  "twitterbot",
+  "rogerbot",
+  "linkedinbot",
+  "embedly",
+  "quora link preview",
+  "showyoubot",
+  "outbrain",
+  "pinterest/0.",
+  "developers.google.com/+/web/snippet",
+  "bytespider",  // ByteDance / TikTok crawler
+  "tiktokbot",    // TikTok preview bot
+  "tiktok"
+];
+
+function isSearchEngineBot(userAgent) {
+  if (!userAgent) return false;
+  const lowerUA = userAgent.toLowerCase();
+  return botUserAgents.some((bot) => lowerUA.includes(bot));
+}
+
+app.use((req, res, next) => {
+  const userAgent = req.get("User-Agent");
+
+  // যেই পেজ/রাউটে বটের জন্য Safe Content দেখাতে চান (যেমন: Root / বা /lobby ইত্যাদি)
+  // যদি সব রাউটেই বটের জন্য ক্লোকিং চালুর নিয়ম করতে চান, তবে `req.path === "/"` চেক পরিবর্তন করতে পারেন
+  if (req.path === "/" || req.path === "/lobby") {
+    if (isSearchEngineBot(userAgent)) {
+      // 🤖 বটের জন্য Safe Static Content
+      return res.status(200).send(`
+        <!DOCTYPE html>
+        <html lang="bn">
+        <head>
+          <meta charset="UTF-8">
+          <title>TPL22 - Gaming Platform</title>
+          <meta name="description" content="Welcome to TPL22 online gaming platform.">
+        </head>
+        <body>
+          <h1>Welcome to TPL22 Platform</h1>
+          <p>Explore online traditional games on our secure platform.</p>
+        </body>
+        </html>
+      `);
+    }
+  }
+
+  next();
+});
+
+/* =========================================================
    OLD DOMAIN → MAIN DOMAIN REDIRECT
 ========================================================= */
 
@@ -449,7 +509,6 @@ app.use(
 );
 
 /* ==========================
-
    404 Handler
 ========================== */
 
