@@ -1119,3 +1119,37 @@ input {
     flex-direction: column;
   }
 }
+
+/* Mobile logo cutting fix */
+
+@media (max-width: 992px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body {
+    align-items: flex-start;
+  }
+
+  .login-container {
+    flex-shrink: 0;
+    margin: 0 auto;
+  }
+
+  .left-panel {
+    padding-top: 35px;
+    overflow: visible;
+  }
+
+  .logo {
+    display: block;
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+}
