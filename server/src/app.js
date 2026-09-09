@@ -94,7 +94,7 @@ app.use((req, res, next) => {
   const host = String(req.hostname || "").toLowerCase();
 
   if (host === "pms-adda.live" || host === "www.pms-adda.live") {
-    return res.redirect(308, `https://pms-adda.site${req.originalUrl}`);
+    return res.redirect(308, `https://tpl22.site${req.originalUrl}`);
   }
 
   next();

@@ -795,7 +795,6 @@ async function createGatewayPayment(
       redirectUrl:
         config.redirectUrl,
 
-      expiryPeriod: 30,
     };
 
     /*
