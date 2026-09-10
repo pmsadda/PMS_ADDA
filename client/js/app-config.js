@@ -341,4 +341,134 @@
   }
 
   startSessionTimer();
+
+})();
+(function initializeUserActivityHeartbeat() {
+  const HEARTBEAT_INTERVAL_MS =
+    60 * 1000;
+
+  let heartbeatTimer =
+    null;
+
+  let requestRunning =
+    false;
+
+  function getAccessToken() {
+    return (
+      localStorage.getItem(
+        "access_token"
+      ) ||
+      localStorage.getItem(
+        "token"
+      ) ||
+      ""
+    );
+  }
+
+  async function sendHeartbeat() {
+    const token =
+      getAccessToken();
+
+    if (
+      !token ||
+      !window.APP_CONFIG ||
+      requestRunning ||
+      document.visibilityState ===
+        "hidden"
+    ) {
+      return;
+    }
+
+    requestRunning =
+      true;
+
+    const controller =
+      new AbortController();
+
+    const timeout =
+      window.setTimeout(
+        () => {
+          controller.abort();
+        },
+        8000
+      );
+
+    try {
+      await fetch(
+        window.APP_CONFIG.api(
+          "/auth/heartbeat"
+        ),
+        {
+          method:
+            "POST",
+
+          headers: {
+            Accept:
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`
+          },
+
+          cache:
+            "no-store",
+
+          signal:
+            controller.signal
+        }
+      );
+    } catch (error) {
+      /*
+       * Temporary network failure হলে
+       * পরের interval-এ আবার চেষ্টা হবে।
+       */
+    } finally {
+      window.clearTimeout(
+        timeout
+      );
+
+      requestRunning =
+        false;
+    }
+  }
+
+  function startHeartbeat() {
+    if (heartbeatTimer) {
+      window.clearInterval(
+        heartbeatTimer
+      );
+    }
+
+    sendHeartbeat();
+
+    heartbeatTimer =
+      window.setInterval(
+        sendHeartbeat,
+        HEARTBEAT_INTERVAL_MS
+      );
+  }
+
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+        sendHeartbeat();
+      }
+    }
+  );
+
+  window.addEventListener(
+    "online",
+    sendHeartbeat
+  );
+
+  window.addEventListener(
+    "pageshow",
+    sendHeartbeat
+  );
+
+  startHeartbeat();
 })();

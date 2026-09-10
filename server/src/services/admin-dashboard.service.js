@@ -38,6 +38,11 @@ async function getDashboardStats() {
             SUM(
               CASE
                 WHEN is_online = 1
+  AND last_active_at >=
+    DATE_SUB(
+      NOW(3),
+      INTERVAL 3 MINUTE
+    )
                 THEN 1
                 ELSE 0
               END
@@ -774,7 +779,7 @@ async function getDashboardStats() {
       `,
     );
 
-        const [signupBonusSettingRows] = await connection.query(
+    const [signupBonusSettingRows] = await connection.query(
       `
       SELECT
         is_enabled,
@@ -786,7 +791,7 @@ async function getDashboardStats() {
       `,
     );
 
-        const [withdrawSettingRows] = await connection.query(
+    const [withdrawSettingRows] = await connection.query(
       `
       SELECT
         minimum_withdraw_amount,
@@ -900,9 +905,9 @@ async function getDashboardStats() {
 
     const firstDepositBonusSettings = firstDepositBonusSettingRows[0] || {};
 
-        const signupBonusSettings = signupBonusSettingRows[0] || {};
+    const signupBonusSettings = signupBonusSettingRows[0] || {};
 
-            const withdrawSettings = withdrawSettingRows[0] || {};
+    const withdrawSettings = withdrawSettingRows[0] || {};
 
     const referralSettings = referralSettingRows[0] || {};
 
@@ -1047,7 +1052,7 @@ async function getDashboardStats() {
         ludo: Number(chargeStats.ludo_charge || 10),
       },
 
-            signupBonusSettings: {
+      signupBonusSettings: {
         isEnabled: Boolean(signupBonusSettings.is_enabled),
 
         bonusAmount: Number(signupBonusSettings.bonus_amount || 0),
@@ -1055,7 +1060,7 @@ async function getDashboardStats() {
         updatedAt: signupBonusSettings.updated_at || null,
       },
 
-            withdrawSettings: {
+      withdrawSettings: {
         minimumWithdrawAmount: Number(
           withdrawSettings.minimum_withdraw_amount || 100,
         ),
@@ -1346,20 +1351,14 @@ async function updateSignupBonusSettings(settings, adminId = null) {
       bonus_amount = VALUES(bonus_amount),
       updated_by = VALUES(updated_by)
     `,
-    [
-      values.isEnabled ? 1 : 0,
-      values.bonusAmount,
-      adminId,
-    ],
+    [values.isEnabled ? 1 : 0, values.bonusAmount, adminId],
   );
 
   return values;
 }
 
 async function updateWithdrawSettings(settings, adminId = null) {
-  const minimumWithdrawAmount = Number(
-    settings?.minimumWithdrawAmount,
-  );
+  const minimumWithdrawAmount = Number(settings?.minimumWithdrawAmount);
 
   if (
     !Number.isFinite(minimumWithdrawAmount) ||
@@ -1375,9 +1374,7 @@ async function updateWithdrawSettings(settings, adminId = null) {
   }
 
   const values = {
-    minimumWithdrawAmount: Number(
-      minimumWithdrawAmount.toFixed(2),
-    ),
+    minimumWithdrawAmount: Number(minimumWithdrawAmount.toFixed(2)),
   };
 
   await pool.query(
@@ -1399,10 +1396,7 @@ async function updateWithdrawSettings(settings, adminId = null) {
       updated_by =
         VALUES(updated_by)
     `,
-    [
-      values.minimumWithdrawAmount,
-      adminId,
-    ],
+    [values.minimumWithdrawAmount, adminId],
   );
 
   return values;

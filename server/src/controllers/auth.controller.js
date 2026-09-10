@@ -4,6 +4,7 @@ const {
   createUser,
   loginUser,
   getUserReferralSummary,
+  markUserActive,
   markUserOffline,
 } = require("../services/auth.service");
 
@@ -374,6 +375,43 @@ async function resetForgottenPassword(req, res, next) {
 }
 
 /* ==========================
+   User Activity Heartbeat
+========================== */
+
+async function heartbeat(
+  req,
+  res,
+  next
+) {
+  try {
+    await markUserActive(
+      req.user.id
+    );
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store"
+    );
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+
+        data: {
+          online: true,
+
+          activeAt:
+            new Date()
+              .toISOString()
+        }
+      });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* ==========================
    Logout User
 ========================== */
 
@@ -394,6 +432,7 @@ async function logout(req, res, next) {
 module.exports = {
   registerUser,
   login,
+  heartbeat,
   logout,
   me,
   referralSummary,

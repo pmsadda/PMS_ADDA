@@ -13,6 +13,7 @@ const {
 const {
   registerUser,
   login,
+  heartbeat,
   logout,
   me,
   referralSummary,
@@ -205,6 +206,12 @@ router.post(
 router.post(
   "/forgot-password/reset",
   resetForgottenPassword,
+);
+
+router.post(
+  "/heartbeat",
+  requireAuth,
+  heartbeat,
 );
 
 router.get(

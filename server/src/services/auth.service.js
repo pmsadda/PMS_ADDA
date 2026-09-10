@@ -589,10 +589,11 @@ async function loginUser({
 
     await pool.execute(
         `
-        UPDATE users
+               UPDATE users
         SET
             is_online = 1,
-            last_login_at = NOW()
+            last_login_at = NOW(3),
+            last_active_at = NOW(3)
         WHERE id = ?
         `,
         [user.id]
@@ -800,6 +801,43 @@ async function getUserReferralSummary(
 }
 
 /* ==========================
+   Mark User Active
+========================== */
+
+async function markUserActive(
+    userId
+) {
+    const validUserId =
+        Number(userId);
+
+    if (
+        !Number.isInteger(validUserId) ||
+        validUserId <= 0
+    ) {
+        const error = new Error(
+            "Invalid user ID."
+        );
+
+        error.statusCode = 400;
+        throw error;
+    }
+
+    await pool.execute(
+        `
+        UPDATE users
+        SET
+            is_online = 1,
+            last_active_at = NOW(3)
+        WHERE id = ?
+          AND account_status = 'active'
+        `,
+        [validUserId]
+    );
+
+    return true;
+}
+
+/* ==========================
    Mark User Offline
 ========================== */
 
@@ -824,8 +862,10 @@ async function markUserOffline(
 
     await pool.execute(
         `
-        UPDATE users
-        SET is_online = 0
+                UPDATE users
+        SET
+            is_online = 0,
+            last_active_at = NOW(3)
         WHERE id = ?
         `,
         [validUserId]
@@ -838,5 +878,6 @@ module.exports = {
     createUser,
     loginUser,
     getUserReferralSummary,
+    markUserActive,
     markUserOffline
 };

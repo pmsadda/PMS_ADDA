@@ -155,7 +155,30 @@ async function requireAuth(
         });
     }
 
+        await pool.execute(
+      `
+        UPDATE users
+        SET
+          is_online = 1,
+          last_active_at = NOW(3)
+        WHERE id = ?
+          AND (
+            is_online <> 1
+            OR last_active_at IS NULL
+            OR last_active_at <
+              DATE_SUB(
+                NOW(3),
+                INTERVAL 1 MINUTE
+              )
+          )
+      `,
+      [
+        Number(user.id)
+      ]
+    );
+
     request.user = {
+
       id: Number(user.id),
 
       uid:
@@ -169,6 +192,8 @@ async function requireAuth(
           .trim()
           .toLowerCase(),
     };
+
+
 
         /*
      * Agent account-এর central API allowlist।

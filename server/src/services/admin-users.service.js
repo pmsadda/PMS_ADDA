@@ -3,10 +3,7 @@ const { pool } = require("../config/database");
 function parsePositiveInteger(value, fallback) {
   const parsedValue = Number.parseInt(value, 10);
 
-  if (
-    Number.isNaN(parsedValue) ||
-    parsedValue < 1
-  ) {
+  if (Number.isNaN(parsedValue) || parsedValue < 1) {
     return fallback;
   }
 
@@ -18,13 +15,9 @@ function normalizeEnum(value, allowedValues) {
     return null;
   }
 
-  const normalizedValue = String(value)
-    .trim()
-    .toLowerCase();
+  const normalizedValue = String(value).trim().toLowerCase();
 
-  return allowedValues.includes(normalizedValue)
-    ? normalizedValue
-    : null;
+  return allowedValues.includes(normalizedValue) ? normalizedValue : null;
 }
 
 function normalizeOnlineFilter(value) {
@@ -37,21 +30,11 @@ function normalizeOnlineFilter(value) {
     return null;
   }
 
-  if (
-    value === "online" ||
-    value === "1" ||
-    value === 1 ||
-    value === true
-  ) {
+  if (value === "online" || value === "1" || value === 1 || value === true) {
     return 1;
   }
 
-  if (
-    value === "offline" ||
-    value === "0" ||
-    value === 0 ||
-    value === false
-  ) {
+  if (value === "offline" || value === "0" || value === 0 || value === false) {
     return 0;
   }
 
@@ -88,7 +71,12 @@ async function getUserSummary() {
       COALESCE(
         SUM(
           CASE
-            WHEN is_online = 1
+                        WHEN is_online = 1
+              AND last_active_at >=
+                DATE_SUB(
+                  NOW(3),
+                  INTERVAL 3 MINUTE
+                )
             THEN 1
             ELSE 0
           END
@@ -124,75 +112,40 @@ async function getUserSummary() {
   const summary = rows[0] || {};
 
   return {
-    totalUsers: Number(
-      summary.total_users || 0
-    ),
+    totalUsers: Number(summary.total_users || 0),
 
-    activeUsers: Number(
-      summary.active_users || 0
-    ),
+    activeUsers: Number(summary.active_users || 0),
 
-    bannedUsers: Number(
-      summary.banned_users || 0
-    ),
+    bannedUsers: Number(summary.banned_users || 0),
 
-    onlineUsers: Number(
-      summary.online_users || 0
-    ),
+    onlineUsers: Number(summary.online_users || 0),
 
-    totalWalletBalance: Number(
-      summary.total_wallet_balance || 0
-    ),
+    totalWalletBalance: Number(summary.total_wallet_balance || 0),
 
-    totalTurnover: Number(
-      summary.total_turnover || 0
-    ),
+    totalTurnover: Number(summary.total_turnover || 0),
 
-    totalDeposit: Number(
-      summary.total_deposit || 0
-    ),
+    totalDeposit: Number(summary.total_deposit || 0),
 
-    totalWithdraw: Number(
-      summary.total_withdraw || 0
-    )
+    totalWithdraw: Number(summary.total_withdraw || 0),
   };
 }
 
 async function getUsers(queryParams = {}) {
-  const page = parsePositiveInteger(
-    queryParams.page,
-    1
-  );
+  const page = parsePositiveInteger(queryParams.page, 1);
 
-  const requestedLimit = parsePositiveInteger(
-    queryParams.limit,
-    10
-  );
+  const requestedLimit = parsePositiveInteger(queryParams.limit, 10);
 
-  const limit = Math.min(
-    requestedLimit,
-    100
-  );
+  const limit = Math.min(requestedLimit, 100);
 
   const offset = (page - 1) * limit;
 
-  const search = String(
-    queryParams.search || ""
-  ).trim();
+  const search = String(queryParams.search || "").trim();
 
-  const status = normalizeEnum(
-    queryParams.status,
-    ["active", "banned"]
-  );
+  const status = normalizeEnum(queryParams.status, ["active", "banned"]);
 
-  const role = normalizeEnum(
-    queryParams.role,
-    ["user", "admin"]
-  );
+  const role = normalizeEnum(queryParams.role, ["user", "admin"]);
 
-  const online = normalizeOnlineFilter(
-    queryParams.online
-  );
+  const online = normalizeOnlineFilter(queryParams.online);
 
   const conditions = [];
   const parameters = [];
@@ -213,9 +166,31 @@ async function getUsers(queryParams = {}) {
     parameters.push(status);
   }
 
-  if (online !== null) {
-    conditions.push("is_online = ?");
-    parameters.push(online);
+  if (online === 1) {
+    conditions.push(`
+      (
+        is_online = 1
+        AND last_active_at >=
+          DATE_SUB(
+            NOW(3),
+            INTERVAL 3 MINUTE
+          )
+      )
+    `);
+  }
+
+  if (online === 0) {
+    conditions.push(`
+      (
+        is_online = 0
+        OR last_active_at IS NULL
+        OR last_active_at <
+          DATE_SUB(
+            NOW(3),
+            INTERVAL 3 MINUTE
+          )
+      )
+    `);
   }
 
   if (search) {
@@ -236,14 +211,12 @@ async function getUsers(queryParams = {}) {
       searchValue,
       searchValue,
       searchValue,
-      searchValue
+      searchValue,
     );
   }
 
   const whereClause =
-    conditions.length > 0
-      ? `WHERE ${conditions.join(" AND ")}`
-      : "";
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const countSql = `
     SELECT COUNT(*) AS total
@@ -265,8 +238,18 @@ async function getUsers(queryParams = {}) {
       turnover_amount,
       total_deposit,
       total_withdraw,
-      is_online,
+            CASE
+        WHEN is_online = 1
+          AND last_active_at >=
+            DATE_SUB(
+              NOW(3),
+              INTERVAL 3 MINUTE
+            )
+        THEN 1
+        ELSE 0
+      END AS is_online,
       last_login_at,
+      last_active_at,
       created_at,
       updated_at
 
@@ -280,47 +263,26 @@ async function getUsers(queryParams = {}) {
     OFFSET ?
   `;
 
-  const [countRows] = await pool.query(
-    countSql,
-    parameters
-  );
+  const [countRows] = await pool.query(countSql, parameters);
 
-  const [userRows] = await pool.query(
-    dataSql,
-    [
-      ...parameters,
-      limit,
-      offset
-    ]
-  );
+  const [userRows] = await pool.query(dataSql, [...parameters, limit, offset]);
 
-  const total = Number(
-    countRows[0]?.total || 0
-  );
+  const total = Number(countRows[0]?.total || 0);
 
-  const users = userRows.map(user => ({
+  const users = userRows.map((user) => ({
     ...user,
 
     id: Number(user.id),
 
-    wallet_balance: Number(
-      user.wallet_balance || 0
-    ),
+    wallet_balance: Number(user.wallet_balance || 0),
 
-    turnover_amount: Number(
-      user.turnover_amount || 0
-    ),
+    turnover_amount: Number(user.turnover_amount || 0),
 
-    total_deposit: Number(
-      user.total_deposit || 0
-    ),
+    total_deposit: Number(user.total_deposit || 0),
 
-    total_withdraw: Number(
-      user.total_withdraw || 0
-    ),
+    total_withdraw: Number(user.total_withdraw || 0),
 
-    is_online:
-      Number(user.is_online) === 1
+    is_online: Number(user.is_online) === 1,
   }));
 
   return {
@@ -331,17 +293,12 @@ async function getUsers(queryParams = {}) {
       limit,
       total,
 
-      totalPages:
-        total === 0
-          ? 1
-          : Math.ceil(total / limit),
+      totalPages: total === 0 ? 1 : Math.ceil(total / limit),
 
       hasPreviousPage: page > 1,
 
-      hasNextPage:
-        page <
-        Math.ceil(total / limit)
-    }
+      hasNextPage: page < Math.ceil(total / limit),
+    },
   };
 }
 
@@ -361,8 +318,18 @@ async function getUserById(userId) {
         turnover_amount,
         total_deposit,
         total_withdraw,
-        is_online,
+                CASE
+          WHEN is_online = 1
+            AND last_active_at >=
+              DATE_SUB(
+                NOW(3),
+                INTERVAL 3 MINUTE
+              )
+          THEN 1
+          ELSE 0
+        END AS is_online,
         last_login_at,
+        last_active_at,
         created_at,
         updated_at
 
@@ -372,7 +339,7 @@ async function getUserById(userId) {
 
       LIMIT 1
     `,
-    [userId]
+    [userId],
   );
 
   if (rows.length === 0) {
@@ -386,54 +353,34 @@ async function getUserById(userId) {
 
     id: Number(user.id),
 
-    wallet_balance: Number(
-      user.wallet_balance || 0
-    ),
+    wallet_balance: Number(user.wallet_balance || 0),
 
-    turnover_amount: Number(
-      user.turnover_amount || 0
-    ),
+    turnover_amount: Number(user.turnover_amount || 0),
 
-    total_deposit: Number(
-      user.total_deposit || 0
-    ),
+    total_deposit: Number(user.total_deposit || 0),
 
-    total_withdraw: Number(
-      user.total_withdraw || 0
-    ),
+    total_withdraw: Number(user.total_withdraw || 0),
 
-    is_online:
-      Number(user.is_online) === 1
+    is_online: Number(user.is_online) === 1,
   };
 }
 
-async function updateUserStatus(
-  userId,
-  accountStatus
-) {
-  if (
-    !["active", "banned"].includes(
-      accountStatus
-    )
-  ) {
-    const error = new Error(
-      "Invalid account status."
-    );
+async function updateUserStatus(userId, accountStatus) {
+  if (!["active", "banned"].includes(accountStatus)) {
+    const error = new Error("Invalid account status.");
 
     error.statusCode = 400;
 
     throw error;
   }
 
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const [userRows] =
-      await connection.query(
-        `
+    const [userRows] = await connection.query(
+      `
           SELECT
             id,
             role,
@@ -445,13 +392,11 @@ async function updateUserStatus(
 
           FOR UPDATE
         `,
-        [userId]
-      );
+      [userId],
+    );
 
     if (userRows.length === 0) {
-      const error = new Error(
-        "User not found."
-      );
+      const error = new Error("User not found.");
 
       error.statusCode = 404;
 
@@ -465,7 +410,7 @@ async function updateUserStatus(
      */
     if (existingUser.role === "admin") {
       const error = new Error(
-        "Admin account status cannot be changed from this section."
+        "Admin account status cannot be changed from this section.",
       );
 
       error.statusCode = 403;
@@ -488,11 +433,7 @@ async function updateUserStatus(
 
         WHERE id = ?
       `,
-      [
-        accountStatus,
-        accountStatus,
-        userId
-      ]
+      [accountStatus, accountStatus, userId],
     );
 
     await connection.commit();
@@ -510,5 +451,5 @@ module.exports = {
   getUserSummary,
   getUsers,
   getUserById,
-  updateUserStatus
+  updateUserStatus,
 };
