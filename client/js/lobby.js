@@ -1290,13 +1290,21 @@ function getLocalDateKey() {
 
 function getActivePopupBanner() {
   return (
-    STATE.lobbyBanners.find(
-      (banner) =>
-        banner &&
-        banner.status === "active" &&
-        banner.showAsPopup === true &&
-        banner.imageUrl,
-    ) || null
+    STATE.lobbyBanners.find((banner) => {
+      if (
+        !banner ||
+        banner.status !== "active" ||
+        banner.showAsPopup !== true ||
+        !banner.imageUrl
+      ) {
+        return false;
+      }
+
+      const sessionKey =
+        `${LOBBY_OFFER_SESSION_PREFIX}${banner.id}`;
+
+      return sessionStorage.getItem(sessionKey) !== "1";
+    }) || null
   );
 }
 
@@ -1305,7 +1313,12 @@ function closeLobbyOfferPopup() {
     return;
   }
 
-  const bannerId = DOM.lobbyOfferPopup.dataset.bannerId;
+  const bannerId =
+    DOM.lobbyOfferPopup.dataset.bannerId;
+
+  const hideAllToday = Boolean(
+    DOM.lobbyOfferHideToday?.checked,
+  );
 
   if (bannerId) {
     sessionStorage.setItem(
@@ -1314,7 +1327,7 @@ function closeLobbyOfferPopup() {
     );
   }
 
-  if (DOM.lobbyOfferHideToday?.checked) {
+  if (hideAllToday) {
     localStorage.setItem(
       LOBBY_OFFER_HIDE_DATE_KEY,
       getLocalDateKey(),
@@ -1322,9 +1335,23 @@ function closeLobbyOfferPopup() {
   }
 
   DOM.lobbyOfferPopup.hidden = true;
-  DOM.lobbyOfferPopup.removeAttribute("data-banner-id");
+  DOM.lobbyOfferPopup.removeAttribute(
+    "data-banner-id",
+  );
 
-  document.body.classList.remove("lobby-offer-open");
+  document.body.classList.remove(
+    "lobby-offer-open",
+  );
+
+  /*
+   * Hide today select না করলে
+   * পরবর্তী active popup দেখানো হবে।
+   */
+  if (!hideAllToday) {
+    window.setTimeout(() => {
+      renderLobbyOfferPopup();
+    }, 200);
+  }
 }
 
 function setLobbyOfferTarget(banner) {
@@ -1418,8 +1445,9 @@ function renderLobbyOfferPopup() {
     String(banner.title || "").trim() || "TPL22 offer";
 
   DOM.lobbyOfferImage.onerror = () => {
-    DOM.lobbyOfferPopup.hidden = true;
-    document.body.classList.remove("lobby-offer-open");
+    DOM.lobbyOfferImage.onerror = null;
+
+    closeLobbyOfferPopup();
   };
 
   if (DOM.lobbyOfferHideToday) {
