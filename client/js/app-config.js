@@ -343,6 +343,314 @@
   startSessionTimer();
 
 })();
+
+/* ==========================================
+   MARKETING TRAFFIC TRACKER
+========================================== */
+
+(function initializeMarketingTrafficTracker() {
+  const VISITOR_ID_KEY =
+    "tpl22_visitor_id";
+
+  const SESSION_ID_KEY =
+    "tpl22_marketing_session_id";
+
+  const ATTRIBUTION_KEY =
+    "tpl22_marketing_attribution";
+
+  function createTrackingId() {
+    if (
+      window.crypto &&
+      typeof window.crypto
+        .randomUUID === "function"
+    ) {
+      return window.crypto
+        .randomUUID();
+    }
+
+    return (
+      Date.now()
+        .toString(36) +
+      "_" +
+      Math.random()
+        .toString(36)
+        .slice(2) +
+      Math.random()
+        .toString(36)
+        .slice(2)
+    );
+  }
+
+  function getOrCreateId(
+    storage,
+    key
+  ) {
+    let value =
+      String(
+        storage.getItem(key) ||
+        ""
+      ).trim();
+
+    if (
+      !/^[a-zA-Z0-9_-]{16,64}$/.test(
+        value
+      )
+    ) {
+      value =
+        createTrackingId();
+
+      storage.setItem(
+        key,
+        value
+      );
+    }
+
+    return value;
+  }
+
+  function getStoredAttribution() {
+    try {
+      return JSON.parse(
+        localStorage.getItem(
+          ATTRIBUTION_KEY
+        ) ||
+        "null"
+      );
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function detectReferrerSource(
+    referrer
+  ) {
+    const value =
+      String(
+        referrer || ""
+      ).toLowerCase();
+
+    if (
+      value.includes(
+        "tiktok"
+      )
+    ) {
+      return "tiktok";
+    }
+
+    if (
+      value.includes(
+        "facebook"
+      ) ||
+      value.includes(
+        "fb.com"
+      ) ||
+      value.includes(
+        "instagram"
+      )
+    ) {
+      return "facebook";
+    }
+
+    if (value) {
+      return "referral";
+    }
+
+    return "direct";
+  }
+
+  function isTrackablePage() {
+    const path =
+      String(
+        window.location
+          .pathname ||
+        "/"
+      )
+        .toLowerCase()
+        .replace(
+          /\/+$/,
+          ""
+        ) ||
+      "/";
+
+    return (
+      path === "/" ||
+      path === "/lobby" ||
+      path === "/login" ||
+      path === "/register" ||
+      path.endsWith(
+        "/lobby.html"
+      ) ||
+      path.endsWith(
+        "/login.html"
+      ) ||
+      path.endsWith(
+        "/register.html"
+      )
+    );
+  }
+
+  if (
+    !window.APP_CONFIG ||
+    !isTrackablePage()
+  ) {
+    return;
+  }
+
+  const visitorId =
+    getOrCreateId(
+      localStorage,
+      VISITOR_ID_KEY
+    );
+
+  const sessionId =
+    getOrCreateId(
+      sessionStorage,
+      SESSION_ID_KEY
+    );
+
+  window.TPL22_VISITOR_ID =
+    visitorId;
+
+  document.cookie =
+    `tpl22_visitor_id=${encodeURIComponent(
+      visitorId
+    )}; Max-Age=15552000; Path=/; SameSite=Lax; Secure`;
+
+  const query =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const hasCampaignData =
+    Boolean(
+      query.get("utm_source") ||
+      query.get("utm_medium") ||
+      query.get("utm_campaign") ||
+      query.get("utm_content") ||
+      query.get("utm_term")
+    );
+
+  let attribution =
+    getStoredAttribution();
+
+  if (
+    hasCampaignData ||
+    !attribution
+  ) {
+    attribution = {
+      trafficSource:
+        query.get(
+          "utm_source"
+        ) ||
+        detectReferrerSource(
+          document.referrer
+        ),
+
+      trafficMedium:
+        query.get(
+          "utm_medium"
+        ) ||
+        null,
+
+      campaign:
+        query.get(
+          "utm_campaign"
+        ) ||
+        null,
+
+      contentName:
+        query.get(
+          "utm_content"
+        ) ||
+        null,
+
+      termName:
+        query.get(
+          "utm_term"
+        ) ||
+        null,
+
+      savedAt:
+        Date.now()
+    };
+
+    localStorage.setItem(
+      ATTRIBUTION_KEY,
+      JSON.stringify(
+        attribution
+      )
+    );
+  }
+
+  fetch(
+    window.APP_CONFIG.api(
+      "/marketing-traffic/visit"
+    ),
+    {
+      method:
+        "POST",
+
+      headers: {
+        Accept:
+          "application/json",
+
+        "Content-Type":
+          "application/json"
+      },
+
+      body:
+        JSON.stringify({
+          visitorId,
+          sessionId,
+
+          trafficSource:
+            attribution
+              ?.trafficSource ||
+            "direct",
+
+          trafficMedium:
+            attribution
+              ?.trafficMedium ||
+            null,
+
+          campaign:
+            attribution
+              ?.campaign ||
+            null,
+
+          contentName:
+            attribution
+              ?.contentName ||
+            null,
+
+          termName:
+            attribution
+              ?.termName ||
+            null,
+
+          landingUrl:
+            window.location
+              .href,
+
+          referrerUrl:
+            document.referrer ||
+            null
+        }),
+
+      cache:
+        "no-store",
+
+      keepalive:
+        true
+    }
+  ).catch((error) => {
+    console.warn(
+      "Traffic tracking request failed:",
+      error?.message ||
+      error
+    );
+  });
+})();
 (function initializeUserActivityHeartbeat() {
   const HEARTBEAT_INTERVAL_MS =
     60 * 1000;
@@ -402,12 +710,18 @@
           method:
             "POST",
 
-          headers: {
+                    headers: {
             Accept:
               "application/json",
 
             Authorization:
-              `Bearer ${token}`
+              `Bearer ${token}`,
+
+            "X-Visitor-ID":
+              localStorage.getItem(
+                "tpl22_visitor_id"
+              ) ||
+              ""
           },
 
           cache:

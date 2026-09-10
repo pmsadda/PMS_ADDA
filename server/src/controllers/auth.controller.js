@@ -14,6 +14,12 @@ const {
   resetPasswordWithToken,
 } = require("../services/password-reset.service");
 
+const {
+  associateTrafficUser
+} = require(
+  "../services/marketing-traffic.service"
+);
+
 /* ==========================
    Create JWT Token
 ========================== */
@@ -387,6 +393,27 @@ async function heartbeat(
     await markUserActive(
       req.user.id
     );
+
+        const visitorId =
+      String(
+        req.headers[
+          "x-visitor-id"
+        ] || ""
+      ).trim();
+
+    if (visitorId) {
+      try {
+        await associateTrafficUser(
+          visitorId,
+          req.user.id
+        );
+      } catch (trafficError) {
+        console.error(
+          "TRAFFIC USER ASSOCIATION ERROR:",
+          trafficError
+        );
+      }
+    }
 
     res.setHeader(
       "Cache-Control",

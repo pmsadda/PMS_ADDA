@@ -21,7 +21,7 @@
 
     <link
       rel="stylesheet"
-      href="../css/admin-app-download.css">
+      href="../css/admin-app-download.css?v=20260910-traffic1">
   </head>
 
   <body>
@@ -544,6 +544,155 @@
 
         </section>
 
+        <!-- ===================================================
+           MARKETING TRAFFIC HISTORY
+      ==================================================== -->
+
+        <section class="admin-panel-card marketing-traffic-card">
+
+          <div class="panel-heading">
+
+            <div>
+              <span>
+                CAMPAIGN ATTRIBUTION
+              </span>
+
+              <h2>
+                Marketing Traffic History
+              </h2>
+            </div>
+
+            <i class="fa-solid fa-chart-line panel-icon"></i>
+
+          </div>
+
+          <div class="traffic-summary-grid">
+
+            <article>
+              <span>Unique Visitors</span>
+              <strong id="trafficUniqueVisitors">0</strong>
+            </article>
+
+            <article>
+              <span>Total Visits</span>
+              <strong id="trafficTotalVisits">0</strong>
+            </article>
+
+            <article>
+              <span>Sessions</span>
+              <strong id="trafficTotalSessions">0</strong>
+            </article>
+
+            <article>
+              <span>Signups</span>
+              <strong id="trafficTotalSignups">0</strong>
+            </article>
+
+            <article>
+              <span>App Downloads</span>
+              <strong id="trafficTotalDownloads">0</strong>
+            </article>
+
+          </div>
+
+          <div
+            id="trafficSourceSummary"
+            class="traffic-source-summary"></div>
+
+          <div class="download-history-toolbar">
+
+            <select id="trafficSourceFilter">
+              <option value>All Sources</option>
+              <option value="facebook">Facebook</option>
+              <option value="tiktok">TikTok</option>
+              <option value="direct">Direct</option>
+              <option value="referral">Referral</option>
+            </select>
+
+            <input
+              type="search"
+              id="trafficHistorySearch"
+              placeholder="Username, UID, IP or campaign"
+              maxlength="100">
+
+            <button
+              type="button"
+              id="trafficHistorySearchBtn"
+              class="save-settings-btn">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              Search
+            </button>
+
+            <button
+              type="button"
+              id="trafficHistoryRefreshBtn"
+              class="test-download-btn">
+              <i class="fa-solid fa-rotate"></i>
+              Refresh
+            </button>
+
+          </div>
+
+          <div class="download-history-table-wrap">
+
+            <table class="download-history-table marketing-traffic-table">
+
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th>Campaign</th>
+                  <th>User</th>
+                  <th>IP Address</th>
+                  <th>Device</th>
+                  <th>Visits</th>
+                  <th>Signup</th>
+                  <th>Downloads</th>
+                  <th>Last Visit</th>
+                </tr>
+              </thead>
+
+              <tbody id="trafficHistoryBody">
+
+                <tr>
+                  <td colspan="9" class="history-empty-cell">
+                    No marketing traffic found.
+                  </td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <div class="download-history-pagination">
+
+            <button
+              type="button"
+              id="trafficPreviousBtn"
+              class="test-download-btn"
+              disabled>
+              <i class="fa-solid fa-chevron-left"></i>
+              Previous
+            </button>
+
+            <span id="trafficPageInfo">
+              Page 1 of 1
+            </span>
+
+            <button
+              type="button"
+              id="trafficNextBtn"
+              class="test-download-btn"
+              disabled>
+              Next
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+
+          </div>
+
+        </section>
+
       </main>
 
     </div>
@@ -583,9 +732,9 @@
 
     </div>
 
-    <script src="../js/app-config.js"></script>
+    <script src="../js/app-config.js?v=20260910-traffic1"></script>
 
-    <script src="../js/admin-app-download.js"></script>
+    <script src="../js/admin-app-download.js?v=20260910-traffic1"></script>
 
   </body>
 </html>

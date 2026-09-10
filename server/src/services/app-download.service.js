@@ -574,6 +574,18 @@ async function getApkDownload(
       ? "user"
       : "guest";
 
+        const rawVisitorId =
+    String(
+      downloadMeta.visitorId || ""
+    ).trim();
+
+  const visitorId =
+    /^[a-zA-Z0-9_-]{16,64}$/.test(
+      rawVisitorId
+    )
+      ? rawVisitorId
+      : null;
+
   const ipAddress =
     String(
       downloadMeta.ipAddress || ""
@@ -602,15 +614,16 @@ async function getApkDownload(
         INSERT INTO app_download_history (
           user_id,
           user_uid,
-          username,
+                   username,
           visitor_type,
+          visitor_id,
           ip_address,
           user_agent,
           app_version,
           apk_file_name,
           download_status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'started')
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'started')
       `,
       [
         user
@@ -623,7 +636,8 @@ async function getApkDownload(
         user?.username ||
           null,
 
-        visitorType,
+                visitorType,
+        visitorId,
         ipAddress,
         userAgent,
 
@@ -723,7 +737,7 @@ async function finalizeAppDownload(
         ]
       );
 
-    if (
+        if (
       Number(result.affectedRows) === 1
     ) {
       await connection.query(
@@ -734,6 +748,66 @@ async function finalizeAppDownload(
           WHERE id = 1
         `
       );
+
+      const [historyRows] =
+        await connection.query(
+          `
+            SELECT visitor_id
+            FROM app_download_history
+            WHERE id = ?
+            LIMIT 1
+          `,
+          [
+            validHistoryId
+          ]
+        );
+
+      const visitorId =
+        String(
+          historyRows[0]
+            ?.visitor_id ||
+          ""
+        ).trim();
+
+      if (visitorId) {
+        const [visitRows] =
+          await connection.query(
+            `
+              SELECT id
+              FROM marketing_traffic_visits
+              WHERE visitor_id = ?
+              ORDER BY last_visited_at DESC
+              LIMIT 1
+              FOR UPDATE
+            `,
+            [
+              visitorId
+            ]
+          );
+
+        const visitId =
+          Number(
+            visitRows[0]?.id ||
+            0
+          );
+
+        if (visitId > 0) {
+          await connection.query(
+            `
+              UPDATE marketing_traffic_visits
+              SET
+                app_download_count =
+                  app_download_count + 1,
+                last_app_downloaded_at =
+                  NOW(3)
+              WHERE id = ?
+            `,
+            [
+              visitId
+            ]
+          );
+        }
+      }
     }
 
     await connection.commit();

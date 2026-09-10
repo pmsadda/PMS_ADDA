@@ -117,6 +117,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
     toastMessage:
       document.getElementById("adminAppToastMessage"),
+
+          trafficUniqueVisitors:
+      document.getElementById("trafficUniqueVisitors"),
+
+    trafficTotalVisits:
+      document.getElementById("trafficTotalVisits"),
+
+    trafficTotalSessions:
+      document.getElementById("trafficTotalSessions"),
+
+    trafficTotalSignups:
+      document.getElementById("trafficTotalSignups"),
+
+    trafficTotalDownloads:
+      document.getElementById("trafficTotalDownloads"),
+
+    trafficSourceSummary:
+      document.getElementById("trafficSourceSummary"),
+
+    trafficSourceFilter:
+      document.getElementById("trafficSourceFilter"),
+
+    trafficHistorySearch:
+      document.getElementById("trafficHistorySearch"),
+
+    trafficHistorySearchButton:
+      document.getElementById("trafficHistorySearchBtn"),
+
+    trafficHistoryRefreshButton:
+      document.getElementById("trafficHistoryRefreshBtn"),
+
+    trafficHistoryBody:
+      document.getElementById("trafficHistoryBody"),
+
+    trafficPreviousButton:
+      document.getElementById("trafficPreviousBtn"),
+
+    trafficNextButton:
+      document.getElementById("trafficNextBtn"),
+
+    trafficPageInfo:
+      document.getElementById("trafficPageInfo"),
   };
 
 
@@ -129,6 +171,16 @@ document.addEventListener("DOMContentLoaded", () => {
     totalPages: 1,
     search: "",
     loading: false,
+  };
+
+    const trafficHistoryState = {
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+    source: "",
+    search: "",
+    loading: false
   };
 
 
@@ -1656,6 +1708,683 @@ document.addEventListener("DOMContentLoaded", () => {
         loadDownloadHistory();
       }
     );
+
+      /* =========================================================
+     MARKETING TRAFFIC HISTORY
+  ========================================================= */
+
+  function renderTrafficSummary(
+    summary,
+    sources
+  ) {
+    const values = {
+      uniqueVisitors:
+        Number(
+          summary?.uniqueVisitors ||
+          0
+        ),
+
+      totalVisits:
+        Number(
+          summary?.totalVisits ||
+          0
+        ),
+
+      totalSessions:
+        Number(
+          summary?.totalSessions ||
+          0
+        ),
+
+      totalSignups:
+        Number(
+          summary?.totalSignups ||
+          0
+        ),
+
+      totalDownloads:
+        Number(
+          summary?.totalDownloads ||
+          0
+        )
+    };
+
+    if (
+      DOM.trafficUniqueVisitors
+    ) {
+      DOM.trafficUniqueVisitors
+        .textContent =
+          values.uniqueVisitors
+            .toLocaleString(
+              "en-BD"
+            );
+    }
+
+    if (
+      DOM.trafficTotalVisits
+    ) {
+      DOM.trafficTotalVisits
+        .textContent =
+          values.totalVisits
+            .toLocaleString(
+              "en-BD"
+            );
+    }
+
+    if (
+      DOM.trafficTotalSessions
+    ) {
+      DOM.trafficTotalSessions
+        .textContent =
+          values.totalSessions
+            .toLocaleString(
+              "en-BD"
+            );
+    }
+
+    if (
+      DOM.trafficTotalSignups
+    ) {
+      DOM.trafficTotalSignups
+        .textContent =
+          values.totalSignups
+            .toLocaleString(
+              "en-BD"
+            );
+    }
+
+    if (
+      DOM.trafficTotalDownloads
+    ) {
+      DOM.trafficTotalDownloads
+        .textContent =
+          values.totalDownloads
+            .toLocaleString(
+              "en-BD"
+            );
+    }
+
+    if (
+      !DOM.trafficSourceSummary
+    ) {
+      return;
+    }
+
+    DOM.trafficSourceSummary
+      .replaceChildren();
+
+    const sourceList =
+      Array.isArray(sources)
+        ? sources
+        : [];
+
+    sourceList.forEach(
+      (item) => {
+        const chip =
+          document.createElement(
+            "span"
+          );
+
+        chip.className =
+          "traffic-source-chip";
+
+        const label =
+          document.createElement(
+            "span"
+          );
+
+        label.textContent =
+          String(
+            item.source ||
+            "direct"
+          );
+
+        const count =
+          document.createElement(
+            "strong"
+          );
+
+        count.textContent =
+          `${Number(
+            item.uniqueVisitors ||
+            0
+          )} visitors • ${Number(
+            item.totalSignups ||
+            0
+          )} signup • ${Number(
+            item.totalDownloads ||
+            0
+          )} download`;
+
+        chip.append(
+          label,
+          count
+        );
+
+        DOM.trafficSourceSummary
+          .appendChild(chip);
+      }
+    );
+  }
+
+
+  function renderTrafficHistory(
+    visits
+  ) {
+    if (
+      !DOM.trafficHistoryBody
+    ) {
+      return;
+    }
+
+    DOM.trafficHistoryBody
+      .replaceChildren();
+
+    if (
+      !Array.isArray(visits) ||
+      visits.length === 0
+    ) {
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+      const cell =
+        document.createElement(
+          "td"
+        );
+
+      cell.colSpan = 9;
+      cell.className =
+        "history-empty-cell";
+
+      cell.textContent =
+        "No marketing traffic found.";
+
+      row.appendChild(cell);
+
+      DOM.trafficHistoryBody
+        .appendChild(row);
+
+      return;
+    }
+
+    const fragment =
+      document.createDocumentFragment();
+
+    visits.forEach(
+      (item) => {
+        const row =
+          document.createElement(
+            "tr"
+          );
+
+        const sourceCell =
+          document.createElement(
+            "td"
+          );
+
+        const source =
+          String(
+            item.trafficSource ||
+            "direct"
+          )
+            .toLowerCase();
+
+        const sourceBadge =
+          document.createElement(
+            "span"
+          );
+
+        sourceBadge.className =
+          `traffic-source-badge ${
+            [
+              "facebook",
+              "tiktok",
+              "direct"
+            ].includes(source)
+              ? source
+              : ""
+          }`;
+
+        sourceBadge.textContent =
+          source;
+
+        sourceCell.appendChild(
+          sourceBadge
+        );
+
+        row.appendChild(
+          sourceCell
+        );
+
+        const campaignCell =
+          document.createElement(
+            "td"
+          );
+
+        const campaignName =
+          document.createElement(
+            "span"
+          );
+
+        campaignName.className =
+          "history-user-name";
+
+        campaignName.textContent =
+          item.campaign ||
+          "-";
+
+        const contentName =
+          document.createElement(
+            "span"
+          );
+
+        contentName.className =
+          "history-device-details";
+
+        contentName.textContent =
+          item.contentName ||
+          item.trafficMedium ||
+          "-";
+
+        campaignCell.append(
+          campaignName,
+          contentName
+        );
+
+        row.appendChild(
+          campaignCell
+        );
+
+        const userCell =
+          document.createElement(
+            "td"
+          );
+
+        const username =
+          document.createElement(
+            "span"
+          );
+
+        username.className =
+          "history-user-name";
+
+        username.textContent =
+          item.username ||
+          "Guest";
+
+        const uid =
+          document.createElement(
+            "span"
+          );
+
+        uid.className =
+          "history-user-type";
+
+        uid.textContent =
+          item.userUid ||
+          "Not logged in";
+
+        userCell.append(
+          username,
+          uid
+        );
+
+        row.appendChild(
+          userCell
+        );
+
+        row.appendChild(
+          createHistoryCell(
+            item.ipAddress
+          )
+        );
+
+        const deviceInfo =
+          getDeviceDetails(
+            item.userAgent
+          );
+
+        const deviceCell =
+          document.createElement(
+            "td"
+          );
+
+        const deviceName =
+          document.createElement(
+            "span"
+          );
+
+        deviceName.className =
+          "history-user-name";
+
+        deviceName.textContent =
+          deviceInfo.device;
+
+        const browserName =
+          document.createElement(
+            "span"
+          );
+
+        browserName.className =
+          "history-device-details";
+
+        browserName.textContent =
+          deviceInfo.browser;
+
+        deviceCell.append(
+          deviceName,
+          browserName
+        );
+
+        row.appendChild(
+          deviceCell
+        );
+
+        row.appendChild(
+          createHistoryCell(
+            Number(
+              item.visitCount ||
+              0
+            )
+          )
+        );
+
+        const signupCell =
+          document.createElement(
+            "td"
+          );
+
+        signupCell.className =
+          item.signupCompleted
+            ? "traffic-conversion-yes"
+            : "traffic-conversion-no";
+
+        signupCell.textContent =
+          item.signupCompleted
+            ? "Yes"
+            : "No";
+
+        row.appendChild(
+          signupCell
+        );
+
+        row.appendChild(
+          createHistoryCell(
+            Number(
+              item.appDownloadCount ||
+              0
+            )
+          )
+        );
+
+        row.appendChild(
+          createHistoryCell(
+            formatDate(
+              item.lastVisitedAt
+            )
+          )
+        );
+
+        fragment.appendChild(
+          row
+        );
+      }
+    );
+
+    DOM.trafficHistoryBody
+      .appendChild(fragment);
+  }
+
+
+  function renderTrafficPagination() {
+    if (
+      DOM.trafficPageInfo
+    ) {
+      DOM.trafficPageInfo
+        .textContent =
+          `Page ${trafficHistoryState.page} of ${trafficHistoryState.totalPages} • ${trafficHistoryState.total} records`;
+    }
+
+    if (
+      DOM.trafficPreviousButton
+    ) {
+      DOM.trafficPreviousButton
+        .disabled =
+          trafficHistoryState.loading ||
+          trafficHistoryState.page <=
+            1;
+    }
+
+    if (
+      DOM.trafficNextButton
+    ) {
+      DOM.trafficNextButton
+        .disabled =
+          trafficHistoryState.loading ||
+          trafficHistoryState.page >=
+            trafficHistoryState.totalPages;
+    }
+  }
+
+
+  async function loadTrafficHistory(
+    showError = true
+  ) {
+    if (
+      trafficHistoryState.loading
+    ) {
+      return;
+    }
+
+    trafficHistoryState.loading =
+      true;
+
+    renderTrafficPagination();
+
+    try {
+      const query =
+        new URLSearchParams({
+          page:
+            String(
+              trafficHistoryState.page
+            ),
+
+          limit:
+            String(
+              trafficHistoryState.limit
+            )
+        });
+
+      if (
+        trafficHistoryState.source
+      ) {
+        query.set(
+          "source",
+          trafficHistoryState.source
+        );
+      }
+
+      if (
+        trafficHistoryState.search
+      ) {
+        query.set(
+          "search",
+          trafficHistoryState.search
+        );
+      }
+
+      const result =
+        await requestAPI(
+          `/marketing-traffic/admin/history?${query.toString()}`
+        );
+
+      const data =
+        result?.data ||
+        {};
+
+      const pagination =
+        data.pagination ||
+        {};
+
+      trafficHistoryState.page =
+        Number(
+          pagination.page ||
+          1
+        );
+
+      trafficHistoryState.total =
+        Number(
+          pagination.total ||
+          0
+        );
+
+      trafficHistoryState.totalPages =
+        Math.max(
+          1,
+          Number(
+            pagination.totalPages ||
+            1
+          )
+        );
+
+      renderTrafficSummary(
+        data.summary,
+        data.sources
+      );
+
+      renderTrafficHistory(
+        data.visits
+      );
+    } catch (error) {
+      console.error(
+        "LOAD MARKETING TRAFFIC ERROR:",
+        error
+      );
+
+      if (showError) {
+        showToast(
+          error.message ||
+            "Marketing traffic load করা যায়নি.",
+          "error"
+        );
+      }
+    } finally {
+      trafficHistoryState.loading =
+        false;
+
+      renderTrafficPagination();
+    }
+  }
+    DOM.trafficSourceFilter
+    ?.addEventListener(
+      "change",
+      () => {
+        trafficHistoryState.source =
+          String(
+            DOM.trafficSourceFilter
+              ?.value || ""
+          ).trim();
+
+        trafficHistoryState.page =
+          1;
+
+        loadTrafficHistory();
+      }
+    );
+
+
+  DOM.trafficHistorySearchButton
+    ?.addEventListener(
+      "click",
+      () => {
+        trafficHistoryState.search =
+          String(
+            DOM.trafficHistorySearch
+              ?.value || ""
+          ).trim();
+
+        trafficHistoryState.page =
+          1;
+
+        loadTrafficHistory();
+      }
+    );
+
+
+  DOM.trafficHistorySearch
+    ?.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key !== "Enter"
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+
+        trafficHistoryState.search =
+          String(
+            DOM.trafficHistorySearch
+              ?.value || ""
+          ).trim();
+
+        trafficHistoryState.page =
+          1;
+
+        loadTrafficHistory();
+      }
+    );
+
+
+  DOM.trafficHistoryRefreshButton
+    ?.addEventListener(
+      "click",
+      () => {
+        loadTrafficHistory();
+      }
+    );
+
+
+  DOM.trafficPreviousButton
+    ?.addEventListener(
+      "click",
+      () => {
+        if (
+          trafficHistoryState.loading ||
+          trafficHistoryState.page <= 1
+        ) {
+          return;
+        }
+
+        trafficHistoryState.page -=
+          1;
+
+        loadTrafficHistory();
+      }
+    );
+
+
+  DOM.trafficNextButton
+    ?.addEventListener(
+      "click",
+      () => {
+        if (
+          trafficHistoryState.loading ||
+          trafficHistoryState.page >=
+            trafficHistoryState.totalPages
+        ) {
+          return;
+        }
+
+        trafficHistoryState.page +=
+          1;
+
+        loadTrafficHistory();
+      }
+    );
   /* =========================================================
      TEST DOWNLOAD
   ========================================================= */
@@ -1769,6 +2498,9 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     await loadDownloadHistory(
+      false
+    );
+        await loadTrafficHistory(
       false
     );
   }

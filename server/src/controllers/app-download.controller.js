@@ -357,12 +357,36 @@ async function downloadApk(
         .slice(0, 2000) ||
       null;
 
+          const visitorCookie =
+      String(
+        req.headers.cookie || ""
+      )
+        .split(";")
+        .map((item) =>
+          item.trim()
+        )
+        .find((item) =>
+          item.startsWith(
+            "tpl22_visitor_id="
+          )
+        );
+
+    const visitorId =
+      visitorCookie
+        ? decodeURIComponent(
+            visitorCookie.split("=")
+              .slice(1)
+              .join("=")
+          )
+        : null;
+
     const apk =
-      await getApkDownload({
+            await getApkDownload({
         user:
           req.user ||
           null,
 
+        visitorId,
         ipAddress,
         userAgent
       });
