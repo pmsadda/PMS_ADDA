@@ -41,6 +41,50 @@ async function updateServiceCharges(req, res, next) {
   }
 }
 
+async function updateSignupBonusSettings(req, res, next) {
+  try {
+    const signupBonusSettings =
+      await adminDashboardService.updateSignupBonusSettings(
+        req.body,
+        req.user?.id || null,
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message: "Signup bonus settings updated successfully.",
+
+      data: {
+        signupBonusSettings,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateWithdrawSettings(req, res, next) {
+  try {
+    const withdrawSettings =
+      await adminDashboardService.updateWithdrawSettings(
+        req.body,
+        req.user?.id || null,
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message: "Withdrawal settings updated successfully.",
+
+      data: {
+        withdrawSettings,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function updateReferralSettings(req, res, next) {
   try {
     const referralSettings = await adminDashboardService.updateReferralSettings(
@@ -87,6 +131,8 @@ async function updateFirstDepositBonusSettings(req, res, next) {
 module.exports = {
   getDashboardStats,
   updateServiceCharges,
+  updateSignupBonusSettings,
+  updateWithdrawSettings,
   updateReferralSettings,
   updateFirstDepositBonusSettings,
-};
+};;

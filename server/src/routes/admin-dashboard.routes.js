@@ -26,6 +26,16 @@ router.patch(
 );
 
 router.patch(
+  "/signup-bonus-settings",
+  adminDashboardController.updateSignupBonusSettings,
+);
+
+router.patch(
+  "/withdraw-settings",
+  adminDashboardController.updateWithdrawSettings,
+);
+
+router.patch(
   "/referral-settings",
   adminDashboardController
     .updateReferralSettings

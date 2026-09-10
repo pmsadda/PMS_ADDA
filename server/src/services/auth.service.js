@@ -264,7 +264,7 @@ async function createUser({
             }
         }
 
-        const uid =
+              const uid =
             await generateUserUid(
                 connection
             );
@@ -273,6 +273,60 @@ async function createUser({
             await generateUniqueReferralCode(
                 connection
             );
+
+        /*
+         * Admin-controlled signup bonus settings.
+         */
+        const [signupBonusSettingRows] =
+            await connection.execute(
+                `
+                SELECT
+                    is_enabled,
+                    bonus_amount
+                FROM signup_bonus_settings
+                WHERE id = 1
+                LIMIT 1
+                FOR UPDATE
+                `
+            );
+
+        const signupBonusSetting =
+            signupBonusSettingRows[0] || null;
+
+        let signupBonusAmount = 0;
+
+        if (
+            signupBonusSetting &&
+            Boolean(
+                signupBonusSetting.is_enabled
+            )
+        ) {
+            signupBonusAmount =
+                Math.round(
+                    Number(
+                        signupBonusSetting
+                            .bonus_amount
+                    ) * 100
+                ) / 100;
+        }
+
+        if (
+            !Number.isFinite(
+                signupBonusAmount
+            ) ||
+            signupBonusAmount < 0 ||
+            signupBonusAmount > 1000000
+        ) {
+            const error = new Error(
+                "Signup bonus settings are invalid."
+            );
+
+            error.statusCode = 500;
+            throw error;
+        }
+
+        const signupBonusActive =
+            signupBonusAmount > 0;
 
         const [result] =
             await connection.execute(
@@ -287,7 +341,10 @@ async function createUser({
                     password_hash,
                     role,
                     account_status,
-                    wallet_balance
+                    wallet_balance,
+                    signup_bonus_active,
+                    signup_bonus_awarded_amount,
+                    signup_bonus_awarded_at
                 )
                 VALUES (
                     ?,
@@ -299,7 +356,14 @@ async function createUser({
                     ?,
                     'user',
                     'active',
-                    0.00
+                    ?,
+                    ?,
+                    ?,
+                    CASE
+                        WHEN ? = 1
+                        THEN CURRENT_TIMESTAMP(3)
+                        ELSE NULL
+                    END
                 )
                 `,
                 [
@@ -309,13 +373,59 @@ async function createUser({
                     username,
                     phone,
                     email,
-                    passwordHash
+                    passwordHash,
+                    signupBonusAmount,
+                    signupBonusActive ? 1 : 0,
+                    signupBonusAmount,
+                    signupBonusActive ? 1 : 0
                 ]
             );
+            const userId = Number(result.insertId);
+        if (signupBonusActive) {
+            const signupBonusTransactionId =
+                `SB-${Date.now()}-${crypto
+                    .randomBytes(4)
+                    .toString("hex")
+                    .toUpperCase()}`;
 
-        const userId =
-            Number(result.insertId);
-
+            await connection.execute(
+                `
+                INSERT INTO wallet_transactions (
+                    transaction_id,
+                    user_id,
+                    transaction_type,
+                    direction,
+                    amount,
+                    balance_before,
+                    balance_after,
+                    status,
+                    reference_type,
+                    reference_id,
+                    description
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    'signup_bonus',
+                    'credit',
+                    ?,
+                    0.00,
+                    ?,
+                    'completed',
+                    'signup_bonus',
+                    ?,
+                    'Non-withdrawable signup bonus'
+                )
+                `,
+                [
+                    signupBonusTransactionId,
+                    userId,
+                    signupBonusAmount,
+                    signupBonusAmount,
+                    userId
+                ]
+            );
+        }
         /*
          * Referral relation শুধু একবার
          * registration-এর সময় save হবে।
@@ -359,7 +469,10 @@ async function createUser({
             email,
             role: "user",
             accountStatus: "active",
-            walletBalance: 0
+                        walletBalance:
+                signupBonusAmount,
+            signupBonusActive,
+            signupBonusAmount
         };
     } catch (error) {
         await connection.rollback();

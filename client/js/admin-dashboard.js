@@ -296,6 +296,10 @@ function renderDashboardStats(data) {
 
   updateServiceChargeValues(data.serviceCharges || data.serviceCharge || {});
 
+  updateSignupBonusSettingsValues(data.signupBonusSettings || {});
+
+  updateWithdrawSettingsValues(data.withdrawSettings || {});
+
   updateFirstDepositBonusSettingsValues(data.firstDepositBonusSettings || {});
 
   updateReferralSettingsValues(data.referralSettings || {});
@@ -469,6 +473,243 @@ async function confirmServiceChargeSave() {
   } finally {
     if (confirmButton) {
       confirmButton.disabled = false;
+    }
+
+    hideLoader();
+  }
+}
+
+/* =========================
+   Signup Bonus Settings
+========================= */
+
+function updateSignupBonusStatusLabel() {
+  const enabled = Boolean(
+    document.getElementById("signupBonusEnabled")?.checked,
+  );
+
+  setText("signupBonusStatusLabel", enabled ? "Enabled" : "Disabled");
+}
+
+function updateSignupBonusSettingsValues(settings) {
+  const enabledInput = document.getElementById("signupBonusEnabled");
+
+  if (enabledInput) {
+    enabledInput.checked =
+      settings.isEnabled === undefined ? true : Boolean(settings.isEnabled);
+  }
+
+  setInputValue("signupBonusAmount", Number(settings.bonusAmount ?? 50));
+
+  updateSignupBonusStatusLabel();
+}
+
+async function saveSignupBonusSettings(event) {
+  event.preventDefault();
+
+  const settings = {
+    isEnabled: Boolean(document.getElementById("signupBonusEnabled")?.checked),
+
+    bonusAmount: Number(document.getElementById("signupBonusAmount")?.value),
+  };
+
+  if (
+    !Number.isFinite(settings.bonusAmount) ||
+    settings.bonusAmount < 0 ||
+    settings.bonusAmount > 1000000
+  ) {
+    showToast("Signup bonus must be between ৳0 and ৳1000000.", "error");
+
+    return;
+  }
+
+  const token = getAccessToken();
+
+  if (!token) {
+    window.location.href = "../pages/login.html";
+
+    return;
+  }
+
+  const saveButton = document.getElementById("saveSignupBonusSettings");
+
+  try {
+    if (saveButton) {
+      saveButton.disabled = true;
+
+      saveButton.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Saving...
+      `;
+    }
+
+    showLoader();
+
+    const response = await fetch(
+      `${API_BASE_URL}/admin/dashboard/signup-bonus-settings`,
+      {
+        method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+
+          Accept: "application/json",
+
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(settings),
+      },
+    );
+
+    const result = await parseResponse(response);
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("access_token");
+
+      throw new Error("Your admin session has expired.");
+    }
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Signup bonus update failed.");
+    }
+
+    const savedSettings = result.data?.signupBonusSettings || settings;
+
+    updateSignupBonusSettingsValues(savedSettings);
+
+    showToast(result.message || "Signup bonus settings updated successfully.");
+  } catch (error) {
+    console.error("SIGNUP BONUS SETTINGS UPDATE ERROR:", error);
+
+    showToast(error.message || "Signup bonus update failed.", "error");
+
+    if (error.message === "Your admin session has expired.") {
+      window.setTimeout(() => {
+        window.location.href = "../pages/login.html";
+      }, 1200);
+    }
+  } finally {
+    if (saveButton) {
+      saveButton.disabled = false;
+
+      saveButton.innerHTML = `
+        <i class="fa-solid fa-floppy-disk"></i>
+        Save Signup Bonus Settings
+      `;
+    }
+
+    hideLoader();
+  }
+}
+
+/* =========================
+   Withdrawal Settings
+========================= */
+
+function updateWithdrawSettingsValues(settings) {
+  setInputValue(
+    "minimumWithdrawAmount",
+    Number(settings.minimumWithdrawAmount ?? 100),
+  );
+}
+
+async function saveWithdrawSettings(event) {
+  event.preventDefault();
+
+  const settings = {
+    minimumWithdrawAmount: Number(
+      document.getElementById("minimumWithdrawAmount")?.value,
+    ),
+  };
+
+  if (
+    !Number.isFinite(settings.minimumWithdrawAmount) ||
+    settings.minimumWithdrawAmount < 1 ||
+    settings.minimumWithdrawAmount > 1000000
+  ) {
+    showToast(
+      "Minimum withdrawal amount must be between ৳1 and ৳1000000.",
+      "error",
+    );
+
+    return;
+  }
+
+  const token = getAccessToken();
+
+  if (!token) {
+    window.location.href = "../pages/login.html";
+
+    return;
+  }
+
+  const saveButton = document.getElementById("saveWithdrawSettings");
+
+  try {
+    if (saveButton) {
+      saveButton.disabled = true;
+
+      saveButton.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Saving...
+      `;
+    }
+
+    showLoader();
+
+    const response = await fetch(
+      `${API_BASE_URL}/admin/dashboard/withdraw-settings`,
+      {
+        method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+
+          Accept: "application/json",
+
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(settings),
+      },
+    );
+
+    const result = await parseResponse(response);
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("access_token");
+
+      throw new Error("Your admin session has expired.");
+    }
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Withdrawal settings update failed.");
+    }
+
+    const savedSettings = result.data?.withdrawSettings || settings;
+
+    updateWithdrawSettingsValues(savedSettings);
+
+    showToast(result.message || "Withdrawal settings updated successfully.");
+  } catch (error) {
+    console.error("WITHDRAW SETTINGS UPDATE ERROR:", error);
+
+    showToast(error.message || "Withdrawal settings update failed.", "error");
+
+    if (error.message === "Your admin session has expired.") {
+      window.setTimeout(() => {
+        window.location.href = "../pages/login.html";
+      }, 1200);
+    }
+  } finally {
+    if (saveButton) {
+      saveButton.disabled = false;
+
+      saveButton.innerHTML = `
+        <i class="fa-solid fa-floppy-disk"></i>
+        Save Withdrawal Settings
+      `;
     }
 
     hideLoader();
@@ -1148,6 +1389,18 @@ function bindDashboardEvents() {
         closeChargeConfirmModal();
       }
     });
+
+  document
+    .getElementById("signupBonusEnabled")
+    ?.addEventListener("change", updateSignupBonusStatusLabel);
+
+  document
+    .getElementById("signupBonusSettingsForm")
+    ?.addEventListener("submit", saveSignupBonusSettings);
+
+  document
+    .getElementById("withdrawSettingsForm")
+    ?.addEventListener("submit", saveWithdrawSettings);
 
   document
     .getElementById("firstDepositBonusEnabled")

@@ -108,8 +108,16 @@ async function getWalletSummary(req, res, next) {
             wallet_balance,
             turnover_amount,
 turnover_required,
-total_deposit,
+            total_deposit,
             total_withdraw,
+
+            (
+              SELECT minimum_withdraw_amount
+              FROM withdraw_settings
+              WHERE id = 1
+              LIMIT 1
+            ) AS minimum_withdraw_amount,
+
             updated_at
           FROM users
           WHERE id = ?
@@ -278,6 +286,10 @@ total_deposit,
           totalDeposit: parseMoney(user.total_deposit),
 
           totalWithdraw: parseMoney(user.total_withdraw),
+
+          minimumWithdrawAmount: parseMoney(
+            user.minimum_withdraw_amount || 100,
+          ),
 
           totalWinning: parseMoney(summary.total_winning),
 

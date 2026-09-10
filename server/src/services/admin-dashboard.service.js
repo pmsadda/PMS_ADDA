@@ -774,6 +774,29 @@ async function getDashboardStats() {
       `,
     );
 
+        const [signupBonusSettingRows] = await connection.query(
+      `
+      SELECT
+        is_enabled,
+        bonus_amount,
+        updated_at
+      FROM signup_bonus_settings
+      WHERE id = 1
+      LIMIT 1
+      `,
+    );
+
+        const [withdrawSettingRows] = await connection.query(
+      `
+      SELECT
+        minimum_withdraw_amount,
+        updated_at
+      FROM withdraw_settings
+      WHERE id = 1
+      LIMIT 1
+      `,
+    );
+
     const [referralSettingRows] = await connection.query(
       `
     SELECT
@@ -876,6 +899,10 @@ async function getDashboardStats() {
     const chargeStats = chargeRows[0] || {};
 
     const firstDepositBonusSettings = firstDepositBonusSettingRows[0] || {};
+
+        const signupBonusSettings = signupBonusSettingRows[0] || {};
+
+            const withdrawSettings = withdrawSettingRows[0] || {};
 
     const referralSettings = referralSettingRows[0] || {};
 
@@ -1018,6 +1045,22 @@ async function getDashboardStats() {
         poker: Number(chargeStats.poker_charge || 5),
 
         ludo: Number(chargeStats.ludo_charge || 10),
+      },
+
+            signupBonusSettings: {
+        isEnabled: Boolean(signupBonusSettings.is_enabled),
+
+        bonusAmount: Number(signupBonusSettings.bonus_amount || 0),
+
+        updatedAt: signupBonusSettings.updated_at || null,
+      },
+
+            withdrawSettings: {
+        minimumWithdrawAmount: Number(
+          withdrawSettings.minimum_withdraw_amount || 100,
+        ),
+
+        updatedAt: withdrawSettings.updated_at || null,
       },
 
       firstDepositBonusSettings: {
@@ -1274,6 +1317,97 @@ async function updateFirstDepositBonusSettings(settings, adminId = null) {
   return values;
 }
 
+async function updateSignupBonusSettings(settings, adminId = null) {
+  const values = {
+    isEnabled: normalizeReferralEnabled(settings?.isEnabled),
+
+    bonusAmount: validateReferralMoney(
+      settings?.bonusAmount,
+      "Signup bonus amount",
+    ),
+  };
+
+  await pool.query(
+    `
+    INSERT INTO signup_bonus_settings (
+      id,
+      is_enabled,
+      bonus_amount,
+      updated_by
+    )
+    VALUES (
+      1,
+      ?,
+      ?,
+      ?
+    )
+    ON DUPLICATE KEY UPDATE
+      is_enabled = VALUES(is_enabled),
+      bonus_amount = VALUES(bonus_amount),
+      updated_by = VALUES(updated_by)
+    `,
+    [
+      values.isEnabled ? 1 : 0,
+      values.bonusAmount,
+      adminId,
+    ],
+  );
+
+  return values;
+}
+
+async function updateWithdrawSettings(settings, adminId = null) {
+  const minimumWithdrawAmount = Number(
+    settings?.minimumWithdrawAmount,
+  );
+
+  if (
+    !Number.isFinite(minimumWithdrawAmount) ||
+    minimumWithdrawAmount < 1 ||
+    minimumWithdrawAmount > 1000000
+  ) {
+    const error = new Error(
+      "Minimum withdrawal amount must be between 1 and 1000000.",
+    );
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const values = {
+    minimumWithdrawAmount: Number(
+      minimumWithdrawAmount.toFixed(2),
+    ),
+  };
+
+  await pool.query(
+    `
+    INSERT INTO withdraw_settings (
+      id,
+      minimum_withdraw_amount,
+      updated_by
+    )
+    VALUES (
+      1,
+      ?,
+      ?
+    )
+    ON DUPLICATE KEY UPDATE
+      minimum_withdraw_amount =
+        VALUES(minimum_withdraw_amount),
+
+      updated_by =
+        VALUES(updated_by)
+    `,
+    [
+      values.minimumWithdrawAmount,
+      adminId,
+    ],
+  );
+
+  return values;
+}
+
 async function updateReferralSettings(settings, adminId = null) {
   const values = {
     isEnabled: normalizeReferralEnabled(settings?.isEnabled),
@@ -1345,6 +1479,8 @@ async function updateReferralSettings(settings, adminId = null) {
 module.exports = {
   getDashboardStats,
   updateServiceCharges,
+  updateSignupBonusSettings,
+  updateWithdrawSettings,
   updateFirstDepositBonusSettings,
-  updateReferralSettings
+  updateReferralSettings,
 };

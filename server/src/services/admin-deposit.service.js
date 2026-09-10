@@ -491,11 +491,13 @@ async function approveDepositRequest({
 
     const [userRows] = await connection.execute(
       `
-        SELECT
+               SELECT
           id,
           wallet_balance,
           total_deposit,
-          turnover_required
+          turnover_amount,
+          turnover_required,
+          signup_bonus_active
         FROM users
         WHERE id = ?
         LIMIT 1
@@ -575,8 +577,25 @@ async function approveDepositRequest({
     const creditedAmount = roundDepositMoney(
       depositCreditAmount + referredReferralBonus,
     );
+        /*
+     * Signup bonus দিয়ে খেলে user-এর wallet-এ বর্তমানে
+     * যত টাকা আছে, প্রথম deposit approve হওয়ার সময়
+     * সেই সম্পূর্ণ promotional balance বাদ যাবে।
+     */
+    const clearsSignupBonus =
+      isFirstDeposit && Boolean(user.signup_bonus_active);
 
-    const balanceBefore = roundDepositMoney(user.wallet_balance);
+    const promotionalBalance = clearsSignupBonus
+      ? Math.max(0, roundDepositMoney(user.wallet_balance))
+      : 0;
+
+    /*
+     * Promotional balance বাদ দেওয়ার পরে deposit credit
+     * সবসময় zero balance থেকে শুরু হবে।
+     */
+    const balanceBefore = clearsSignupBonus
+      ? 0
+      : roundDepositMoney(user.wallet_balance);
 
     const depositBalanceAfter = roundDepositMoney(
       balanceBefore + depositCreditAmount,
@@ -591,12 +610,20 @@ async function approveDepositRequest({
     );
 
     /*
-     * New user-এর turnover:
-     * deposit + first bonus +
-     * referral bonus।
+     * প্রথম deposit-এর আগে signup bonus দিয়ে করা turnover
+     * deposit turnover হিসেবে গণনা হবে না।
+     */
+    const turnoverAmountAfter = clearsSignupBonus
+      ? 0
+      : roundDepositMoney(user.turnover_amount || 0);
+
+    /*
+     * Deposit, first-deposit bonus এবং referral bonus—
+     * সব credit amount turnover requirement-এ যোগ হবে।
      */
     const turnoverRequiredAfter = roundDepositMoney(
-      Number(user.turnover_required || 0) + creditedAmount,
+      (clearsSignupBonus ? 0 : Number(user.turnover_required || 0)) +
+        creditedAmount,
     );
 
     await connection.execute(
@@ -605,11 +632,66 @@ async function approveDepositRequest({
       SET
         wallet_balance = ?,
         total_deposit = ?,
-        turnover_required = ?
+        turnover_amount = ?,
+        turnover_required = ?,
+        signup_bonus_active = ?
       WHERE id = ?
       `,
-      [balanceAfter, totalDepositAfter, turnoverRequiredAfter, deposit.user_id],
+      [
+        balanceAfter,
+        totalDepositAfter,
+        turnoverAmountAfter,
+        turnoverRequiredAfter,
+        clearsSignupBonus ? 0 : Number(user.signup_bonus_active || 0),
+        deposit.user_id,
+      ],
     );
+
+    /*
+     * বাদ দেওয়া promotional balance-এর audit transaction।
+     */
+    if (clearsSignupBonus && promotionalBalance > 0) {
+      await connection.execute(
+        `
+        INSERT INTO wallet_transactions (
+          transaction_id,
+          user_id,
+          transaction_type,
+          direction,
+          amount,
+          balance_before,
+          balance_after,
+          status,
+          reference_type,
+          reference_id,
+          description,
+          created_by
+        )
+        VALUES (
+          ?,
+          ?,
+          'signup_bonus',
+          'debit',
+          ?,
+          ?,
+          0.00,
+          'completed',
+          'deposit_request',
+          ?,
+          'Promotional signup balance cleared before first deposit',
+          ?
+        )
+        `,
+        [
+          generateWalletTransactionId(),
+          deposit.user_id,
+          promotionalBalance,
+          promotionalBalance,
+          deposit.deposit_id,
+          adminId,
+        ],
+      );
+    }
 
     await connection.execute(
       `

@@ -58,6 +58,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentBalance = 0;
 
+    let minimumWithdrawAmount = 100;
+
   let turnoverRequired = 0;
 
   let turnoverAmount = 0;
@@ -227,12 +229,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (currentBalance < 100) {
+        if (currentBalance < minimumWithdrawAmount) {
       setWithdrawStatus(
         "is-blocked",
         "fa-solid fa-wallet",
         "Insufficient Balance",
-        "Minimum withdraw amount is ৳100.00.",
+        `Minimum withdraw amount is ৳${formatMoney(
+          minimumWithdrawAmount,
+        )}.`,
       );
 
       submitWithdraw.disabled = true;
@@ -345,6 +349,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
       currentBalance = Number(wallet.balance || 0);
 
+            const loadedMinimumWithdrawAmount = Number(
+        wallet.minimumWithdrawAmount,
+      );
+
+      minimumWithdrawAmount =
+        Number.isFinite(loadedMinimumWithdrawAmount) &&
+        loadedMinimumWithdrawAmount >= 1
+          ? loadedMinimumWithdrawAmount
+          : 100;
+
+      withdrawAmount.min = String(minimumWithdrawAmount);
+
+            const minimumWithdrawHint = document.getElementById(
+        "minimumWithdrawHint",
+      );
+
+      const minimumWithdrawRuleAmount = document.getElementById(
+        "minimumWithdrawRuleAmount",
+      );
+
+      if (minimumWithdrawHint) {
+        minimumWithdrawHint.textContent =
+          `Minimum Withdraw : ৳${formatMoney(
+            minimumWithdrawAmount,
+          )}`;
+      }
+
+      if (minimumWithdrawRuleAmount) {
+        minimumWithdrawRuleAmount.textContent =
+          `৳${formatMoney(minimumWithdrawAmount)}`;
+      }
+
       turnoverRequired = Number(wallet.turnoverRequired || 0);
 
       turnoverAmount = Number(wallet.turnoverAmount || 0);
@@ -416,8 +452,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!Number.isFinite(amount) || amount < 100) {
-      showToast("Minimum withdraw ৳100.");
+       if (
+      !Number.isFinite(amount) ||
+      amount < minimumWithdrawAmount
+    ) {
+      showToast(
+        `Minimum withdraw ৳${formatMoney(
+          minimumWithdrawAmount,
+        )}.`,
+      );
 
       withdrawAmount.focus();
       return;

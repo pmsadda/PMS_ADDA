@@ -1,7 +1,5 @@
 const { pool } = require("../config/database");
 
-const MINIMUM_WITHDRAW_AMOUNT = 100;
-
 function generateWalletTransactionId() {
   const timestamp = Date.now();
 
@@ -61,28 +59,74 @@ async function createWithdrawRequest(userId, data) {
     throw error;
   }
 
-  if (withdrawAmount < MINIMUM_WITHDRAW_AMOUNT) {
-    const error = new Error(
-      `Minimum withdrawal amount is ${MINIMUM_WITHDRAW_AMOUNT}.`,
-    );
-
-    error.statusCode = 400;
-    throw error;
-  }
 
   const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
+        /*
+     * Admin-controlled minimum withdrawal amount।
+     */
+    const [withdrawSettingRows] = await connection.execute(
+      `
+      SELECT minimum_withdraw_amount
+      FROM withdraw_settings
+      WHERE id = 1
+      LIMIT 1
+      FOR UPDATE
+      `,
+    );
+
+    const withdrawSetting = withdrawSettingRows[0] || null;
+
+    if (!withdrawSetting) {
+      const error = new Error(
+        "Withdrawal settings were not found.",
+      );
+
+      error.statusCode = 500;
+      throw error;
+    }
+
+    const minimumWithdrawAmount = Number(
+      withdrawSetting.minimum_withdraw_amount,
+    );
+
+    if (
+      !Number.isFinite(minimumWithdrawAmount) ||
+      minimumWithdrawAmount < 1 ||
+      minimumWithdrawAmount > 1000000
+    ) {
+      const error = new Error(
+        "Minimum withdrawal setting is invalid.",
+      );
+
+      error.statusCode = 500;
+      throw error;
+    }
+
+    if (withdrawAmount < minimumWithdrawAmount) {
+      const error = new Error(
+        `Minimum withdrawal amount is ৳${minimumWithdrawAmount.toFixed(2)}.`,
+      );
+
+      error.statusCode = 400;
+      error.code = "WITHDRAW_BELOW_MINIMUM";
+      error.minimumWithdrawAmount = minimumWithdrawAmount;
+
+      throw error;
+    }
+
     const [users] = await connection.execute(
       `
         SELECT
           id,
           wallet_balance,
-          total_deposit,
-           turnover_amount,
+                    total_deposit,
+          turnover_amount,
           turnover_required,
+          signup_bonus_active,
           account_status
         FROM users
         WHERE id = ?
@@ -116,6 +160,8 @@ async function createWithdrawRequest(userId, data) {
 
     const turnoverRequired = Number(user.turnover_required || 0);
 
+        const signupBonusActive = Boolean(user.signup_bonus_active);
+
     if (
       !Number.isFinite(currentBalance) ||
       !Number.isFinite(totalDeposit) ||
@@ -125,6 +171,21 @@ async function createWithdrawRequest(userId, data) {
       const error = new Error("Invalid wallet account values.");
 
       error.statusCode = 500;
+      throw error;
+    }
+
+        /*
+     * Signup bonus এবং সেটি দিয়ে অর্জিত টাকা
+     * deposit করার আগে withdraw করা যাবে না।
+     */
+    if (signupBonusActive) {
+      const error = new Error(
+        "Signup bonus withdraw করা যাবে না। Withdraw করতে প্রথমে deposit করুন।",
+      );
+
+      error.statusCode = 400;
+      error.code = "SIGNUP_BONUS_WITHDRAW_BLOCKED";
+
       throw error;
     }
 

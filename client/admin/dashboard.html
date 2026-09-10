@@ -667,6 +667,177 @@
 
                 </section>
 
+                                <!-- =========================
+     Signup Bonus Control
+========================== -->
+
+                <section
+                    class="dashboard-section referral-admin-section">
+
+                    <div class="section-heading">
+
+                        <div>
+                            <h2>Signup Bonus Control</h2>
+
+                            <p>
+                                Control the non-withdrawable bonus credited
+                                immediately after new user registration
+                            </p>
+                        </div>
+
+                        <label class="referral-admin-switch">
+
+                            <input
+                                type="checkbox"
+                                id="signupBonusEnabled"
+                                checked>
+
+                            <span class="referral-switch-track"></span>
+
+                            <strong id="signupBonusStatusLabel">
+                                Enabled
+                            </strong>
+
+                        </label>
+
+                    </div>
+
+                    <form
+                        id="signupBonusSettingsForm"
+                        class="referral-settings-form"
+                        novalidate>
+
+                        <div class="referral-setting-field">
+
+                            <label for="signupBonusAmount">
+                                Signup Bonus Amount
+                            </label>
+
+                            <div class="referral-money-input">
+
+                                <span>৳</span>
+
+                                <input
+                                    type="number"
+                                    id="signupBonusAmount"
+                                    min="0"
+                                    max="1000000"
+                                    step="0.01"
+                                    value="50"
+                                    required>
+
+                            </div>
+
+                            <small>
+                                Default ৳50; applies only to future registrations
+                            </small>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="saveSignupBonusSettings"
+                            class="save-referral-btn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+
+                            Save Signup Bonus Settings
+
+                        </button>
+
+                    </form>
+
+                    <div class="referral-admin-notice">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <p>
+                            Signup bonus and profit earned from it cannot be
+                            withdrawn. The promotional wallet balance will be
+                            removed when the user's first deposit is approved.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                                <!-- =========================
+     Minimum Withdrawal Control
+========================== -->
+
+                <section
+                    class="dashboard-section referral-admin-section">
+
+                    <div class="section-heading">
+
+                        <div>
+                            <h2>Minimum Withdrawal Control</h2>
+
+                            <p>
+                                Set the minimum amount a user can withdraw
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <form
+                        id="withdrawSettingsForm"
+                        class="referral-settings-form"
+                        novalidate>
+
+                        <div class="referral-setting-field">
+
+                            <label for="minimumWithdrawAmount">
+                                Minimum Withdrawal Amount
+                            </label>
+
+                            <div class="referral-money-input">
+
+                                <span>৳</span>
+
+                                <input
+                                    type="number"
+                                    id="minimumWithdrawAmount"
+                                    min="1"
+                                    max="1000000"
+                                    step="0.01"
+                                    value="100"
+                                    required>
+
+                            </div>
+
+                            <small>
+                                Users cannot request less than this amount
+                            </small>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="saveWithdrawSettings"
+                            class="save-referral-btn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+
+                            Save Withdrawal Settings
+
+                        </button>
+
+                    </form>
+
+                    <div class="referral-admin-notice">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <p>
+                            The updated minimum amount will apply immediately
+                            to all new withdrawal requests.
+                        </p>
+
+                    </div>
+
+                </section>
+
                 <!-- =========================
      First Deposit Bonus Control
 ========================== -->
