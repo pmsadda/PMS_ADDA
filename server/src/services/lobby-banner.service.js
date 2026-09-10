@@ -864,6 +864,9 @@ async function updateBanner({
   title,
   targetUrl,
   status,
+  showAsPopup,
+  popupMessage,
+  popupButtonText,
   imageFile = null,
 }) {
   const validBannerId =
@@ -880,8 +883,24 @@ async function updateBanner({
       targetUrl,
     );
 
-  const validStatus =
+   const validStatus =
     normalizeStatus(status);
+
+  const validShowAsPopup =
+    normalizeShowAsPopup(
+      showAsPopup,
+    );
+
+  const validPopupMessage =
+    normalizePopupMessage(
+      popupMessage,
+      validShowAsPopup,
+    );
+
+  const validPopupButtonText =
+    normalizePopupButtonText(
+      popupButtonText,
+    );
 
   const uploadedImage =
   imageFile
