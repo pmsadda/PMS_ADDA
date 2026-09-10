@@ -1,4 +1,6 @@
 "use strict";
+const jwt =
+  require("jsonwebtoken");
 
 const {
   getAdminAppDownload,
@@ -6,6 +8,8 @@ const {
   uploadApp,
   updateDownloadSettings,
   getApkDownload,
+  finalizeAppDownload,
+  getAdminDownloadHistory,
 } = require("../services/app-download.service");
 
 
@@ -41,6 +45,45 @@ function handleError(
     });
 }
 
+/* =========================================================
+   ADMIN — GET DOWNLOAD HISTORY
+========================================================= */
+
+async function getDownloadHistory(
+  req,
+  res
+) {
+  try {
+    const history =
+      await getAdminDownloadHistory({
+        page:
+          req.query?.page,
+
+        limit:
+          req.query?.limit,
+
+        search:
+          req.query?.search
+      });
+
+    return res.json({
+      success: true,
+
+      data: {
+        history:
+          history.items,
+
+        pagination:
+          history.pagination
+      }
+    });
+  } catch (error) {
+    return handleError(
+      res,
+      error
+    );
+  }
+}
 
 /* =========================================================
    ADMIN — GET APP SETTINGS
@@ -174,7 +217,70 @@ async function updateAppSettings(
     );
   }
 }
+/* =========================================================
+   AUTHENTICATED — CREATE DOWNLOAD TICKET
+========================================================= */
 
+async function createDownloadTicket(
+  req,
+  res
+) {
+  try {
+    const userId =
+      Number(
+        req.user?.id
+      );
+
+    if (
+      !Number.isInteger(userId) ||
+      userId < 1
+    ) {
+      return res
+        .status(401)
+        .json({
+          success: false,
+          code:
+            "AUTH_REQUIRED",
+          message:
+            "Authentication is required."
+        });
+    }
+
+    const downloadTicket =
+      jwt.sign(
+        {
+          id:
+            userId,
+
+          purpose:
+            "app_download"
+        },
+        process.env.JWT_SECRET,
+        {
+          algorithm:
+            "HS256",
+
+          expiresIn:
+            "2m"
+        }
+      );
+
+    return res.json({
+      success: true,
+
+      data: {
+        downloadTicket,
+        expiresInSeconds:
+          120
+      }
+    });
+  } catch (error) {
+    return handleError(
+      res,
+      error
+    );
+  }
+}
 
 /* =========================================================
    PUBLIC — DOWNLOAD APK
@@ -182,65 +288,166 @@ async function updateAppSettings(
 
 async function downloadApk(
   req,
-  res,
+  res
 ) {
+  let historyId =
+    null;
+
+  let finalized =
+    false;
+
+  function finalize(
+    succeeded
+  ) {
+    if (
+      finalized ||
+      !historyId
+    ) {
+      return;
+    }
+
+    finalized = true;
+
+    finalizeAppDownload(
+      historyId,
+      succeeded
+    ).catch((error) => {
+      console.error(
+        "APP DOWNLOAD FINALIZE ERROR:",
+        error
+      );
+    });
+  }
+
   try {
+    const forwardedFor =
+      String(
+        req.headers[
+          "x-forwarded-for"
+        ] || ""
+      )
+        .split(",")[0]
+        .trim();
+
+    const ipAddress =
+      String(
+        req.headers[
+          "cf-connecting-ip"
+        ] ||
+        forwardedFor ||
+        req.ip ||
+        req.socket?.remoteAddress ||
+        ""
+      )
+        .replace(
+          /^::ffff:/,
+          ""
+        )
+        .trim()
+        .slice(0, 45) ||
+      null;
+
+    const userAgent =
+      String(
+        req.headers[
+          "user-agent"
+        ] || ""
+      )
+        .trim()
+        .slice(0, 2000) ||
+      null;
+
     const apk =
-      await getApkDownload();
+      await getApkDownload({
+        user:
+          req.user ||
+          null,
+
+        ipAddress,
+        userAgent
+      });
+
+    historyId =
+      apk.historyId;
 
     const safeFileName =
       String(
         apk.fileName ||
-        "TPL22.apk",
+        "TPL22.apk"
       )
         .replace(
           /["\r\n]/g,
-          "",
+          ""
         );
+
+    res.once(
+      "finish",
+      () => {
+        const succeeded =
+          res.statusCode >= 200 &&
+          res.statusCode < 300;
+
+        finalize(
+          succeeded
+        );
+      }
+    );
+
+    res.once(
+      "close",
+      () => {
+        if (
+          !res.writableEnded
+        ) {
+          finalize(false);
+        }
+      }
+    );
 
     res.setHeader(
       "Content-Type",
-      apk.mimeType,
+      apk.mimeType
     );
 
     res.setHeader(
       "Content-Length",
       String(
-        apk.data.length,
-      ),
+        apk.data.length
+      )
     );
 
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${safeFileName}"`,
+      `attachment; filename="${safeFileName}"`
     );
 
     res.setHeader(
       "Cache-Control",
-      "no-store",
+      "no-store"
     );
 
     return res.send(
-      apk.data,
+      apk.data
     );
-
   } catch (error) {
+    finalize(false);
+
     return handleError(
       res,
-      error,
+      error
     );
   }
 }
-
-
 /* =========================================================
    EXPORTS
 ========================================================= */
 
 module.exports = {
   getAdminAppSettings,
+  getDownloadHistory,
   getAppInfo,
   uploadApk,
   updateAppSettings,
+  createDownloadTicket,
   downloadApk,
 };

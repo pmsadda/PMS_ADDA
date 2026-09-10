@@ -1959,41 +1959,142 @@ document.addEventListener("keydown", (event) => {
   }
 
   initializeLobby();
-  DOM.downloadAppButton?.addEventListener("click", async () => {
-    try {
-      const result = await requestPublicAPI("/app-download/info");
+    DOM.downloadAppButton?.addEventListener(
+    "click",
+    async () => {
+      try {
+        const result =
+          await requestPublicAPI(
+            "/app-download/info"
+          );
 
-      const app = result?.data?.app || result?.app || null;
+        const app =
+          result?.data?.app ||
+          result?.app ||
+          null;
 
-      if (!app?.downloadEnabled) {
-        showToast("App download এখন বন্ধ আছে।", "error");
+        if (
+          !app?.downloadEnabled
+        ) {
+          showToast(
+            "App download এখন বন্ধ আছে।",
+            "error"
+          );
 
-        return;
+          return;
+        }
+
+        if (!app?.available) {
+          showToast(
+            "App এখনো upload করা হয়নি।",
+            "error"
+          );
+
+          return;
+        }
+
+        let downloadUrl =
+          window.APP_CONFIG.api(
+            "/app-download/download"
+          );
+
+        const currentToken =
+          localStorage.getItem(
+            "access_token"
+          ) ||
+          localStorage.getItem(
+            "token"
+          ) ||
+          "";
+
+        if (currentToken) {
+          try {
+            const ticketResponse =
+              await fetch(
+                window.APP_CONFIG.api(
+                  "/app-download/download-ticket"
+                ),
+                {
+                  method: "POST",
+
+                  headers: {
+                    Accept:
+                      "application/json",
+
+                    Authorization:
+                      `Bearer ${currentToken}`
+                  },
+
+                  cache:
+                    "no-store"
+                }
+              );
+
+            let ticketResult =
+              null;
+
+            try {
+              ticketResult =
+                await ticketResponse.json();
+            } catch (error) {
+              ticketResult =
+                null;
+            }
+
+            const downloadTicket =
+              ticketResult?.data
+                ?.downloadTicket ||
+              "";
+
+            if (
+              ticketResponse.ok &&
+              downloadTicket
+            ) {
+              downloadUrl +=
+                `?download_ticket=${encodeURIComponent(
+                  downloadTicket
+                )}`;
+            }
+          } catch (error) {
+            console.warn(
+              "DOWNLOAD TICKET ERROR; CONTINUING AS GUEST:",
+              error
+            );
+          }
+        }
+
+        const link =
+          document.createElement(
+            "a"
+          );
+
+        link.href =
+          downloadUrl;
+
+        link.download =
+          app?.fileName ||
+          "TPL22.apk";
+
+        document.body.appendChild(
+          link
+        );
+
+        link.click();
+        link.remove();
+      } catch (error) {
+        console.error(
+          "APP DOWNLOAD ERROR:",
+          error
+        );
+
+        showToast(
+          error.message ||
+            "App download করা যাচ্ছে না।",
+          "error"
+        );
       }
-
-      if (!app?.available) {
-        showToast("App এখনো upload করা হয়নি।", "error");
-
-        return;
-      }
-
-      const link = document.createElement("a");
-
-      link.href = window.APP_CONFIG.api("/app-download/download");
-
-      link.download = "TPL22.apk";
-
-      document.body.appendChild(link);
-
-      link.click();
-
-      link.remove();
-    } catch (error) {
-      console.error("APP DOWNLOAD ERROR:", error);
-
-      showToast(error.message || "App download করা যাচ্ছে না।", "error");
     }
-  });
+  );
 
   /* =========================================================
    GUEST AUTH POPUP

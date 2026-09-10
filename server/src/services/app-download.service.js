@@ -491,7 +491,9 @@ async function updateDownloadSettings(
    GET APK FOR DOWNLOAD
 ========================================================= */
 
-async function getApkDownload() {
+async function getApkDownload(
+  downloadMeta = {}
+) {
   const [
     rows,
   ] =
@@ -559,21 +561,86 @@ async function getApkDownload() {
    * Download count increase
    */
 
-  await pool.query(
-    `
-      UPDATE
-        app_download_settings
+   const user =
+    downloadMeta.user &&
+    Number.isInteger(
+      Number(downloadMeta.user.id)
+    )
+      ? downloadMeta.user
+      : null;
 
-      SET
-        download_count =
-          download_count + 1
+  const visitorType =
+    user
+      ? "user"
+      : "guest";
 
-      WHERE
-        id = 1
-    `,
-  );
+  const ipAddress =
+    String(
+      downloadMeta.ipAddress || ""
+    )
+      .trim()
+      .slice(0, 45) ||
+    null;
+
+  const userAgent =
+    String(
+      downloadMeta.userAgent || ""
+    )
+      .trim()
+      .slice(0, 2000) ||
+    null;
+
+  const apkFileName =
+    normalizeFileName(
+      row.apk_file_name ||
+      "TPL22.apk"
+    );
+
+  const [historyResult] =
+    await pool.query(
+      `
+        INSERT INTO app_download_history (
+          user_id,
+          user_uid,
+          username,
+          visitor_type,
+          ip_address,
+          user_agent,
+          app_version,
+          apk_file_name,
+          download_status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'started')
+      `,
+      [
+        user
+          ? Number(user.id)
+          : null,
+
+        user?.uid ||
+          null,
+
+        user?.username ||
+          null,
+
+        visitorType,
+        ipAddress,
+        userAgent,
+
+        row.app_version ||
+          null,
+
+        apkFileName
+      ]
+    );
+
+  const historyId =
+    Number(
+      historyResult.insertId
+    );
 
   return {
+     historyId,
     appName:
       row.app_name ||
       "TPL22",
@@ -582,11 +649,8 @@ async function getApkDownload() {
       row.app_version ||
       null,
 
-    fileName:
-      normalizeFileName(
-        row.apk_file_name ||
-        "TPL22.apk",
-      ),
+        fileName:
+      apkFileName,
 
     mimeType:
       row.apk_mime_type ||
@@ -603,6 +667,269 @@ async function getApkDownload() {
   };
 }
 
+/* =========================================================
+   FINALIZE APK DOWNLOAD
+========================================================= */
+
+async function finalizeAppDownload(
+  historyId,
+  succeeded
+) {
+  const validHistoryId =
+    Number.parseInt(
+      historyId,
+      10
+    );
+
+  if (
+    !Number.isInteger(validHistoryId) ||
+    validHistoryId < 1
+  ) {
+    return;
+  }
+
+  if (!succeeded) {
+    await pool.query(
+      `
+        UPDATE app_download_history
+        SET download_status = 'failed'
+        WHERE id = ?
+          AND download_status = 'started'
+      `,
+      [
+        validHistoryId
+      ]
+    );
+
+    return;
+  }
+
+  const connection =
+    await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [result] =
+      await connection.query(
+        `
+          UPDATE app_download_history
+          SET download_status = 'completed'
+          WHERE id = ?
+            AND download_status = 'started'
+        `,
+        [
+          validHistoryId
+        ]
+      );
+
+    if (
+      Number(result.affectedRows) === 1
+    ) {
+      await connection.query(
+        `
+          UPDATE app_download_settings
+          SET download_count =
+            download_count + 1
+          WHERE id = 1
+        `
+      );
+    }
+
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+/* =========================================================
+   ADMIN — GET DOWNLOAD HISTORY
+========================================================= */
+
+async function getAdminDownloadHistory(
+  options = {}
+) {
+  const requestedPage =
+    Number.parseInt(
+      options.page,
+      10
+    );
+
+  const requestedLimit =
+    Number.parseInt(
+      options.limit,
+      10
+    );
+
+  const page =
+    Number.isInteger(requestedPage) &&
+    requestedPage > 0
+      ? requestedPage
+      : 1;
+
+  const limit =
+    Number.isInteger(requestedLimit)
+      ? Math.min(
+          Math.max(
+            requestedLimit,
+            10
+          ),
+          100
+        )
+      : 25;
+
+  const offset =
+    (page - 1) *
+    limit;
+
+  const search =
+    String(
+      options.search || ""
+    )
+      .trim()
+      .slice(0, 100);
+
+  const whereParts = [];
+  const whereValues = [];
+
+  if (search) {
+    const searchValue =
+      `%${search}%`;
+
+    whereParts.push(`
+      (
+        username LIKE ?
+        OR user_uid LIKE ?
+        OR ip_address LIKE ?
+        OR apk_file_name LIKE ?
+        OR app_version LIKE ?
+      )
+    `);
+
+    whereValues.push(
+      searchValue,
+      searchValue,
+      searchValue,
+      searchValue,
+      searchValue
+    );
+  }
+
+  const whereClause =
+    whereParts.length > 0
+      ? `WHERE ${whereParts.join(
+          " AND "
+        )}`
+      : "";
+
+  const [countRows] =
+    await pool.query(
+      `
+        SELECT
+          COUNT(*) AS total
+        FROM app_download_history
+        ${whereClause}
+      `,
+      whereValues
+    );
+
+  const [rows] =
+    await pool.query(
+      `
+        SELECT
+          id,
+          user_id,
+          user_uid,
+          username,
+          visitor_type,
+          ip_address,
+          user_agent,
+          app_version,
+          apk_file_name,
+          download_status,
+          downloaded_at
+        FROM app_download_history
+        ${whereClause}
+        ORDER BY id DESC
+        LIMIT ?
+        OFFSET ?
+      `,
+      [
+        ...whereValues,
+        limit,
+        offset
+      ]
+    );
+
+  const total =
+    Number(
+      countRows[0]?.total || 0
+    );
+
+  return {
+    items:
+      rows.map((row) => ({
+        id:
+          Number(row.id),
+
+        userId:
+          row.user_id
+            ? Number(row.user_id)
+            : null,
+
+        userUid:
+          row.user_uid ||
+          null,
+
+        username:
+          row.username ||
+          "Guest",
+
+        visitorType:
+          row.visitor_type ||
+          "guest",
+
+        ipAddress:
+          row.ip_address ||
+          null,
+
+        userAgent:
+          row.user_agent ||
+          null,
+
+        appVersion:
+          row.app_version ||
+          null,
+
+        apkFileName:
+          row.apk_file_name ||
+          null,
+
+        downloadStatus:
+          row.download_status,
+
+        downloadedAt:
+          row.downloaded_at
+      })),
+
+    pagination: {
+      page,
+      limit,
+      total,
+
+      totalPages:
+        Math.max(
+          1,
+          Math.ceil(
+            total / limit
+          )
+        )
+    }
+  };
+}
 
 /* =========================================================
    EXPORTS
@@ -617,4 +944,6 @@ module.exports = {
   uploadApp,
   updateDownloadSettings,
   getApkDownload,
+  finalizeAppDownload,
+  getAdminDownloadHistory,
 };

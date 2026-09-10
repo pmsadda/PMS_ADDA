@@ -511,8 +511,159 @@ function requireAgent(
   return next();
 }
 
+/* ==========================
+   Optional Authentication
+   Public route remains public
+========================== */
+
+async function optionalAuth(
+  request,
+  response,
+  next
+) {
+  const authorization =
+    String(
+      request.headers.authorization ||
+      ""
+    ).trim();
+
+  const [
+    scheme,
+    bearerToken
+  ] = authorization.split(/\s+/);
+
+  const downloadTicket =
+    String(
+      request.query?.download_ticket ||
+      ""
+    ).trim();
+
+  const usingBearer =
+    scheme === "Bearer" &&
+    Boolean(bearerToken);
+
+  const token =
+    usingBearer
+      ? bearerToken
+      : downloadTicket;
+
+  if (!token) {
+    request.user = null;
+    return next();
+  }
+
+  let decoded;
+
+  try {
+    decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET,
+      {
+        algorithms: [
+          "HS256"
+        ]
+      }
+    );
+  } catch (error) {
+    request.user = null;
+    return next();
+  }
+
+  if (
+    !usingBearer &&
+    decoded.purpose !==
+      "app_download"
+  ) {
+    request.user = null;
+    return next();
+  }
+
+  const userId =
+    Number.parseInt(
+      decoded.id,
+      10
+    );
+
+  if (
+    !Number.isInteger(userId) ||
+    userId < 1
+  ) {
+    request.user = null;
+    return next();
+  }
+
+  try {
+    const [rows] =
+      await pool.query(
+        `
+          SELECT
+            id,
+            uid,
+            username,
+            role,
+            account_status
+          FROM users
+          WHERE id = ?
+          LIMIT 1
+        `,
+        [
+          userId
+        ]
+      );
+
+    const user =
+      rows[0] || null;
+
+    if (
+      !user ||
+      String(
+        user.account_status || ""
+      ).toLowerCase() !== "active"
+    ) {
+      request.user = null;
+      return next();
+    }
+
+    request.user = {
+      id:
+        Number(user.id),
+
+      uid:
+        user.uid ||
+        null,
+
+      username:
+        user.username ||
+        null,
+
+      role:
+        String(
+          user.role || ""
+        )
+          .trim()
+          .toLowerCase()
+    };
+
+    if (usingBearer) {
+      request.accessToken =
+        token;
+    }
+
+    return next();
+  } catch (error) {
+    console.error(
+      "OPTIONAL AUTH DATABASE ERROR:",
+      error
+    );
+
+    request.user = null;
+    return next();
+  }
+}
+
 module.exports = {
   requireAuth,
+  optionalAuth,
   requireAdmin,
   requireAdminOrAgent,
   requireAgent

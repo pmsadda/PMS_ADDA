@@ -6,19 +6,21 @@ const { rateLimit } = require("express-rate-limit");
 
 const {
   requireAuth,
+  optionalAuth,
   requireAdmin,
 } = require("../middleware/auth.middleware");
 
 const {
   getAdminAppSettings,
+  getDownloadHistory,
   getAppInfo,
   uploadApk,
   updateAppSettings,
+  createDownloadTicket,
   downloadApk,
 } = require("../controllers/app-download.controller");
 
 const router = express.Router();
-
 
 /* =========================================================
    MULTER — APK UPLOAD
@@ -33,71 +35,54 @@ const upload = multer({
   },
 
   fileFilter(req, file, callback) {
-    const fileName =
-      String(
-        file.originalname || "",
-      ).toLowerCase();
+    const fileName = String(file.originalname || "").toLowerCase();
 
     if (!fileName.endsWith(".apk")) {
-      return callback(
-        new Error(
-          "Only APK files are allowed.",
-        ),
-      );
+      return callback(new Error("Only APK files are allowed."));
     }
 
     callback(null, true);
   },
 });
 
-
 /* =========================================================
    RATE LIMIT
 ========================================================= */
 
-const publicLimiter =
-  rateLimit({
-    windowMs:
-      60 * 1000,
+const publicLimiter = rateLimit({
+  windowMs: 60 * 1000,
 
-    limit: 120,
+  limit: 120,
 
-    standardHeaders: true,
+  standardHeaders: true,
 
-    legacyHeaders: false,
-  });
+  legacyHeaders: false,
+});
 
+const adminLimiter = rateLimit({
+  windowMs: 60 * 1000,
 
-const adminLimiter =
-  rateLimit({
-    windowMs:
-      60 * 1000,
+  limit: 60,
 
-    limit: 60,
+  standardHeaders: true,
 
-    standardHeaders: true,
-
-    legacyHeaders: false,
-  });
-
+  legacyHeaders: false,
+});
 
 /* =========================================================
    PUBLIC
 ========================================================= */
 
-router.get(
-  "/info",
+router.get("/info", publicLimiter, getAppInfo);
+
+router.post(
+  "/download-ticket",
   publicLimiter,
-  getAppInfo,
+  requireAuth,
+  createDownloadTicket,
 );
 
-
-router.get(
-  "/download",
-  publicLimiter,
-  downloadApk,
-);
-
+router.get("/download", publicLimiter, optionalAuth, downloadApk);
 
 /* =========================================================
    ADMIN
@@ -111,6 +96,13 @@ router.get(
   getAdminAppSettings,
 );
 
+router.get(
+  "/admin/history",
+  requireAuth,
+  requireAdmin,
+  adminLimiter,
+  getDownloadHistory,
+);
 
 router.put(
   "/admin/settings",
@@ -121,7 +113,6 @@ router.put(
   updateAppSettings,
 );
 
-
 router.post(
   "/admin/upload",
   requireAuth,
@@ -131,58 +122,35 @@ router.post(
   uploadApk,
 );
 
-
 /* =========================================================
    MULTER ERROR
 ========================================================= */
 
-router.use(
-  (
-    error,
-    req,
-    res,
-    next,
-  ) => {
-    if (
-      error instanceof
-      multer.MulterError
-    ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
+router.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
 
-          code:
-            "APK_UPLOAD_ERROR",
+      code: "APK_UPLOAD_ERROR",
 
-          message:
-            error.code ===
-            "LIMIT_FILE_SIZE"
-              ? "APK cannot exceed 100 MB."
-              : error.message,
-        });
-    }
+      message:
+        error.code === "LIMIT_FILE_SIZE"
+          ? "APK cannot exceed 100 MB."
+          : error.message,
+    });
+  }
 
-    if (
-      error?.message ===
-      "Only APK files are allowed."
-    ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
+  if (error?.message === "Only APK files are allowed.") {
+    return res.status(400).json({
+      success: false,
 
-          code:
-            "INVALID_APK_FILE",
+      code: "INVALID_APK_FILE",
 
-          message:
-            error.message,
-        });
-    }
+      message: error.message,
+    });
+  }
 
-    next(error);
-  },
-);
-
+  next(error);
+});
 
 module.exports = router;

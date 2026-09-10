@@ -82,6 +82,27 @@ document.addEventListener("DOMContentLoaded", () => {
     testDownloadButton:
       document.getElementById("testDownloadBtn"),
 
+          downloadHistorySearch:
+      document.getElementById("downloadHistorySearch"),
+
+    downloadHistorySearchButton:
+      document.getElementById("downloadHistorySearchBtn"),
+
+    downloadHistoryRefreshButton:
+      document.getElementById("downloadHistoryRefreshBtn"),
+
+    downloadHistoryBody:
+      document.getElementById("downloadHistoryBody"),
+
+    downloadHistoryPreviousButton:
+      document.getElementById("downloadHistoryPreviousBtn"),
+
+    downloadHistoryNextButton:
+      document.getElementById("downloadHistoryNextBtn"),
+
+    downloadHistoryPageInfo:
+      document.getElementById("downloadHistoryPageInfo"),
+
     backDashboardButton:
       document.getElementById("backDashboardBtn"),
 
@@ -101,6 +122,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentSettings = null;
   let toastTimer = null;
+    const downloadHistoryState = {
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+    search: "",
+    loading: false,
+  };
 
 
   /* =========================================================
@@ -1082,7 +1111,551 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     );
 
+  /* =========================================================
+     DOWNLOAD HISTORY
+  ========================================================= */
 
+  function getDeviceDetails(
+    userAgent
+  ) {
+    const ua =
+      String(
+        userAgent || ""
+      );
+
+    if (!ua) {
+      return {
+        device: "Unknown device",
+        browser: "Unknown browser"
+      };
+    }
+
+    let device =
+      "Desktop";
+
+    if (/Android/i.test(ua)) {
+      const modelMatch =
+        ua.match(
+          /Android[^;]*;\s*([^;)]+?)(?:\s+Build\/[^;)]+)?[;)]/i
+        );
+
+      const model =
+        String(
+          modelMatch?.[1] || ""
+        )
+          .replace(
+            /\s+wv$/i,
+            ""
+          )
+          .trim();
+
+      device =
+        model
+          ? `Android — ${model}`
+          : "Android";
+    } else if (
+      /iPhone/i.test(ua)
+    ) {
+      device = "iPhone";
+    } else if (
+      /iPad/i.test(ua)
+    ) {
+      device = "iPad";
+    } else if (
+      /Windows/i.test(ua)
+    ) {
+      device = "Windows PC";
+    } else if (
+      /Macintosh|Mac OS X/i.test(ua)
+    ) {
+      device = "Mac";
+    } else if (
+      /Linux/i.test(ua)
+    ) {
+      device = "Linux";
+    }
+
+    let browser =
+      "Unknown browser";
+
+    if (/Edg\//i.test(ua)) {
+      browser = "Microsoft Edge";
+    } else if (
+      /SamsungBrowser\//i.test(ua)
+    ) {
+      browser = "Samsung Internet";
+    } else if (
+      /OPR\//i.test(ua)
+    ) {
+      browser = "Opera";
+    } else if (
+      /Chrome\//i.test(ua)
+    ) {
+      browser = "Google Chrome";
+    } else if (
+      /Firefox\//i.test(ua)
+    ) {
+      browser = "Mozilla Firefox";
+    } else if (
+      /Safari\//i.test(ua)
+    ) {
+      browser = "Safari";
+    }
+
+    return {
+      device,
+      browser
+    };
+  }
+
+
+  function createHistoryCell(
+    text
+  ) {
+    const cell =
+      document.createElement(
+        "td"
+      );
+
+    cell.textContent =
+      text === null ||
+      text === undefined ||
+      text === ""
+        ? "-"
+        : String(text);
+
+    return cell;
+  }
+
+
+  function renderDownloadHistory(
+    items
+  ) {
+    if (
+      !DOM.downloadHistoryBody
+    ) {
+      return;
+    }
+
+    DOM.downloadHistoryBody
+      .replaceChildren();
+
+    if (
+      !Array.isArray(items) ||
+      items.length === 0
+    ) {
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+      const cell =
+        document.createElement(
+          "td"
+        );
+
+      cell.colSpan = 7;
+      cell.className =
+        "history-empty-cell";
+
+      cell.textContent =
+        "No download history found.";
+
+      row.appendChild(cell);
+
+      DOM.downloadHistoryBody
+        .appendChild(row);
+
+      return;
+    }
+
+    const fragment =
+      document.createDocumentFragment();
+
+    items.forEach((item) => {
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+      const userCell =
+        document.createElement(
+          "td"
+        );
+
+      const username =
+        document.createElement(
+          "span"
+        );
+
+      username.className =
+        "history-user-name";
+
+      username.textContent =
+        item.username ||
+        "Guest";
+
+      const visitorType =
+        document.createElement(
+          "span"
+        );
+
+      visitorType.className =
+        "history-user-type";
+
+      visitorType.textContent =
+        item.visitorType ===
+        "user"
+          ? `User ID: ${
+              item.userId || "-"
+            }`
+          : "Guest download";
+
+      userCell.append(
+        username,
+        visitorType
+      );
+
+      row.appendChild(
+        userCell
+      );
+
+      row.appendChild(
+        createHistoryCell(
+          item.userUid
+        )
+      );
+
+      row.appendChild(
+        createHistoryCell(
+          item.ipAddress
+        )
+      );
+
+      const deviceInfo =
+        getDeviceDetails(
+          item.userAgent
+        );
+
+      const deviceCell =
+        document.createElement(
+          "td"
+        );
+
+      const deviceName =
+        document.createElement(
+          "span"
+        );
+
+      deviceName.className =
+        "history-user-name";
+
+      deviceName.textContent =
+        deviceInfo.device;
+
+      const browserName =
+        document.createElement(
+          "span"
+        );
+
+      browserName.className =
+        "history-device-details";
+
+      browserName.textContent =
+        deviceInfo.browser;
+
+      deviceCell.title =
+        item.userAgent || "";
+
+      deviceCell.append(
+        deviceName,
+        browserName
+      );
+
+      row.appendChild(
+        deviceCell
+      );
+
+      row.appendChild(
+        createHistoryCell(
+          item.appVersion
+        )
+      );
+
+      const statusCell =
+        document.createElement(
+          "td"
+        );
+
+      const status =
+        [
+          "started",
+          "completed",
+          "failed"
+        ].includes(
+          item.downloadStatus
+        )
+          ? item.downloadStatus
+          : "failed";
+
+      const statusBadge =
+        document.createElement(
+          "span"
+        );
+
+      statusBadge.className =
+        `history-status ${status}`;
+
+      statusBadge.textContent =
+        status;
+
+      statusCell.appendChild(
+        statusBadge
+      );
+
+      row.appendChild(
+        statusCell
+      );
+
+      row.appendChild(
+        createHistoryCell(
+          formatDate(
+            item.downloadedAt
+          )
+        )
+      );
+
+      fragment.appendChild(
+        row
+      );
+    });
+
+    DOM.downloadHistoryBody
+      .appendChild(fragment);
+  }
+
+
+  function renderHistoryPagination() {
+    const currentPage =
+      downloadHistoryState.page;
+
+    const totalPages =
+      downloadHistoryState.totalPages;
+
+    if (
+      DOM.downloadHistoryPageInfo
+    ) {
+      DOM.downloadHistoryPageInfo
+        .textContent =
+          `Page ${currentPage} of ${totalPages} • ${downloadHistoryState.total} records`;
+    }
+
+    if (
+      DOM.downloadHistoryPreviousButton
+    ) {
+      DOM.downloadHistoryPreviousButton
+        .disabled =
+          downloadHistoryState.loading ||
+          currentPage <= 1;
+    }
+
+    if (
+      DOM.downloadHistoryNextButton
+    ) {
+      DOM.downloadHistoryNextButton
+        .disabled =
+          downloadHistoryState.loading ||
+          currentPage >= totalPages;
+    }
+  }
+
+
+  async function loadDownloadHistory(
+    showError = true
+  ) {
+    if (
+      downloadHistoryState.loading
+    ) {
+      return;
+    }
+
+    downloadHistoryState.loading =
+      true;
+
+    renderHistoryPagination();
+
+    try {
+      const query =
+        new URLSearchParams({
+          page:
+            String(
+              downloadHistoryState.page
+            ),
+
+          limit:
+            String(
+              downloadHistoryState.limit
+            )
+        });
+
+      if (
+        downloadHistoryState.search
+      ) {
+        query.set(
+          "search",
+          downloadHistoryState.search
+        );
+      }
+
+      const result =
+        await requestAPI(
+          `/app-download/admin/history?${query.toString()}`
+        );
+
+      const history =
+        Array.isArray(
+          result?.data?.history
+        )
+          ? result.data.history
+          : [];
+
+      const pagination =
+        result?.data?.pagination ||
+        {};
+
+      downloadHistoryState.page =
+        Number(
+          pagination.page || 1
+        );
+
+      downloadHistoryState.total =
+        Number(
+          pagination.total || 0
+        );
+
+      downloadHistoryState.totalPages =
+        Math.max(
+          1,
+          Number(
+            pagination.totalPages ||
+            1
+          )
+        );
+
+      renderDownloadHistory(
+        history
+      );
+    } catch (error) {
+      console.error(
+        "LOAD DOWNLOAD HISTORY ERROR:",
+        error
+      );
+
+      if (showError) {
+        showToast(
+          error.message ||
+            "Download history load করা যায়নি.",
+          "error"
+        );
+      }
+    } finally {
+      downloadHistoryState.loading =
+        false;
+
+      renderHistoryPagination();
+    }
+  }
+
+    DOM.downloadHistorySearchButton
+    ?.addEventListener(
+      "click",
+      () => {
+        downloadHistoryState.search =
+          String(
+            DOM.downloadHistorySearch
+              ?.value || ""
+          ).trim();
+
+        downloadHistoryState.page =
+          1;
+
+        loadDownloadHistory();
+      }
+    );
+
+
+  DOM.downloadHistorySearch
+    ?.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key !== "Enter"
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+
+        downloadHistoryState.search =
+          String(
+            DOM.downloadHistorySearch
+              ?.value || ""
+          ).trim();
+
+        downloadHistoryState.page =
+          1;
+
+        loadDownloadHistory();
+      }
+    );
+
+
+  DOM.downloadHistoryRefreshButton
+    ?.addEventListener(
+      "click",
+      () => {
+        loadDownloadHistory();
+      }
+    );
+
+
+  DOM.downloadHistoryPreviousButton
+    ?.addEventListener(
+      "click",
+      () => {
+        if (
+          downloadHistoryState.page <= 1 ||
+          downloadHistoryState.loading
+        ) {
+          return;
+        }
+
+        downloadHistoryState.page -=
+          1;
+
+        loadDownloadHistory();
+      }
+    );
+
+
+  DOM.downloadHistoryNextButton
+    ?.addEventListener(
+      "click",
+      () => {
+        if (
+          downloadHistoryState.page >=
+            downloadHistoryState.totalPages ||
+          downloadHistoryState.loading
+        ) {
+          return;
+        }
+
+        downloadHistoryState.page +=
+          1;
+
+        loadDownloadHistory();
+      }
+    );
   /* =========================================================
      TEST DOWNLOAD
   ========================================================= */
@@ -1191,8 +1764,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     resetUploadProgress();
 
-    await loadSettings(
+        await loadSettings(
       true,
+    );
+
+    await loadDownloadHistory(
+      false
     );
   }
 
