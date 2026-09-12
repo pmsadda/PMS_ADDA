@@ -321,8 +321,7 @@ app.get("/service-worker.js", (req, res) => {
    LOGIN = MAIN DOMAIN
 ========================================================= */
 
-app.get("/", (req, res) => {
-  /* =========================================================
+/* =========================================================
    SEARCH ENGINE FILES
 ========================================================= */
 
@@ -357,7 +356,15 @@ app.get("/robots.txt", (req, res) => {
     path.join(clientRoot, "robots.txt")
   );
 });
-  return res.sendFile(path.join(clientPages, "lobby.html"));
+
+/* =========================================================
+   LOGIN = MAIN DOMAIN
+========================================================= */
+
+app.get("/", (req, res) => {
+  return res.sendFile(
+    path.join(clientPages, "lobby.html")
+  );
 });
 
 /* =========================================================
