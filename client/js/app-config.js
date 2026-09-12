@@ -477,6 +477,7 @@
       path === "/lobby" ||
       path === "/login" ||
       path === "/register" ||
+      path === "/install" ||
       path.endsWith(
         "/lobby.html"
       ) ||

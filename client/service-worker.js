@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_VERSION = "tpl22-app-v1";
+const CACHE_VERSION = "tpl22-app-v2";
 
 const STATIC_FILES = [
   "/manifest.webmanifest",
