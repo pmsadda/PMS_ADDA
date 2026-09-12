@@ -1,0 +1,991 @@
+/* =========================================================
+   RESET
+========================================================= */
+
+:root {
+  --primary: #07845e;
+  --primary-dark: #056747;
+  --primary-light: #e6f7f0;
+  --accent: #f6c344;
+
+  --background: #f7f8f5;
+  --surface: #ffffff;
+  --surface-soft: #f0f5f2;
+
+  --text: #17211d;
+  --text-soft: #637069;
+  --border: #dce5df;
+
+  --danger: #a43434;
+
+  --shadow:
+    0 18px 45px rgba(20, 48, 37, 0.12);
+
+  --radius-large: 28px;
+  --radius-medium: 20px;
+  --radius-small: 14px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+}
+
+body {
+  min-height: 100vh;
+
+  font-family:
+    Inter,
+    "Noto Sans Bengali",
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+  color: var(--text);
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(7, 132, 94, 0.12),
+      transparent 380px
+    ),
+    var(--background);
+
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.store-page {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding:
+    calc(24px + env(safe-area-inset-top))
+    20px
+    30px;
+}
+
+
+/* =========================================================
+   APP HEADER
+========================================================= */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  padding: 14px 2px 24px;
+}
+
+.app-logo {
+  width: 94px;
+  height: 94px;
+
+  flex: 0 0 94px;
+
+  border-radius: 24px;
+  object-fit: cover;
+
+  box-shadow:
+    0 12px 28px rgba(7, 83, 59, 0.22);
+}
+
+.app-identity {
+  min-width: 0;
+}
+
+.app-identity h1 {
+  font-size: clamp(24px, 5vw, 34px);
+  line-height: 1.15;
+  letter-spacing: -0.7px;
+}
+
+.developer-name {
+  margin-top: 7px;
+
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.verified-text {
+  margin-top: 5px;
+
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.app-statistics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  margin-bottom: 22px;
+
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+
+  box-shadow:
+    0 10px 25px rgba(26, 60, 46, 0.07);
+
+  backdrop-filter: blur(12px);
+}
+
+.app-statistics article {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 78px;
+  padding: 13px 8px;
+
+  text-align: center;
+}
+
+.app-statistics article:not(:last-child)::after {
+  content: "";
+
+  position: absolute;
+  top: 18px;
+  right: 0;
+  bottom: 18px;
+
+  width: 1px;
+
+  background: var(--border);
+}
+
+.app-statistics strong {
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.app-statistics span {
+  margin-top: 5px;
+
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   INSTALL ACTION
+========================================================= */
+
+.primary-action {
+  margin-bottom: 24px;
+}
+
+.install-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 76px;
+  padding: 14px 22px;
+
+  color: #ffffff;
+  background:
+    linear-gradient(
+      135deg,
+      #07966a,
+      #05724f
+    );
+
+  border: 0;
+  border-radius: 20px;
+
+  box-shadow:
+    0 14px 30px rgba(5, 114, 79, 0.26);
+
+  cursor: pointer;
+
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+.install-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 18px 35px rgba(5, 114, 79, 0.32);
+}
+
+.install-button:active {
+  transform: scale(0.985);
+}
+
+.install-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.install-button span,
+.install-button:not(:has(small)) {
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.install-button small {
+  margin-top: 5px;
+
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.install-help {
+  margin-top: 10px;
+
+  color: var(--text-soft);
+  font-size: 12px;
+  text-align: center;
+}
+
+
+/* =========================================================
+   QUICK FEATURES
+========================================================= */
+
+.quick-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+
+  margin-bottom: 26px;
+}
+
+.quick-features article {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 96px;
+  padding: 14px 8px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+
+  text-align: center;
+}
+
+.feature-icon {
+  font-size: 26px;
+}
+
+.quick-features p {
+  margin-top: 8px;
+
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+
+/* =========================================================
+   CONTENT SECTIONS
+========================================================= */
+
+.content-section {
+  margin-bottom: 24px;
+  padding: 23px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-large);
+
+  box-shadow:
+    0 12px 30px rgba(24, 56, 43, 0.07);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.section-heading span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+}
+
+.section-heading h2 {
+  font-size: clamp(20px, 4vw, 26px);
+  line-height: 1.25;
+}
+
+.about-section > p {
+  color: #46534d;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.about-section > p + p {
+  margin-top: 14px;
+}
+
+
+/* =========================================================
+   GAME PREVIEW
+========================================================= */
+
+.game-preview-slider {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(245px, 78%);
+  gap: 14px;
+
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+
+  padding: 2px 2px 10px;
+
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+.game-preview-card {
+  position: relative;
+  isolation: isolate;
+
+  display: flex;
+  align-items: flex-end;
+
+  min-height: 330px;
+  overflow: hidden;
+
+  border-radius: 24px;
+
+  scroll-snap-align: start;
+}
+
+.game-preview-card::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+.game-preview-card::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(3, 17, 12, 0.94),
+      rgba(3, 17, 12, 0.12) 72%
+    );
+}
+
+.ludo-card::before {
+  background:
+    radial-gradient(
+      circle at 74% 22%,
+      #f5d34d 0 9%,
+      transparent 10%
+    ),
+    radial-gradient(
+      circle at 28% 34%,
+      #ef5858 0 11%,
+      transparent 12%
+    ),
+    linear-gradient(
+      145deg,
+      #6546ca,
+      #198eb6 48%,
+      #17a06d
+    );
+}
+
+.card-game-card::before {
+  background:
+    radial-gradient(
+      circle at 30% 22%,
+      #ffe9a2 0 10%,
+      transparent 11%
+    ),
+    linear-gradient(
+      145deg,
+      #6e1539,
+      #b3363d 46%,
+      #d28a35
+    );
+}
+
+.leaderboard-card::before {
+  background:
+    radial-gradient(
+      circle at 50% 28%,
+      #ffdc66 0 11%,
+      transparent 12%
+    ),
+    linear-gradient(
+      145deg,
+      #034a43,
+      #08795d 50%,
+      #12aa7c
+    );
+}
+
+.preview-content {
+  width: 100%;
+  padding: 24px;
+
+  color: #ffffff;
+}
+
+.preview-label {
+  display: inline-block;
+
+  padding: 7px 10px;
+
+  color: #153125;
+  background: var(--accent);
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.9px;
+}
+
+.preview-content h3 {
+  margin-top: 13px;
+
+  font-size: 25px;
+}
+
+.preview-content p {
+  margin-top: 8px;
+
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   STEPS
+========================================================= */
+
+.steps-list {
+  display: grid;
+  gap: 16px;
+
+  list-style: none;
+}
+
+.steps-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.steps-list li > span {
+  display: grid;
+  place-items: center;
+
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+
+  color: #ffffff;
+  background: var(--primary);
+  border-radius: 14px;
+
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.steps-list strong {
+  font-size: 15px;
+}
+
+.steps-list p {
+  margin-top: 4px;
+
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   SAFETY
+========================================================= */
+
+.safety-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  margin-bottom: 24px;
+  padding: 22px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e9f8f1,
+      #f8fcfa
+    );
+
+  border: 1px solid #c9e9db;
+  border-radius: var(--radius-medium);
+}
+
+.safety-icon {
+  display: grid;
+  place-items: center;
+
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+
+  background: #ffffff;
+  border-radius: 15px;
+
+  font-size: 25px;
+}
+
+.safety-card h2 {
+  color: var(--primary-dark);
+  font-size: 18px;
+}
+
+.safety-card p {
+  margin-top: 7px;
+
+  color: #416054;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   BOTTOM ACTION
+========================================================= */
+
+.bottom-action {
+  padding: 22px;
+
+  background: #10261e;
+  border-radius: var(--radius-large);
+
+  text-align: center;
+}
+
+.bottom-action .install-button {
+  min-height: 60px;
+
+  color: #15251f;
+  background: var(--accent);
+
+  box-shadow: none;
+
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.bottom-action > p {
+  margin-top: 11px;
+
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   INSTALL MODAL
+========================================================= */
+
+.install-modal[hidden] {
+  display: none;
+}
+
+.install-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: grid;
+  align-items: end;
+  justify-items: center;
+
+  padding:
+    20px
+    20px
+    calc(20px + env(safe-area-inset-bottom));
+}
+
+.install-modal-backdrop {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(3, 14, 10, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.install-dialog {
+  position: relative;
+  z-index: 1;
+
+  width: min(100%, 520px);
+  padding: 32px 24px 25px;
+
+  background: #ffffff;
+  border-radius: 28px;
+
+  box-shadow: var(--shadow);
+
+  text-align: center;
+
+  animation:
+    dialogSlideUp 260ms ease both;
+}
+
+@keyframes dialogSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(35px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dialog-close {
+  position: absolute;
+  top: 13px;
+  right: 15px;
+
+  display: grid;
+  place-items: center;
+
+  width: 38px;
+  height: 38px;
+
+  color: #4f5c56;
+  background: #edf2ef;
+  border: 0;
+  border-radius: 50%;
+
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.dialog-logo {
+  width: 82px;
+  height: 82px;
+
+  margin: 0 auto 17px;
+
+  border-radius: 22px;
+  object-fit: cover;
+
+  box-shadow:
+    0 11px 25px rgba(5, 103, 71, 0.2);
+}
+
+.browser-icon {
+  margin-bottom: 14px;
+  font-size: 58px;
+}
+
+.install-dialog h2 {
+  font-size: 25px;
+}
+
+.install-dialog > p {
+  margin: 11px auto 0;
+
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.dialog-install-button {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 22px;
+  padding: 12px 18px;
+
+  color: #ffffff;
+  background: var(--primary);
+  border: 0;
+  border-radius: 16px;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.dialog-install-button:active {
+  transform: scale(0.985);
+}
+
+.install-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  margin-top: 19px;
+  padding: 13px;
+
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  border-radius: 14px;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.install-progress[hidden] {
+  display: none;
+}
+
+.progress-spinner {
+  width: 21px;
+  height: 21px;
+
+  border: 3px solid rgba(7, 132, 94, 0.18);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+
+  animation: spinner 700ms linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dialog-disclaimer {
+  color: var(--text-soft) !important;
+  font-size: 11px !important;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.site-footer {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding:
+    10px
+    20px
+    calc(35px + env(safe-area-inset-bottom));
+
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 17px;
+
+  margin-bottom: 15px;
+}
+
+.site-footer a {
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.site-footer > p {
+  font-size: 12px;
+}
+
+.footer-disclaimer {
+  max-width: 540px;
+  margin: 9px auto 0;
+
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   INSTALLED MODE
+========================================================= */
+
+@media (display-mode: standalone) {
+  .install-button {
+    min-height: 62px;
+  }
+
+  .install-help {
+    display: none;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (min-width: 720px) {
+  .store-page {
+    padding-top: 40px;
+  }
+
+  .game-preview-slider {
+    grid-auto-columns: minmax(270px, 48%);
+  }
+
+  .install-modal {
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .store-page {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .app-logo {
+    width: 80px;
+    height: 80px;
+    flex-basis: 80px;
+
+    border-radius: 21px;
+  }
+
+  .app-identity h1 {
+    font-size: 23px;
+  }
+
+  .verified-text {
+    font-size: 12px;
+  }
+
+  .app-statistics strong {
+    font-size: 16px;
+  }
+
+  .app-statistics span {
+    font-size: 11px;
+  }
+
+  .content-section {
+    padding: 19px;
+    border-radius: 23px;
+  }
+
+  .game-preview-slider {
+    grid-auto-columns: 88%;
+  }
+
+  .game-preview-card {
+    min-height: 310px;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-header {
+    gap: 12px;
+  }
+
+  .app-logo {
+    width: 70px;
+    height: 70px;
+    flex-basis: 70px;
+  }
+
+  .app-identity h1 {
+    font-size: 20px;
+  }
+
+  .quick-features {
+    gap: 6px;
+  }
+
+  .quick-features article {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(246, 195, 68, 0.9);
+  outline-offset: 3px;
+}
