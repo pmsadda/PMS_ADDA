@@ -523,29 +523,48 @@
     );
 
   const hasCampaignData =
-    Boolean(
-      query.get("utm_source") ||
-      query.get("utm_medium") ||
-      query.get("utm_campaign") ||
-      query.get("utm_content") ||
-      query.get("utm_term")
-    );
+  Boolean(
+    query.get("utm_source") ||
+    query.get("utm_medium") ||
+    query.get("utm_campaign") ||
+    query.get("utm_content") ||
+    query.get("utm_term")
+  );
 
-  let attribution =
-    getStoredAttribution();
+const isFreeplayVisitor =
+  query.get("source") ===
+  "tpl22_freeplay";
 
-  if (
-    hasCampaignData ||
-    !attribution
-  ) {
+/*
+ * Direct বা existing user-এর সাধারণ visit
+ * Marketing Traffic History-তে রাখা হবে না।
+ */
+if (
+  !hasCampaignData &&
+  !isFreeplayVisitor
+) {
+  return;
+}
+
+let attribution =
+  getStoredAttribution();
+
+ if (
+  hasCampaignData ||
+  isFreeplayVisitor ||
+  !attribution
+) {
     attribution = {
-      trafficSource:
-        query.get(
-          "utm_source"
-        ) ||
-        detectReferrerSource(
-          document.referrer
-        ),
+     trafficSource:
+  query.get(
+    "utm_source"
+  ) ||
+  query.get(
+    "source"
+  ) ||
+  detectReferrerSource(
+    document.referrer
+  ),
 
       trafficMedium:
         query.get(
