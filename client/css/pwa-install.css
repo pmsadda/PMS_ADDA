@@ -432,52 +432,23 @@ img {
 
 .ludo-card::before {
   background:
-    radial-gradient(
-      circle at 74% 22%,
-      #f5d34d 0 9%,
-      transparent 10%
-    ),
-    radial-gradient(
-      circle at 28% 34%,
-      #ef5858 0 11%,
-      transparent 12%
-    ),
-    linear-gradient(
-      145deg,
-      #6546ca,
-      #198eb6 48%,
-      #17a06d
-    );
+    url("/assets/images/ludo-preview.jpg")
+    center / cover
+    no-repeat;
 }
 
 .card-game-card::before {
   background:
-    radial-gradient(
-      circle at 30% 22%,
-      #ffe9a2 0 10%,
-      transparent 11%
-    ),
-    linear-gradient(
-      145deg,
-      #6e1539,
-      #b3363d 46%,
-      #d28a35
-    );
+    url("/assets/images/teenpatti-preview.jpg")
+    center / cover
+    no-repeat;
 }
 
 .leaderboard-card::before {
   background:
-    radial-gradient(
-      circle at 50% 28%,
-      #ffdc66 0 11%,
-      transparent 12%
-    ),
-    linear-gradient(
-      145deg,
-      #034a43,
-      #08795d 50%,
-      #12aa7c
-    );
+    url("/assets/images/poker-preview.jpg")
+    center / cover
+    no-repeat;
 }
 
 .preview-content {
