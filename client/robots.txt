@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /install
+Allow: /login
+Allow: /register
+
+Disallow: /admin/
+Disallow: /client/admin/
+Disallow: /agent/
+Disallow: /api/
+Disallow: /socket.io/
+Disallow: /wallet
+Disallow: /deposit
+Disallow: /withdraw
+Disallow: /history
+Disallow: /profile
+
+Sitemap: https://tpl22.site/sitemap.xml

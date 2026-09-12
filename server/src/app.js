@@ -322,6 +322,41 @@ app.get("/service-worker.js", (req, res) => {
 ========================================================= */
 
 app.get("/", (req, res) => {
+  /* =========================================================
+   SEARCH ENGINE FILES
+========================================================= */
+
+app.get("/sitemap.xml", (req, res) => {
+  res.setHeader(
+    "Content-Type",
+    "application/xml; charset=utf-8"
+  );
+
+  res.setHeader(
+    "Cache-Control",
+    "public, max-age=3600"
+  );
+
+  return res.sendFile(
+    path.join(clientRoot, "sitemap.xml")
+  );
+});
+
+app.get("/robots.txt", (req, res) => {
+  res.setHeader(
+    "Content-Type",
+    "text/plain; charset=utf-8"
+  );
+
+  res.setHeader(
+    "Cache-Control",
+    "public, max-age=3600"
+  );
+
+  return res.sendFile(
+    path.join(clientRoot, "robots.txt")
+  );
+});
   return res.sendFile(path.join(clientPages, "lobby.html"));
 });
 
