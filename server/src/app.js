@@ -277,6 +277,47 @@ app.use("/js", express.static(path.join(clientRoot, "js")));
 app.use("/assets", express.static(path.join(clientRoot, "assets")));
 
 /* =========================================================
+   TPL22 PWA FILES
+========================================================= */
+
+app.get("/manifest.webmanifest", (req, res) => {
+  res.setHeader(
+    "Content-Type",
+    "application/manifest+json; charset=utf-8"
+  );
+
+  res.setHeader(
+    "Cache-Control",
+    "no-cache, no-store, must-revalidate"
+  );
+
+  return res.sendFile(
+    path.join(clientRoot, "manifest.webmanifest")
+  );
+});
+
+app.get("/service-worker.js", (req, res) => {
+  res.setHeader(
+    "Content-Type",
+    "application/javascript; charset=utf-8"
+  );
+
+  res.setHeader(
+    "Cache-Control",
+    "no-cache, no-store, must-revalidate"
+  );
+
+  res.setHeader(
+    "Service-Worker-Allowed",
+    "/"
+  );
+
+  return res.sendFile(
+    path.join(clientRoot, "service-worker.js")
+  );
+});
+
+/* =========================================================
    LOGIN = MAIN DOMAIN
 ========================================================= */
 

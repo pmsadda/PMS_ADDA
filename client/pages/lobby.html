@@ -9,6 +9,41 @@
             content="width=device-width, initial-scale=1.0">
 
         <title>TPL22 | Lobby</title>
+        <meta name="theme-color" content="#080808">
+
+        <meta
+            name="application-name"
+            content="TPL22">
+
+        <meta
+            name="mobile-web-app-capable"
+            content="yes">
+
+        <meta
+            name="apple-mobile-web-app-capable"
+            content="yes">
+
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent">
+
+        <meta
+            name="apple-mobile-web-app-title"
+            content="TPL22">
+
+        <link
+            rel="manifest"
+            href="/manifest.webmanifest">
+
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="192x192"
+            href="/assets/icons/icon-192.png">
+
+        <link
+            rel="apple-touch-icon"
+            href="/assets/icons/icon-192.png">
         <script src="../js/app-config.js"></script>
         <link rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -1427,6 +1462,36 @@
             <script src="../js/lobby.js?v=20260910-2"></script>
 
         </div>
+
+        <script>
+  "use strict";
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const registration =
+          await navigator.serviceWorker.register(
+            "/service-worker.js",
+            {
+              scope: "/"
+            }
+          );
+
+        await registration.update();
+
+        console.log(
+          "TPL22 PWA service worker ready:",
+          registration.scope
+        );
+      } catch (error) {
+        console.error(
+          "TPL22 PWA service worker failed:",
+          error
+        );
+      }
+    });
+  }
+</script>
 
     </body>
 
