@@ -69,11 +69,85 @@ function handleTrafficError(
     });
 }
 
+function isValidMarketingLanding(
+  landingUrlValue
+) {
+  try {
+    const landingUrl =
+      new URL(
+        String(
+          landingUrlValue ||
+          ""
+        )
+      );
+
+    const hostname =
+      landingUrl.hostname
+        .toLowerCase();
+
+    if (
+      hostname !== "tpl22.site" &&
+      hostname !== "www.tpl22.site"
+    ) {
+      return false;
+    }
+
+    const query =
+      landingUrl.searchParams;
+
+    const isFreeplayVisitor =
+      query.get("source") ===
+      "tpl22_freeplay";
+
+    const hasUtmTracking =
+      Boolean(
+        query.get("utm_source") ||
+        query.get("utm_medium") ||
+        query.get("utm_campaign") ||
+        query.get("utm_content") ||
+        query.get("utm_term")
+      );
+
+    return (
+      isFreeplayVisitor ||
+      hasUtmTracking
+    );
+  } catch (error) {
+    return false;
+  }
+}
+
 async function trackVisit(
   request,
   response
 ) {
   try {
+        const landingUrl =
+      request.body
+        ?.landingUrl;
+
+    if (
+      !isValidMarketingLanding(
+        landingUrl
+      )
+    ) {
+      response.setHeader(
+        "Cache-Control",
+        "no-store"
+      );
+
+      return response
+        .status(200)
+        .json({
+          success: true,
+
+          data: {
+            tracked: false,
+            reason:
+              "DIRECT_VISIT_IGNORED"
+          }
+        });
+    }
     const result =
       await recordTrafficVisit({
         visitorId:
