@@ -357,6 +357,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       localStorage.setItem("current_user", JSON.stringify(user));
 
+      /*
+       * কেবল সফল নতুন registration-এর পরে Meta event পাঠানো হবে।
+       * Username, phone, email বা password Meta-তে পাঠানো হচ্ছে না।
+       */
+      if (typeof window.fbq === "function") {
+        const registrationEventKey = `tpl22_meta_registration_${user.id || user.uid || username}`;
+
+        if (!sessionStorage.getItem(registrationEventKey)) {
+          window.fbq("track", "CompleteRegistration", {
+            content_name: "TPL22 Registration",
+            status: "completed",
+          });
+
+          sessionStorage.setItem(registrationEventKey, "1");
+        }
+      }
+
       showToast(
         user.referralApplied
           ? "Registration successful. Referral code applied."
