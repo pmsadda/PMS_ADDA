@@ -2319,3 +2319,72 @@ document.addEventListener("keydown", (event) => {
     true,
   );
 });
+/* =========================================================
+   DIRECT GAME CARD NAVIGATION
+========================================================= */
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const card = event.target.closest(".game-card");
+
+    if (!card || card.classList.contains("is-unavailable")) {
+      return;
+    }
+
+    const actionButton = card.querySelector(".play-btn");
+
+    if (!actionButton) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const token =
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
+    /* Anchor-based games */
+    if (
+      actionButton.tagName === "A" &&
+      actionButton.getAttribute("href")
+    ) {
+      window.location.href =
+        actionButton.getAttribute("href");
+
+      return;
+    }
+
+    /* Button-based games */
+    const gameRoutes = {
+      teenPattiBtn: "/teenpatti-rooms",
+      pokerBtn: "/poker-rooms",
+      ludoBtn: "/ludo-rooms",
+      andarBaharBtn: "/andar-bahar",
+      banglaWheelBtn: "/bangla-wheel",
+      banglaDiceBtn: "/bangla-dice",
+      aviatorBtn: "/aviator",
+      kaitBtn: "/kait",
+      lotteryBtn: "/lottery"
+    };
+
+    const destination = gameRoutes[actionButton.id];
+
+    if (destination) {
+      window.location.href = destination;
+      return;
+    }
+
+    /* Carrom এখন চালু থাকলে route ব্যবহার করুন */
+    if (actionButton.id === "carromBtn") {
+      window.location.href = "/carrom-rooms";
+    }
+  },
+  true
+);

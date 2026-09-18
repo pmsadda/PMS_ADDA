@@ -6218,3 +6218,58 @@ body.lobby-offer-open {
         font-size: 9px !important;
     }
 }
+
+/* Mobile card final size correction */
+@media (max-width: 768px) {
+    .game-list {
+        grid-auto-rows: clamp(165px, 44vw, 195px) !important;
+        gap: 8px !important;
+    }
+
+    .game-card,
+    .carrom-lobby-card,
+    .andar-bahar-lobby-card,
+    .bangla-wheel-game-card,
+    .bangla-dice-game-card,
+    .aviator-game-card,
+    .slot-game-card,
+    .super-ace-game-card,
+    .kait-game-card,
+    .lottery-game-card {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 195px !important;
+        aspect-ratio: auto !important;
+    }
+
+    .game-card > img {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        object-fit: cover !important;
+        object-position: center !important;
+    }
+
+    .carrom-lobby-art,
+    .andar-bahar-lobby-art,
+    .bangla-wheel-card-visual,
+    .bangla-dice-card-visual,
+    .aviator-card-visual,
+    .slot-card-visual,
+    .super-ace-card-visual,
+    .kait-card-visual,
+    .lottery-game-art {
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+    }
+
+    .game-card .game-info {
+        bottom: 7px !important;
+    }
+
+    .game-card .game-info h3 {
+        font-size: 10px !important;
+    }
+}
