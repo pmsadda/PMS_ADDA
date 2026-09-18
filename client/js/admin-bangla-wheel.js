@@ -59,10 +59,19 @@
     fairModeInput:
       document.getElementById("fairModeInput"),
 
-    configuredModeInput:
-      document.getElementById("configuredModeInput"),
+   configuredModeInput:
+  document.getElementById("configuredModeInput"),
 
-    minimumBetInput:
+lowVolatilityInput:
+  document.getElementById("lowVolatilityInput"),
+
+mediumVolatilityInput:
+  document.getElementById("mediumVolatilityInput"),
+
+highVolatilityInput:
+  document.getElementById("highVolatilityInput"),
+
+minimumBetInput:
       document.getElementById("minimumBetInput"),
 
     maximumBetInput:
@@ -369,6 +378,29 @@
       : "fair_equal";
   }
 
+  function getCurrentVolatilityProfile() {
+  const selectedInput =
+    document.querySelector(
+      'input[name="volatilityProfile"]:checked'
+    );
+
+  const selectedValue =
+    String(
+      selectedInput?.value ||
+      "medium"
+    )
+      .trim()
+      .toLowerCase();
+
+  return [
+    "low",
+    "medium",
+    "high",
+  ].includes(selectedValue)
+    ? selectedValue
+    : "medium";
+}
+
   function calculateWeightTotal() {
     const inputs =
       DOM.animalSettingsGrid
@@ -672,10 +704,35 @@
     DOM.configuredModeInput.checked =
       configured;
 
-    DOM.fairModeInput.checked =
-      !configured;
+   DOM.fairModeInput.checked =
+  !configured;
 
-    setGameStatus(
+const volatilityProfile =
+  [
+    "low",
+    "medium",
+    "high",
+  ].includes(
+    String(
+      settings.volatilityProfile ||
+      ""
+    ).toLowerCase()
+  )
+    ? String(
+        settings.volatilityProfile
+      ).toLowerCase()
+    : "medium";
+
+DOM.lowVolatilityInput.checked =
+  volatilityProfile === "low";
+
+DOM.mediumVolatilityInput.checked =
+  volatilityProfile === "medium";
+
+DOM.highVolatilityInput.checked =
+  volatilityProfile === "high";
+
+setGameStatus(
       Boolean(settings.gameEnabled)
     );
 
@@ -803,9 +860,12 @@
           DOM.gameEnabledInput.checked,
 
         resultMode:
-          getCurrentMode(),
+  getCurrentMode(),
 
-        minimumBet,
+volatilityProfile:
+  getCurrentVolatilityProfile(),
+
+minimumBet,
 
         maximumBet,
 

@@ -4,6 +4,7 @@ const { pool } = require("../config/database");
 
 const {
   RESULT_MODE,
+  VOLATILITY_PROFILE,
   assertCondition,
   parseMoney,
   parsePositiveInteger,
@@ -376,14 +377,36 @@ async function scheduleConfiguration(
       currentSettings.resultMode;
 
     assertCondition(
-      Object.values(RESULT_MODE)
-        .includes(resultMode),
-      "Invalid Bangla Wheel result mode.",
-      400,
-      "INVALID_RESULT_MODE"
-    );
+  Object.values(RESULT_MODE)
+    .includes(resultMode),
+  "Invalid Bangla Wheel result mode.",
+  400,
+  "INVALID_RESULT_MODE"
+);
 
-    const settingsPayload = {
+const volatilityProfile =
+  String(
+    submittedSettings
+      .volatilityProfile ||
+    currentSettings
+      .volatilityProfile ||
+    VOLATILITY_PROFILE.MEDIUM
+  )
+    .trim()
+    .toLowerCase();
+
+assertCondition(
+  Object.values(
+    VOLATILITY_PROFILE
+  ).includes(
+    volatilityProfile
+  ),
+  "Bangla Wheel mode must be low, medium or high.",
+  400,
+  "INVALID_VOLATILITY_PROFILE"
+);
+
+const settingsPayload = {
       gameEnabled: getBoolean(
         submittedSettings.gameEnabled,
         currentSettings.gameEnabled
@@ -465,7 +488,8 @@ async function scheduleConfiguration(
         "Maximum round liability"
       ),
 
-      resultMode
+      resultMode,
+      volatilityProfile
     };
 
     assertCondition(

@@ -1,563 +1,585 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
+    <head>
+        <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0">
 
-    <title>Bangla Dice Control | TPL22</title>
+        <title>Bangla Dice Control | TPL22</title>
 
-    <script src="../js/app-config.js"></script>
-    <script src="../js/auth-guard.js"></script>
+        <script src="../js/app-config.js"></script>
+        <script src="../js/auth-guard.js"></script>
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/common.css">
+        <link
+            rel="stylesheet"
+            href="../css/common.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/admin-bangla-dice.css">
-</head>
+        <link
+            rel="stylesheet"
+            href="../css/admin-bangla-dice.css">
+    </head>
 
-<body>
+    <body>
 
-    <header class="admin-header">
+        <header class="admin-header">
 
-        <div class="admin-brand">
+            <div class="admin-brand">
 
-            <a
-                href="dashboard.html"
-                class="back-button">
+                <a
+                    href="dashboard.html"
+                    class="back-button">
 
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-
-            <div>
-                <span>TPL22 ADMIN</span>
-                <h1>বাংলা পাশা Control</h1>
-            </div>
-
-        </div>
-
-        <div class="header-actions">
-
-            <a
-               href="/bangla-dice"
-                class="view-game-button"
-                target="_blank">
-
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-
-                View Game
-            </a>
-
-            <button
-                type="button"
-                id="refreshDashboardBtn"
-                class="icon-button"
-                aria-label="Refresh dashboard">
-
-                <i class="fa-solid fa-rotate"></i>
-            </button>
-
-        </div>
-
-    </header>
-
-    <nav class="admin-navigation">
-
-        <a href="dashboard.html">
-            Dashboard
-        </a>
-
-        <a href="games.html">
-            Games
-        </a>
-
-        <a href="andar-bahar.html">
-            Andar Bahar
-        </a>
-
-        <a href="bangla-wheel.html">
-            Bangla Wheel
-        </a>
-
-        <a
-            href="bangla-dice.html"
-            class="active">
-            বাংলা পাশা
-        </a>
-
-        <a href="lottery.html">
-            Lottery
-        </a>
-
-    </nav>
-
-    <main class="admin-container">
-
-        <section class="summary-grid">
-
-            <article class="summary-card">
-
-                <div class="summary-icon">
-                    <i class="fa-solid fa-dice"></i>
-                </div>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
 
                 <div>
-                    <span>Total Rounds</span>
-                    <strong id="totalRounds">0</strong>
-                </div>
-
-            </article>
-
-            <article class="summary-card">
-
-                <div class="summary-icon">
-                    <i class="fa-solid fa-coins"></i>
-                </div>
-
-                <div>
-                    <span>Total Bet</span>
-
-                    <strong>
-                        ৳<span id="totalBetAmount">0.00</span>
-                    </strong>
-                </div>
-
-            </article>
-
-            <article class="summary-card">
-
-                <div class="summary-icon">
-                    <i class="fa-solid fa-trophy"></i>
-                </div>
-
-                <div>
-                    <span>Net Payout</span>
-
-                    <strong>
-                        ৳<span id="totalNetPayout">0.00</span>
-                    </strong>
-                </div>
-
-            </article>
-
-            <article class="summary-card">
-
-                <div class="summary-icon">
-                    <i class="fa-solid fa-percent"></i>
-                </div>
-
-                <div>
-                    <span>Service Charge</span>
-
-                    <strong>
-                        ৳<span id="totalServiceCharge">0.00</span>
-                    </strong>
-                </div>
-
-            </article>
-
-            <article class="summary-card">
-
-                <div class="summary-icon">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
-
-                <div>
-                    <span>Gross Revenue</span>
-
-                    <strong>
-                        ৳<span id="grossRevenue">0.00</span>
-                    </strong>
-                </div>
-
-            </article>
-
-        </section>
-
-        <section class="admin-panel">
-
-            <div class="panel-heading">
-
-                <div>
-                    <span>GAME CONFIGURATION</span>
-                    <h2>General Settings</h2>
-                </div>
-
-                <div class="game-status-control">
-
-                    <span id="gameStatusText">
-                        Game Enabled
-                    </span>
-
-                    <label class="toggle-switch">
-
-                        <input
-                            type="checkbox"
-                            id="gameEnabled"
-                            checked>
-
-                        <span></span>
-
-                    </label>
-
+                    <span>TPL22 ADMIN</span>
+                    <h1>বাংলা পাশা Control</h1>
                 </div>
 
             </div>
 
-            <form
-                id="settingsForm"
-                class="settings-form">
+            <div class="header-actions">
 
-                <label>
-                    <span>Result Mode</span>
+                <a
+                    href="/bangla-dice"
+                    class="view-game-button"
+                    target="_blank">
 
-                    <select id="resultMode">
-                        <option value="equal">
-                            Equal Chance
-                        </option>
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
 
-                        <option value="weighted">
-                            Weighted
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    <span>Minimum Bet</span>
-
-                    <input
-                        type="number"
-                        id="minimumBet"
-                        min="1"
-                        step="1"
-                        required>
-                </label>
-
-                <label>
-                    <span>Maximum Bet Per Round</span>
-
-                    <input
-                        type="number"
-                        id="maximumBet"
-                        min="1"
-                        step="1"
-                        required>
-                </label>
-
-                <label>
-                    <span>Service Charge (%)</span>
-
-                    <input
-                        type="number"
-                        id="serviceChargePercent"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        required>
-                </label>
-
-                <label>
-                    <span>Betting Duration (seconds)</span>
-
-                    <input
-                        type="number"
-                        id="bettingDurationSeconds"
-                        min="5"
-                        max="300"
-                        required>
-                </label>
-
-                <label>
-                    <span>Dice Roll Duration</span>
-
-                    <input
-                        type="number"
-                        id="rollDurationSeconds"
-                        min="2"
-                        max="30"
-                        required>
-                </label>
-
-                <label>
-                    <span>Result Display Duration</span>
-
-                    <input
-                        type="number"
-                        id="resultDisplaySeconds"
-                        min="2"
-                        max="60"
-                        required>
-                </label>
-
-                <label>
-                    <span>Next Round Delay</span>
-
-                    <input
-                        type="number"
-                        id="nextRoundDelaySeconds"
-                        min="1"
-                        max="60"
-                        required>
-                </label>
-
-                <div class="form-footer">
-
-                    <p>
-                        Settings changes নতুন round থেকে কার্যকর হবে।
-                    </p>
-
-                    <button
-                        type="submit"
-                        class="primary-button"
-                        id="saveSettingsBtn">
-
-                        <i class="fa-solid fa-floppy-disk"></i>
-
-                        Save Settings
-                    </button>
-
-                </div>
-
-            </form>
-
-        </section>
-
-        <section class="admin-panel">
-
-            <div class="panel-heading">
-
-                <div>
-                    <span>PROBABILITY & PAYOUT</span>
-                    <h2>Dice Image Settings</h2>
-                </div>
+                    View Game
+                </a>
 
                 <button
                     type="button"
-                    class="primary-button"
-                    id="saveSymbolsBtn">
+                    id="refreshDashboardBtn"
+                    class="icon-button"
+                    aria-label="Refresh dashboard">
 
-                    <i class="fa-solid fa-floppy-disk"></i>
-
-                    Save Images
+                    <i class="fa-solid fa-rotate"></i>
                 </button>
 
             </div>
 
-            <p class="panel-note">
-                Equal mode-এ weight ব্যবহার হবে না।
-                Weighted mode-এ বেশি weight মানে image আসার chance বেশি।
-            </p>
+        </header>
 
-            <div
-                class="symbol-settings-grid"
-                id="symbolSettingsGrid">
+        <nav class="admin-navigation">
 
-                <p class="empty-message">
-                    Dice image settings loading...
-                </p>
+            <a href="dashboard.html">
+                Dashboard
+            </a>
 
-            </div>
+            <a href="games.html">
+                Games
+            </a>
 
-        </section>
+            <a href="andar-bahar.html">
+                Andar Bahar
+            </a>
 
-        <section class="admin-panel">
+            <a href="bangla-wheel.html">
+                Bangla Wheel
+            </a>
 
-            <div class="panel-heading">
+            <a
+                href="bangla-dice.html"
+                class="active">
+                বাংলা পাশা
+            </a>
 
-                <div>
-                    <span>ROUND HISTORY</span>
-                    <h2>Bangla Dice Rounds</h2>
+            <a href="lottery.html">
+                Lottery
+            </a>
+
+        </nav>
+
+        <main class="admin-container">
+
+            <section class="summary-grid">
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-dice"></i>
+                    </div>
+
+                    <div>
+                        <span>Total Rounds</span>
+                        <strong id="totalRounds">0</strong>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+
+                    <div>
+                        <span>Total Bet</span>
+
+                        <strong>
+                            ৳<span id="totalBetAmount">0.00</span>
+                        </strong>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+
+                    <div>
+                        <span>Net Payout</span>
+
+                        <strong>
+                            ৳<span id="totalNetPayout">0.00</span>
+                        </strong>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-percent"></i>
+                    </div>
+
+                    <div>
+                        <span>Service Charge</span>
+
+                        <strong>
+                            ৳<span id="totalServiceCharge">0.00</span>
+                        </strong>
+                    </div>
+
+                </article>
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+
+                    <div>
+                        <span>Gross Revenue</span>
+
+                        <strong>
+                            ৳<span id="grossRevenue">0.00</span>
+                        </strong>
+                    </div>
+
+                </article>
+
+            </section>
+
+            <section class="admin-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <span>GAME CONFIGURATION</span>
+                        <h2>General Settings</h2>
+                    </div>
+
+                    <div class="game-status-control">
+
+                        <span id="gameStatusText">
+                            Game Enabled
+                        </span>
+
+                        <label class="toggle-switch">
+
+                            <input
+                                type="checkbox"
+                                id="gameEnabled"
+                                checked>
+
+                            <span></span>
+
+                        </label>
+
+                    </div>
+
                 </div>
 
-                <div class="round-filters">
+                <form
+                    id="settingsForm"
+                    class="settings-form">
 
-                    <select id="roundStatusFilter">
+                    <label>
+                        <span>Result Mode</span>
 
-                        <option value="">
-                            All Status
-                        </option>
+                        <select id="resultMode">
+                            <option value="equal">
+                                Equal Chance
+                            </option>
 
-                        <option value="betting">
-                            Betting
-                        </option>
+                            <option value="weighted">
+                                Weighted
+                            </option>
+                        </select>
+                    </label>
 
-                        <option value="rolling">
-                            Rolling
-                        </option>
+                    <label>
+                        <span>Game Mode</span>
 
-                        <option value="completed">
-                            Completed
-                        </option>
+                        <select
+                            id="volatilityProfile"
+                            required>
 
-                        <option value="refunded">
-                            Refunded
-                        </option>
+                            <option value="low">
+                                Low — Stable
+                            </option>
 
-                    </select>
+                            <option value="medium">
+                                Medium — Balanced
+                            </option>
+
+                            <option value="high">
+                                High — High Volatility
+                            </option>
+
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Minimum Bet</span>
+
+                        <input
+                            type="number"
+                            id="minimumBet"
+                            min="1"
+                            step="1"
+                            required>
+                    </label>
+
+                    <label>
+                        <span>Maximum Bet Per Round</span>
+
+                        <input
+                            type="number"
+                            id="maximumBet"
+                            min="1"
+                            step="1"
+                            required>
+                    </label>
+
+                    <label>
+                        <span>Service Charge (%)</span>
+
+                        <input
+                            type="number"
+                            id="serviceChargePercent"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            required>
+                    </label>
+
+                    <label>
+                        <span>Betting Duration (seconds)</span>
+
+                        <input
+                            type="number"
+                            id="bettingDurationSeconds"
+                            min="5"
+                            max="300"
+                            required>
+                    </label>
+
+                    <label>
+                        <span>Dice Roll Duration</span>
+
+                        <input
+                            type="number"
+                            id="rollDurationSeconds"
+                            min="2"
+                            max="30"
+                            required>
+                    </label>
+
+                    <label>
+                        <span>Result Display Duration</span>
+
+                        <input
+                            type="number"
+                            id="resultDisplaySeconds"
+                            min="2"
+                            max="60"
+                            required>
+                    </label>
+
+                    <label>
+                        <span>Next Round Delay</span>
+
+                        <input
+                            type="number"
+                            id="nextRoundDelaySeconds"
+                            min="1"
+                            max="60"
+                            required>
+                    </label>
+
+                    <div class="form-footer">
+
+                        <p>
+                            Settings changes নতুন round থেকে কার্যকর হবে।
+                        </p>
+
+                        <button
+                            type="submit"
+                            class="primary-button"
+                            id="saveSettingsBtn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+
+                            Save Settings
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+            <section class="admin-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <span>PROBABILITY & PAYOUT</span>
+                        <h2>Dice Image Settings</h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="primary-button"
+                        id="saveSymbolsBtn">
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+
+                        Save Images
+                    </button>
+
+                </div>
+
+                <p class="panel-note">
+                    Equal mode-এ weight ব্যবহার হবে না।
+                    Weighted mode-এ বেশি weight মানে image আসার chance বেশি।
+                </p>
+
+                <div
+                    class="symbol-settings-grid"
+                    id="symbolSettingsGrid">
+
+                    <p class="empty-message">
+                        Dice image settings loading...
+                    </p>
+
+                </div>
+
+            </section>
+
+            <section class="admin-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <span>ROUND HISTORY</span>
+                        <h2>Bangla Dice Rounds</h2>
+                    </div>
+
+                    <div class="round-filters">
+
+                        <select id="roundStatusFilter">
+
+                            <option value>
+                                All Status
+                            </option>
+
+                            <option value="betting">
+                                Betting
+                            </option>
+
+                            <option value="rolling">
+                                Rolling
+                            </option>
+
+                            <option value="completed">
+                                Completed
+                            </option>
+
+                            <option value="refunded">
+                                Refunded
+                            </option>
+
+                        </select>
+
+                        <button
+                            type="button"
+                            class="icon-button"
+                            id="refreshRoundsBtn">
+
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Round</th>
+                                <th>Status</th>
+                                <th>Mode</th>
+                                <th>Winner</th>
+                                <th>Players</th>
+                                <th>Bets</th>
+                                <th>Total Bet</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="roundsTableBody">
+
+                            <tr>
+                                <td
+                                    colspan="8"
+                                    class="empty-table">
+                                    Rounds loading...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="pagination">
+
+                    <button
+                        type="button"
+                        id="previousPageBtn">
+                        Previous
+                    </button>
+
+                    <span id="pageInformation">
+                        Page 1 of 1
+                    </span>
+
+                    <button
+                        type="button"
+                        id="nextPageBtn">
+                        Next
+                    </button>
+
+                </div>
+
+            </section>
+
+        </main>
+
+        <div
+            class="modal-overlay is-hidden"
+            id="betsModal">
+
+            <div class="bets-modal">
+
+                <div class="modal-heading">
+
+                    <div>
+                        <span>ROUND DETAILS</span>
+                        <h2 id="betsModalTitle">
+                            Dice Bets
+                        </h2>
+                    </div>
 
                     <button
                         type="button"
                         class="icon-button"
-                        id="refreshRoundsBtn">
+                        id="closeBetsModalBtn">
 
-                        <i class="fa-solid fa-rotate"></i>
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
 
                 </div>
 
-            </div>
-
-            <div class="table-wrapper">
-
-                <table>
-
-                    <thead>
-                        <tr>
-                            <th>Round</th>
-                            <th>Status</th>
-                            <th>Mode</th>
-                            <th>Winner</th>
-                            <th>Players</th>
-                            <th>Bets</th>
-                            <th>Total Bet</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="roundsTableBody">
-
-                        <tr>
-                            <td
-                                colspan="8"
-                                class="empty-table">
-                                Rounds loading...
-                            </td>
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-            <div class="pagination">
-
-                <button
-                    type="button"
-                    id="previousPageBtn">
-                    Previous
-                </button>
-
-                <span id="pageInformation">
-                    Page 1 of 1
-                </span>
-
-                <button
-                    type="button"
-                    id="nextPageBtn">
-                    Next
-                </button>
-
-            </div>
-
-        </section>
-
-    </main>
-
-    <div
-        class="modal-overlay is-hidden"
-        id="betsModal">
-
-        <div class="bets-modal">
-
-            <div class="modal-heading">
-
-                <div>
-                    <span>ROUND DETAILS</span>
-                    <h2 id="betsModalTitle">
-                        Dice Bets
-                    </h2>
+                <div
+                    class="round-detail-grid"
+                    id="roundDetailGrid">
                 </div>
 
-                <button
-                    type="button"
-                    class="icon-button"
-                    id="closeBetsModalBtn">
+                <div class="table-wrapper">
 
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                    <table>
 
-            </div>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Image</th>
+                                <th>Multiplier</th>
+                                <th>Bet</th>
+                                <th>Status</th>
+                                <th>Charge</th>
+                                <th>Payout</th>
+                            </tr>
+                        </thead>
 
-            <div
-                class="round-detail-grid"
-                id="roundDetailGrid">
-            </div>
+                        <tbody id="betsTableBody">
 
-            <div class="table-wrapper">
+                            <tr>
+                                <td
+                                    colspan="7"
+                                    class="empty-table">
+                                    Bets loading...
+                                </td>
+                            </tr>
 
-                <table>
+                        </tbody>
 
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Image</th>
-                            <th>Multiplier</th>
-                            <th>Bet</th>
-                            <th>Status</th>
-                            <th>Charge</th>
-                            <th>Payout</th>
-                        </tr>
-                    </thead>
+                    </table>
 
-                    <tbody id="betsTableBody">
-
-                        <tr>
-                            <td
-                                colspan="7"
-                                class="empty-table">
-                                Bets loading...
-                            </td>
-                        </tr>
-
-                    </tbody>
-
-                </table>
+                </div>
 
             </div>
 
         </div>
 
-    </div>
+        <div
+            class="admin-loading"
+            id="adminLoading">
 
-    <div
-        class="admin-loading"
-        id="adminLoading">
+            <div class="admin-spinner"></div>
 
-        <div class="admin-spinner"></div>
+            <p>Loading Bangla Dice control...</p>
 
-        <p>Loading Bangla Dice control...</p>
+        </div>
 
-    </div>
+        <div
+            class="admin-toast"
+            id="adminToast"
+            role="status">
+        </div>
 
-    <div
-        class="admin-toast"
-        id="adminToast"
-        role="status">
-    </div>
+        <script src="../js/admin-bangla-dice.js"></script>
 
-    <script src="../js/admin-bangla-dice.js"></script>
-
-</body>
+    </body>
 
 </html>

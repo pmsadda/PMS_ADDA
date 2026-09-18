@@ -38,6 +38,13 @@ const ROUND_STATUS =
       "admin_configured_odds"
   });
 
+  const VOLATILITY_PROFILE =
+  Object.freeze({
+    LOW: "low",
+    MEDIUM: "medium",
+    HIGH: "high",
+  });
+
 const ACTIVE_ROUND_STATUSES = [
   ROUND_STATUS.BETTING,
   ROUND_STATUS.BETTING_CLOSED,
@@ -175,16 +182,30 @@ function mapSettingsRow(row) {
         row.game_enabled
       ) === 1,
 
-          resultMode:
-      Object.values(
-        RESULT_MODE
-      ).includes(
-        row.result_mode
-      )
-        ? row.result_mode
-        : RESULT_MODE.FAIR_EQUAL,
+        resultMode:
+  Object.values(
+    RESULT_MODE
+  ).includes(
+    row.result_mode
+  )
+    ? row.result_mode
+    : RESULT_MODE.FAIR_EQUAL,
 
-    oddsVersion:
+volatilityProfile:
+  Object.values(
+    VOLATILITY_PROFILE
+  ).includes(
+    String(
+      row.volatility_profile ||
+      ""
+    ).toLowerCase()
+  )
+    ? String(
+        row.volatility_profile
+      ).toLowerCase()
+    : VOLATILITY_PROFILE.MEDIUM,
+
+oddsVersion:
       Number(
         row.odds_version ||
         1
@@ -320,11 +341,25 @@ function mapRoundRow(
     roundStatus:
       row.round_status,
 
-          resultMode:
-      row.result_mode_snapshot ||
-      RESULT_MODE.FAIR_EQUAL,
+      resultMode:
+  row.result_mode_snapshot ||
+  RESULT_MODE.FAIR_EQUAL,
 
-    oddsVersion:
+volatilityProfile:
+  Object.values(
+    VOLATILITY_PROFILE
+  ).includes(
+    String(
+      row.volatility_profile_snapshot ||
+      ""
+    ).toLowerCase()
+  )
+    ? String(
+        row.volatility_profile_snapshot
+      ).toLowerCase()
+    : null,
+
+oddsVersion:
       Number(
         row.odds_version_snapshot ||
         1
@@ -1212,6 +1247,18 @@ async function applyPendingConfiguration(
   );
 
   assertCondition(
+  Object.values(
+    VOLATILITY_PROFILE
+  ).includes(
+    settingsPayload
+      .volatilityProfile
+  ),
+  "Pending volatility profile is invalid.",
+  500,
+  "INVALID_PENDING_VOLATILITY_PROFILE"
+);
+
+  assertCondition(
     Array.isArray(
       animalsPayload
     ) &&
@@ -1278,6 +1325,7 @@ async function applyPendingConfiguration(
         service_charge_percent = ?,
         max_round_liability = ?,
         result_mode = ?,
+        volatility_profile = ?,
         odds_version = ?,
         odds_updated_at =
           CURRENT_TIMESTAMP(3),
@@ -1330,9 +1378,11 @@ async function applyPendingConfiguration(
 
       settingsPayload.resultMode,
 
-      Number(
-        pending.config_version
-      ),
+settingsPayload.volatilityProfile,
+
+Number(
+  pending.config_version
+),
 
       pending.created_by ||
       null
@@ -1557,59 +1607,62 @@ async function createRound() {
       );
 
     const [insertResult] =
-      await connection.query(
-        `
-          INSERT INTO bangla_wheel_rounds (
-            round_code,
-            round_status,
-                        server_seed_hash,
-            server_seed,
-            round_nonce,
-            result_mode_snapshot,
-            odds_version_snapshot,
-            probability_snapshot,
-            total_winning_weight,
-            probability_locked_at,
-            betting_started_at,
-            betting_closes_at
-          )
-          VALUES (
-            ?,
-            'betting',
-                   ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            CURRENT_TIMESTAMP(3),
-            CURRENT_TIMESTAMP(3),
-            DATE_ADD(
-              CURRENT_TIMESTAMP(3),
-              INTERVAL ? SECOND
-            )
-          )
-        `,
-                [
-          roundCode,
-          serverSeedHash,
-          serverSeed,
-          roundNonce,
-          lockedProbability.resultMode,
-          Number(
-            settings.oddsVersion ||
-            1
-          ),
-          JSON.stringify(
-            lockedProbability
-              .probabilitySnapshot
-          ),
-          lockedProbability
-            .totalWinningWeight,
-          bettingDuration
-        ]
-      );
+  await connection.query(
+    `
+      INSERT INTO bangla_wheel_rounds (
+        round_code,
+        round_status,
+        server_seed_hash,
+        server_seed,
+        round_nonce,
+        result_mode_snapshot,
+        volatility_profile_snapshot,
+        odds_version_snapshot,
+        probability_snapshot,
+        total_winning_weight,
+        probability_locked_at,
+        betting_started_at,
+        betting_closes_at
+      )
+      VALUES (
+        ?,
+        'betting',
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        CURRENT_TIMESTAMP(3),
+        CURRENT_TIMESTAMP(3),
+        DATE_ADD(
+          CURRENT_TIMESTAMP(3),
+          INTERVAL ? SECOND
+        )
+      )
+    `,
+    [
+      roundCode,
+      serverSeedHash,
+      serverSeed,
+      roundNonce,
+      lockedProbability.resultMode,
+      settings.volatilityProfile,
+      Number(
+        settings.oddsVersion ||
+        1
+      ),
+      JSON.stringify(
+        lockedProbability
+          .probabilitySnapshot
+      ),
+      lockedProbability
+        .totalWinningWeight,
+      bettingDuration,
+    ]
+  );
 
           if (
       appliedPendingConfig
@@ -1701,6 +1754,7 @@ async function getPublicGameState() {
 module.exports = {
   ROUND_STATUS,
   RESULT_MODE,
+  VOLATILITY_PROFILE,
   ACTIVE_ROUND_STATUSES,
 
   createGameError,

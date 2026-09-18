@@ -14,6 +14,13 @@ const ROUND_STATUS = Object.freeze({
   CANCELLED: "cancelled",
 });
 
+const VOLATILITY_PROFILE =
+  Object.freeze({
+    LOW: "low",
+    MEDIUM: "medium",
+    HIGH: "high",
+  });
+
 function createGameError(
   message,
   statusCode = 400,
@@ -84,9 +91,33 @@ function mapSettingsRow(row) {
 
     gameEnabled: Boolean(Number(row.game_enabled)),
 
-    resultMode: String(row.result_mode || "equal"),
+  resultMode:
+  ["equal", "weighted"].includes(
+    String(
+      row.result_mode ||
+      ""
+    ).toLowerCase()
+  )
+    ? String(
+        row.result_mode
+      ).toLowerCase()
+    : "equal",
 
-    minimumBet: parseMoney(row.minimum_bet),
+volatilityProfile:
+  Object.values(
+    VOLATILITY_PROFILE
+  ).includes(
+    String(
+      row.volatility_profile ||
+      ""
+    ).toLowerCase()
+  )
+    ? String(
+        row.volatility_profile
+      ).toLowerCase()
+    : VOLATILITY_PROFILE.MEDIUM,
+
+minimumBet: parseMoney(row.minimum_bet),
 
     maximumBet: parseMoney(row.maximum_bet),
 
@@ -155,9 +186,27 @@ function mapRoundRow(row, { revealResult = false } = {}) {
 
     roundStatus: status,
 
-    resultMode: String(row.result_mode),
+   resultMode:
+  String(
+    row.result_mode ||
+    "equal"
+  ),
 
-    minimumBet: parseMoney(row.minimum_bet),
+volatilityProfile:
+  Object.values(
+    VOLATILITY_PROFILE
+  ).includes(
+    String(
+      row.volatility_profile_snapshot ||
+      ""
+    ).toLowerCase()
+  )
+    ? String(
+        row.volatility_profile_snapshot
+      ).toLowerCase()
+    : null,
+
+minimumBet: parseMoney(row.minimum_bet),
 
     maximumBet: parseMoney(row.maximum_bet),
 
@@ -470,63 +519,66 @@ async function createRound() {
       bettingStartedAt.getTime() + settings.bettingDurationSeconds * 1000,
     );
 
-    const [insertResult] = await connection.query(
-      `
-          INSERT INTO bangla_dice_rounds (
-            round_code,
-            round_status,
-            result_mode,
-            minimum_bet,
-            maximum_bet,
-            service_charge_percent,
-            probability_snapshot,
-            server_seed_hash,
-            server_seed_reveal,
-            winning_symbol_id,
-            winning_symbol_code,
-            winning_symbol_name,
-            winning_face_number,
-            winning_multiplier,
-            betting_started_at,
-            betting_ends_at
-          )
-          VALUES (
-            ?,
-            'betting',
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?
-          )
-        `,
-      [
-        roundCode,
-        settings.resultMode,
-        settings.minimumBet,
-        settings.maximumBet,
-        settings.serviceChargePercent,
-        JSON.stringify(snapshot),
-        serverSeedHash,
-        serverSeed,
-        winner.id,
-        winner.symbolCode,
-        winner.symbolNameBn,
-        winner.faceNumber,
-        winner.multiplier,
-        bettingStartedAt,
-        bettingEndsAt,
-      ],
-    );
+   const [insertResult] = await connection.query(
+  `
+    INSERT INTO bangla_dice_rounds (
+      round_code,
+      round_status,
+      result_mode,
+      volatility_profile_snapshot,
+      minimum_bet,
+      maximum_bet,
+      service_charge_percent,
+      probability_snapshot,
+      server_seed_hash,
+      server_seed_reveal,
+      winning_symbol_id,
+      winning_symbol_code,
+      winning_symbol_name,
+      winning_face_number,
+      winning_multiplier,
+      betting_started_at,
+      betting_ends_at
+    )
+    VALUES (
+      ?,
+      'betting',
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?
+    )
+  `,
+  [
+    roundCode,
+    settings.resultMode,
+    settings.volatilityProfile,
+    settings.minimumBet,
+    settings.maximumBet,
+    settings.serviceChargePercent,
+    JSON.stringify(snapshot),
+    serverSeedHash,
+    serverSeed,
+    winner.id,
+    winner.symbolCode,
+    winner.symbolNameBn,
+    winner.faceNumber,
+    winner.multiplier,
+    bettingStartedAt,
+    bettingEndsAt,
+  ],
+);
 
     const createdRow = await getRoundById(insertResult.insertId, connection);
 
@@ -633,6 +685,7 @@ async function getPublicGameState() {
 
 module.exports = {
   ROUND_STATUS,
+  VOLATILITY_PROFILE,
   createGameError,
   assertCondition,
   parseMoney,

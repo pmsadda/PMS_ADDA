@@ -1,31 +1,23 @@
 "use strict";
 
-const {
-  pool,
-} = require("../config/database");
+const { pool } = require("../config/database");
 
 const {
+  VOLATILITY_PROFILE,
   assertCondition,
   parseMoney,
   parsePositiveInteger,
   mapSettingsRow,
   mapSymbolRow,
   mapRoundRow,
-} = require(
-  "./bangla-dice.service",
-);
+} = require("./bangla-dice.service");
 
-function parseBoolean(
-  value,
-  fallback = false,
-) {
+function parseBoolean(value, fallback = false) {
   if (
     value === true ||
     value === 1 ||
     value === "1" ||
-    String(value)
-      .toLowerCase() ===
-      "true"
+    String(value).toLowerCase() === "true"
   ) {
     return true;
   }
@@ -34,9 +26,7 @@ function parseBoolean(
     value === false ||
     value === 0 ||
     value === "0" ||
-    String(value)
-      .toLowerCase() ===
-      "false"
+    String(value).toLowerCase() === "false"
   ) {
     return false;
   }
@@ -44,25 +34,14 @@ function parseBoolean(
   return fallback;
 }
 
-function parsePageValue(
-  value,
-  fallback,
-  maximum,
-) {
-  const number =
-    Number(value);
+function parsePageValue(value, fallback, maximum) {
+  const number = Number(value);
 
-  if (
-    !Number.isInteger(number) ||
-    number < 1
-  ) {
+  if (!Number.isInteger(number) || number < 1) {
     return fallback;
   }
 
-  return Math.min(
-    number,
-    maximum,
-  );
+  return Math.min(number, maximum);
 }
 
 async function createAdminLog(
@@ -99,33 +78,18 @@ async function createAdminLog(
       Number(adminUserId),
       String(actionType),
       String(description),
-      previousData
-        ? JSON.stringify(
-            previousData,
-          )
-        : null,
-      newData
-        ? JSON.stringify(
-            newData,
-          )
-        : null,
-      ipAddress
-        ? String(ipAddress)
-            .slice(0, 64)
-        : null,
+      previousData ? JSON.stringify(previousData) : null,
+      newData ? JSON.stringify(newData) : null,
+      ipAddress ? String(ipAddress).slice(0, 64) : null,
     ],
   );
 }
 
 async function getAdminDashboard() {
-  const [
-    settingsRows,
-    symbolRows,
-    summaryRows,
-    recentRoundRows,
-  ] = await Promise.all([
-    pool.query(
-      `
+  const [settingsRows, symbolRows, summaryRows, recentRoundRows] =
+    await Promise.all([
+      pool.query(
+        `
         SELECT *
 
         FROM bangla_dice_settings
@@ -134,20 +98,20 @@ async function getAdminDashboard() {
 
         LIMIT 1
       `,
-    ),
+      ),
 
-    pool.query(
-      `
+      pool.query(
+        `
         SELECT *
 
         FROM bangla_dice_symbols
 
         ORDER BY face_number ASC
       `,
-    ),
+      ),
 
-    pool.query(
-      `
+      pool.query(
+        `
         SELECT
           COUNT(*) AS total_rounds,
 
@@ -192,10 +156,10 @@ async function getAdminDashboard() {
 
         FROM bangla_dice_rounds
       `,
-    ),
+      ),
 
-    pool.query(
-      `
+      pool.query(
+        `
         SELECT *
 
         FROM bangla_dice_rounds
@@ -204,94 +168,42 @@ async function getAdminDashboard() {
 
         LIMIT 10
       `,
-    ),
-  ]);
+      ),
+    ]);
 
-  const summary =
-    summaryRows[0][0] ||
-    {};
+  const summary = summaryRows[0][0] || {};
 
   return {
-    settings:
-      mapSettingsRow(
-        settingsRows[0][0],
-      ),
+    settings: mapSettingsRow(settingsRows[0][0]),
 
-    symbols:
-      symbolRows[0].map(
-        mapSymbolRow,
-      ),
+    symbols: symbolRows[0].map(mapSymbolRow),
 
     summary: {
-      totalRounds:
-        Number(
-          summary
-            .total_rounds ||
-          0,
-        ),
+      totalRounds: Number(summary.total_rounds || 0),
 
-      completedRounds:
-        Number(
-          summary
-            .completed_rounds ||
-          0,
-        ),
+      completedRounds: Number(summary.completed_rounds || 0),
 
-      refundedRounds:
-        Number(
-          summary
-            .refunded_rounds ||
-          0,
-        ),
+      refundedRounds: Number(summary.refunded_rounds || 0),
 
-      totalBetAmount:
-        parseMoney(
-          summary
-            .total_bet_amount,
-        ),
+      totalBetAmount: parseMoney(summary.total_bet_amount),
 
-      totalNetPayout:
-        parseMoney(
-          summary
-            .total_net_payout,
-        ),
+      totalNetPayout: parseMoney(summary.total_net_payout),
 
-      totalServiceCharge:
-        parseMoney(
-          summary
-            .total_service_charge,
-        ),
+      totalServiceCharge: parseMoney(summary.total_service_charge),
 
-      grossRevenue:
-        parseMoney(
-          summary
-            .gross_revenue,
-        ),
+      grossRevenue: parseMoney(summary.gross_revenue),
     },
 
-    recentRounds:
-      recentRoundRows[0].map(
-        (row) =>
-          mapRoundRow(
-            row,
-            {
-              revealResult:
-                true,
-            },
-          ),
-      ),
+    recentRounds: recentRoundRows[0].map((row) =>
+      mapRoundRow(row, {
+        revealResult: true,
+      }),
+    ),
   };
 }
 
-async function updateSettings({
-  adminUserId,
-  payload,
-  ipAddress,
-}) {
-  const validAdminId =
-    parsePositiveInteger(
-      adminUserId,
-    );
+async function updateSettings({ adminUserId, payload, ipAddress }) {
+  const validAdminId = parsePositiveInteger(adminUserId);
 
   assertCondition(
     validAdminId,
@@ -300,148 +212,110 @@ async function updateSettings({
     "INVALID_ADMIN_USER",
   );
 
-  const resultMode =
-    String(
-      payload?.resultMode ||
-      "",
-    )
-      .trim()
-      .toLowerCase();
+  const resultMode = String(payload?.resultMode || "")
+    .trim()
+    .toLowerCase();
 
   assertCondition(
-    [
-      "equal",
-      "weighted",
-    ].includes(resultMode),
+    ["equal", "weighted"].includes(resultMode),
     "Result mode must be equal or weighted.",
     400,
     "INVALID_DICE_RESULT_MODE",
   );
 
-  const minimumBet =
-    parseMoney(
-      payload?.minimumBet,
-    );
-
-  const maximumBet =
-    parseMoney(
-      payload?.maximumBet,
-    );
-
-  const serviceChargePercent =
-    parseMoney(
-      payload
-        ?.serviceChargePercent,
-    );
-
-  const bettingDurationSeconds =
-    Number(
-      payload
-        ?.bettingDurationSeconds,
-    );
-
-  const rollDurationSeconds =
-    Number(
-      payload
-        ?.rollDurationSeconds,
-    );
-
-  const resultDisplaySeconds =
-    Number(
-      payload
-        ?.resultDisplaySeconds,
-    );
-
-  const nextRoundDelaySeconds =
-    Number(
-      payload
-        ?.nextRoundDelaySeconds,
-    );
+  const volatilityProfile = String(
+    payload?.volatilityProfile || VOLATILITY_PROFILE.MEDIUM,
+  )
+    .trim()
+    .toLowerCase();
 
   assertCondition(
-    minimumBet >= 1 &&
-    minimumBet <= 100000,
+    Object.values(VOLATILITY_PROFILE).includes(volatilityProfile),
+    "Bangla Dice mode must be low, medium or high.",
+    400,
+    "INVALID_DICE_VOLATILITY_PROFILE",
+  );
+
+  const minimumBet = parseMoney(payload?.minimumBet);
+
+  const maximumBet = parseMoney(payload?.maximumBet);
+
+  const serviceChargePercent = parseMoney(payload?.serviceChargePercent);
+
+  const bettingDurationSeconds = Number(payload?.bettingDurationSeconds);
+
+  const rollDurationSeconds = Number(payload?.rollDurationSeconds);
+
+  const resultDisplaySeconds = Number(payload?.resultDisplaySeconds);
+
+  const nextRoundDelaySeconds = Number(payload?.nextRoundDelaySeconds);
+
+  assertCondition(
+    minimumBet >= 1 && minimumBet <= 100000,
     "Minimum bet must be between 1 and 100000.",
     400,
     "INVALID_DICE_MINIMUM_BET",
   );
 
   assertCondition(
-    maximumBet >=
-      minimumBet &&
-    maximumBet <= 10000000,
+    maximumBet >= minimumBet && maximumBet <= 10000000,
     "Maximum bet must be greater than or equal to minimum bet.",
     400,
     "INVALID_DICE_MAXIMUM_BET",
   );
 
   assertCondition(
-    serviceChargePercent >= 0 &&
-    serviceChargePercent <= 100,
+    serviceChargePercent >= 0 && serviceChargePercent <= 100,
     "Service charge must be between 0 and 100 percent.",
     400,
     "INVALID_DICE_SERVICE_CHARGE",
   );
 
   assertCondition(
-    Number.isInteger(
-      bettingDurationSeconds,
-    ) &&
-    bettingDurationSeconds >= 5 &&
-    bettingDurationSeconds <= 300,
+    Number.isInteger(bettingDurationSeconds) &&
+      bettingDurationSeconds >= 5 &&
+      bettingDurationSeconds <= 300,
     "Betting duration must be between 5 and 300 seconds.",
     400,
     "INVALID_DICE_BETTING_DURATION",
   );
 
   assertCondition(
-    Number.isInteger(
-      rollDurationSeconds,
-    ) &&
-    rollDurationSeconds >= 2 &&
-    rollDurationSeconds <= 30,
+    Number.isInteger(rollDurationSeconds) &&
+      rollDurationSeconds >= 2 &&
+      rollDurationSeconds <= 30,
     "Roll duration must be between 2 and 30 seconds.",
     400,
     "INVALID_DICE_ROLL_DURATION",
   );
 
   assertCondition(
-    Number.isInteger(
-      resultDisplaySeconds,
-    ) &&
-    resultDisplaySeconds >= 2 &&
-    resultDisplaySeconds <= 60,
+    Number.isInteger(resultDisplaySeconds) &&
+      resultDisplaySeconds >= 2 &&
+      resultDisplaySeconds <= 60,
     "Result display must be between 2 and 60 seconds.",
     400,
     "INVALID_DICE_RESULT_DURATION",
   );
 
   assertCondition(
-    Number.isInteger(
-      nextRoundDelaySeconds,
-    ) &&
-    nextRoundDelaySeconds >= 1 &&
-    nextRoundDelaySeconds <= 60,
+    Number.isInteger(nextRoundDelaySeconds) &&
+      nextRoundDelaySeconds >= 1 &&
+      nextRoundDelaySeconds <= 60,
     "Next round delay must be between 1 and 60 seconds.",
     400,
     "INVALID_DICE_NEXT_ROUND_DELAY",
   );
 
-  const gameEnabled =
-    parseBoolean(
-      payload?.gameEnabled,
-      true,
-    );
+  const gameEnabled = parseBoolean(payload?.gameEnabled, true);
 
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const [previousRows] =
-      await connection.query(
-        `
+    const [previousRows] = await connection.query(
+      `
           SELECT *
 
           FROM bangla_dice_settings
@@ -452,12 +326,9 @@ async function updateSettings({
 
           FOR UPDATE
         `,
-      );
+    );
 
-    const previousSettings =
-      mapSettingsRow(
-        previousRows[0],
-      );
+    const previousSettings = mapSettingsRow(previousRows[0]);
 
     assertCondition(
       previousSettings,
@@ -473,6 +344,7 @@ async function updateSettings({
         SET
           game_enabled = ?,
           result_mode = ?,
+          volatility_profile = ?,
           minimum_bet = ?,
           maximum_bet = ?,
           betting_duration_seconds = ?,
@@ -484,10 +356,9 @@ async function updateSettings({
         WHERE id = 1
       `,
       [
-        gameEnabled
-          ? 1
-          : 0,
+        gameEnabled ? 1 : 0,
         resultMode,
+        volatilityProfile,
         minimumBet,
         maximumBet,
         bettingDurationSeconds,
@@ -498,9 +369,8 @@ async function updateSettings({
       ],
     );
 
-    const [updatedRows] =
-      await connection.query(
-        `
+    const [updatedRows] = await connection.query(
+      `
           SELECT *
 
           FROM bangla_dice_settings
@@ -509,34 +379,23 @@ async function updateSettings({
 
           LIMIT 1
         `,
-      );
-
-    const updatedSettings =
-      mapSettingsRow(
-        updatedRows[0],
-      );
-
-    await createAdminLog(
-      connection,
-      {
-        adminUserId:
-          validAdminId,
-
-        actionType:
-          "settings_updated",
-
-        description:
-          "Bangla Dice settings updated.",
-
-        previousData:
-          previousSettings,
-
-        newData:
-          updatedSettings,
-
-        ipAddress,
-      },
     );
+
+    const updatedSettings = mapSettingsRow(updatedRows[0]);
+
+    await createAdminLog(connection, {
+      adminUserId: validAdminId,
+
+      actionType: "settings_updated",
+
+      description: "Bangla Dice settings updated.",
+
+      previousData: previousSettings,
+
+      newData: updatedSettings,
+
+      ipAddress,
+    });
 
     await connection.commit();
 
@@ -550,15 +409,8 @@ async function updateSettings({
   }
 }
 
-async function updateSymbols({
-  adminUserId,
-  symbols,
-  ipAddress,
-}) {
-  const validAdminId =
-    parsePositiveInteger(
-      adminUserId,
-    );
+async function updateSymbols({ adminUserId, symbols, ipAddress }) {
+  const validAdminId = parsePositiveInteger(adminUserId);
 
   assertCondition(
     validAdminId,
@@ -568,84 +420,51 @@ async function updateSymbols({
   );
 
   assertCondition(
-    Array.isArray(symbols) &&
-    symbols.length === 6,
+    Array.isArray(symbols) && symbols.length === 6,
     "Exactly six Dice symbol settings are required.",
     400,
     "INVALID_DICE_SYMBOL_SETTINGS",
   );
 
-  const normalizedSymbols =
-    symbols.map(
-      (symbol) => {
-        const id =
-          parsePositiveInteger(
-            symbol?.id,
-          );
+  const normalizedSymbols = symbols.map((symbol) => {
+    const id = parsePositiveInteger(symbol?.id);
 
-        const multiplier =
-          Number(
-            symbol?.multiplier,
-          );
+    const multiplier = Number(symbol?.multiplier);
 
-        const probabilityWeight =
-          Number(
-            symbol
-              ?.probabilityWeight,
-          );
+    const probabilityWeight = Number(symbol?.probabilityWeight);
 
-        assertCondition(
-          id,
-          "Each Dice symbol requires a valid ID.",
-          400,
-          "INVALID_DICE_SYMBOL_ID",
-        );
-
-        assertCondition(
-          Number.isFinite(
-            multiplier,
-          ) &&
-          multiplier >= 1 &&
-          multiplier <= 100,
-          "Each multiplier must be between 1 and 100.",
-          400,
-          "INVALID_DICE_MULTIPLIER",
-        );
-
-        assertCondition(
-          Number.isFinite(
-            probabilityWeight,
-          ) &&
-          probabilityWeight > 0 &&
-          probabilityWeight <= 100000,
-          "Each probability weight must be greater than zero.",
-          400,
-          "INVALID_DICE_WEIGHT",
-        );
-
-        return {
-          id,
-          multiplier:
-            Number(
-              multiplier.toFixed(2),
-            ),
-
-          probabilityWeight:
-            Number(
-              probabilityWeight
-                .toFixed(4),
-            ),
-        };
-      },
+    assertCondition(
+      id,
+      "Each Dice symbol requires a valid ID.",
+      400,
+      "INVALID_DICE_SYMBOL_ID",
     );
 
-  const uniqueIds =
-    new Set(
-      normalizedSymbols.map(
-        (symbol) =>
-          symbol.id,
-      ),
+    assertCondition(
+      Number.isFinite(multiplier) && multiplier >= 1 && multiplier <= 100,
+      "Each multiplier must be between 1 and 100.",
+      400,
+      "INVALID_DICE_MULTIPLIER",
     );
+
+    assertCondition(
+      Number.isFinite(probabilityWeight) &&
+        probabilityWeight > 0 &&
+        probabilityWeight <= 100000,
+      "Each probability weight must be greater than zero.",
+      400,
+      "INVALID_DICE_WEIGHT",
+    );
+
+    return {
+      id,
+      multiplier: Number(multiplier.toFixed(2)),
+
+      probabilityWeight: Number(probabilityWeight.toFixed(4)),
+    };
+  });
+
+  const uniqueIds = new Set(normalizedSymbols.map((symbol) => symbol.id));
 
   assertCondition(
     uniqueIds.size === 6,
@@ -654,15 +473,13 @@ async function updateSymbols({
     "DUPLICATE_DICE_SYMBOL_ID",
   );
 
-  const connection =
-    await pool.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const [previousRows] =
-      await connection.query(
-        `
+    const [previousRows] = await connection.query(
+      `
           SELECT *
 
           FROM bangla_dice_symbols
@@ -671,7 +488,7 @@ async function updateSymbols({
 
           FOR UPDATE
         `,
-      );
+    );
 
     assertCondition(
       previousRows.length === 6,
@@ -680,13 +497,9 @@ async function updateSymbols({
       "DICE_SYMBOL_COUNT_INVALID",
     );
 
-    for (
-      const symbol of
-      normalizedSymbols
-    ) {
-      const [updateResult] =
-        await connection.query(
-          `
+    for (const symbol of normalizedSymbols) {
+      const [updateResult] = await connection.query(
+        `
             UPDATE bangla_dice_symbols
 
             SET
@@ -696,65 +509,44 @@ async function updateSymbols({
             WHERE id = ?
               AND is_active = 1
           `,
-          [
-            symbol.multiplier,
-            symbol
-              .probabilityWeight,
-            symbol.id,
-          ],
-        );
+        [symbol.multiplier, symbol.probabilityWeight, symbol.id],
+      );
 
       assertCondition(
-        updateResult.affectedRows ===
-          1,
+        updateResult.affectedRows === 1,
         `Dice symbol ${symbol.id} could not be updated.`,
         404,
         "DICE_SYMBOL_UPDATE_FAILED",
       );
     }
 
-    const [updatedRows] =
-      await connection.query(
-        `
+    const [updatedRows] = await connection.query(
+      `
           SELECT *
 
           FROM bangla_dice_symbols
 
           ORDER BY face_number ASC
         `,
-      );
-
-    const previousSymbols =
-      previousRows.map(
-        mapSymbolRow,
-      );
-
-    const updatedSymbols =
-      updatedRows.map(
-        mapSymbolRow,
-      );
-
-    await createAdminLog(
-      connection,
-      {
-        adminUserId:
-          validAdminId,
-
-        actionType:
-          "symbols_updated",
-
-        description:
-          "Bangla Dice multipliers and probability weights updated.",
-
-        previousData:
-          previousSymbols,
-
-        newData:
-          updatedSymbols,
-
-        ipAddress,
-      },
     );
+
+    const previousSymbols = previousRows.map(mapSymbolRow);
+
+    const updatedSymbols = updatedRows.map(mapSymbolRow);
+
+    await createAdminLog(connection, {
+      adminUserId: validAdminId,
+
+      actionType: "symbols_updated",
+
+      description: "Bangla Dice multipliers and probability weights updated.",
+
+      previousData: previousSymbols,
+
+      newData: updatedSymbols,
+
+      ipAddress,
+    });
 
     await connection.commit();
 
@@ -768,34 +560,16 @@ async function updateSymbols({
   }
 }
 
-async function getAdminRounds(
-  query = {},
-) {
-  const page =
-    parsePageValue(
-      query.page,
-      1,
-      100000,
-    );
+async function getAdminRounds(query = {}) {
+  const page = parsePageValue(query.page, 1, 100000);
 
-  const limit =
-    parsePageValue(
-      query.limit,
-      20,
-      100,
-    );
+  const limit = parsePageValue(query.limit, 20, 100);
 
-  const offset =
-    (page - 1) *
-    limit;
+  const offset = (page - 1) * limit;
 
-  const status =
-    String(
-      query.status ||
-      "",
-    )
-      .trim()
-      .toLowerCase();
+  const status = String(query.status || "")
+    .trim()
+    .toLowerCase();
 
   const validStatuses = [
     "betting",
@@ -810,31 +584,16 @@ async function getAdminRounds(
   const conditions = [];
   const parameters = [];
 
-  if (
-    validStatuses.includes(
-      status,
-    )
-  ) {
-    conditions.push(
-      "round_status = ?",
-    );
+  if (validStatuses.includes(status)) {
+    conditions.push("round_status = ?");
 
-    parameters.push(
-      status,
-    );
+    parameters.push(status);
   }
 
   const whereSql =
-    conditions.length > 0
-      ? `WHERE ${conditions.join(
-          " AND ",
-        )}`
-      : "";
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  const [
-    countRows,
-    roundRows,
-  ] = await Promise.all([
+  const [countRows, roundRows] = await Promise.all([
     pool.query(
       `
         SELECT
@@ -860,56 +619,29 @@ async function getAdminRounds(
         LIMIT ?
         OFFSET ?
       `,
-      [
-        ...parameters,
-        limit,
-        offset,
-      ],
+      [...parameters, limit, offset],
     ),
   ]);
 
-  const total =
-    Number(
-      countRows[0][0]
-        ?.total ||
-      0,
-    );
+  const total = Number(countRows[0][0]?.total || 0);
 
   return {
     page,
     limit,
     total,
 
-    totalPages:
-      Math.max(
-        1,
-        Math.ceil(
-          total /
-          limit,
-        ),
-      ),
+    totalPages: Math.max(1, Math.ceil(total / limit)),
 
-    rounds:
-      roundRows[0].map(
-        (row) =>
-          mapRoundRow(
-            row,
-            {
-              revealResult:
-                true,
-            },
-          ),
-      ),
+    rounds: roundRows[0].map((row) =>
+      mapRoundRow(row, {
+        revealResult: true,
+      }),
+    ),
   };
 }
 
-async function getAdminRoundBets(
-  roundId,
-) {
-  const validRoundId =
-    parsePositiveInteger(
-      roundId,
-    );
+async function getAdminRoundBets(roundId) {
+  const validRoundId = parsePositiveInteger(roundId);
 
   assertCondition(
     validRoundId,
@@ -918,10 +650,7 @@ async function getAdminRoundBets(
     "INVALID_DICE_ROUND_ID",
   );
 
-  const [
-    roundRows,
-    betRows,
-  ] = await Promise.all([
+  const [roundRows, betRows] = await Promise.all([
     pool.query(
       `
         SELECT *
@@ -966,85 +695,45 @@ async function getAdminRoundBets(
   );
 
   return {
-    round:
-      mapRoundRow(
-        roundRows[0][0],
-        {
-          revealResult:
-            true,
-        },
-      ),
+    round: mapRoundRow(roundRows[0][0], {
+      revealResult: true,
+    }),
 
-    bets:
-      betRows[0].map(
-        (bet) => ({
-          id:
-            Number(bet.id),
+    bets: betRows[0].map((bet) => ({
+      id: Number(bet.id),
 
-          betCode:
-            bet.bet_code,
+      betCode: bet.bet_code,
 
-          userId:
-            Number(
-              bet.user_id,
-            ),
+      userId: Number(bet.user_id),
 
-          uid:
-            bet.uid,
+      uid: bet.uid,
 
-          fullName:
-            bet.full_name,
+      fullName: bet.full_name,
 
-          username:
-            bet.username,
+      username: bet.username,
 
-          phone:
-            bet.phone,
+      phone: bet.phone,
 
-          selectedSymbolCode:
-            bet
-              .selected_symbol_code,
+      selectedSymbolCode: bet.selected_symbol_code,
 
-          selectedSymbolName:
-            bet
-              .selected_symbol_name,
+      selectedSymbolName: bet.selected_symbol_name,
 
-          multiplier:
-            Number(
-              bet
-                .locked_multiplier,
-            ),
+      multiplier: Number(bet.locked_multiplier),
 
-          betAmount:
-            parseMoney(
-              bet.bet_amount,
-            ),
+      betAmount: parseMoney(bet.bet_amount),
 
-          betStatus:
-            bet.bet_status,
+      betStatus: bet.bet_status,
 
-          grossPayout:
-            parseMoney(
-              bet.gross_payout,
-            ),
+      grossPayout: parseMoney(bet.gross_payout),
 
-          serviceCharge:
-            parseMoney(
-              bet.service_charge,
-            ),
+      serviceCharge: parseMoney(bet.service_charge),
 
-          netPayout:
-            parseMoney(
-              bet.net_payout,
-            ),
+      netPayout: parseMoney(bet.net_payout),
 
-          placedAt:
-            bet.placed_at,
+      placedAt: bet.placed_at,
 
-          settledAt:
-            bet.settled_at,
-        }),
-      ),
+      settledAt: bet.settled_at,
+    })),
   };
 }
 

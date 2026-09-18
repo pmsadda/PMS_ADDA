@@ -719,6 +719,50 @@
         0 8px 22px rgba(0, 0, 0, 0.25);
 }
 
+/* Volatility selector */
+
+.bw-volatility-section {
+    margin: 22px 0;
+    padding-top: 18px;
+    border-top: 1px solid #374151;
+}
+
+.bw-volatility-heading {
+    display: flex;
+    margin-bottom: 12px;
+    flex-direction: column;
+}
+
+.bw-volatility-heading > span {
+    color: #fbbf24;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+
+.bw-volatility-heading > strong {
+    margin-top: 4px;
+    color: #f8fafc;
+    font-size: 15px;
+}
+
+.bw-volatility-heading > small {
+    margin-top: 4px;
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+.bw-volatility-selector {
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 700px) {
+    .bw-volatility-selector {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Animal settings */
 
 .bw-animal-settings-header {

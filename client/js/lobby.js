@@ -2096,6 +2096,122 @@ document.addEventListener("keydown", (event) => {
     }
   );
 
+    /* =========================================================
+     GAME CATEGORY FILTER
+  ========================================================= */
+
+  const gameCategoryButtons =
+    Array.from(
+      document.querySelectorAll(
+        ".game-category-btn"
+      )
+    );
+
+  const lobbyGameCards =
+    Array.from(
+      document.querySelectorAll(
+        ".game-list .game-card"
+      )
+    );
+
+  function selectGameCategory(category) {
+    const selectedCategory =
+      String(category || "all")
+        .trim()
+        .toLowerCase();
+
+    gameCategoryButtons.forEach(
+      (button) => {
+        const isSelected =
+          button.dataset.gameCategory ===
+          selectedCategory;
+
+        button.classList.toggle(
+          "is-active",
+          isSelected
+        );
+
+        button.setAttribute(
+          "aria-selected",
+          String(isSelected)
+        );
+      }
+    );
+
+    lobbyGameCards.forEach(
+      (card) => {
+        const cardCategory =
+          String(
+            card.dataset.category ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+        const shouldShow =
+          selectedCategory === "all" ||
+          cardCategory === selectedCategory;
+
+        card.classList.toggle(
+          "is-category-hidden",
+          !shouldShow
+        );
+
+        card.setAttribute(
+          "aria-hidden",
+          String(!shouldShow)
+        );
+      }
+    );
+
+    try {
+      sessionStorage.setItem(
+        "tpl22_lobby_game_category",
+        selectedCategory
+      );
+    } catch (_error) {
+      // Storage unavailable হলেও filter কাজ করবে।
+    }
+  }
+
+  gameCategoryButtons.forEach(
+    (button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          selectGameCategory(
+            button.dataset.gameCategory
+          );
+        }
+      );
+    }
+  );
+
+  let savedGameCategory = "all";
+
+  try {
+    savedGameCategory =
+      sessionStorage.getItem(
+        "tpl22_lobby_game_category"
+      ) ||
+      "all";
+  } catch (_error) {
+    savedGameCategory = "all";
+  }
+
+  const categoryExists =
+    gameCategoryButtons.some(
+      (button) =>
+        button.dataset.gameCategory ===
+        savedGameCategory
+    );
+
+  selectGameCategory(
+    categoryExists
+      ? savedGameCategory
+      : "all"
+  );
+
   /* =========================================================
    GUEST AUTH POPUP
 ========================================================= */

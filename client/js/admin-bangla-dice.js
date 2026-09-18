@@ -28,8 +28,14 @@
     settingsForm: document.getElementById("settingsForm"),
     gameEnabled: document.getElementById("gameEnabled"),
     gameStatusText: document.getElementById("gameStatusText"),
-    resultMode: document.getElementById("resultMode"),
-    minimumBet: document.getElementById("minimumBet"),
+    resultMode:
+  document.getElementById("resultMode"),
+
+volatilityProfile:
+  document.getElementById("volatilityProfile"),
+
+minimumBet:
+  document.getElementById("minimumBet"),
     maximumBet: document.getElementById("maximumBet"),
     serviceChargePercent: document.getElementById(
       "serviceChargePercent"
@@ -302,13 +308,33 @@
     updateGameStatusText();
 
     if (elements.resultMode) {
-      elements.resultMode.value =
-        settings.result_mode ??
-        settings.resultMode ??
-        "equal";
-    }
+  elements.resultMode.value =
+    settings.result_mode ??
+    settings.resultMode ??
+    "equal";
+}
 
-    if (elements.minimumBet) {
+if (elements.volatilityProfile) {
+  const volatilityProfile =
+    String(
+      settings.volatility_profile ??
+      settings.volatilityProfile ??
+      "medium"
+    )
+      .trim()
+      .toLowerCase();
+
+  elements.volatilityProfile.value =
+    [
+      "low",
+      "medium",
+      "high",
+    ].includes(volatilityProfile)
+      ? volatilityProfile
+      : "medium";
+}
+
+if (elements.minimumBet) {
       elements.minimumBet.value =
         settings.minimum_bet ?? settings.minimumBet ?? 10;
     }
@@ -536,8 +562,15 @@
 
     const payload = {
       gameEnabled: elements.gameEnabled?.checked ? 1 : 0,
-      resultMode: elements.resultMode?.value || "equal",
-      minimumBet: toNumber(elements.minimumBet?.value),
+      resultMode:
+  elements.resultMode?.value ||
+  "equal",
+
+volatilityProfile:
+  elements.volatilityProfile?.value ||
+  "medium",
+
+minimumBet: toNumber(elements.minimumBet?.value),
       maximumBet: toNumber(elements.maximumBet?.value),
       serviceChargePercent: toNumber(
         elements.serviceChargePercent?.value
