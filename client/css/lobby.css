@@ -6273,3 +6273,101 @@ body.lobby-offer-open {
         font-size: 10px !important;
     }
 }
+
+/* =====================================================
+   FINAL MOBILE CARD 50% HEIGHT
+===================================================== */
+
+@media screen and (max-width: 768px) {
+    body .game-section .game-list {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-auto-rows: 185px !important;
+        gap: 7px !important;
+    }
+
+    body .game-section .game-list > .game-card {
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+        height: 185px !important;
+        min-height: 185px !important;
+        max-height: 185px !important;
+        aspect-ratio: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        contain: layout paint !important;
+    }
+
+    body .game-section .game-list > .game-card > img {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 185px !important;
+        min-height: 0 !important;
+        max-height: 185px !important;
+        object-fit: cover !important;
+    }
+
+    body .game-section .game-list > .game-card >
+    .carrom-lobby-art,
+
+    body .game-section .game-list > .game-card >
+    .andar-bahar-lobby-art,
+
+    body .game-section .game-list > .game-card >
+    .bangla-wheel-card-visual,
+
+    body .game-section .game-list > .game-card >
+    .bangla-dice-card-visual,
+
+    body .game-section .game-list > .game-card >
+    .aviator-card-visual,
+
+    body .game-section .game-list > .game-card >
+    .slot-card-visual,
+
+    body .game-section .game-list > .game-card >
+    .super-ace-card-visual,
+
+    body .game-section .game-list > .game-card >
+    .kait-card-visual,
+
+    body .game-section .game-list > .game-card >
+    .lottery-game-art {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 185px !important;
+        min-height: 0 !important;
+        max-height: 185px !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+
+    body .game-section .game-list > .game-card .game-info {
+        position: absolute !important;
+        right: 3px !important;
+        bottom: 6px !important;
+        left: 3px !important;
+        z-index: 10 !important;
+    }
+
+    body .game-section .game-list > .game-card .game-info h3 {
+        font-size: 10px !important;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    body .game-section .game-list {
+        grid-auto-rows: 165px !important;
+    }
+
+    body .game-section .game-list > .game-card,
+    body .game-section .game-list > .game-card > img {
+        height: 165px !important;
+        min-height: 165px !important;
+        max-height: 165px !important;
+    }
+}
