@@ -6022,3 +6022,199 @@ body.lobby-offer-open {
         min-height: 82px !important;
     }
 }
+
+/* পুরো game card clickable */
+.game-card {
+    cursor: pointer;
+}
+
+/* Play Now button লুকানো */
+.game-card .play-btn,
+.game-card a.play-btn {
+    display: none !important;
+}
+
+/* Mobile press effect */
+@media (max-width: 768px) {
+    .game-card {
+        transition: transform 0.15s ease, filter 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .game-card:active {
+        transform: scale(0.96);
+        filter: brightness(1.12);
+    }
+}
+
+/* =====================================================
+   MOBILE CASINO-STYLE 3 COLUMN GAME GRID
+===================================================== */
+
+@media (max-width: 768px) {
+    .app {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-right: 10px !important;
+        padding-left: 10px !important;
+    }
+
+    .game-section {
+        width: 100% !important;
+        margin-bottom: 85px !important;
+    }
+
+    .game-section h2 {
+        margin: 0 0 12px !important;
+        color: #ffd700;
+        font-size: 21px !important;
+        line-height: 1.2;
+    }
+
+    /* প্রতি row-তে ৩টি card */
+    .game-list {
+        display: grid !important;
+        width: 100% !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        align-items: stretch !important;
+        gap: 9px !important;
+    }
+
+    .game-card {
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        aspect-ratio: 3 / 4 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        border: 1px solid rgba(255, 215, 0, 0.35) !important;
+        border-radius: 10px !important;
+        background: #171717 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.38) !important;
+        cursor: pointer;
+    }
+
+    /* Teen Patti, Poker এবং Ludo images */
+    .game-card > img {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 9px !important;
+        object-fit: cover !important;
+        object-position: center !important;
+    }
+
+    /* CSS দিয়ে বানানো অন্য game visuals */
+    .carrom-lobby-art,
+    .andar-bahar-lobby-art,
+    .bangla-wheel-card-visual,
+    .bangla-dice-card-visual,
+    .aviator-card-visual,
+    .slot-card-visual,
+    .super-ace-card-visual,
+    .kait-card-visual,
+    .lottery-game-art {
+        position: absolute !important;
+        inset: 0 !important;
+        display: flex !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 9px !important;
+        overflow: hidden !important;
+    }
+
+    /* নিচে dark gradient */
+    .game-card::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 4;
+        height: 45%;
+        pointer-events: none;
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.96),
+            rgba(0, 0, 0, 0.58),
+            transparent
+        );
+    }
+
+    /* Game name */
+    .game-card .game-info {
+        position: absolute !important;
+        right: 4px !important;
+        bottom: 8px !important;
+        left: 4px !important;
+        z-index: 6 !important;
+        display: block !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        text-align: center !important;
+        pointer-events: none;
+    }
+
+    .game-card .game-info h3 {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        color: #ffffff !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        line-height: 1.25 !important;
+        text-overflow: ellipsis !important;
+        text-shadow: 0 2px 4px #000000;
+        white-space: nowrap !important;
+    }
+
+    /* Description, status, features ও buttons লুকানো */
+    .game-card .game-info p,
+    .game-card .game-live-status,
+    .game-card .play-btn,
+    .game-card a.play-btn,
+    .carrom-lobby-features,
+    .bangla-wheel-lobby-features,
+    .bangla-dice-features,
+    .aviator-lobby-features,
+    .slot-lobby-features,
+    .super-ace-features,
+    .kait-lobby-features {
+        display: none !important;
+    }
+
+    /* Tap animation */
+    .game-card:active {
+        transform: scale(0.96) !important;
+        filter: brightness(1.12);
+    }
+}
+
+/* খুব ছোট mobile-এও ৩ column থাকবে */
+@media (max-width: 360px) {
+    .game-list {
+        gap: 6px !important;
+    }
+
+    .game-card {
+        border-radius: 8px !important;
+    }
+
+    .game-card .game-info h3 {
+        font-size: 9px !important;
+    }
+}
