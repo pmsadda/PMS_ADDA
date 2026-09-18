@@ -6371,3 +6371,265 @@ body.lobby-offer-open {
         max-height: 165px !important;
     }
 }
+
+/* =========================
+   Sports Lobby Card
+========================= */
+
+.sports-lobby-card {
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(
+            34,
+            219,
+            151,
+            0.42
+        );
+
+    background:
+        linear-gradient(
+            145deg,
+            #102e2c,
+            #091725
+        );
+
+    box-shadow:
+        0 15px 40px
+        rgba(
+            0,
+            0,
+            0,
+            0.28
+        );
+}
+
+.sports-lobby-visual {
+    position: relative;
+
+    min-height: 165px;
+
+    display: grid;
+    place-items: center;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #277b5f 0%,
+            #174536 44%,
+            #0a2024 100%
+        );
+}
+
+.sports-lobby-visual::before {
+    content: "";
+
+    position: absolute;
+    inset: 15px;
+
+    border:
+        2px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.17
+        );
+
+    border-radius: 50%;
+}
+
+.sports-lobby-visual::after {
+    content: "";
+
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+
+    width: 2px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.13
+        );
+
+    transform:
+        translateX(-50%);
+}
+
+.sports-live-label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    padding:
+        5px 9px;
+
+    color: #ffffff;
+
+    border-radius: 999px;
+
+    background:
+        #ff3f63;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 0.7px;
+}
+
+.sports-live-label span {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background:
+        #ffffff;
+
+    box-shadow:
+        0 0 10px
+        rgba(
+            255,
+            255,
+            255,
+            0.9
+        );
+}
+
+.sports-cricket-icon {
+    position: relative;
+    z-index: 2;
+
+    font-size: 68px;
+
+    filter:
+        drop-shadow(
+            0 8px 14px
+            rgba(
+                0,
+                0,
+                0,
+                0.42
+            )
+        );
+}
+
+.sports-score-board {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    z-index: 2;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 7px;
+}
+
+.sports-score-board div {
+    display: grid;
+    gap: 2px;
+
+    padding:
+        7px 8px;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.12
+        );
+
+    border-radius: 8px;
+
+    background:
+        rgba(
+            2,
+            16,
+            18,
+            0.72
+        );
+
+    backdrop-filter:
+        blur(5px);
+}
+
+.sports-score-board small {
+    color:
+        #82ecc4;
+
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.sports-score-board strong {
+    color: #ffffff;
+
+    font-size: 10px;
+}
+
+.sports-play-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    text-decoration: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            #19db98,
+            #0fa56f
+        ) !important;
+
+    color:
+        #03251a !important;
+}
+
+/* Mobile */
+
+@media (
+    max-width: 600px
+) {
+    .sports-lobby-visual {
+        min-height: 125px;
+    }
+
+    .sports-cricket-icon {
+        font-size: 52px;
+    }
+
+    .sports-score-board {
+        right: 7px;
+        bottom: 7px;
+        left: 7px;
+    }
+
+    .sports-score-board div {
+        padding:
+            5px 6px;
+    }
+
+    .sports-score-board strong {
+        font-size: 8px;
+    }
+}

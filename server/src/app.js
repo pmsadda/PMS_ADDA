@@ -80,6 +80,9 @@ const adminKaitRoutes = require("./routes/admin-kait.routes");
 
 const adminLotteryRoutes = require("./routes/admin-lottery.routes");
 
+const sportsRoutes =
+  require("./routes/sports.routes");
+
 const adminAgentRoutes = require("./routes/admin-agent.routes");
 
 const appDownloadRoutes = require("./routes/app-download.routes");
@@ -459,6 +462,8 @@ app.use("/api/withdraws", withdrawRoutes);
 app.use("/api/slot", slotRoutes);
 
 app.use("/api/admin/slot", adminSlotRoutes);
+
+app.use("/api/sports", sportsRoutes);
 
 app.use("/api/wallet", walletRoutes);
 

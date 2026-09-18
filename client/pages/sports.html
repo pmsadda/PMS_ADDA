@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>Live Sports | TPL22</title>
+
+    <script src="../js/app-config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/sports.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+
+    <header class="sports-header">
+
+        <a
+            href="/lobby"
+            class="back-button"
+            aria-label="Back to lobby">
+
+            ‹
+
+        </a>
+
+        <div class="sports-title">
+
+            <strong>LIVE SPORTS</strong>
+
+            <small>
+                IPL & T20 Cricket
+            </small>
+
+        </div>
+
+        <button
+            type="button"
+            class="history-button"
+            id="historyButton">
+
+            My Bets
+
+        </button>
+
+    </header>
+
+    <!-- Main Content -->
+
+    <main class="sports-container">
+
+        <!-- Controls -->
+
+        <section class="sports-controls">
+
+            <div
+                class="sport-tabs"
+                role="tablist">
+
+                <button
+                    type="button"
+                    class="sport-tab active"
+                    data-sport-id="20"
+                    data-sport-name="IPL">
+
+                    IPL
+
+                </button>
+
+                <button
+                    type="button"
+                    class="sport-tab"
+                    data-sport-id="21"
+                    data-sport-name="T20">
+
+                    T20
+
+                </button>
+
+            </div>
+
+            <label class="date-control">
+
+                <span>Date</span>
+
+                <input
+                    type="date"
+                    id="sportsDate">
+
+            </label>
+
+            <button
+                type="button"
+                class="refresh-button"
+                id="refreshButton">
+
+                Refresh Odds
+
+            </button>
+
+        </section>
+
+        <!-- Settings Information -->
+
+        <section
+            class="betting-information"
+            id="bettingInformation">
+
+            <span>
+                Minimum bet:
+                <strong id="minimumBetText">
+                    ৳0
+                </strong>
+            </span>
+
+            <span>
+                Maximum bet:
+                <strong id="maximumBetText">
+                    ৳0
+                </strong>
+            </span>
+
+            <span>
+                Maximum payout:
+                <strong id="maximumPayoutText">
+                    ৳0
+                </strong>
+            </span>
+
+        </section>
+
+        <!-- Status -->
+
+        <section
+            class="sports-status"
+            id="sportsStatus">
+
+            Match এবং odds load হচ্ছে...
+
+        </section>
+
+        <!-- Events -->
+
+        <section
+            class="sports-events"
+            id="sportsEvents"
+            aria-live="polite">
+        </section>
+
+    </main>
+
+    <!-- Bet Slip Backdrop -->
+
+    <div
+        class="bet-slip-backdrop"
+        id="betSlipBackdrop">
+    </div>
+
+    <!-- Bet Slip -->
+
+    <aside
+        class="bet-slip"
+        id="betSlip"
+        aria-hidden="true">
+
+        <div class="bet-slip-header">
+
+            <strong>Bet Slip</strong>
+
+            <button
+                type="button"
+                id="closeBetSlip"
+                aria-label="Close bet slip">
+
+                ×
+
+            </button>
+
+        </div>
+
+        <div
+            class="selected-bet"
+            id="selectedBet">
+
+            একটি betting option নির্বাচন করুন।
+
+        </div>
+
+        <label class="stake-field">
+
+            <span>Bet Amount (৳)</span>
+
+            <input
+                type="number"
+                id="stakeAmount"
+                inputmode="decimal"
+                min="10"
+                step="10"
+                value="100">
+
+        </label>
+
+        <div class="quick-stakes">
+
+            <button
+                type="button"
+                data-stake="100">
+                ৳100
+            </button>
+
+            <button
+                type="button"
+                data-stake="500">
+                ৳500
+            </button>
+
+            <button
+                type="button"
+                data-stake="1000">
+                ৳1000
+            </button>
+
+            <button
+                type="button"
+                data-stake="5000">
+                ৳5000
+            </button>
+
+        </div>
+
+        <div class="payout-preview">
+
+            <span>
+                সম্ভাব্য payout
+            </span>
+
+            <strong id="potentialPayout">
+                ৳0.00
+            </strong>
+
+        </div>
+
+        <button
+            type="button"
+            class="place-bet-button"
+            id="placeBetButton">
+
+            Place Bet
+
+        </button>
+
+        <p
+            class="bet-message"
+            id="betMessage">
+        </p>
+
+    </aside>
+
+    <!-- Bet History Modal -->
+
+    <dialog
+        class="history-dialog"
+        id="historyDialog">
+
+        <div class="history-header">
+
+            <div>
+
+                <strong>My Sports Bets</strong>
+
+                <small>
+                    Recent 100 bets
+                </small>
+
+            </div>
+
+            <button
+                type="button"
+                id="closeHistory"
+                aria-label="Close history">
+
+                ×
+
+            </button>
+
+        </div>
+
+        <div
+            class="history-list"
+            id="historyList">
+        </div>
+
+    </dialog>
+
+    <script src="../js/sports.js"></script>
+
+</body>
+
+</html>
