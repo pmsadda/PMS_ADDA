@@ -175,270 +175,190 @@ function extractTeams(event) {
 /* =========================
    Extract Market Selections
 ========================= */
-
 function extractSelections(
   market,
 ) {
-  const output = [];
+  const selections = [];
 
   const participants =
     toArray(
       market.participants,
     );
 
-  const participantMap =
-    new Map(
-      participants.map(
-        (participant) => [
+  participants.forEach(
+    (participant) => {
+      const participantId =
+        normalizeText(
+          participant.id,
+        );
+
+      const participantName =
+        normalizeText(
+          participant.name,
+          `Selection ${participantId}`,
+        );
+
+      const lines =
+        toArray(
+          participant.lines,
+        );
+
+      lines.forEach((line) => {
+        const lineId =
           normalizeText(
-            firstValue(
-              participant.id,
-              participant.participant_id,
-            ),
-          ),
+            line.id,
+          );
 
-          participant,
-        ],
-      ),
-    );
+        if (
+          !participantId ||
+          !lineId
+        ) {
+          return;
+        }
 
-  const directSelections =
-    toArray(
-      firstValue(
-        market.selections,
-        market.outcomes,
-      ),
-    );
+        const pricesObject =
+          line.prices &&
+          typeof line.prices ===
+            "object" &&
+          !Array.isArray(
+            line.prices,
+          )
+            ? line.prices
+            : {};
 
-  directSelections.forEach(
-    (selection) => {
-      output.push({
-        id:
+        const availablePrices =
+          Object.entries(
+            pricesObject,
+          )
+            .map(
+              ([
+                affiliateId,
+                priceObject,
+              ]) => {
+                const americanOdds =
+                  Number(
+                    priceObject
+                      ?.price,
+                  );
+
+                if (
+                  !Number.isFinite(
+                    americanOdds,
+                  ) ||
+                  americanOdds ===
+                    0.0001 ||
+                  americanOdds === 0
+                ) {
+                  return null;
+                }
+
+                const decimalOdds =
+                  americanToDecimal(
+                    americanOdds,
+                  );
+
+                if (
+                  !Number.isFinite(
+                    decimalOdds,
+                  ) ||
+                  decimalOdds <= 1
+                ) {
+                  return null;
+                }
+
+                return {
+                  affiliateId:
+                    String(
+                      affiliateId,
+                    ),
+
+                  americanOdds:
+                    Math.trunc(
+                      americanOdds,
+                    ),
+
+                  decimalOdds:
+                    Number(
+                      decimalOdds
+                        .toFixed(4),
+                    ),
+
+                  updatedAt:
+                    priceObject
+                      ?.updated_at ||
+                    null,
+                };
+              },
+            )
+            .filter(Boolean);
+
+        if (
+          availablePrices.length ===
+          0
+        ) {
+          return;
+        }
+
+        /*
+         * একই selection-এর জন্য একাধিক
+         * sportsbook থাকলে user-কে সবচেয়ে
+         * ভালো decimal odds দেওয়া হবে।
+         */
+        availablePrices.sort(
+          (firstPrice, secondPrice) =>
+            secondPrice
+              .decimalOdds -
+            firstPrice
+              .decimalOdds,
+        );
+
+        const selectedPrice =
+          availablePrices[0];
+
+        const lineValue =
           normalizeText(
-            firstValue(
-              selection.selection_id,
-              selection.id,
-              selection.participant_id,
-              selection.name,
-            ),
-          ),
+            line.value,
+          );
 
-        name:
-          normalizeText(
-            firstValue(
-              selection.name,
-              selection.selection_name,
-              selection.label,
-            ),
-          ),
+        const selectionName =
+          lineValue
+            ? `${participantName} ${lineValue}`
+            : participantName;
 
-        affiliateId:
-          normalizeText(
-            firstValue(
-              selection.affiliate_id,
-              selection.book_id,
-            ),
-          ) || null,
+        selections.push({
+          id:
+            `${participantId}:${lineId}`
+              .slice(0, 100),
 
-        americanOdds:
-          firstValue(
-            selection.american_odds,
-            selection.price,
-            selection.odds,
-          ),
+          name:
+            selectionName,
 
-        decimalOdds:
-          firstValue(
-            selection.decimal_odds,
-            selection.price_decimal,
-          ),
+          affiliateId:
+            selectedPrice
+              .affiliateId,
 
-        updatedAt:
-          firstValue(
-            selection.updated_at,
-            selection.last_updated,
-            market.updated_at,
-          ),
+          americanOdds:
+            selectedPrice
+              .americanOdds,
 
-        status:
-          selection.status,
+          decimalOdds:
+            selectedPrice
+              .decimalOdds,
+
+          updatedAt:
+            selectedPrice
+              .updatedAt,
+
+          status:
+            "open",
+        });
       });
     },
   );
 
-  const lines =
-    toArray(market.lines);
-
-  lines.forEach((line) => {
-    const prices =
-      toArray(
-        firstValue(
-          line.prices,
-          line.odds,
-        ),
-      );
-
-    prices.forEach((price) => {
-      const participantId =
-        normalizeText(
-          firstValue(
-            price.participant_id,
-            line.participant_id,
-          ),
-        );
-
-      const participant =
-        participantMap.get(
-          participantId,
-        );
-
-      const affiliateId =
-        normalizeText(
-          firstValue(
-            price.affiliate_id,
-            price.book_id,
-          ),
-        ) || null;
-
-      const lineId =
-        normalizeText(
-          firstValue(
-            line.line_id,
-            line.id,
-            "line",
-          ),
-        );
-
-      const generatedId =
-        `${participantId}:` +
-        `${affiliateId || "main"}:` +
-        `${lineId}`;
-
-      output.push({
-        id:
-          normalizeText(
-            firstValue(
-              price.id,
-              price.price_id,
-              generatedId,
-            ),
-          ),
-
-        name:
-          normalizeText(
-            firstValue(
-              price.name,
-              participant?.name,
-              line.name,
-              participantId,
-            ),
-          ),
-
-        affiliateId,
-
-        americanOdds:
-          firstValue(
-            price.american_odds,
-            price.price,
-            price.odds,
-          ),
-
-        decimalOdds:
-          firstValue(
-            price.decimal_odds,
-            price.price_decimal,
-          ),
-
-        updatedAt:
-          firstValue(
-            price.updated_at,
-            price.last_updated,
-            line.updated_at,
-            market.updated_at,
-          ),
-
-        status:
-          firstValue(
-            price.status,
-            line.status,
-            market.status,
-          ),
-      });
-    });
-  });
-
-  const uniqueSelections =
-    new Map();
-
-  output.forEach((selection) => {
-    if (
-      !selection.id ||
-      !selection.name
-    ) {
-      return;
-    }
-
-    const americanOdds =
-      Number(
-        selection.americanOdds,
-      );
-
-    let decimalOdds =
-      Number(
-        selection.decimalOdds,
-      );
-
-    if (
-      !Number.isFinite(
-        decimalOdds,
-      ) ||
-      decimalOdds <= 1
-    ) {
-      decimalOdds =
-        americanToDecimal(
-          americanOdds,
-        );
-    }
-
-    if (
-      !Number.isFinite(
-        decimalOdds,
-      ) ||
-      decimalOdds <= 1
-    ) {
-      return;
-    }
-
-    const uniqueKey =
-      `${selection.id}:` +
-      `${selection.affiliateId || ""}`;
-
-    uniqueSelections.set(
-      uniqueKey,
-      {
-        ...selection,
-
-        americanOdds:
-          Number.isFinite(
-            americanOdds,
-          )
-            ? Math.trunc(
-                americanOdds,
-              )
-            : null,
-
-        decimalOdds:
-          Number(
-            decimalOdds.toFixed(4),
-          ),
-      },
-    );
-  });
-
-  return Array.from(
-    uniqueSelections.values(),
-  );
+  return selections;
 }
+
 
 /* =========================
    Sync Events
@@ -501,14 +421,16 @@ async function syncSportsEvents({
           ? `${teams.home} vs ${teams.away}`
           : providerEventId;
 
-      const eventName =
-        normalizeText(
-          firstValue(
-            event.event_name,
-            event.name,
-            generatedEventName,
-          ),
-        );
+     const eventName =
+  normalizeText(
+    firstValue(
+      event.schedule
+        ?.event_name,
+      event.event_name,
+      event.name,
+      generatedEventName,
+    ),
+  );
 
       const startsAtValue =
         firstValue(
@@ -532,13 +454,16 @@ async function syncSportsEvents({
       }
 
       const eventStatus =
-        normalizeEventStatus(
-          firstValue(
-            event.event_status,
-            event.status,
-            event.status_detail,
-          ),
-        );
+  normalizeEventStatus(
+    firstValue(
+      event.score?.event_status,
+      event.score
+        ?.event_status_detail,
+      event.event_status,
+      event.status,
+      event.status_detail,
+    ),
+  );
 
       const bettingStatus =
         [
@@ -659,17 +584,21 @@ async function syncSportsEvents({
           eventStatus,
           bettingStatus,
 
-          firstValue(
-            event.home_score,
-            event.score?.home,
-            null,
-          ),
+         firstValue(
+  event.score
+    ?.score_home,
+  event.home_score,
+  event.score?.home,
+  null,
+),
 
-          firstValue(
-            event.away_score,
-            event.score?.away,
-            null,
-          ),
+firstValue(
+  event.score
+    ?.score_away,
+  event.away_score,
+  event.score?.away,
+  null,
+),
 
           rawPayload,
         ],
@@ -716,14 +645,14 @@ async function syncSportsEvents({
       for (
         const market of markets
       ) {
-        const providerMarketId =
-          normalizeText(
-            firstValue(
-              market.market_id,
-              market.id,
-              market.type_id,
-            ),
-          );
+       const providerMarketId =
+  normalizeText(
+    firstValue(
+      market.id,
+      market.market_id,
+      market.type_id,
+    ),
+  );
 
         if (!providerMarketId) {
           continue;
@@ -740,14 +669,14 @@ async function syncSportsEvents({
           );
 
         const marketType =
-          normalizeText(
-            firstValue(
-              market.market_type,
-              market.type,
-              market.market_id,
-              "unknown",
-            ),
-          );
+  normalizeText(
+    firstValue(
+      market.market_id,
+      market.market_type,
+      market.type,
+      "unknown",
+    ),
+  );
 
         const rawMarketStatus =
           normalizeText(
