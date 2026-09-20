@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101723">
+
+  <title>Roulette | TPL22</title>
+
+  <link rel="stylesheet" href="/client/css/roulette.css">
+  <script src="/client/js/roulette.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <a href="/lobby" class="back-button" aria-label="Back to lobby">‹</a>
+
+      <div class="heading">
+        <span>TABLE GAME</span>
+        <h1>ROULETTE</h1>
+      </div>
+
+      <div class="wallet">
+        <small>WALLET</small>
+        <strong>৳<span id="walletBalance">—</span></strong>
+      </div>
+    </header>
+
+    <section class="game-board">
+      <div class="wheel-area">
+        <div id="wheel" class="wheel">
+          <div id="resultBall" class="result-ball">?</div>
+        </div>
+
+        <p id="resultText" class="result-text">
+          Red, Black, Even, Odd অথবা একটি সংখ্যা বেছে নিন।
+        </p>
+      </div>
+
+      <div class="bet-panel">
+        <h2>PLACE YOUR BET</h2>
+
+        <label class="field" for="betAmount">
+          <span>Bet Amount</span>
+
+          <span class="money-input">
+            <span>৳</span>
+
+            <input
+              id="betAmount"
+              type="number"
+              min="10"
+              max="10000"
+              step="0.01"
+              value="10"
+              inputmode="decimal"
+            >
+          </span>
+        </label>
+
+        <div class="quick-bets">
+          <button type="button" data-bet="10">৳10</button>
+          <button type="button" data-bet="50">৳50</button>
+          <button type="button" data-bet="100">৳100</button>
+          <button type="button" data-bet="500">৳500</button>
+        </div>
+
+        <p class="field-title">Select Bet</p>
+
+        <div class="choices">
+          <button
+            type="button"
+            class="choice red selected"
+            data-selection="red"
+          >
+            RED
+          </button>
+
+          <button
+            type="button"
+            class="choice black"
+            data-selection="black"
+          >
+            BLACK
+          </button>
+
+          <button
+            type="button"
+            class="choice"
+            data-selection="even"
+          >
+            EVEN
+          </button>
+
+          <button
+            type="button"
+            class="choice"
+            data-selection="odd"
+          >
+            ODD
+          </button>
+
+          <button
+            type="button"
+            class="choice number-choice"
+            data-selection="number"
+          >
+            NUMBER
+          </button>
+        </div>
+
+        <label id="numberField" class="field hidden" for="selectedNumber">
+          <span>Choose number from 0 to 36</span>
+
+          <input
+            id="selectedNumber"
+            type="number"
+            min="0"
+            max="36"
+            step="1"
+            value="0"
+            inputmode="numeric"
+          >
+        </label>
+
+        <button id="spinButton" class="spin-button" type="button">
+          SPIN ROULETTE
+        </button>
+
+        <p id="message" class="message" role="status" aria-live="polite"></p>
+
+        <div class="payout-box">
+          <span>Last Payout</span>
+          <strong>৳<span id="lastPayout">0.00</span></strong>
+        </div>
+
+        <p class="rules">
+          Red / Black / Even / Odd: 2× payout<br>
+          নির্দিষ্ট সংখ্যা: 36× payout<br>
+          0 এলে Red, Black, Even ও Odd হারবে।
+        </p>
+      </div>
+    </section>
+
+    <section class="history-panel">
+      <h2>RECENT SPINS</h2>
+      <div id="recentSpins" class="history-list">
+        <p class="empty">এখনো কোনো spin নেই।</p>
+      </div>
+    </section>
+
+    <footer>18+ Only · Play Responsibly</footer>
+  </main>
+</body>
+</html>

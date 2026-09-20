@@ -58,6 +58,7 @@ const slotRoutes = require("./routes/slot.routes");
 
 const blackjackRoutes = require("./routes/blackjack.routes");
 
+const rouletteRoutes = require("./routes/roulette.routes");
 
 const adminSlotRoutes = require("./routes/admin-slot.routes");
 
@@ -520,6 +521,8 @@ app.use("/api/andar-bahar", andarBaharRoutes);
 app.use("/api/bangla-wheel", banglaWheelRoutes);
 
 app.use("/api/blackjack", blackjackRoutes);
+
+app.use("/api/roulette", rouletteRoutes);
 
 app.use("/api/bangla-dice", banglaDiceRoutes);
 
