@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#082c2a">
+
+  <title>Blackjack | TPL22</title>
+
+  <link rel="stylesheet" href="/client/css/blackjack.css">
+  <script src="/client/js/blackjack.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <a href="/lobby" class="back-button" aria-label="Back to lobby">‹</a>
+
+      <div class="heading">
+        <span>TABLE GAME</span>
+        <h1>BLACKJACK</h1>
+      </div>
+
+      <div class="wallet">
+        <small>WALLET</small>
+        <strong>৳<span id="walletBalance">—</span></strong>
+      </div>
+    </header>
+
+    <section class="table">
+      <div class="table-glow"></div>
+
+      <div class="hand">
+        <div class="hand-heading">
+          <h2>DEALER</h2>
+          <span id="dealerScore" class="score"></span>
+        </div>
+
+        <div id="dealerCards" class="cards">
+          <span class="placeholder">Deal চাপুন</span>
+        </div>
+      </div>
+
+      <div class="table-middle">
+        <span>BLACKJACK</span>
+        <small>Dealer stands on 17</small>
+      </div>
+
+      <div class="hand">
+        <div class="hand-heading">
+          <h2>YOUR HAND</h2>
+          <span id="playerScore" class="score"></span>
+        </div>
+
+        <div id="playerCards" class="cards">
+          <span class="placeholder">আপনার card এখানে দেখাবে</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="bet-row">
+        <label for="betAmount">BET AMOUNT</label>
+
+        <div class="bet-input">
+          <span>৳</span>
+
+          <input
+            id="betAmount"
+            type="number"
+            min="10"
+            max="10000"
+            step="0.01"
+            value="10"
+            inputmode="decimal"
+          >
+        </div>
+      </div>
+
+      <div class="quick-bets" aria-label="Quick bet amounts">
+        <button type="button" data-bet="10">৳10</button>
+        <button type="button" data-bet="50">৳50</button>
+        <button type="button" data-bet="100">৳100</button>
+        <button type="button" data-bet="500">৳500</button>
+      </div>
+
+      <div class="action-row">
+        <button id="dealButton" type="button" class="button primary">
+          DEAL
+        </button>
+
+        <button id="hitButton" type="button" class="button" disabled>
+          HIT
+        </button>
+
+        <button id="standButton" type="button" class="button" disabled>
+          STAND
+        </button>
+      </div>
+
+      <p id="gameMessage" class="message" role="status" aria-live="polite">
+        Bet amount নির্বাচন করে Deal চাপুন।
+      </p>
+
+      <div class="result-details">
+        <span>Last payout</span>
+        <strong>৳<span id="lastPayout">0.00</span></strong>
+      </div>
+
+      <p class="rules">
+        Blackjack payout 3:2 · সাধারণ win 1:1 · Tie হলে bet ফেরত
+      </p>
+    </section>
+
+    <footer>18+ Only · Play Responsibly</footer>
+  </main>
+</body>
+</html>

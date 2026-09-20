@@ -1,0 +1,398 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  background: #081320;
+  color: #f4f7fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(
+      circle at 50% 0,
+      rgba(28, 100, 100, 0.38),
+      transparent 45%
+    ),
+    #081320;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.page {
+  width: min(100%, 820px);
+  margin: auto;
+  padding: 16px 14px 35px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.back-button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #456070;
+  border-radius: 12px;
+  background: #172c3a;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.heading {
+  flex: 1;
+}
+
+.heading span {
+  color: #6be4b8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.heading h1 {
+  margin: 2px 0 0;
+  font-size: clamp(20px, 4vw, 29px);
+  letter-spacing: 0.05em;
+}
+
+.wallet {
+  display: grid;
+  gap: 3px;
+  min-width: 120px;
+  padding: 9px 12px;
+  border: 1px solid #365a62;
+  border-radius: 12px;
+  background: #183442;
+  text-align: right;
+}
+
+.wallet small {
+  color: #abcbca;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.wallet strong {
+  font-size: 18px;
+}
+
+.table {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  overflow: hidden;
+  min-height: 390px;
+  padding: 25px;
+  border: 9px solid #6b4a25;
+  border-radius: 28px 28px 110px 110px;
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      #176f61 0,
+      #105246 52%,
+      #09372f 100%
+    );
+  box-shadow:
+    inset 0 0 0 3px #d8a763,
+    0 15px 35px rgba(0, 0, 0, 0.35);
+}
+
+.table-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.08),
+      transparent 58%
+    );
+}
+
+.hand,
+.table-middle {
+  position: relative;
+  z-index: 1;
+}
+
+.hand-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hand-heading h2 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+
+.score {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(5, 31, 27, 0.6);
+  color: #f5db9a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 88px;
+}
+
+.placeholder {
+  align-self: center;
+  color: #a7d4c6;
+  font-size: 13px;
+}
+
+.playing-card {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 66px;
+  height: 86px;
+  border: 2px solid #e3d9c7;
+  border-radius: 9px;
+  background: #fffdf5;
+  color: #17232e;
+  font-size: 23px;
+  font-weight: 850;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.playing-card.red {
+  color: #c33446;
+}
+
+.playing-card.hidden-card {
+  border-color: #e9cea0;
+  background: repeating-linear-gradient(
+    45deg,
+    #1b3d68,
+    #1b3d68 6px,
+    #275488 6px,
+    #275488 12px
+  );
+  color: #fff;
+}
+
+.table-middle {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  min-height: 70px;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  text-align: center;
+}
+
+.table-middle span {
+  color: #efcd8a;
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.table-middle small {
+  color: #a9d5c6;
+  font-size: 11px;
+}
+
+.controls {
+  margin-top: 17px;
+  padding: 19px;
+  border: 1px solid #344c60;
+  border-radius: 16px;
+  background: #142638;
+}
+
+.bet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.bet-row label {
+  color: #b7cbd8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.bet-input {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 170px;
+  padding: 0 11px;
+  border: 1px solid #4d6a7c;
+  border-radius: 10px;
+  background: #0c1a2b;
+}
+
+.bet-input span {
+  color: #7ee9c4;
+  font-size: 18px;
+}
+
+.bet-input input {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font-weight: 800;
+}
+
+.quick-bets,
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.quick-bets button {
+  min-height: 34px;
+  padding: 6px 13px;
+  border: 1px solid #496579;
+  border-radius: 999px;
+  background: #22394b;
+  color: #e7f2f6;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.quick-bets button:hover {
+  border-color: #68dabb;
+}
+
+.button {
+  flex: 1;
+  min-width: 110px;
+  min-height: 48px;
+  border: 1px solid #557084;
+  border-radius: 10px;
+  background: #28445a;
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.button.primary {
+  border-color: #16c793;
+  background: #16c793;
+  color: #092b21;
+}
+
+.button:not(:disabled):hover {
+  filter: brightness(1.12);
+}
+
+.message {
+  min-height: 26px;
+  margin: 18px 0 8px;
+  color: #b9ebd6;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.message.error {
+  color: #ffaaa9;
+}
+
+.result-details {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #3a5669;
+  border-radius: 10px;
+  background: #192f43;
+}
+
+.result-details span {
+  color: #aec5d3;
+  font-size: 13px;
+}
+
+.result-details strong,
+.result-details strong span {
+  color: #f7dc91;
+  font-size: 16px;
+}
+
+.rules {
+  margin: 13px 0 0;
+  color: #95acbc;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+footer {
+  margin-top: 20px;
+  color: #829bac;
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding: 12px 9px 28px;
+  }
+
+  .table {
+    min-height: 355px;
+    padding: 17px 13px;
+    border-width: 7px;
+    border-radius: 24px 24px 75px 75px;
+  }
+
+  .playing-card {
+    width: 51px;
+    height: 72px;
+    font-size: 18px;
+  }
+
+  .controls {
+    padding: 15px;
+  }
+
+  .button {
+    min-width: 85px;
+  }
+}

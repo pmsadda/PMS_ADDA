@@ -56,6 +56,9 @@ const banglaWheelRoutes = require("./routes/bangla-wheel.routes");
 
 const slotRoutes = require("./routes/slot.routes");
 
+const blackjackRoutes = require("./routes/blackjack.routes");
+
+
 const adminSlotRoutes = require("./routes/admin-slot.routes");
 
 const superAceRoutes =
@@ -515,6 +518,8 @@ app.use("/api/lottery", lotteryRoutes);
 app.use("/api/andar-bahar", andarBaharRoutes);
 
 app.use("/api/bangla-wheel", banglaWheelRoutes);
+
+app.use("/api/blackjack", blackjackRoutes);
 
 app.use("/api/bangla-dice", banglaDiceRoutes);
 
