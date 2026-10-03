@@ -786,7 +786,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!Object.hasOwn(gemPalette, symbol)) return;
 
         if (
-          cell.childNodes.length === 1 &&
+          cell.children.length === 1 &&
           cell.firstElementChild?.dataset.gemSymbol === symbol
         ) return;
 
