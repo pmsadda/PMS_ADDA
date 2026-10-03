@@ -6732,3 +6732,31 @@ body .app #games .game-list .game-card.is-category-hidden {
   font-size: 9px;
   letter-spacing: 2px;
 }
+
+.rocket-lobby-art {
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #579de0;
+  border-radius: 10px;
+  background: radial-gradient(circle at top, #254b85, #0c1730);
+  color: #d4efff;
+}
+
+.rocket-lobby-art > span {
+  font-size: 42px;
+}
+
+.rocket-lobby-art strong {
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.rocket-lobby-art small {
+  font-size: 9px;
+  letter-spacing: 2px;
+}

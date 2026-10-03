@@ -1,0 +1,445 @@
+/* =========================
+   RocketRise Admin
+========================= */
+
+.rocket-rise-danger-card {
+  border:
+    1px solid
+    rgba(239, 68, 68, 0.28);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(239, 68, 68, 0.06),
+      transparent 45%
+    ),
+    var(--card-bg, #ffffff);
+}
+
+.card-kicker.danger {
+  color: #ef4444;
+}
+
+.danger-icon {
+  color: #ef4444;
+  font-size: 24px;
+}
+
+.rocket-rise-danger-description {
+  margin:
+    0 0 20px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.rocket-rise-cancel-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.rocket-rise-cancel-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rocket-rise-cancel-grid label > span {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rocket-rise-cancel-grid input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  color: #111827;
+}
+
+.rocket-rise-cancel-grid input:focus {
+  border-color: #ef4444;
+  box-shadow:
+    0 0 0 3px
+    rgba(239, 68, 68, 0.1);
+}
+
+.rocket-rise-cancel-button {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      135deg,
+      #ef4444,
+      #b91c1c
+    );
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.rocket-rise-cancel-button:hover {
+  transform:
+    translateY(-1px);
+  box-shadow:
+    0 10px 22px
+    rgba(239, 68, 68, 0.22);
+}
+
+.rocket-rise-cancel-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.rocket-rise-cancel-button i {
+  margin-right: 7px;
+}
+
+.rocket-rise-cancel-message {
+  min-height: 18px;
+  margin:
+    12px 0 0;
+  font-size: 12px;
+}
+
+.rocket-rise-cancel-message.success {
+  color: #16a34a;
+}
+
+.rocket-rise-cancel-message.error {
+  color: #dc2626;
+}
+
+/* =========================
+   Fairness Notice
+========================= */
+
+.rocket-rise-fairness-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border:
+    1px solid
+    rgba(59, 130, 246, 0.18);
+  border-radius: 12px;
+  background:
+    rgba(59, 130, 246, 0.05);
+}
+
+.rocket-rise-fairness-notice > i {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #2563eb;
+  font-size: 22px;
+}
+
+.rocket-rise-fairness-notice strong {
+  display: block;
+  color: #111827;
+  font-size: 14px;
+}
+
+.rocket-rise-fairness-notice p {
+  margin:
+    6px 0 0;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* =========================
+   RocketRise Form
+========================= */
+
+#settingsForm
+.toggle-field
++ .toggle-field {
+  margin-top: 10px;
+}
+
+#houseEdgeInput,
+#maximumMultiplierInput {
+  font-weight: 700;
+}
+
+#summaryGameStatus {
+  text-transform: capitalize;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 700px) {
+  .rocket-rise-cancel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rocket-rise-cancel-button {
+    width: 100%;
+  }
+
+  .rocket-rise-fairness-notice {
+    padding: 13px;
+  }
+}
+
+/* ==========================================
+   ROCKET_RISE PROFIT / LOSS
+========================================== */
+
+.rocket-rise-analytics-card {
+  overflow: hidden;
+}
+
+.rocket-rise-analytics-header {
+  gap: 16px;
+}
+
+.rocket-rise-period-filter {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border:
+    1px solid
+    var(--kait-admin-border);
+  border-radius: 10px;
+  background:
+    rgba(255, 255, 255, 0.04);
+}
+
+.rocket-rise-period-filter button {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color:
+    var(--kait-admin-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rocket-rise-period-filter button.active {
+  background: #ef174b;
+  color: #ffffff;
+  box-shadow:
+    0 7px 18px
+    rgba(239, 23, 75, 0.22);
+}
+
+.rocket-rise-finance-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rocket-rise-finance-summary article {
+  min-width: 0;
+  padding: 16px;
+  border:
+    1px solid
+    var(--kait-admin-border);
+  border-radius: 12px;
+  background:
+    var(--kait-admin-panel-soft);
+}
+
+.rocket-rise-finance-summary article > span,
+.rocket-rise-live-exposure span {
+  display: block;
+  color:
+    var(--kait-admin-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.rocket-rise-finance-summary article > strong {
+  display: block;
+  margin-top: 8px;
+  color:
+    var(--kait-admin-text);
+  font-size:
+    clamp(19px, 2vw, 27px);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.rocket-rise-finance-summary article.profit {
+  border-color:
+    rgba(34, 197, 94, 0.32);
+  background:
+    rgba(34, 197, 94, 0.08);
+}
+
+.rocket-rise-finance-summary article.profit > strong,
+.profit-text {
+  color: #22c55e !important;
+}
+
+.rocket-rise-finance-summary article.loss {
+  border-color:
+    rgba(239, 68, 68, 0.32);
+  background:
+    rgba(239, 68, 68, 0.08);
+}
+
+.rocket-rise-finance-summary article.loss > strong,
+.loss-text {
+  color: #ef4444 !important;
+}
+
+.rocket-rise-live-exposure {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border:
+    1px solid
+    rgba(245, 158, 11, 0.25);
+  border-radius: 12px;
+  background:
+    rgba(245, 158, 11, 0.07);
+}
+
+.rocket-rise-live-exposure strong {
+  display: block;
+  margin-top: 5px;
+  color: #fbbf24;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.rocket-rise-round-table-wrap {
+  margin-top: 18px;
+  overflow-x: auto;
+  border:
+    1px solid
+    var(--kait-admin-border);
+  border-radius: 12px;
+}
+
+.rocket-rise-round-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.rocket-rise-round-table th,
+.rocket-rise-round-table td {
+  padding: 12px 14px;
+  border-bottom:
+    1px solid
+    var(--kait-admin-border);
+  color:
+    var(--kait-admin-text);
+  font-size: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.rocket-rise-round-table th {
+  background:
+    rgba(255, 255, 255, 0.045);
+  color:
+    var(--kait-admin-muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rocket-rise-round-table tbody tr:hover {
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.rocket-rise-round-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.rocket-rise-round-table td strong,
+.rocket-rise-round-table td small {
+  display: block;
+}
+
+.rocket-rise-round-table td small {
+  margin-top: 3px;
+  color:
+    var(--kait-admin-muted);
+}
+
+.rocket-rise-round-table .empty-cell {
+  padding: 26px;
+  color:
+    var(--kait-admin-muted);
+  text-align: center;
+}
+
+.rocket-rise-round-table .empty-cell.error {
+  color: #ef4444;
+}
+
+.rocket-rise-report-note {
+  margin: 12px 0 0;
+  color:
+    var(--kait-admin-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .rocket-rise-finance-summary {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .rocket-rise-analytics-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .rocket-rise-period-filter {
+    width: 100%;
+  }
+
+  .rocket-rise-period-filter button {
+    flex: 1;
+    padding: 0 7px;
+  }
+
+  .rocket-rise-finance-summary,
+  .rocket-rise-live-exposure {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 430px) {
+  .rocket-rise-finance-summary,
+  .rocket-rise-live-exposure {
+    grid-template-columns: 1fr;
+  }
+}

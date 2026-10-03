@@ -88,6 +88,8 @@ const adminBanglaDiceRoutes = require("./routes/admin-bangla-dice.routes");
 
 const adminAviatorRoutes = require("./routes/admin-aviator.routes");
 
+const adminRocketRiseRoutes = require("./routes/admin-rocket-rise.routes");
+
 const banglaDiceRoutes = require("./routes/bangla-dice.routes");
 
 const kaitRoutes = require("./routes/kait.routes");
@@ -565,6 +567,8 @@ app.use("/api/admin/lottery", adminLotteryRoutes);
 app.use("/api/support", supportRoutes);
 
 app.use("/api/admin/aviator", adminAviatorRoutes);
+
+app.use("/api/admin/rocket-rise", adminRocketRiseRoutes);
 
 app.use(
   "/api/super-ace",
