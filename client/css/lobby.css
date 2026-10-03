@@ -6760,3 +6760,48 @@ body .app #games .game-list .game-card.is-category-hidden {
   font-size: 9px;
   letter-spacing: 2px;
 }
+
+body .app #games .game-list .game-card {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+body .app #games .game-list .game-card > img {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 3 / 2 !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  transform: none !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  background: #101010;
+}
+
+body .app #games .game-list .game-card .game-info {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  padding: 8px 4px !important;
+  transform: none !important;
+  background: transparent !important;
+}
+
+body .app #games .game-list .game-card .game-info h3 {
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  body .app #games .game-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
