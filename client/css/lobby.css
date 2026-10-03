@@ -6670,3 +6670,31 @@ body.lobby-offer-open {
 body .app #games .game-list .game-card.is-category-hidden {
   display: none !important;
 }
+
+.gem-lobby-art {
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #409e81;
+  border-radius: 10px;
+  background: radial-gradient(circle at top, #28715c, #0a241c);
+  color: #b6ffe3;
+}
+
+.gem-lobby-art > span {
+  font-size: 42px;
+}
+
+.gem-lobby-art strong {
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.gem-lobby-art small {
+  font-size: 9px;
+  letter-spacing: 2px;
+}

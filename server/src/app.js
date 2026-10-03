@@ -56,6 +56,9 @@ const banglaWheelRoutes = require("./routes/bangla-wheel.routes");
 
 const slotRoutes = require("./routes/slot.routes");
 
+const gemFortuneRoutes = require("./routes/gem-fortune.routes");
+const adminGemFortuneRoutes = require("./routes/admin-gem-fortune.routes");
+
 const blackjackRoutes = require("./routes/blackjack.routes");
 
 const rouletteRoutes = require("./routes/roulette.routes");
@@ -466,6 +469,9 @@ app.use("/api/withdraws", withdrawRoutes);
 app.use("/api/slot", slotRoutes);
 
 app.use("/api/admin/slot", adminSlotRoutes);
+
+app.use("/api/gem-fortune", gemFortuneRoutes);
+app.use("/api/admin/gem-fortune", adminGemFortuneRoutes);
 
 app.use("/api/sports", sportsRoutes);
 
