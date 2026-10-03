@@ -2017,87 +2017,81 @@ document.addEventListener("DOMContentLoaded", () => {
      GAME CATEGORY FILTER
   ========================================================= */
 
-  const gameCategoryButtons = Array.from(
-    document.querySelectorAll(".game-category-btn"),
+ const categoryBar = document.querySelector(".game-categories");
+
+const categoryButtons = Array.from(
+  categoryBar?.querySelectorAll("[data-game-category]") || [],
+);
+
+const categoryCards = Array.from(
+  document.querySelectorAll(".game-list .game-card"),
+);
+
+const categoryRules = [
+  ["sports", ".sports-lobby-card, a[href='/sports']"],
+  [
+    "slots",
+    ".slot-game-card, .super-ace-game-card, a[href='/slot'], a[href='/super-ace']",
+  ],
+  [
+    "cards",
+    "#teenPattiBtn, #pokerBtn, #andarBaharBtn, #kaitBtn, .blackjack-game-card",
+  ],
+  ["crash", "#aviatorBtn, .aviator-game-card"],
+  ["table", "#ludoBtn, #carromBtn, .roulette-game-card"],
+  ["lottery", "#lotteryBtn, #banglaWheelBtn, #banglaDiceBtn"],
+];
+
+categoryCards.forEach((card) => {
+  const rule = categoryRules.find(([, selector]) =>
+    card.matches(selector) || card.querySelector(selector),
   );
 
-  const lobbyGameCards = Array.from(
-    document.querySelectorAll(".game-list .game-card"),
-  );
+  card.dataset.category = rule?.[0] || "other";
+});
 
-  const lobbyCategoryRules = [
-    ["sports", ".sports-lobby-card"],
-    ["slots", ".slot-game-card, .super-ace-game-card"],
-    [
-      "cards",
-      "#teenPattiBtn, #pokerBtn, #andarBaharBtn, #kaitBtn, .blackjack-game-card",
-    ],
-    ["crash", "#aviatorBtn"],
-    ["table", "#ludoBtn, #carromBtn, .roulette-game-card"],
-    ["lottery", "#lotteryBtn, #banglaWheelBtn, #banglaDiceBtn"],
-  ];
+function applyLobbyCategory(category) {
+  const selected = categoryButtons.some(
+    (button) => button.dataset.gameCategory === category,
+  ) ? category : "all";
 
-  lobbyGameCards.forEach((card) => {
-    const matchedRule = lobbyCategoryRules.find(
-      ([, selector]) => card.matches(selector) || card.querySelector(selector),
-    );
+  categoryButtons.forEach((button) => {
+    const active = button.dataset.gameCategory === selected;
 
-    card.dataset.category = matchedRule?.[0] || "other";
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+    button.removeAttribute("aria-selected");
   });
 
-  function selectGameCategory(category) {
-    const selectedCategory = String(category || "all")
-      .trim()
-      .toLowerCase();
+  categoryCards.forEach((card) => {
+    const visible =
+      selected === "all" || card.dataset.category === selected;
 
-    gameCategoryButtons.forEach((button) => {
-      const isSelected = button.dataset.gameCategory === selectedCategory;
-
-      button.classList.toggle("is-active", isSelected);
-
-      button.setAttribute("aria-selected", String(isSelected));
-    });
-
-    lobbyGameCards.forEach((card) => {
-      const cardCategory = String(card.dataset.category || "")
-        .trim()
-        .toLowerCase();
-
-      const shouldShow =
-        selectedCategory === "all" || cardCategory === selectedCategory;
-
-      card.classList.toggle("is-category-hidden", !shouldShow);
-
-      card.setAttribute("aria-hidden", String(!shouldShow));
-    });
-
-    try {
-      sessionStorage.setItem("tpl22_lobby_game_category", selectedCategory);
-    } catch (_error) {
-      // Storage unavailable হলেও filter কাজ করবে।
-    }
-  }
-
-  gameCategoryButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      selectGameCategory(button.dataset.gameCategory);
-    });
+    card.classList.toggle("is-category-hidden", !visible);
+    card.setAttribute("aria-hidden", String(!visible));
   });
-
-  let savedGameCategory = "all";
 
   try {
-    savedGameCategory =
-      sessionStorage.getItem("tpl22_lobby_game_category") || "all";
-  } catch (_error) {
-    savedGameCategory = "all";
-  }
+    sessionStorage.setItem("tpl22_lobby_game_category", selected);
+  } catch {}
+}
 
-  const categoryExists = gameCategoryButtons.some(
-    (button) => button.dataset.gameCategory === savedGameCategory,
-  );
+categoryBar?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-game-category]");
 
-  selectGameCategory(categoryExists ? savedGameCategory : "all");
+  if (!button || !categoryBar.contains(button)) return;
+
+  applyLobbyCategory(button.dataset.gameCategory);
+});
+
+let initialCategory = "all";
+
+try {
+  initialCategory =
+    sessionStorage.getItem("tpl22_lobby_game_category") || "all";
+} catch {}
+
+applyLobbyCategory(initialCategory);
 
   /* =========================================================
    GUEST AUTH POPUP
