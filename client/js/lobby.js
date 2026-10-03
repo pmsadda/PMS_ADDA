@@ -2031,7 +2031,7 @@ const categoryRules = [
   ["sports", ".sports-lobby-card, a[href='/sports']"],
   [
     "slots",
-    ".slot-game-card, .super-ace-game-card, a[href='/slot'], a[href='/super-ace']",
+    ".slot-game-card, .super-ace-game-card, .golden-pharaoh-game-card a[href='/slot'], a[href='/super-ace']",
   ],
   [
     "cards",

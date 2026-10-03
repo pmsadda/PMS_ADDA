@@ -63,6 +63,10 @@ const fruitFiestaRoutes = require("./routes/fruit-fiesta.routes");
 
 const luckySevensRoutes = require("./routes/lucky-sevens.routes");
 
+const goldenPharaohRoutes = require("./routes/golden-pharaoh.routes");
+
+const adminGoldenPharaohRoutes = require("./routes/admin-golden-pharaoh.routes");
+
 const adminLuckySevensRoutes = require("./routes/admin-lucky-sevens.routes");
 
 const adminFruitFiestaRoutes = require("./routes/admin-fruit-fiesta.routes");
@@ -511,6 +515,10 @@ app.use("/api/lobby-banner", lobbyBannerRoutes);
 app.use("/api/admin/lobby-banner", adminLobbyBannerRoutes);
 
 app.use("/api/app-download", appDownloadRoutes);
+
+app.use("/api/golden-pharaoh", goldenPharaohRoutes);
+
+app.use("/api/admin/golden-pharaoh", adminGoldenPharaohRoutes);
 
 app.use(
   "/api/marketing-traffic",
