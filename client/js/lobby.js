@@ -2037,7 +2037,7 @@ const categoryRules = [
     "cards",
     "#teenPattiBtn, #pokerBtn, #andarBaharBtn, #kaitBtn, .blackjack-game-card",
   ],
-  ["crash", "#aviatorBtn, .aviator-game-card, .rocket-rise-game-card, .balloon-burst-game-card"],
+  ["crash", "#aviatorBtn, .aviator-game-card, .rocket-rise-game-card, .balloon-burst-game-card, .dragon-flight-game-card"],
   ["table", "#ludoBtn, #carromBtn, .roulette-game-card"],
   ["lottery", "#lotteryBtn, #banglaWheelBtn, #banglaDiceBtn"],
 ];

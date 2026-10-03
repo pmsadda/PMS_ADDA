@@ -46,6 +46,7 @@ const teenPattiRoutes = require("./routes/teenpatti.routes");
 const pokerRoutes = require("./routes/poker.routes");
 
 const ludoRoutes = require("./routes/ludo.routes");
+
 const carromRoutes = require("./routes/carrom.routes");
 
 const lotteryRoutes = require("./routes/lottery.routes");
@@ -67,6 +68,8 @@ const adminLuckySevensRoutes = require("./routes/admin-lucky-sevens.routes");
 const adminFruitFiestaRoutes = require("./routes/admin-fruit-fiesta.routes");
 
 const adminGemFortuneRoutes = require("./routes/admin-gem-fortune.routes");
+
+const adminDragonFlightRoutes = require("./routes/admin-dragon-flight.routes");
 
 const blackjackRoutes = require("./routes/blackjack.routes");
 
@@ -494,6 +497,8 @@ app.use("/api/admin/fruit-fiesta", adminFruitFiestaRoutes);
 app.use("/api/lucky-sevens", luckySevensRoutes);
 
 app.use("/api/admin/lucky-sevens", adminLuckySevensRoutes);
+
+app.use("/api/admin/dragon-flight", adminDragonFlightRoutes);
 
 app.use("/api/sports", sportsRoutes);
 
