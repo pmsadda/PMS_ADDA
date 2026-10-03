@@ -6837,3 +6837,17 @@ body .app #games .game-list .game-card .game-info {
   margin: 0 !important;
   padding: 0 6px 9px !important;
 }
+
+body .app #games .game-list .game-card > img.lobby-card-image {
+  display: block !important;
+  position: static !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  max-height: none !important;
+  aspect-ratio: 3 / 2 !important;
+  object-fit: contain !important;
+  transform: none !important;
+  margin: 0 !important;
+  border-radius: 10px 10px 0 0 !important;
+}
