@@ -687,3 +687,130 @@ document.addEventListener("DOMContentLoaded", () => {
     cell.textContent = symbolIcons[preview[index]];
   });
 });
+
+(() => {
+  const gemPalette = {
+    RUBY: ["#ffdde6", "#ff567d", "#bd1749", "#550d29"],
+    SAPPHIRE: ["#e3f5ff", "#55b7ff", "#235be1", "#112667"],
+    EMERALD: ["#d9fff0", "#4ce9ad", "#11956d", "#064f40"],
+    AMETHYST: ["#f7e5ff", "#c889ff", "#8041c8", "#39165f"],
+    TOPAZ: ["#fff9d9", "#ffda66", "#d18a19", "#6c3e0b"],
+    DIAMOND: ["#ffffff", "#d5f5ff", "#80c6df", "#356c91"],
+    WILD: ["#fffbea", "#ffe47d", "#d59325", "#68440a"],
+    SCATTER: ["#fff0ff", "#e5a0ff", "#9650e2", "#432066"],
+  };
+
+  const gemNames = {
+    RUBY: "Ruby",
+    SAPPHIRE: "Sapphire",
+    EMERALD: "Emerald",
+    AMETHYST: "Amethyst",
+    TOPAZ: "Topaz",
+    DIAMOND: "Diamond",
+    WILD: "Wild",
+    SCATTER: "Scatter",
+  };
+
+  const gemMarkup = (symbol, cellIndex) => {
+    const [light, main, dark, deep] = gemPalette[symbol];
+    const gradientId = `gem-gradient-${cellIndex}-${symbol}`;
+
+    const artwork = symbol === "WILD"
+      ? `
+        <path d="M60 12 73 42 106 45 81 67 88 101
+          60 83 32 101 39 67 14 45 47 42Z"
+          fill="url(#${gradientId})"
+          stroke="${light}" stroke-width="2"/>
+        <path d="M60 12 60 62 14 45 47 42Z"
+          fill="${light}" opacity=".5"/>
+        <path d="M60 62 88 101 60 83 32 101Z"
+          fill="${deep}" opacity=".55"/>
+        <text x="60" y="68" text-anchor="middle"
+          fill="${deep}" font-size="16" font-weight="900"
+          font-family="system-ui,sans-serif">WILD</text>`
+      : symbol === "SCATTER"
+      ? `
+        <circle cx="60" cy="56" r="35"
+          fill="url(#${gradientId})"
+          stroke="${light}" stroke-width="2"/>
+        <ellipse cx="49" cy="40" rx="13" ry="7"
+          fill="white" opacity=".6" transform="rotate(-30 49 40)"/>
+        <path d="M28 89H92L100 99H20Z" fill="${dark}"/>
+        <path d="M37 86H83L89 92H31Z" fill="${light}" opacity=".75"/>
+        <path d="M61 29 65 44 80 48 65 52 61 67
+          57 52 42 48 57 44Z" fill="white" opacity=".85"/>`
+      : `
+        <path d="M30 22H90L110 47 60 105 10 47Z"
+          fill="url(#${gradientId})"
+          stroke="${light}" stroke-width="1.5"/>
+        <path d="M30 22 44 47H10Z" fill="${light}" opacity=".75"/>
+        <path d="M30 22H90L76 47H44Z" fill="${light}" opacity=".4"/>
+        <path d="M90 22 110 47H76Z" fill="${main}"/>
+        <path d="M10 47H44L60 105Z" fill="${dark}"/>
+        <path d="M44 47H76L60 105Z" fill="${main}" opacity=".8"/>
+        <path d="M76 47H110L60 105Z" fill="${deep}" opacity=".8"/>
+        <path d="M30 22H90L110 47H10Z"
+          fill="none" stroke="${light}" stroke-width="1.2"/>
+        <path d="M44 47 60 105 76 47"
+          fill="none" stroke="${light}" stroke-opacity=".5"/>
+        <path d="M34 27H61" stroke="white"
+          stroke-width="3" stroke-linecap="round" opacity=".7"/>`;
+
+    return `
+      <svg class="gem-symbol-art" data-gem-symbol="${symbol}"
+        viewBox="0 0 120 120" role="img"
+        aria-label="${gemNames[symbol]}">
+        <defs>
+          <linearGradient id="${gradientId}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="${light}"/>
+            <stop offset=".45" stop-color="${main}"/>
+            <stop offset="1" stop-color="${deep}"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="60" cy="109" rx="30" ry="5"
+          fill="#000" opacity=".3"/>
+        ${artwork}
+        <path d="M94 12V24M88 18H100"
+          stroke="white" stroke-width="2"
+          stroke-linecap="round" opacity=".85"/>
+      </svg>`;
+  };
+
+  const startGemArtwork = () => {
+    const grid = document.getElementById("slotReels");
+    if (!grid) return;
+
+    const repaint = () => {
+      grid.querySelectorAll(".reel-cell").forEach((cell, index) => {
+        const symbol = cell.dataset.symbol;
+        if (!Object.hasOwn(gemPalette, symbol)) return;
+
+        if (
+          cell.childNodes.length === 1 &&
+          cell.firstElementChild?.dataset.gemSymbol === symbol
+        ) return;
+
+        cell.innerHTML = gemMarkup(symbol, index);
+      });
+    };
+
+    repaint();
+
+    const observer = new MutationObserver(repaint);
+
+    observer.observe(grid, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["data-symbol"],
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startGemArtwork, {
+      once: true,
+    });
+  } else {
+    startGemArtwork();
+  }
+})();

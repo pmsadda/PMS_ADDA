@@ -1152,3 +1152,39 @@ body.gem-fortune {
     ),
     var(--gem-color);
 }
+
+body.gem-fortune .slot-reels .reel-cell::before,
+body.gem-fortune .slot-reels .reel-cell::after {
+  content: none;
+}
+
+body.gem-fortune .slot-reels .reel-cell {
+  background:
+    radial-gradient(ellipse at 50% 20%, #31554b70, transparent 75%),
+    linear-gradient(180deg, #142d26, #091b15);
+  border: 1px solid #79c5a520;
+  box-shadow:
+    inset 0 1px 0 #d0ffe012,
+    inset 0 -5px 15px #0003;
+}
+
+.gem-symbol-art {
+  display: block;
+  width: 90%;
+  height: 90%;
+  overflow: visible;
+  filter: drop-shadow(0 5px 4px #0006);
+  pointer-events: none;
+}
+
+body.gem-fortune .slot-reels .reel-cell.winning {
+  background:
+    radial-gradient(circle, #367856, #102a1c);
+  border-color: #b1ffd3;
+}
+
+.reel-cell.winning .gem-symbol-art {
+  filter:
+    drop-shadow(0 0 7px #baffcc80)
+    drop-shadow(0 5px 4px #0006);
+}
