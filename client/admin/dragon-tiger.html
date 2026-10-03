@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dragon Tiger Control | TPL22</title>
+  <link rel="stylesheet" href="../css/dragon-tiger.css?v=1">
+  <script src="../js/admin-dragon-tiger.js?v=1" defer></script>
+</head>
+<body>
+  <main class="dt-app dt-admin">
+    <header class="dt-header">
+      <a href="dashboard.html">←</a>
+      <h1>Dragon Tiger Control</h1>
+    </header>
+
+    <section class="dt-panel">
+      <h2>Game Report</h2>
+      <p id="dtReport">Loading...</p>
+    </section>
+
+    <form id="dtSettings" class="dt-panel">
+      <label>
+        <input id="dtEnabled" type="checkbox">
+        Game enabled
+      </label>
+
+      <label>
+        <input id="dtMaintenance" type="checkbox">
+        Maintenance mode
+      </label>
+
+      <label>
+        Minimum bet
+        <input id="dtMin" type="number" min="0.02" step="0.02" required>
+      </label>
+
+      <label>
+        Maximum bet
+        <input id="dtMax" type="number" min="0.02" step="0.02" required>
+      </label>
+
+      <label>
+        Maximum return per hand
+        <input id="dtPayout" type="number" min="0.02" step="0.01" required>
+      </label>
+
+      <button id="dtSave" class="dt-save" type="submit" disabled>
+        SAVE SETTINGS
+      </button>
+
+      <p id="dtAdminMessage" role="status">Loading...</p>
+    </form>
+  </main>
+</body>
+</html>

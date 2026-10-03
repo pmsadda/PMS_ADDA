@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dragon Tiger | TPL22</title>
+  <link rel="stylesheet" href="../css/dragon-tiger.css?v=1">
+  <script src="../js/dragon-tiger.js?v=1" defer></script>
+</head>
+<body>
+  <main class="dt-app">
+    <header class="dt-header">
+      <a href="/lobby" aria-label="Back to lobby">←</a>
+      <div>
+        <h1>DRAGON TIGER</h1>
+        <small>HIGH CARD WINS</small>
+      </div>
+      <strong id="dtWallet">৳0.00</strong>
+    </header>
+
+    <section class="dt-table">
+      <div class="dt-hands">
+        <div>
+          <h2>DRAGON</h2>
+          <div id="dtDragon" class="dt-card back">?</div>
+        </div>
+        <span class="dt-versus">VS</span>
+        <div>
+          <h2>TIGER</h2>
+          <div id="dtTiger" class="dt-card back">?</div>
+        </div>
+      </div>
+      <p id="dtMessage" role="status">Loading...</p>
+    </section>
+
+    <section class="dt-panel">
+      <div class="dt-sides">
+        <button type="button" data-side="dragon" class="selected">
+          DRAGON <small>Return 2×</small>
+        </button>
+        <button type="button" data-side="tie">
+          TIE <small>Return 12×</small>
+        </button>
+        <button type="button" data-side="tiger">
+          TIGER <small>Return 2×</small>
+        </button>
+      </div>
+
+      <div class="dt-actions">
+        <label>
+          BET AMOUNT
+          <input id="dtBet" type="number" value="10" step="0.02">
+        </label>
+        <button id="dtPlay" type="button" disabled>LOADING</button>
+      </div>
+
+      <small id="dtLimits"></small>
+    </section>
+
+    <details class="dt-panel">
+      <summary>Game Rules</summary>
+      <p>Ace-এর মান ১; তারপর ২–১০, J=১১, Q=১২, K=১৩। বড় তাস জেতে।</p>
+      <p>Dragon/Tiger জয় হলে bet-সহ ২× ফেরত।
+        Tie bet জিতলে bet-সহ ১২× ফেরত।</p>
+      <p>Tie হলে Dragon/Tiger bet-এর অর্ধেক ফেরত।
+        অন্য হারানো bet-এর return শূন্য।</p>
+      <p>প্রতি hand-এ নতুন আট-deck pool থেকে দুইটি তাস ওঠে।
+        একই suit ফল নির্ধারণ করে না।</p>
+    </details>
+
+    <section class="dt-panel">
+      <h2>My History</h2>
+      <div id="dtHistory">Loading...</div>
+    </section>
+  </main>
+</body>
+</html>

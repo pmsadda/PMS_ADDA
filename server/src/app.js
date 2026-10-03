@@ -45,6 +45,11 @@ const teenPattiRoutes = require("./routes/teenpatti.routes");
 
 const pokerRoutes = require("./routes/poker.routes");
 
+const {
+  playerRouter: dragonTigerRoutes,
+  adminRouter: adminDragonTigerRoutes
+} = require("./routes/dragon-tiger.routes");
+
 const ludoRoutes = require("./routes/ludo.routes");
 
 const carromRoutes = require("./routes/carrom.routes");
@@ -558,6 +563,10 @@ app.use("/api/admin/bots", adminBotsRoutes);
 app.use("/api/teenpatti", teenPattiRoutes);
 
 app.use("/api/poker", pokerRoutes);
+
+app.use("/api/dragon-tiger", dragonTigerRoutes);
+
+app.use("/api/admin/dragon-tiger", adminDragonTigerRoutes);
 
 app.use("/api/ludo", ludoRoutes);
 

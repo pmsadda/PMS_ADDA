@@ -2053,7 +2053,20 @@ const categoryRules = [
     "#teenPattiBtn, #pokerBtn, #andarBaharBtn, #kaitBtn, .blackjack-game-card",
   ],
   ["crash", "#aviatorBtn, .aviator-game-card, .rocket-rise-game-card, .balloon-burst-game-card, .dragon-flight-game-card"],
-  ["table", "#ludoBtn, #carromBtn, .roulette-game-card"],
+    [
+    "table",
+    [
+      "#ludoBtn",
+      "#carromBtn",
+      ".roulette-game-card",
+      ".dragon-tiger-game-card",
+      "a[href='/ludo-rooms']",
+      "a[href='/carrom-rooms']",
+      "a[href='/roulette']",
+      "a[href='/dragon-tiger']",
+    ].join(", "),
+  ],
+  
   ["lottery", "#lotteryBtn, #banglaWheelBtn, #banglaDiceBtn"],
 ];
 
