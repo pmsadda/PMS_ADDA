@@ -71,6 +71,10 @@ const adminLuckySevensRoutes = require("./routes/admin-lucky-sevens.routes");
 
 const adminFruitFiestaRoutes = require("./routes/admin-fruit-fiesta.routes");
 
+const oceanTreasureRoutes = require("./routes/ocean-treasure.routes");
+
+const adminOceanTreasureRoutes = require("./routes/admin-ocean-treasure.routes");
+
 const adminGemFortuneRoutes = require("./routes/admin-gem-fortune.routes");
 
 const adminDragonFlightRoutes = require("./routes/admin-dragon-flight.routes");
@@ -501,6 +505,10 @@ app.use("/api/admin/fruit-fiesta", adminFruitFiestaRoutes);
 app.use("/api/lucky-sevens", luckySevensRoutes);
 
 app.use("/api/admin/lucky-sevens", adminLuckySevensRoutes);
+
+app.use("/api/ocean-treasure", oceanTreasureRoutes);
+
+app.use("/api/admin/ocean-treasure", adminOceanTreasureRoutes);
 
 app.use("/api/admin/dragon-flight", adminDragonFlightRoutes);
 

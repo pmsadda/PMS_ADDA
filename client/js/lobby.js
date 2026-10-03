@@ -2029,9 +2029,24 @@ const categoryCards = Array.from(
 
 const categoryRules = [
   ["sports", ".sports-lobby-card, a[href='/sports']"],
-    [
+     [
     "slots",
-    ".slot-game-card, .super-ace-game-card, .gem-fortune-game-card, .fruit-fiesta-game-card, .lucky-sevens-game-card, .golden-pharaoh-game-card, a[href='/slot'], a[href='/super-ace'], a[href='/gem-fortune'], a[href='/fruit-fiesta'], a[href='/lucky-sevens'], a[href='/golden-pharaoh']",
+    [
+      ".slot-game-card",
+      ".super-ace-game-card",
+      ".gem-fortune-game-card",
+      ".fruit-fiesta-game-card",
+      ".lucky-sevens-game-card",
+      ".golden-pharaoh-game-card",
+      ".ocean-treasure-game-card",
+      "a[href='/slot']",
+      "a[href='/super-ace']",
+      "a[href='/gem-fortune']",
+      "a[href='/fruit-fiesta']",
+      "a[href='/lucky-sevens']",
+      "a[href='/golden-pharaoh']",
+      "a[href='/ocean-treasure']",
+    ].join(", "),
   ],
   [
     "cards",
