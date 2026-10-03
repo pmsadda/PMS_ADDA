@@ -57,6 +57,11 @@ const banglaWheelRoutes = require("./routes/bangla-wheel.routes");
 const slotRoutes = require("./routes/slot.routes");
 
 const gemFortuneRoutes = require("./routes/gem-fortune.routes");
+
+const fruitFiestaRoutes = require("./routes/fruit-fiesta.routes");
+
+const adminFruitFiestaRoutes = require("./routes/admin-fruit-fiesta.routes");
+
 const adminGemFortuneRoutes = require("./routes/admin-gem-fortune.routes");
 
 const blackjackRoutes = require("./routes/blackjack.routes");
@@ -471,7 +476,12 @@ app.use("/api/slot", slotRoutes);
 app.use("/api/admin/slot", adminSlotRoutes);
 
 app.use("/api/gem-fortune", gemFortuneRoutes);
+
 app.use("/api/admin/gem-fortune", adminGemFortuneRoutes);
+
+app.use("/api/fruit-fiesta", fruitFiestaRoutes);
+
+app.use("/api/admin/fruit-fiesta", adminFruitFiestaRoutes);
 
 app.use("/api/sports", sportsRoutes);
 
