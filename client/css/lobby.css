@@ -6698,3 +6698,37 @@ body .app #games .game-list .game-card.is-category-hidden {
   font-size: 9px;
   letter-spacing: 2px;
 }
+
+.sevens-lobby-art {
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #c59246;
+  border-radius: 10px;
+  background: radial-gradient(circle at top, #81273c, #251019);
+  color: #ffe2a0;
+}
+
+.sevens-lobby-art > span {
+  color: #ffdf93;
+  font-family: Georgia, serif;
+  font-size: 44px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 4px;
+  text-shadow: 3px 3px 0 #a51c36;
+}
+
+.sevens-lobby-art strong {
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.sevens-lobby-art small {
+  font-size: 9px;
+  letter-spacing: 2px;
+}

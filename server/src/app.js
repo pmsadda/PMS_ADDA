@@ -60,6 +60,10 @@ const gemFortuneRoutes = require("./routes/gem-fortune.routes");
 
 const fruitFiestaRoutes = require("./routes/fruit-fiesta.routes");
 
+const luckySevensRoutes = require("./routes/lucky-sevens.routes");
+
+const adminLuckySevensRoutes = require("./routes/admin-lucky-sevens.routes");
+
 const adminFruitFiestaRoutes = require("./routes/admin-fruit-fiesta.routes");
 
 const adminGemFortuneRoutes = require("./routes/admin-gem-fortune.routes");
@@ -482,6 +486,10 @@ app.use("/api/admin/gem-fortune", adminGemFortuneRoutes);
 app.use("/api/fruit-fiesta", fruitFiestaRoutes);
 
 app.use("/api/admin/fruit-fiesta", adminFruitFiestaRoutes);
+
+app.use("/api/lucky-sevens", luckySevensRoutes);
+
+app.use("/api/admin/lucky-sevens", adminLuckySevensRoutes);
 
 app.use("/api/sports", sportsRoutes);
 
