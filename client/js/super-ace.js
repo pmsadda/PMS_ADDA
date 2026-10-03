@@ -10,57 +10,39 @@ const walletBalanceElement = document.getElementById("walletBalance");
 
 const freeSpinElement = document.getElementById("freeSpinBalance");
 
-const aceMeterCountElement =
-  document.getElementById("aceMeterCount");
+const aceMeterCountElement = document.getElementById("aceMeterCount");
 
-const aceMeterTargetElement =
-  document.getElementById("aceMeterTarget");
+const aceMeterTargetElement = document.getElementById("aceMeterTarget");
 
-const aceMeterProgressElement =
-  document.getElementById("aceMeterProgress");
+const aceMeterProgressElement = document.getElementById("aceMeterProgress");
 
-const aceMeterCard =
-  document.querySelector(".ace-meter-card");
-const maximumMultiplierElement =
-  document.getElementById("maximumMultiplier");
+const aceMeterCard = document.querySelector(".ace-meter-card");
+const maximumMultiplierElement = document.getElementById("maximumMultiplier");
 
 const reelsElement = document.getElementById("slotReels");
-const reelCells = Array.from(
-  document.querySelectorAll(".reel-cell"),
-);
+const reelCells = Array.from(document.querySelectorAll(".reel-cell"));
 
 const messageElement = document.getElementById("slotMessage");
 const lastWinElement = document.getElementById("lastWin");
-const lastMultiplierElement =
-  document.getElementById("lastMultiplier");
+const lastMultiplierElement = document.getElementById("lastMultiplier");
 
-const betAmountElement =
-  document.getElementById("betAmountDisplay");
+const betAmountElement = document.getElementById("betAmountDisplay");
 
-const decreaseBetButton =
-  document.getElementById("decreaseBetBtn");
+const decreaseBetButton = document.getElementById("decreaseBetBtn");
 
-const increaseBetButton =
-  document.getElementById("increaseBetBtn");
+const increaseBetButton = document.getElementById("increaseBetBtn");
 
-const quickBetButtons = Array.from(
-  document.querySelectorAll("[data-bet]"),
-);
+const quickBetButtons = Array.from(document.querySelectorAll("[data-bet]"));
 
 const spinButton = document.getElementById("spinBtn");
-const spinButtonText =
-  document.getElementById("spinButtonText");
+const spinButtonText = document.getElementById("spinButtonText");
 
 const historyElement = document.getElementById("spinHistory");
-const tabButtons = Array.from(
-  document.querySelectorAll(".information-tab"),
-);
+const tabButtons = Array.from(document.querySelectorAll(".information-tab"));
 
 const noticeElement = document.getElementById("slotNotice");
-const noticeTitleElement =
-  document.getElementById("noticeTitle");
-const noticeMessageElement =
-  document.getElementById("noticeMessage");
+const noticeTitleElement = document.getElementById("noticeTitle");
+const noticeMessageElement = document.getElementById("noticeMessage");
 
 /* =========================
    State
@@ -73,7 +55,7 @@ const state = {
   maxBet: 5000,
   walletBalance: 0,
   freeSpinsBalance: 0,
-    aceMeterCount: 0,
+  aceMeterCount: 0,
   aceMeterTarget: 5,
   noticeTimer: null,
 };
@@ -163,15 +145,11 @@ async function apiRequest(path, options = {}) {
 
   if (response.status === 401) {
     redirectToLogin();
-    throw new Error(
-      result.message || "Login session শেষ হয়ে গেছে।",
-    );
+    throw new Error(result.message || "Login session শেষ হয়ে গেছে।");
   }
 
   if (!response.ok || result.success === false) {
-    const error = new Error(
-      result.message || "Request failed.",
-    );
+    const error = new Error(result.message || "Request failed.");
 
     error.code = result.code || null;
     throw error;
@@ -201,55 +179,32 @@ function updateBetDisplay() {
 }
 
 function updateFreeSpinDisplay() {
-  freeSpinElement.textContent =
-    String(state.freeSpinsBalance);
+  freeSpinElement.textContent = String(state.freeSpinsBalance);
 
-  spinButton.classList.toggle(
-    "free-spin",
-    state.freeSpinsBalance > 0,
-  );
+  spinButton.classList.toggle("free-spin", state.freeSpinsBalance > 0);
 
   spinButtonText.textContent =
-    state.freeSpinsBalance > 0
-      ? "FREE SPIN"
-      : "SPIN";
+    state.freeSpinsBalance > 0 ? "FREE SPIN" : "SPIN";
 }
 
 function updateAceMeter(triggered = false) {
-  const target = Math.max(
-    1,
-    Number(state.aceMeterTarget) || 5,
-  );
+  const target = Math.max(1, Number(state.aceMeterTarget) || 5);
 
-  const count = Math.max(
-    0,
-    Number(state.aceMeterCount) || 0,
-  );
+  const count = Math.max(0, Number(state.aceMeterCount) || 0);
 
-  const progress = Math.min(
-    100,
-    (count / target) * 100,
-  );
+  const progress = Math.min(100, (count / target) * 100);
 
-  aceMeterCountElement.textContent =
-    String(count);
+  aceMeterCountElement.textContent = String(count);
 
-  aceMeterTargetElement.textContent =
-    String(target);
+  aceMeterTargetElement.textContent = String(target);
 
-  aceMeterProgressElement.style.width =
-    `${progress}%`;
+  aceMeterProgressElement.style.width = `${progress}%`;
 
-  aceMeterCard.classList.toggle(
-    "triggered",
-    Boolean(triggered),
-  );
+  aceMeterCard.classList.toggle("triggered", Boolean(triggered));
 
   if (triggered) {
     window.setTimeout(() => {
-      aceMeterCard.classList.remove(
-        "triggered",
-      );
+      aceMeterCard.classList.remove("triggered");
     }, 1800);
   }
 }
@@ -295,14 +250,13 @@ function normalizeGrid(grid) {
 function renderGrid(grid) {
   const symbols = normalizeGrid(grid);
 
-  if (symbols.length < 15) {
-    return;
-  }
+  if (symbols.length !== reelCells.length) return;
 
   reelCells.forEach((cell, index) => {
-    const symbol = String(symbols[index] || "").toUpperCase();
+    const symbol = String(symbols[index]).toUpperCase();
 
-    cell.textContent = symbolIcons[symbol] || symbol || "❔";
+    cell.dataset.symbol = symbol;
+    cell.textContent = symbolIcons[symbol] || symbol;
   });
 }
 function markWinningCells(winningLines) {
@@ -326,11 +280,7 @@ function markWinningCells(winningLines) {
         Math.max(0, Number(line.matchingCount) || 0),
       );
 
-      for (
-        let column = 0;
-        column < matchingCount;
-        column += 1
-      ) {
+      for (let column = 0; column < matchingCount; column += 1) {
         const row = Number(line.rows[column]);
         const index = row * 5 + column;
 
@@ -342,11 +292,7 @@ function markWinningCells(winningLines) {
       return;
     }
 
-    const positions =
-      line.positions ||
-      line.cells ||
-      line.indexes ||
-      [];
+    const positions = line.positions || line.cells || line.indexes || [];
 
     if (!Array.isArray(positions)) {
       return;
@@ -355,10 +301,7 @@ function markWinningCells(winningLines) {
     positions.forEach((position) => {
       let index = Number(position);
 
-      if (
-        position &&
-        typeof position === "object"
-      ) {
+      if (position && typeof position === "object") {
         const row = Number(position.row);
         const column = Number(position.column);
 
@@ -384,37 +327,25 @@ function createWinningMessage(result) {
   const details = winningLines
     .slice(0, 3)
     .map((line) => {
-      const symbolName = String(
-        line.symbol || "Symbol",
-      ).toUpperCase();
+      const symbolName = String(line.symbol || "Symbol").toUpperCase();
 
-      const symbolIcon =
-        symbolIcons[symbolName] || symbolName;
+      const symbolIcon = symbolIcons[symbolName] || symbolName;
 
-      const lineNumber =
-        Number(line.lineNumber) + 1;
+      const lineNumber = Number(line.lineNumber) + 1;
 
-      const matchingCount =
-        Number(line.matchingCount) || 0;
+      const matchingCount = Number(line.matchingCount) || 0;
 
-      const multiplier =
-        Number(line.lineMultiplier) || 0;
+      const multiplier = Number(line.lineMultiplier) || 0;
 
       return `Line ${lineNumber}: ${symbolIcon} ×${matchingCount} = ${multiplier}x`;
     })
     .join(" | ");
 
-  const extraLineCount =
-    winningLines.length - 3;
+  const extraLineCount = winningLines.length - 3;
 
-  const extraText =
-    extraLineCount > 0
-      ? ` | আরও ${extraLineCount}টি line`
-      : "";
+  const extraText = extraLineCount > 0 ? ` | আরও ${extraLineCount}টি line` : "";
 
-  return `${details}${extraText} • Win ৳${money(
-    result.payoutAmount,
-  )}`;
+  return `${details}${extraText} • Win ৳${money(result.payoutAmount)}`;
 }
 
 /* =========================
@@ -439,40 +370,29 @@ async function loadGameState() {
   );
 
   state.walletBalance = Number(
-    wallet.walletBalance ??
-    wallet.balance ??
-    player.walletBalance ??
-    0,
+    wallet.walletBalance ?? wallet.balance ?? player.walletBalance ?? 0,
   );
 
   state.freeSpinsBalance = Number(
-    player.freeSpinsBalance ??
-    data.freeSpinsBalance ??
-    0,
+    player.freeSpinsBalance ?? data.freeSpinsBalance ?? 0,
   );
 
-    state.aceMeterCount = Number(
-    player.aceMeterCount ??
-    data.aceMeterCount ??
-    0,
-  );
+  state.aceMeterCount = Number(player.aceMeterCount ?? data.aceMeterCount ?? 0);
 
   state.aceMeterTarget = Number(
     player.aceMeterTarget ??
-    data.aceMeterTarget ??
-    settings.aceMeterTrigger ??
-    5,
+      data.aceMeterTarget ??
+      settings.aceMeterTrigger ??
+      5,
   );
 
-  walletBalanceElement.textContent =
-    money(state.walletBalance);
+  walletBalanceElement.textContent = money(state.walletBalance);
 
-  maximumMultiplierElement.textContent =
-    `${Number(settings.maxWinMultiplier || 0)}x`;
+  maximumMultiplierElement.textContent = `${Number(settings.maxWinMultiplier || 0)}x`;
 
   updateBetDisplay();
   updateFreeSpinDisplay();
-    updateAceMeter(false);
+  updateAceMeter(false);
 
   if (settings.isEnabled === false) {
     spinButton.disabled = true;
@@ -481,8 +401,7 @@ async function loadGameState() {
 
   if (settings.maintenanceMode === true) {
     spinButton.disabled = true;
-    messageElement.textContent =
-      "Super Ace game maintenance চলছে";
+    messageElement.textContent = "Super Ace game maintenance চলছে";
   }
 }
 
@@ -494,31 +413,105 @@ function createTemporarySpin() {
   const availableSymbols = Object.values(symbolIcons);
 
   reelCells.forEach((cell) => {
-    const randomIndex = Math.floor(
-      Math.random() * availableSymbols.length,
-    );
+    const randomIndex = Math.floor(Math.random() * availableSymbols.length);
 
     cell.textContent = availableSymbols[randomIndex];
   });
 }
 
 async function animateSpinUntil(requestPromise) {
-  const animationTimer = window.setInterval(
-    createTemporarySpin,
-    90,
-  );
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
 
-  const minimumAnimation = wait(750);
+  if (reducedMotion) return requestPromise;
+
+  const symbols = Object.keys(symbolIcons);
+  const previousCells = reelCells.map((cell) => ({
+    text: cell.textContent,
+    symbol: cell.dataset.symbol,
+  }));
+
+  const timers = new Map();
+  let completed = false;
+
+  const paintColumn = (column) => {
+    for (let row = 0; row < 3; row++) {
+      const cell = reelCells[row * 5 + column];
+      const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+
+      cell.dataset.symbol = symbol;
+      cell.textContent = symbolIcons[symbol];
+    }
+  };
+
+  for (let column = 0; column < 5; column++) {
+    for (let row = 0; row < 3; row++) {
+      reelCells[row * 5 + column].classList.add("is-rolling");
+    }
+
+    paintColumn(column);
+    timers.set(
+      column,
+      window.setInterval(() => paintColumn(column), 85 + column * 8),
+    );
+  }
 
   try {
-    const [result] = await Promise.all([
+    const [response] = await Promise.all([
       requestPromise,
-      minimumAnimation,
+      wait(900),
     ]);
 
-    return result;
+    const result = response.spin || response;
+    const finalSymbols = normalizeGrid(result.grid);
+
+    if (
+      finalSymbols.length !== 15 ||
+      finalSymbols.some(
+        (symbol) => !Object.hasOwn(symbolIcons, String(symbol).toUpperCase()),
+      )
+    ) {
+      throw new Error(
+        "Spin result দেখানো যায়নি। Wallet ও History যাচাই করুন।",
+      );
+    }
+
+    for (let column = 0; column < 5; column++) {
+      window.clearInterval(timers.get(column));
+      timers.delete(column);
+
+      for (let row = 0; row < 3; row++) {
+        const index = row * 5 + column;
+        const cell = reelCells[index];
+        const symbol = String(finalSymbols[index]).toUpperCase();
+
+        cell.classList.remove("is-rolling");
+        cell.dataset.symbol = symbol;
+        cell.textContent = symbolIcons[symbol];
+      }
+
+      if (column < 4) await wait(140);
+    }
+
+    completed = true;
+    return response;
   } finally {
-    window.clearInterval(animationTimer);
+    timers.forEach((timer) => window.clearInterval(timer));
+
+    reelCells.forEach((cell, index) => {
+      cell.classList.remove("is-rolling");
+
+      if (!completed) {
+        cell.textContent = previousCells[index].text;
+
+        if (previousCells[index].symbol) {
+          cell.dataset.symbol = previousCells[index].symbol;
+        } else {
+          delete cell.dataset.symbol;
+        }
+      }
+    });
   }
 }
 
@@ -527,10 +520,7 @@ async function spin() {
     return;
   }
 
-  if (
-    state.freeSpinsBalance <= 0 &&
-    state.walletBalance < state.betAmount
-  ) {
+  if (state.freeSpinsBalance <= 0 && state.walletBalance < state.betAmount) {
     showNotice("আপনার Wallet balance পর্যাপ্ত নয়।", "Balance");
     return;
   }
@@ -549,81 +539,57 @@ async function spin() {
       }),
     });
 
-   const responseData =
-  await animateSpinUntil(requestPromise);
+    const responseData = await animateSpinUntil(requestPromise);
 
-const result =
-  responseData.spin || responseData;
+    const result = responseData.spin || responseData;
 
     renderGrid(result.grid);
     markWinningCells(result.winningLines);
 
-    state.walletBalance = Number(
-      result.walletBalance ?? state.walletBalance,
-    );
+    state.walletBalance = Number(result.walletBalance ?? state.walletBalance);
 
-    state.freeSpinsBalance = Number(
-      result.freeSpinsBalance ?? 0,
-    );
+    state.freeSpinsBalance = Number(result.freeSpinsBalance ?? 0);
 
-        state.aceMeterCount = Number(
-      result.aceMeterAfter ??
-      state.aceMeterCount,
-    );
+    state.aceMeterCount = Number(result.aceMeterAfter ?? state.aceMeterCount);
 
     state.aceMeterTarget = Number(
-      result.aceMeterTarget ??
-      state.aceMeterTarget,
+      result.aceMeterTarget ?? state.aceMeterTarget,
     );
 
-    updateAceMeter(
-      result.aceBonusTriggered === true,
-    );
+    updateAceMeter(result.aceBonusTriggered === true);
 
-    walletBalanceElement.textContent =
-      money(state.walletBalance);
+    walletBalanceElement.textContent = money(state.walletBalance);
 
-    lastWinElement.textContent =
-      money(result.payoutAmount);
+    lastWinElement.textContent = money(result.payoutAmount);
 
-    lastMultiplierElement.textContent =
-      `${Number(result.winMultiplier || 0).toFixed(2)}x`;
+    lastMultiplierElement.textContent = `${Number(result.winMultiplier || 0).toFixed(2)}x`;
 
-   if (Number(result.payoutAmount) > 0) {
-  messageElement.textContent =
-    createWinningMessage(result);
+    if (Number(result.payoutAmount) > 0) {
+      messageElement.textContent = createWinningMessage(result);
 
-  messageElement.classList.add("win");
-}else {
-      messageElement.textContent =
-        "এই Spin-এ Win হয়নি—আবার চেষ্টা করুন";
+      messageElement.classList.add("win");
+    } else {
+      messageElement.textContent = "এই Spin-এ Win হয়নি—আবার চেষ্টা করুন";
     }
 
     if (Number(result.freeSpinsWon) > 0) {
-      showNotice(
-        `${result.freeSpinsWon}টি Free Spin পেয়েছেন!`,
-        "Free Spins",
-      );
+      showNotice(`${result.freeSpinsWon}টি Free Spin পেয়েছেন!`, "Free Spins");
     }
 
-        if (result.aceBonusTriggered === true) {
+    if (result.aceBonusTriggered === true) {
       showNotice(
-        `Ace Meter Bonus ${Number(
-          result.bonusMultiplier || 1,
-        ).toFixed(2)}x চালু হয়েছে!`,
+        `Ace Meter Bonus ${Number(result.bonusMultiplier || 1).toFixed(
+          2,
+        )}x চালু হয়েছে!`,
         "ACE BONUS",
       );
     }
 
     await loadHistory();
   } catch (error) {
-    messageElement.textContent =
-      error.message || "Spin সম্পন্ন হয়নি।";
+    messageElement.textContent = error.message || "Spin সম্পন্ন হয়নি।";
 
-    showNotice(
-      error.message || "Spin সম্পন্ন হয়নি।",
-      "Spin Error",
-    );
+    showNotice(error.message || "Spin সম্পন্ন হয়নি।", "Spin Error");
 
     await loadGameState().catch(() => {});
   } finally {
@@ -646,28 +612,13 @@ function renderHistory(items) {
   historyElement.innerHTML = items
     .slice(0, 20)
     .map((item) => {
-      const payout = Number(
-        item.payoutAmount ??
-        item.payout_amount ??
-        0,
-      );
+      const payout = Number(item.payoutAmount ?? item.payout_amount ?? 0);
 
-      const bet = Number(
-        item.betAmount ??
-        item.bet_amount ??
-        0,
-      );
+      const bet = Number(item.betAmount ?? item.bet_amount ?? 0);
 
-      const multiplier = Number(
-        item.winMultiplier ??
-        item.win_multiplier ??
-        0,
-      );
+      const multiplier = Number(item.winMultiplier ?? item.win_multiplier ?? 0);
 
-      const createdAt =
-        item.createdAt ||
-        item.created_at ||
-        "";
+      const createdAt = item.createdAt || item.created_at || "";
 
       const dateText = createdAt
         ? new Date(createdAt).toLocaleString("en-BD")
@@ -756,10 +707,7 @@ function bindControls() {
       const tabName = button.dataset.tab;
 
       tabButtons.forEach((tabButton) => {
-        tabButton.classList.toggle(
-          "active",
-          tabButton === button,
-        );
+        tabButton.classList.toggle("active", tabButton === button);
       });
 
       document
@@ -781,21 +729,12 @@ async function initializeSlot() {
   bindControls();
 
   try {
-    await Promise.all([
-      loadGameState(),
-      loadHistory(),
-    ]);
+    await Promise.all([loadGameState(), loadHistory()]);
   } catch (error) {
-    showNotice(
-      error.message || "Super Ace game load হয়নি।",
-      "Loading Error",
-    );
+    showNotice(error.message || "Super Ace game load হয়নি।", "Loading Error");
   } finally {
     loadingElement.classList.add("hidden");
   }
 }
 
-document.addEventListener(
-  "DOMContentLoaded",
-  initializeSlot,
-);
+document.addEventListener("DOMContentLoaded", initializeSlot);
