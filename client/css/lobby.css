@@ -6633,3 +6633,36 @@ body.lobby-offer-open {
         font-size: 8px;
     }
 }
+
+.game-categories {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 4px 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.game-category-btn {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.game-category-btn:focus-visible {
+  outline: 2px solid #ffd700;
+  outline-offset: 3px;
+}
+
+.game-list .game-card.is-category-hidden {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  .game-category-btn {
+    min-height: 40px;
+    padding: 9px 13px;
+  }
+}

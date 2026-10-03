@@ -1275,214 +1275,189 @@ document.addEventListener("DOMContentLoaded", () => {
    ADMIN CONTROLLED OFFER POPUP
 ========================================================= */
 
-const LOBBY_OFFER_HIDE_DATE_KEY = "pms_adda_offer_hidden_date";
-const LOBBY_OFFER_SESSION_PREFIX = "pms_adda_offer_seen_";
+  const LOBBY_OFFER_HIDE_DATE_KEY = "pms_adda_offer_hidden_date";
+  const LOBBY_OFFER_SESSION_PREFIX = "pms_adda_offer_seen_";
 
-function getLocalDateKey() {
-  const currentDate = new Date();
+  function getLocalDateKey() {
+    const currentDate = new Date();
 
-  const year = currentDate.getFullYear();
-  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-  const day = String(currentDate.getDate()).padStart(2, "0");
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const day = String(currentDate.getDate()).padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
-}
-
-function getActivePopupBanner() {
-  return (
-    STATE.lobbyBanners.find((banner) => {
-      if (
-        !banner ||
-        banner.status !== "active" ||
-        banner.showAsPopup !== true ||
-        !banner.imageUrl
-      ) {
-        return false;
-      }
-
-      const sessionKey =
-        `${LOBBY_OFFER_SESSION_PREFIX}${banner.id}`;
-
-      return sessionStorage.getItem(sessionKey) !== "1";
-    }) || null
-  );
-}
-
-function closeLobbyOfferPopup() {
-  if (!DOM.lobbyOfferPopup) {
-    return;
+    return `${year}-${month}-${day}`;
   }
 
-  const bannerId =
-    DOM.lobbyOfferPopup.dataset.bannerId;
+  function getActivePopupBanner() {
+    return (
+      STATE.lobbyBanners.find((banner) => {
+        if (
+          !banner ||
+          banner.status !== "active" ||
+          banner.showAsPopup !== true ||
+          !banner.imageUrl
+        ) {
+          return false;
+        }
 
-  const hideAllToday = Boolean(
-    DOM.lobbyOfferHideToday?.checked,
-  );
+        const sessionKey = `${LOBBY_OFFER_SESSION_PREFIX}${banner.id}`;
 
-  if (bannerId) {
-    sessionStorage.setItem(
-      `${LOBBY_OFFER_SESSION_PREFIX}${bannerId}`,
-      "1",
+        return sessionStorage.getItem(sessionKey) !== "1";
+      }) || null
     );
   }
 
-  if (hideAllToday) {
-    localStorage.setItem(
-      LOBBY_OFFER_HIDE_DATE_KEY,
-      getLocalDateKey(),
-    );
+  function closeLobbyOfferPopup() {
+    if (!DOM.lobbyOfferPopup) {
+      return;
+    }
+
+    const bannerId = DOM.lobbyOfferPopup.dataset.bannerId;
+
+    const hideAllToday = Boolean(DOM.lobbyOfferHideToday?.checked);
+
+    if (bannerId) {
+      sessionStorage.setItem(`${LOBBY_OFFER_SESSION_PREFIX}${bannerId}`, "1");
+    }
+
+    if (hideAllToday) {
+      localStorage.setItem(LOBBY_OFFER_HIDE_DATE_KEY, getLocalDateKey());
+    }
+
+    DOM.lobbyOfferPopup.hidden = true;
+    DOM.lobbyOfferPopup.removeAttribute("data-banner-id");
+
+    document.body.classList.remove("lobby-offer-open");
+
+    /*
+     * Hide today select না করলে
+     * পরবর্তী active popup দেখানো হবে।
+     */
+    if (!hideAllToday) {
+      window.setTimeout(() => {
+        renderLobbyOfferPopup();
+      }, 200);
+    }
   }
 
-  DOM.lobbyOfferPopup.hidden = true;
-  DOM.lobbyOfferPopup.removeAttribute(
-    "data-banner-id",
-  );
+  function setLobbyOfferTarget(banner) {
+    if (!DOM.lobbyOfferAction) {
+      return;
+    }
 
-  document.body.classList.remove(
-    "lobby-offer-open",
-  );
+    const targetUrl = String(banner?.targetUrl || "").trim();
 
-  /*
-   * Hide today select না করলে
-   * পরবর্তী active popup দেখানো হবে।
-   */
-  if (!hideAllToday) {
-    window.setTimeout(() => {
-      renderLobbyOfferPopup();
-    }, 200);
-  }
-}
+    DOM.lobbyOfferAction.hidden = true;
+    DOM.lobbyOfferAction.removeAttribute("href");
+    DOM.lobbyOfferAction.removeAttribute("target");
+    DOM.lobbyOfferAction.removeAttribute("rel");
 
-function setLobbyOfferTarget(banner) {
-  if (!DOM.lobbyOfferAction) {
-    return;
-  }
+    if (!targetUrl) {
+      return;
+    }
 
-  const targetUrl = String(banner?.targetUrl || "").trim();
+    let parsedUrl;
 
-  DOM.lobbyOfferAction.hidden = true;
-  DOM.lobbyOfferAction.removeAttribute("href");
-  DOM.lobbyOfferAction.removeAttribute("target");
-  DOM.lobbyOfferAction.removeAttribute("rel");
+    try {
+      parsedUrl = new URL(targetUrl, window.location.origin);
+    } catch (error) {
+      return;
+    }
 
-  if (!targetUrl) {
-    return;
-  }
+    if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+      return;
+    }
 
-  let parsedUrl;
+    DOM.lobbyOfferAction.href = parsedUrl.toString();
+    DOM.lobbyOfferAction.target = "_blank";
+    DOM.lobbyOfferAction.rel = "noopener noreferrer";
+    DOM.lobbyOfferAction.textContent =
+      String(banner.popupButtonText || "").trim() || "View Offer";
 
-  try {
-    parsedUrl = new URL(targetUrl, window.location.origin);
-  } catch (error) {
-    return;
+    DOM.lobbyOfferAction.hidden = false;
   }
 
-  if (
-    parsedUrl.protocol !== "https:" &&
-    parsedUrl.protocol !== "http:"
-  ) {
-    return;
+  function renderLobbyOfferPopup() {
+    if (
+      !DOM.lobbyOfferPopup ||
+      !DOM.lobbyOfferImage ||
+      !DOM.lobbyOfferTitle ||
+      !DOM.lobbyOfferMessage
+    ) {
+      return;
+    }
+
+    if (localStorage.getItem(LOBBY_OFFER_HIDE_DATE_KEY) === getLocalDateKey()) {
+      return;
+    }
+
+    const banner = getActivePopupBanner();
+
+    if (!banner) {
+      return;
+    }
+
+    const sessionKey = `${LOBBY_OFFER_SESSION_PREFIX}${banner.id}`;
+
+    if (sessionStorage.getItem(sessionKey) === "1") {
+      return;
+    }
+
+    const imageUrl = resolveLobbyBannerImageUrl(banner.imageUrl);
+
+    if (!imageUrl) {
+      return;
+    }
+
+    DOM.lobbyOfferPopup.dataset.bannerId = String(banner.id);
+
+    DOM.lobbyOfferTitle.textContent =
+      String(banner.title || "").trim() || "Special Offer";
+
+    DOM.lobbyOfferMessage.textContent = String(
+      banner.popupMessage || "",
+    ).trim();
+
+    DOM.lobbyOfferMessage.hidden =
+      DOM.lobbyOfferMessage.textContent.length === 0;
+
+    DOM.lobbyOfferImage.src = imageUrl;
+    DOM.lobbyOfferImage.alt =
+      String(banner.title || "").trim() || "TPL22 offer";
+
+    DOM.lobbyOfferImage.onerror = () => {
+      DOM.lobbyOfferImage.onerror = null;
+
+      closeLobbyOfferPopup();
+    };
+
+    if (DOM.lobbyOfferHideToday) {
+      DOM.lobbyOfferHideToday.checked = false;
+    }
+
+    setLobbyOfferTarget(banner);
+
+    DOM.lobbyOfferPopup.hidden = false;
+    document.body.classList.add("lobby-offer-open");
   }
 
-  DOM.lobbyOfferAction.href = parsedUrl.toString();
-  DOM.lobbyOfferAction.target = "_blank";
-  DOM.lobbyOfferAction.rel = "noopener noreferrer";
-  DOM.lobbyOfferAction.textContent =
-    String(banner.popupButtonText || "").trim() || "View Offer";
+  DOM.lobbyOfferClose?.addEventListener("click", closeLobbyOfferPopup);
 
-  DOM.lobbyOfferAction.hidden = false;
-}
+  DOM.lobbyOfferBackdrop?.addEventListener("click", closeLobbyOfferPopup);
 
-function renderLobbyOfferPopup() {
-  if (
-    !DOM.lobbyOfferPopup ||
-    !DOM.lobbyOfferImage ||
-    !DOM.lobbyOfferTitle ||
-    !DOM.lobbyOfferMessage
-  ) {
-    return;
-  }
-
-  if (
-    localStorage.getItem(LOBBY_OFFER_HIDE_DATE_KEY) ===
-    getLocalDateKey()
-  ) {
-    return;
-  }
-
-  const banner = getActivePopupBanner();
-
-  if (!banner) {
-    return;
-  }
-
-  const sessionKey = `${LOBBY_OFFER_SESSION_PREFIX}${banner.id}`;
-
-  if (sessionStorage.getItem(sessionKey) === "1") {
-    return;
-  }
-
-  const imageUrl = resolveLobbyBannerImageUrl(banner.imageUrl);
-
-  if (!imageUrl) {
-    return;
-  }
-
-  DOM.lobbyOfferPopup.dataset.bannerId = String(banner.id);
-
-  DOM.lobbyOfferTitle.textContent =
-    String(banner.title || "").trim() || "Special Offer";
-
-  DOM.lobbyOfferMessage.textContent =
-    String(banner.popupMessage || "").trim();
-
-  DOM.lobbyOfferMessage.hidden =
-    DOM.lobbyOfferMessage.textContent.length === 0;
-
-  DOM.lobbyOfferImage.src = imageUrl;
-  DOM.lobbyOfferImage.alt =
-    String(banner.title || "").trim() || "TPL22 offer";
-
-  DOM.lobbyOfferImage.onerror = () => {
-    DOM.lobbyOfferImage.onerror = null;
-
+  DOM.lobbyOfferAction?.addEventListener("click", () => {
     closeLobbyOfferPopup();
-  };
+  });
 
-  if (DOM.lobbyOfferHideToday) {
-    DOM.lobbyOfferHideToday.checked = false;
-  }
-
-  setLobbyOfferTarget(banner);
-
-  DOM.lobbyOfferPopup.hidden = false;
-  document.body.classList.add("lobby-offer-open");
-}
-
-DOM.lobbyOfferClose?.addEventListener(
-  "click",
-  closeLobbyOfferPopup,
-);
-
-DOM.lobbyOfferBackdrop?.addEventListener(
-  "click",
-  closeLobbyOfferPopup,
-);
-
-DOM.lobbyOfferAction?.addEventListener("click", () => {
-  closeLobbyOfferPopup();
-});
-
-document.addEventListener("keydown", (event) => {
-  if (
-    event.key === "Escape" &&
-    DOM.lobbyOfferPopup &&
-    !DOM.lobbyOfferPopup.hidden
-  ) {
-    closeLobbyOfferPopup();
-  }
-});
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Escape" &&
+      DOM.lobbyOfferPopup &&
+      !DOM.lobbyOfferPopup.hidden
+    ) {
+      closeLobbyOfferPopup();
+    }
+  });
 
   async function loadGuestLobbyData(options = {}) {
     if (STATE.loading) {
@@ -1959,258 +1934,170 @@ document.addEventListener("keydown", (event) => {
   }
 
   initializeLobby();
-    DOM.downloadAppButton?.addEventListener(
-    "click",
-    async () => {
-      try {
-        const result =
-          await requestPublicAPI(
-            "/app-download/info"
-          );
+  DOM.downloadAppButton?.addEventListener("click", async () => {
+    try {
+      const result = await requestPublicAPI("/app-download/info");
 
-        const app =
-          result?.data?.app ||
-          result?.app ||
-          null;
+      const app = result?.data?.app || result?.app || null;
 
-        if (
-          !app?.downloadEnabled
-        ) {
-          showToast(
-            "App download এখন বন্ধ আছে।",
-            "error"
-          );
+      if (!app?.downloadEnabled) {
+        showToast("App download এখন বন্ধ আছে।", "error");
 
-          return;
-        }
-
-        if (!app?.available) {
-          showToast(
-            "App এখনো upload করা হয়নি।",
-            "error"
-          );
-
-          return;
-        }
-
-        let downloadUrl =
-          window.APP_CONFIG.api(
-            "/app-download/download"
-          );
-
-        const currentToken =
-          localStorage.getItem(
-            "access_token"
-          ) ||
-          localStorage.getItem(
-            "token"
-          ) ||
-          "";
-
-        if (currentToken) {
-          try {
-            const ticketResponse =
-              await fetch(
-                window.APP_CONFIG.api(
-                  "/app-download/download-ticket"
-                ),
-                {
-                  method: "POST",
-
-                  headers: {
-                    Accept:
-                      "application/json",
-
-                    Authorization:
-                      `Bearer ${currentToken}`
-                  },
-
-                  cache:
-                    "no-store"
-                }
-              );
-
-            let ticketResult =
-              null;
-
-            try {
-              ticketResult =
-                await ticketResponse.json();
-            } catch (error) {
-              ticketResult =
-                null;
-            }
-
-            const downloadTicket =
-              ticketResult?.data
-                ?.downloadTicket ||
-              "";
-
-            if (
-              ticketResponse.ok &&
-              downloadTicket
-            ) {
-              downloadUrl +=
-                `?download_ticket=${encodeURIComponent(
-                  downloadTicket
-                )}`;
-            }
-          } catch (error) {
-            console.warn(
-              "DOWNLOAD TICKET ERROR; CONTINUING AS GUEST:",
-              error
-            );
-          }
-        }
-
-        const link =
-          document.createElement(
-            "a"
-          );
-
-        link.href =
-          downloadUrl;
-
-        link.download =
-          app?.fileName ||
-          "TPL22.apk";
-
-        document.body.appendChild(
-          link
-        );
-
-        link.click();
-        link.remove();
-      } catch (error) {
-        console.error(
-          "APP DOWNLOAD ERROR:",
-          error
-        );
-
-        showToast(
-          error.message ||
-            "App download করা যাচ্ছে না।",
-          "error"
-        );
+        return;
       }
-    }
-  );
 
-    /* =========================================================
+      if (!app?.available) {
+        showToast("App এখনো upload করা হয়নি।", "error");
+
+        return;
+      }
+
+      let downloadUrl = window.APP_CONFIG.api("/app-download/download");
+
+      const currentToken =
+        localStorage.getItem("access_token") ||
+        localStorage.getItem("token") ||
+        "";
+
+      if (currentToken) {
+        try {
+          const ticketResponse = await fetch(
+            window.APP_CONFIG.api("/app-download/download-ticket"),
+            {
+              method: "POST",
+
+              headers: {
+                Accept: "application/json",
+
+                Authorization: `Bearer ${currentToken}`,
+              },
+
+              cache: "no-store",
+            },
+          );
+
+          let ticketResult = null;
+
+          try {
+            ticketResult = await ticketResponse.json();
+          } catch (error) {
+            ticketResult = null;
+          }
+
+          const downloadTicket = ticketResult?.data?.downloadTicket || "";
+
+          if (ticketResponse.ok && downloadTicket) {
+            downloadUrl += `?download_ticket=${encodeURIComponent(
+              downloadTicket,
+            )}`;
+          }
+        } catch (error) {
+          console.warn("DOWNLOAD TICKET ERROR; CONTINUING AS GUEST:", error);
+        }
+      }
+
+      const link = document.createElement("a");
+
+      link.href = downloadUrl;
+
+      link.download = app?.fileName || "TPL22.apk";
+
+      document.body.appendChild(link);
+
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("APP DOWNLOAD ERROR:", error);
+
+      showToast(error.message || "App download করা যাচ্ছে না।", "error");
+    }
+  });
+
+  /* =========================================================
      GAME CATEGORY FILTER
   ========================================================= */
 
-  const gameCategoryButtons =
-    Array.from(
-      document.querySelectorAll(
-        ".game-category-btn"
-      )
+  const gameCategoryButtons = Array.from(
+    document.querySelectorAll(".game-category-btn"),
+  );
+
+  const lobbyGameCards = Array.from(
+    document.querySelectorAll(".game-list .game-card"),
+  );
+
+  const lobbyCategoryRules = [
+    ["sports", ".sports-lobby-card"],
+    ["slots", ".slot-game-card, .super-ace-game-card"],
+    [
+      "cards",
+      "#teenPattiBtn, #pokerBtn, #andarBaharBtn, #kaitBtn, .blackjack-game-card",
+    ],
+    ["crash", "#aviatorBtn"],
+    ["table", "#ludoBtn, #carromBtn, .roulette-game-card"],
+    ["lottery", "#lotteryBtn, #banglaWheelBtn, #banglaDiceBtn"],
+  ];
+
+  lobbyGameCards.forEach((card) => {
+    const matchedRule = lobbyCategoryRules.find(
+      ([, selector]) => card.matches(selector) || card.querySelector(selector),
     );
 
-  const lobbyGameCards =
-    Array.from(
-      document.querySelectorAll(
-        ".game-list .game-card"
-      )
-    );
+    card.dataset.category = matchedRule?.[0] || "other";
+  });
 
   function selectGameCategory(category) {
-    const selectedCategory =
-      String(category || "all")
+    const selectedCategory = String(category || "all")
+      .trim()
+      .toLowerCase();
+
+    gameCategoryButtons.forEach((button) => {
+      const isSelected = button.dataset.gameCategory === selectedCategory;
+
+      button.classList.toggle("is-active", isSelected);
+
+      button.setAttribute("aria-selected", String(isSelected));
+    });
+
+    lobbyGameCards.forEach((card) => {
+      const cardCategory = String(card.dataset.category || "")
         .trim()
         .toLowerCase();
 
-    gameCategoryButtons.forEach(
-      (button) => {
-        const isSelected =
-          button.dataset.gameCategory ===
-          selectedCategory;
+      const shouldShow =
+        selectedCategory === "all" || cardCategory === selectedCategory;
 
-        button.classList.toggle(
-          "is-active",
-          isSelected
-        );
+      card.classList.toggle("is-category-hidden", !shouldShow);
 
-        button.setAttribute(
-          "aria-selected",
-          String(isSelected)
-        );
-      }
-    );
-
-    lobbyGameCards.forEach(
-      (card) => {
-        const cardCategory =
-          String(
-            card.dataset.category ||
-            ""
-          )
-            .trim()
-            .toLowerCase();
-
-        const shouldShow =
-          selectedCategory === "all" ||
-          cardCategory === selectedCategory;
-
-        card.classList.toggle(
-          "is-category-hidden",
-          !shouldShow
-        );
-
-        card.setAttribute(
-          "aria-hidden",
-          String(!shouldShow)
-        );
-      }
-    );
+      card.setAttribute("aria-hidden", String(!shouldShow));
+    });
 
     try {
-      sessionStorage.setItem(
-        "tpl22_lobby_game_category",
-        selectedCategory
-      );
+      sessionStorage.setItem("tpl22_lobby_game_category", selectedCategory);
     } catch (_error) {
       // Storage unavailable হলেও filter কাজ করবে।
     }
   }
 
-  gameCategoryButtons.forEach(
-    (button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          selectGameCategory(
-            button.dataset.gameCategory
-          );
-        }
-      );
-    }
-  );
+  gameCategoryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      selectGameCategory(button.dataset.gameCategory);
+    });
+  });
 
   let savedGameCategory = "all";
 
   try {
     savedGameCategory =
-      sessionStorage.getItem(
-        "tpl22_lobby_game_category"
-      ) ||
-      "all";
+      sessionStorage.getItem("tpl22_lobby_game_category") || "all";
   } catch (_error) {
     savedGameCategory = "all";
   }
 
-  const categoryExists =
-    gameCategoryButtons.some(
-      (button) =>
-        button.dataset.gameCategory ===
-        savedGameCategory
-    );
-
-  selectGameCategory(
-    categoryExists
-      ? savedGameCategory
-      : "all"
+  const categoryExists = gameCategoryButtons.some(
+    (button) => button.dataset.gameCategory === savedGameCategory,
   );
+
+  selectGameCategory(categoryExists ? savedGameCategory : "all");
 
   /* =========================================================
    GUEST AUTH POPUP
@@ -2342,8 +2229,7 @@ document.addEventListener(
     event.stopPropagation();
 
     const token =
-      localStorage.getItem("access_token") ||
-      localStorage.getItem("token");
+      localStorage.getItem("access_token") || localStorage.getItem("token");
 
     if (!token) {
       window.location.href = "/login";
@@ -2351,12 +2237,8 @@ document.addEventListener(
     }
 
     /* Anchor-based games */
-    if (
-      actionButton.tagName === "A" &&
-      actionButton.getAttribute("href")
-    ) {
-      window.location.href =
-        actionButton.getAttribute("href");
+    if (actionButton.tagName === "A" && actionButton.getAttribute("href")) {
+      window.location.href = actionButton.getAttribute("href");
 
       return;
     }
@@ -2371,7 +2253,7 @@ document.addEventListener(
       banglaDiceBtn: "/bangla-dice",
       aviatorBtn: "/aviator",
       kaitBtn: "/kait",
-      lotteryBtn: "/lottery"
+      lotteryBtn: "/lottery",
     };
 
     const destination = gameRoutes[actionButton.id];
@@ -2386,5 +2268,5 @@ document.addEventListener(
       window.location.href = "/carrom-rooms";
     }
   },
-  true
+  true,
 );
