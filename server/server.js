@@ -54,6 +54,10 @@ const {
 } = require("./src/socket/rocket-rise.socket");
 
 const {
+  initializeBalloonBurstSocket,
+} = require("./src/socket/balloon-burst.socket");
+
+const {
   initializeKaitSocket,
 } = require("./src/socket/kait.socket");
 
@@ -141,6 +145,8 @@ initializeBanglaWheelSocket(io);
 initializeBanglaDiceSocket(io);
 
 initializeAviatorSocket(io);
+
+initializeBalloonBurstSocket(io);
 
 initializeRocketRiseSocket(io);
 

@@ -6851,3 +6851,53 @@ body .app #games .game-list .game-card > img.lobby-card-image {
   margin: 0 !important;
   border-radius: 10px 10px 0 0 !important;
 }
+
+body .app #games .game-list .bb-lobby-art {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px 10px 0 0;
+  background:
+    radial-gradient(circle at 50% 35%, #96286d88, transparent 60%),
+    linear-gradient(140deg, #16244b, #210c35);
+}
+
+.bb-lobby-balloon {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  width: 34%;
+  height: 55%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(
+    circle at 30% 25%,
+    #fff1fb,
+    #ff82ce 22%,
+    #ea248f 58%,
+    #860849
+  );
+  box-shadow: 0 0 25px #ff4bae66;
+}
+
+.bb-lobby-balloon::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 2px;
+  height: 24px;
+  background: #ffd1eb;
+}
+
+.bb-lobby-art strong {
+  position: absolute;
+  bottom: 8%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: clamp(11px, 1.8vw, 22px);
+  color: #ffe4a1;
+  text-shadow: 0 2px 8px #000;
+}
