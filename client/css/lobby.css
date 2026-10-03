@@ -6901,3 +6901,22 @@ body .app #games .game-list .bb-lobby-art {
   color: #ffe4a1;
   text-shadow: 0 2px 8px #000;
 }
+
+body .app #games .game-list .game-card {
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+  align-self: start !important;
+}
+
+body .app #games .game-list .game-card .game-info {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  padding: 6px 5px 9px !important;
+}
+
+body .app #games .game-list .game-card .game-info h3 {
+  margin: 0 !important;
+  color: #f5f5f5 !important;
+  opacity: 1 !important;
+}
