@@ -6666,3 +6666,7 @@ body.lobby-offer-open {
     padding: 9px 13px;
   }
 }
+
+body .app #games .game-list .game-card.is-category-hidden {
+  display: none !important;
+}
