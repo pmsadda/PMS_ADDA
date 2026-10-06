@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+  <meta name="theme-color" content="#13091f">
+  <title>Cash Carnival</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --gold: #ffd875;
+      --green: #7dffc1;
+      --muted: #b5a6c9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      color: #fff;
+      background:
+        radial-gradient(ellipse at 50% 10%, #552072 0, transparent 52%),
+        radial-gradient(ellipse at 5% 80%, #30224f 0, transparent 45%),
+        #100819;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    button, a, input {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: .55;
+    }
+
+    a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .header {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .back {
+      border: 1px solid #6c477b;
+      border-radius: 12px;
+      padding: 10px 14px;
+      background: #ffffff08;
+    }
+
+    .wallet {
+      text-align: right;
+    }
+
+    .wallet span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    .wallet strong {
+      color: var(--gold);
+      font-size: 22px;
+    }
+
+    main {
+      width: min(100% - 24px, 610px);
+      margin: 8px auto 50px;
+    }
+
+    .title {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .title small {
+      color: #f4c66c;
+      letter-spacing: 5px;
+      font-size: 10px;
+    }
+
+    h1 {
+      margin: 6px 0;
+      font-size: clamp(29px, 7vw, 49px);
+      line-height: 1.05;
+      font-weight: 950;
+      letter-spacing: -1.5px;
+      color: #ffdf83;
+      text-shadow: 0 3px 0 #8c4b18, 0 0 35px #ffa82b55;
+    }
+
+    .title p {
+      color: var(--muted);
+      margin: 10px 0;
+      font-size: 12px;
+      letter-spacing: 2px;
+    }
+
+    .machine {
+      position: relative;
+      padding: 14px;
+      border: 3px solid #e4b45f;
+      border-radius: 25px;
+      background: linear-gradient(145deg, #421c58, #1c102c);
+      box-shadow:
+        0 0 0 5px #522641,
+        0 0 0 7px #8c542b,
+        0 25px 75px #0008,
+        inset 0 0 30px #cb70ff20;
+    }
+
+    .machine-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 3px 15px;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+      margin-right: 5px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 5px;
+      padding: 7px;
+      background: #0b0613;
+      border: 1px solid #835094;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    .symbol {
+      display: block;
+      aspect-ratio: 1;
+      min-width: 0;
+      border-radius: 8px;
+      background-color: #140c24;
+      background-image: url("/assets/games/cash-carnival-symbols.png");
+      background-size: 300% 300%;
+      background-repeat: no-repeat;
+      border: 1px solid #ffffff12;
+      box-shadow: inset 0 0 12px #0003;
+    }
+
+    .winning {
+      outline: 2px solid #ffe39b;
+      outline-offset: -2px;
+      box-shadow: 0 0 18px #ffd87566;
+      animation: win-glow .65s ease-in-out infinite alternate;
+    }
+
+    .rolling .symbol {
+      animation: reel-roll .16s ease-in-out infinite;
+      filter: blur(1px);
+    }
+
+    .status {
+      min-height: 52px;
+      padding: 15px 5px 5px;
+      text-align: center;
+      font-size: 13px;
+      color: #ded1ee;
+    }
+
+    .green {
+      color: var(--green);
+    }
+
+    .controls {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 20px;
+      background: #231230;
+      border: 1px solid #5b346c;
+    }
+
+    .metrics {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .metrics label, .win-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    input {
+      width: 140px;
+      max-width: 100%;
+      padding: 10px 12px;
+      color: #fff;
+      border: 1px solid #825490;
+      border-radius: 10px;
+      background: #130b1f;
+      font-weight: 800;
+      font-size: 19px;
+    }
+
+    .last-win {
+      text-align: right;
+    }
+
+    .last-win strong {
+      font-size: 25px;
+      color: var(--green);
+    }
+
+    .spin {
+      width: 100%;
+      margin-top: 18px;
+      padding: 17px;
+      color: #3d1b02;
+      border: 0;
+      border-radius: 14px;
+      font-size: 22px;
+      font-weight: 950;
+      letter-spacing: 3px;
+      background: linear-gradient(#ffe9a5, #ffc45b 65%, #df9226);
+      box-shadow: 0 5px 0 #8c4814, 0 8px 25px #f9b43c22;
+    }
+
+    .spin:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #8c4814;
+    }
+
+    .under-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .sound {
+      border: 1px solid #674377;
+      border-radius: 8px;
+      padding: 7px 9px;
+      color: #dec9ed;
+      background: #ffffff05;
+      font-size: 10px;
+    }
+
+    details {
+      margin-top: 15px;
+      border: 1px solid #4e315d;
+      border-radius: 14px;
+      background: #1d1029;
+      padding: 15px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #e9d6f5;
+    }
+
+    .rules {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #cbbbd9;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 12px;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px 4px;
+      border-bottom: 1px solid #ffffff10;
+    }
+
+    th {
+      color: var(--gold);
+    }
+
+    .small {
+      display: inline-block;
+      width: 35px;
+      height: 35px;
+      margin-right: 7px;
+      vertical-align: middle;
+    }
+
+    .history-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 12px 0;
+      border-bottom: 1px solid #ffffff12;
+      font-size: 11px;
+    }
+
+    .history-row span {
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    #history {
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    dialog {
+      width: min(90vw, 390px);
+      border: 2px solid var(--gold);
+      border-radius: 24px;
+      background: radial-gradient(circle at top, #72347e, #1c102c);
+      color: #fff;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 0 90px #db77ff44;
+    }
+
+    dialog::backdrop {
+      background: #080310cc;
+      backdrop-filter: blur(5px);
+    }
+
+    .bonus-wheel {
+      width: 170px;
+      height: 170px;
+      margin: 12px auto;
+      background-position: 100% 100%;
+      border: 0;
+      animation: bonus-turn 1.8s ease-out;
+    }
+
+    #bonusValue {
+      font-size: 55px;
+      font-weight: 950;
+      color: var(--gold);
+      margin: 6px 0;
+    }
+
+    #bonusAmount {
+      color: #dcd0eb;
+      font-size: 13px;
+    }
+
+    @keyframes reel-roll {
+      from { transform: translateY(-4px); }
+      to { transform: translateY(4px); }
+    }
+
+    @keyframes win-glow {
+      to { filter: brightness(1.35); }
+    }
+
+    @keyframes bonus-turn {
+      from { transform: rotate(-720deg) scale(.7); }
+      to { transform: rotate(0) scale(1); }
+    }
+
+    @media (max-width: 420px) {
+      .header { padding: 14px; }
+      .machine { padding: 10px; border-radius: 18px; }
+      .board { gap: 3px; padding: 4px; }
+      .machine-top { font-size: 9px; letter-spacing: 1px; }
+      .controls { padding: 14px; }
+      .symbol { border-radius: 5px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <a class="back" href="/lobby">← Lobby</a>
+
+    <div class="wallet">
+      <span>WALLET BALANCE</span>
+      <strong>৳<b id="balance">0.00</b></strong>
+    </div>
+  </header>
+
+  <main>
+    <div class="title">
+      <small>THE GOLDEN REEL SHOW</small>
+      <h1>CASH CARNIVAL</h1>
+      <p>25 SYMBOLS · 5 PAYLINES · BONUS WHEEL</p>
+    </div>
+
+    <section class="machine" aria-label="Cash Carnival reels">
+      <div class="machine-top">
+        <span><i class="live-dot"></i> CASH CARNIVAL</span>
+        <span>3 WHEELS = BONUS</span>
+      </div>
+
+      <div class="board" id="board"></div>
+
+      <div class="status" aria-live="polite">
+        <span id="message">Game loading…</span>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Game controls">
+      <div class="metrics">
+        <div>
+          <label for="bet">TOTAL BET · ৳10–1000</label>
+          <input
+            id="bet"
+            type="number"
+            min="10"
+            max="1000"
+            step="0.01"
+            value="10"
+            inputmode="decimal"
+            disabled
+          >
+        </div>
+
+        <div class="last-win">
+          <span class="win-label">LAST PAYOUT</span>
+          <strong>৳<b id="win">0.00</b></strong>
+        </div>
+      </div>
+
+      <button type="button" class="spin" id="spin" disabled>
+        SPIN
+      </button>
+
+      <div class="under-controls">
+        <span>5 × 5 REEL BOARD</span>
+        <button type="button" class="sound" id="sound">
+          SOUND OFF
+        </button>
+      </div>
+    </section>
+
+    <details>
+      <summary>Rules &amp; Paytable</summary>
+
+      <div class="rules">
+        <p>
+          প্রতিটি row একটি horizontal payline।
+          মোট bet পাঁচটি line-এ সমান ভাগ হয়।
+          বাম দিকের প্রথম ঘর থেকে টানা ৩, ৪ বা ৫টি
+          একই symbol হলে সেই line payout দেয়।
+        </p>
+
+        <p>
+          যেকোনো জায়গায় অন্তত ৩টি Wheel এলে bonus:
+          মোট bet-এর 2x, 3x, 5x, 8x, 10x, 15x,
+          20x অথবা 30x। প্রতিটি bonus outcome-এর
+          সম্ভাবনা সমান। Wheel কোনো line symbol নয়।
+          Bonus ও line payout একসঙ্গে যোগ হয়।
+        </p>
+
+        <p>
+          নিচের multiplier প্রতিটি line-এর bet-এর ওপর
+          প্রযোজ্য। Payout-এর অর্থ bet ফেরতসহ মোট credit।
+          Symbol probability:
+          Ruby 18%, Emerald 17%, Sapphire 16%, Bell 13%,
+          Cash 12%, Chest 9%, Coin 8%, Crown 5%, Wheel 2%।
+        </p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>3 match</th>
+              <th>4 match</th>
+              <th>5 match</th>
+            </tr>
+          </thead>
+          <tbody id="paytable"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <details>
+      <summary>Recent Spins</summary>
+      <div id="history">Loading…</div>
+    </details>
+  </main>
+
+  <dialog id="bonus">
+    <small>BONUS WHEEL</small>
+    <div class="symbol bonus-wheel"></div>
+    <div id="bonusValue"></div>
+    <p id="bonusAmount"></p>
+    <button type="button" class="spin" id="closeBonus">
+      CONTINUE
+    </button>
+  </dialog>
+
+  <script>
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+    const cells = [];
+    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    const state = {
+      busy: false,
+      ready: false,
+      enabled: false,
+      pending: null,
+      key: "",
+      rules: null,
+      sound: false
+    };
+
+    let audio;
+
+    function token() {
+      return localStorage.getItem("access_token") ||
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("access_token") ||
+        "";
+    }
+
+    async function api(path, body) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+
+      try {
+        const response = await fetch("/api/cash-carnival/" + path, {
+          method: body ? "POST" : "GET",
+          signal: controller.signal,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token()
+          },
+          ...(body ? { body: JSON.stringify(body) } : {})
+        });
+
+        let data;
+
+        try {
+          data = await response.json();
+        } catch {
+          throw new Error("Server response পাওয়া যায়নি।");
+        }
+
+        if (response.status === 401) {
+          location.href = "/login";
+          throw new Error("Login প্রয়োজন।");
+        }
+
+        if (!response.ok || !data.success) {
+          throw Object.assign(
+            new Error(data.message || "Request failed."),
+            { status: response.status }
+          );
+        }
+
+        return data.data;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function sprite(el, id) {
+      el.dataset.symbol = String(id);
+
+      el.style.backgroundPosition =
+        (id % 3 * 50) + "% " +
+        (Math.floor(id / 3) * 50) + "%";
+
+      el.setAttribute(
+        "aria-label",
+        state.rules?.names[id] || "Symbol"
+      );
+    }
+
+    function paint(grid) {
+      grid.forEach((id, i) => sprite(cells[i], id));
+    }
+
+    function refreshControls() {
+      $("spin").disabled =
+        state.busy ||
+        !state.ready ||
+        (!state.enabled && !state.pending);
+
+      $("spin").textContent = state.busy
+        ? "SPINNING…"
+        : state.pending
+          ? "RESUME SPIN"
+          : "SPIN";
+
+      $("bet").disabled =
+        state.busy || !!state.pending || !state.ready;
+    }
+
+    function tone(frequency = 520) {
+      if (!state.sound) return;
+
+      try {
+        audio ||= new (
+          window.AudioContext || window.webkitAudioContext
+        )();
+
+        void audio.resume();
+
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.05, audio.currentTime);
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audio.currentTime + 0.13
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audio.destination);
+        oscillator.start();
+        oscillator.stop(audio.currentTime + 0.14);
+      } catch {}
+    }
+
+    async function loadState() {
+      const data = await api("state");
+
+      state.rules = data.rules;
+      state.enabled = data.enabled;
+
+      $("balance").textContent =
+        Number(data.walletBalance).toFixed(2);
+
+      $("bet").min = data.rules.minBet;
+      $("bet").max = data.rules.maxBet;
+
+      return data;
+    }
+
+    async function history() {
+      const data = await api("history");
+
+      $("history").replaceChildren();
+
+      data.history.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "history-row";
+
+        const code = document.createElement("span");
+        code.textContent = item.spinCode;
+
+        const value = document.createElement("strong");
+
+        value.textContent =
+          "Bet ৳" + item.betAmount +
+          " / Payout ৳" + item.payoutAmount;
+
+        if (Number(item.payoutAmount) > 0) {
+          value.className = "green";
+        }
+
+        row.append(code, value);
+        $("history").append(row);
+      });
+
+      if (!data.history.length) {
+        $("history").textContent = "এখনো কোনো spin নেই।";
+      }
+    }
+
+    function showRules() {
+      const table = $("paytable");
+      table.replaceChildren();
+
+      state.rules.names.slice(0, 8).forEach((name, id) => {
+        const row = document.createElement("tr");
+
+        const icon = document.createElement("span");
+        icon.className = "symbol small";
+        sprite(icon, id);
+
+        const cell = document.createElement("td");
+
+        cell.append(
+          icon,
+          document.createTextNode(name)
+        );
+
+        row.append(cell);
+
+        state.rules.paytable[id].forEach(value => {
+          const td = document.createElement("td");
+          td.textContent = value + "x";
+          row.append(td);
+        });
+
+        table.append(row);
+      });
+    }
+
+    function uuid() {
+      const bytes = crypto.getRandomValues(
+        new Uint8Array(16)
+      );
+
+      bytes[6] = (bytes[6] & 15) | 64;
+      bytes[8] = (bytes[8] & 63) | 128;
+
+      const h = Array.from(
+        bytes,
+        b => b.toString(16).padStart(2, "0")
+      ).join("");
+
+      return h.slice(0, 8) + "-" +
+        h.slice(8, 12) + "-" +
+        h.slice(12, 16) + "-" +
+        h.slice(16, 20) + "-" +
+        h.slice(20);
+    }
+
+    async function spin() {
+      if (state.busy || !state.ready) return;
+
+      let timer;
+      state.busy = true;
+
+      try {
+        if (!state.pending) {
+          const bet = Number($("bet").value);
+
+          if (
+            !Number.isFinite(bet) ||
+            bet < state.rules.minBet ||
+            bet > state.rules.maxBet ||
+            Math.abs(bet * 100 - Math.round(bet * 100)) > 0.00001
+          ) {
+            throw Object.assign(
+              new Error("সঠিক bet amount দিন।"),
+              { status: 400 }
+            );
+          }
+
+          const pending = {
+            requestId: uuid(),
+            betAmount: bet
+          };
+
+          localStorage.setItem(
+            state.key,
+            JSON.stringify(pending)
+          );
+
+          state.pending = pending;
+        }
+
+        refreshControls();
+
+        $("message").textContent = "Spin চলছে…";
+        $("message").className = "";
+
+        cells.forEach(cell => {
+          cell.classList.remove("winning");
+        });
+
+        const reduced = matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+
+        if (!reduced) {
+          $("board").classList.add("rolling");
+
+          timer = setInterval(() => {
+            cells.forEach(cell => {
+              sprite(cell, Math.floor(Math.random() * 9));
+            });
+          }, 90);
+        }
+
+        const [result] = await Promise.all([
+          api("spin", state.pending),
+          wait(reduced ? 0 : 900)
+        ]);
+
+        if (
+          !Array.isArray(result.grid) ||
+          result.grid.length !== 25 ||
+          result.grid.some(
+            id => !Number.isInteger(id) || id < 0 || id > 8
+          )
+        ) {
+          throw new Error(
+            "Result দেখানো যায়নি। RESUME SPIN চাপুন।"
+          );
+        }
+
+        clearInterval(timer);
+        timer = null;
+
+        for (let column = 0; column < 5; column++) {
+          for (let row = 0; row < 5; row++) {
+            const i = row * 5 + column;
+            sprite(cells[i], result.grid[i]);
+          }
+
+          tone(350 + column * 80);
+
+          if (!reduced) {
+            await wait(110);
+          }
+        }
+
+        result.lines.forEach(line => {
+          for (let col = 0; col < line.count; col++) {
+            cells[line.row * 5 + col].classList.add("winning");
+          }
+        });
+
+        $("win").textContent = result.payoutAmount;
+        $("balance").textContent = result.walletBalance;
+
+        $("message").textContent =
+          Number(result.payoutAmount) > 0
+            ? "Payout ৳" + result.payoutAmount
+            : "এই spin-এ কোনো payout হয়নি।";
+
+        $("message").className =
+          Number(result.payoutAmount) > 0 ? "green" : "";
+
+        state.pending = null;
+        localStorage.removeItem(state.key);
+
+        if (result.bonusMultiplier > 0) {
+          cells.forEach(cell => {
+            if (cell.dataset.symbol === "8") {
+              cell.classList.add("winning");
+            }
+          });
+
+          $("bonusValue").textContent =
+            result.bonusMultiplier + "x";
+
+          $("bonusAmount").textContent =
+            "Bonus ৳" + result.bonusWin +
+            " — wallet-এ যোগ হয়েছে";
+
+          $("bonus").showModal();
+          tone(900);
+        }
+
+        await Promise.allSettled([
+          loadState(),
+          history()
+        ]);
+      } catch (error) {
+        if ([400, 403, 409, 422].includes(error.status)) {
+          state.pending = null;
+
+          try {
+            localStorage.removeItem(state.key);
+          } catch {}
+        }
+
+        $("message").textContent = state.pending
+          ? "Connection বা server সমস্যা। RESUME SPIN চাপুন—একই spin ফেরত পাবেন।"
+          : error.message;
+
+        await loadState().catch(() => {});
+      } finally {
+        clearInterval(timer);
+        $("board").classList.remove("rolling");
+
+        state.busy = false;
+        refreshControls();
+      }
+    }
+
+    async function initialize() {
+      if (!token()) {
+        location.href = "/login";
+        return;
+      }
+
+      for (let i = 0; i < 25; i++) {
+        const cell = document.createElement("div");
+
+        cell.className = "symbol";
+        cell.setAttribute("role", "img");
+
+        cells.push(cell);
+        $("board").append(cell);
+      }
+
+      paint(
+        Array.from({ length: 25 }, (_, i) => i % 8)
+      );
+
+      $("spin").addEventListener("click", spin);
+
+      $("sound").addEventListener("click", () => {
+        state.sound = !state.sound;
+
+        $("sound").textContent =
+          state.sound ? "SOUND ON" : "SOUND OFF";
+
+        tone();
+      });
+
+      $("closeBonus").addEventListener("click", () => {
+        $("bonus").close();
+      });
+
+      try {
+        const image = new Image();
+
+        image.src =
+          "/assets/games/cash-carnival-symbols.png";
+
+        await image.decode();
+
+        if (image.naturalWidth !== image.naturalHeight) {
+          throw new Error("Symbol PNG square হতে হবে।");
+        }
+
+        const data = await loadState();
+
+        state.key =
+          "cash-carnival-pending-" + data.userId;
+
+        const saved = localStorage.getItem(state.key);
+
+        if (saved) {
+          const pending = JSON.parse(saved);
+
+          if (
+            typeof pending.requestId !== "string" ||
+            typeof pending.betAmount !== "number"
+          ) {
+            throw new Error("Saved spin data invalid.");
+          }
+
+          state.pending = pending;
+          $("bet").value = pending.betAmount;
+        }
+
+        showRules();
+        await history();
+
+        state.ready = true;
+
+        $("message").textContent = state.pending
+          ? "আগের spin উদ্ধার করতে RESUME SPIN চাপুন।"
+          : state.enabled
+            ? "Bet নির্বাচন করে SPIN করুন।"
+            : "Game এখন বন্ধ আছে।";
+      } catch (error) {
+        $("message").textContent =
+          error.message + " পেজ reload করুন।";
+      }
+
+      refreshControls();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>

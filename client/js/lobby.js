@@ -2034,6 +2034,7 @@ const categoryRules = [
     [
       ".slot-game-card",
       ".super-ace-game-card",
+      ".cash-carnival-game-card",
       ".gem-fortune-game-card",
       ".fruit-fiesta-game-card",
       ".lucky-sevens-game-card",

@@ -566,6 +566,11 @@ app.use("/api/poker", pokerRoutes);
 
 app.use("/api/dragon-tiger", dragonTigerRoutes);
 
+app.use(
+  "/api/cash-carnival",
+  require("./routes/cash-carnival.routes")
+);
+
 app.use("/api/admin/dragon-tiger", adminDragonTigerRoutes);
 
 app.use("/api/ludo", ludoRoutes);
